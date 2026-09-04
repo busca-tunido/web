@@ -43,15 +43,15 @@ export function ExploreScreen({
       <section>
         <div className="flex items-center justify-between px-5 mb-3">
           <div>
-            <h3 className="text-lg font-bold text-white tracking-tight">Ciudades</h3>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <h3 className="text-lg font-bold text-foreground tracking-tight">Ciudades</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Principales destinos universitarios de Chile
             </p>
           </div>
           <button
             type="button"
             onClick={onNavigateToMap}
-            className="text-xs font-semibold text-emerald-400 hover:text-emerald-300"
+            className="text-xs font-semibold text-primary hover:opacity-80 transition"
           >
             Ver más
           </button>
@@ -65,10 +65,10 @@ export function ExploreScreen({
                 type="button"
                 key={city.id}
                 onClick={() => onSelectCity(city.name)}
-                className={`group relative h-48 w-36 shrink-0 snap-start overflow-hidden rounded-2xl border text-left transition active:scale-95 cursor-pointer ${
+                className={`group relative h-48 w-36 shrink-0 snap-start overflow-hidden rounded-2xl border text-left transition active:scale-95 cursor-pointer shadow-sm ${
                   isSelected
-                    ? 'border-emerald-500 ring-2 ring-emerald-500/30'
-                    : 'border-zinc-800/80 hover:border-zinc-700'
+                    ? 'border-primary ring-2 ring-primary/30'
+                    : 'border-border/60 hover:border-primary/50'
                 }`}
               >
                 <img
@@ -76,11 +76,11 @@ export function ExploreScreen({
                   alt={city.name}
                   className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
                 {city.isCurrentCity && (
                   <div className="absolute top-2.5 left-2.5">
-                    <Badge className="bg-emerald-500 text-zinc-950 font-bold text-[9px] px-1.5 py-0.5 shadow">
+                    <Badge className="bg-primary text-primary-foreground font-bold text-[9px] px-2 py-0.5 shadow">
                       Actual
                     </Badge>
                   </div>
@@ -88,7 +88,7 @@ export function ExploreScreen({
 
                 <div className="absolute bottom-3 left-3 right-3">
                   <h4 className="text-sm font-bold text-white leading-tight">{city.name}</h4>
-                  <span className="block text-[11px] text-zinc-300 mt-1">
+                  <span className="block text-[11px] text-zinc-200 mt-1">
                     {city.pensionsCount} pensiones
                   </span>
                 </div>
@@ -101,13 +101,15 @@ export function ExploreScreen({
       <section>
         <div className="flex items-center justify-between px-5 mb-3">
           <div>
-            <h3 className="text-lg font-bold text-white tracking-tight">Universidades</h3>
-            <p className="text-xs text-zinc-400 mt-0.5">Universidades con residencias cercanas</p>
+            <h3 className="text-lg font-bold text-foreground tracking-tight">Universidades</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Universidades con residencias cercanas
+            </p>
           </div>
           <button
             type="button"
             onClick={onNavigateToMap}
-            className="text-xs font-semibold text-emerald-400 hover:text-emerald-300"
+            className="text-xs font-semibold text-primary hover:opacity-80 transition"
           >
             Ver más
           </button>
@@ -119,19 +121,19 @@ export function ExploreScreen({
               type="button"
               key={uni.id}
               onClick={() => onSelectUniversity(uni)}
-              className="group relative h-48 w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900 text-left transition hover:border-zinc-700 active:scale-95 cursor-pointer"
+              className="group relative h-48 w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition hover:border-primary/50 active:scale-95 cursor-pointer shadow-sm"
             >
               <img
                 src={uni.imageUrl}
                 alt={uni.name}
-                className="h-full w-full object-cover opacity-60 transition duration-300 group-hover:scale-105"
+                className="h-full w-full object-cover opacity-80 transition duration-300 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
 
               <div className="absolute top-2.5 left-2.5">
                 <Badge
                   variant="outline"
-                  className="border-white/20 bg-zinc-950/70 text-white font-bold text-[10px] backdrop-blur-sm"
+                  className="border-white/20 bg-black/60 text-white font-bold text-[10px] backdrop-blur-sm"
                 >
                   {uni.acronym}
                 </Badge>
@@ -141,7 +143,7 @@ export function ExploreScreen({
                 <h4 className="text-xs font-bold text-white leading-tight line-clamp-2">
                   {uni.name}
                 </h4>
-                <div className="mt-1 flex items-center gap-1 text-[11px] text-zinc-300">
+                <div className="mt-1 flex items-center gap-1 text-[11px] text-zinc-200">
                   <MapPin className="h-3 w-3" />
                   <span>{uni.city}</span>
                 </div>
@@ -153,11 +155,15 @@ export function ExploreScreen({
 
       <section className="px-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-white tracking-tight">Pensiones Recomendadas</h3>
-          <span className="text-xs text-zinc-400">{featuredPensions.length} alojamientos</span>
+          <h3 className="text-lg font-bold text-foreground tracking-tight">
+            Pensiones Recomendadas
+          </h3>
+          <span className="text-xs text-muted-foreground">
+            {featuredPensions.length} alojamientos
+          </span>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-7">
           {featuredPensions.map((pension) => {
             const isFav = isFavorite(pension.id);
             return (
@@ -167,7 +173,7 @@ export function ExploreScreen({
                   onClick={() => onSelectPension(pension)}
                   className="w-full flex flex-col text-left cursor-pointer"
                 >
-                  <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-zinc-900">
+                  <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm">
                     <img
                       src={pension.photos[0]}
                       alt={pension.title}
@@ -177,7 +183,7 @@ export function ExploreScreen({
 
                     {pension.isVerified && (
                       <div className="absolute bottom-3 left-3">
-                        <span className="rounded-full bg-zinc-950/80 px-2.5 py-1 text-[11px] font-semibold text-zinc-200 backdrop-blur-md border border-zinc-800">
+                        <span className="rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold text-foreground backdrop-blur-md border border-border/60">
                           Verificada
                         </span>
                       </div>
@@ -186,25 +192,25 @@ export function ExploreScreen({
 
                   <div className="mt-2.5 flex flex-col gap-1 w-full">
                     <div className="flex items-start justify-between gap-2">
-                      <h4 className="text-base font-semibold text-white leading-snug line-clamp-1 group-hover:text-emerald-400 transition">
+                      <h4 className="text-base font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition">
                         {pension.title}
                       </h4>
-                      <div className="flex items-center gap-1 text-sm font-semibold text-white shrink-0">
+                      <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
                         <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                         <span>{pension.ratingAverage.toFixed(1)}</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-zinc-400 line-clamp-1">
+                    <p className="text-xs text-muted-foreground line-clamp-1">
                       {pension.neighborhood}, {pension.city} • a{' '}
                       {pension.distanceToUniversityMeters}m de campus
                     </p>
 
                     <div className="mt-0.5 flex items-baseline gap-1">
-                      <span className="text-base font-bold text-white">
+                      <span className="text-base font-bold text-foreground">
                         ${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP
                       </span>
-                      <span className="text-xs text-zinc-400">/ mes</span>
+                      <span className="text-xs text-muted-foreground">/ mes</span>
                     </div>
                   </div>
                 </button>
@@ -212,11 +218,11 @@ export function ExploreScreen({
                 <button
                   type="button"
                   onClick={() => toggleFavorite(pension.id)}
-                  className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:text-emerald-400 transition active:scale-90"
+                  className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md hover:text-primary transition active:scale-90 shadow-sm border border-border/40"
                   aria-label="Guardar en favoritos"
                 >
                   <Heart
-                    className={`h-5 w-5 ${isFav ? 'fill-emerald-400 text-emerald-400' : 'stroke-[2]'}`}
+                    className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : 'stroke-[2]'}`}
                   />
                 </button>
               </div>

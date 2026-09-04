@@ -112,7 +112,7 @@ export const MOCK_UNIVERSITIES: UniversityInfo[] = [
     foreignStudentRate: 0.68,
     pensionsNearbyCount: 18,
     imageUrl:
-      'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?auto=format&fit=crop&w=800&q=80',
     latitude: -36.8298,
     longitude: -73.0378,
   },

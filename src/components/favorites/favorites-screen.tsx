@@ -1,9 +1,7 @@
 'use client';
 
-import { Heart, Star, Trash2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Heart, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth-context';
 import type { PensionItem } from '@/lib/types';
 
@@ -18,94 +16,97 @@ export function FavoritesScreen({ allPensions, onSelectPension, onExplore }: Fav
   const savedPensions = allPensions.filter((p) => favorites.includes(p.id));
 
   return (
-    <div id="favorites-screen-view" className="flex flex-col gap-4 px-4 pb-28 pt-2">
+    <div id="favorites-screen-view" className="flex flex-col gap-6 px-4 pb-28 pt-2">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white">Tus Favoritos</h2>
-          <p className="text-xs text-zinc-400">
-            {savedPensions.length} alojamientos guardados para postular
+          <h2 className="text-xl font-bold text-foreground">Tus Favoritos</h2>
+          <p className="text-xs text-muted-foreground">
+            {savedPensions.length}{' '}
+            {savedPensions.length === 1
+              ? 'alojamiento guardado para postular'
+              : 'alojamientos guardados para postular'}
           </p>
         </div>
       </div>
 
       {savedPensions.length === 0 ? (
-        <div className="my-12 flex flex-col items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/40 p-8 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-800 text-zinc-500 mb-3">
+        <div className="my-12 flex flex-col items-center justify-center rounded-2xl border border-border bg-card/60 p-8 text-center shadow-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-3">
             <Heart className="h-6 w-6" />
           </div>
-          <h3 className="text-sm font-semibold text-white">No tienes favoritos guardados</h3>
-          <p className="text-xs text-zinc-400 mt-1 max-w-xs">
+          <h3 className="text-sm font-semibold text-foreground">No tienes favoritos guardados</h3>
+          <p className="text-xs text-muted-foreground mt-1 max-w-xs">
             Explora las pensiones universitarias y presiona el corazón para guardar las opciones que
             te interesen.
           </p>
           <Button
             onClick={onExplore}
-            className="mt-4 bg-emerald-500 font-bold text-zinc-950 hover:bg-emerald-400 text-xs"
+            className="mt-4 bg-primary font-bold text-primary-foreground hover:opacity-90 text-xs shadow-sm"
           >
             Explorar Alojamientos
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-7">
           {savedPensions.map((pension) => (
-            <Card
-              key={pension.id}
-              onClick={() => onSelectPension(pension)}
-              className="overflow-hidden rounded-2xl border-zinc-800 bg-zinc-900/60 transition hover:border-zinc-700 cursor-pointer"
-            >
-              <div className="flex p-3 gap-3">
-                <div className="relative h-24 w-28 shrink-0 overflow-hidden rounded-xl bg-zinc-950">
+            <div key={pension.id} className="group relative flex flex-col text-left transition">
+              <button
+                type="button"
+                onClick={() => onSelectPension(pension)}
+                className="w-full flex flex-col text-left cursor-pointer"
+              >
+                <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm">
                   <img
                     src={pension.photos[0]}
                     alt={pension.title}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+
                   {pension.isVerified && (
-                    <div className="absolute top-1 left-1">
-                      <Badge className="bg-emerald-500 text-zinc-950 font-black text-[9px] px-1 py-0">
-                        ✓
-                      </Badge>
+                    <div className="absolute bottom-3 left-3">
+                      <span className="rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold text-foreground backdrop-blur-md border border-border/60">
+                        Verificada
+                      </span>
                     </div>
                   )}
                 </div>
 
-                <div className="flex flex-1 flex-col justify-between overflow-hidden">
-                  <div>
-                    <div className="flex items-start justify-between gap-1">
-                      <h4 className="text-xs font-bold text-white line-clamp-1">{pension.title}</h4>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(pension.id);
-                        }}
-                        className="text-rose-400 hover:text-rose-300 p-1"
-                        title="Quitar de favoritos"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                    <p className="text-[11px] text-zinc-400 mt-0.5 line-clamp-1">
-                      {pension.neighborhood}, {pension.city}
-                    </p>
-                  </div>
-
-                  <div className="flex items-end justify-between mt-2">
-                    <div className="flex items-center gap-1 text-[11px] text-amber-400 font-bold">
-                      <Star className="h-3 w-3 fill-amber-400" />
+                <div className="mt-2.5 flex flex-col gap-1 w-full">
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-base font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition">
+                      {pension.title}
+                    </h4>
+                    <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
+                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                       <span>{pension.ratingAverage.toFixed(1)}</span>
                     </div>
+                  </div>
 
-                    <div className="text-right">
-                      <span className="text-xs font-black text-white">
-                        ${pension.priceMonthlyClp.toLocaleString('es-CL')}
-                      </span>
-                      <span className="text-[10px] text-zinc-400 ml-1">CLP/mes</span>
-                    </div>
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    {pension.neighborhood}, {pension.city} • a {pension.distanceToUniversityMeters}m
+                    de campus
+                  </p>
+
+                  <div className="mt-0.5 flex items-baseline gap-1">
+                    <span className="text-base font-bold text-foreground">
+                      ${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP
+                    </span>
+                    <span className="text-xs text-muted-foreground">/ mes</span>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => toggleFavorite(pension.id)}
+                className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition active:scale-90 shadow-sm border border-border/40"
+                aria-label="Quitar de favoritos"
+                title="Quitar de favoritos"
+              >
+                <Heart className="h-5 w-5 fill-primary text-primary" />
+              </button>
+            </div>
           ))}
         </div>
       )}

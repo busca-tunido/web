@@ -66,7 +66,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="relative min-h-screen bg-zinc-950 text-zinc-50 flex flex-col justify-between">
+    <main className="relative min-h-screen bg-background text-foreground flex flex-col justify-between transition-colors">
       <div className="mx-auto w-full max-w-lg flex-1 flex flex-col">
         <TopSearchBar
           filters={filters}
