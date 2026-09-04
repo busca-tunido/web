@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  ChevronDown,
-  ChevronUp,
-  Heart,
-  Maximize2,
-  Minimize2,
-  Navigation,
-  Star,
-} from 'lucide-react';
+import { ChevronDown, ChevronUp, Heart, Locate, Maximize2, Minimize2, Star } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
@@ -324,11 +316,11 @@ export function MapScreen({
         type="button"
         id="center-user-location-btn"
         onClick={handleCenterOnUser}
-        className={`absolute right-4 ${buttonBottomClass} z-[400] flex h-11 w-11 items-center justify-center rounded-full border border-border/80 bg-card/95 text-foreground shadow-lg backdrop-blur-md hover:bg-secondary active:scale-90 transition-all duration-300`}
+        className={`absolute right-4 ${buttonBottomClass} z-[400] flex h-11 w-11 items-center justify-center rounded-full border border-border/80 bg-card/95 text-foreground shadow-lg backdrop-blur-md hover:bg-secondary active:scale-90 transition-all duration-300 cursor-pointer`}
         title="Centrar en mi ubicación"
         aria-label="Centrar en mi ubicación"
       >
-        <Navigation className="h-5 w-5 text-primary" />
+        <Locate className="h-5 w-5 text-primary" />
       </button>
 
       <div
