@@ -1,6 +1,7 @@
 'use client';
 
 import { Heart, Star } from 'lucide-react';
+import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
 import type { PensionItem } from '@/lib/types';
@@ -49,7 +50,12 @@ export function FavoritesScreen({ allPensions, onSelectPension, onExplore }: Fav
       ) : (
         <div className="flex flex-col gap-7">
           {savedPensions.map((pension) => (
-            <div key={pension.id} className="group relative flex flex-col text-left transition">
+            <motion.div
+              key={pension.id}
+              whileHover={{ y: -2 }}
+              transition={{ duration: 0.2 }}
+              className="group relative flex flex-col text-left"
+            >
               <button
                 type="button"
                 onClick={() => onSelectPension(pension)}
@@ -97,16 +103,18 @@ export function FavoritesScreen({ allPensions, onSelectPension, onExplore }: Fav
                 </div>
               </button>
 
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.8 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                 onClick={() => toggleFavorite(pension.id)}
-                className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition active:scale-90 shadow-sm border border-border/40"
+                className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer"
                 aria-label="Quitar de favoritos"
                 title="Quitar de favoritos"
               >
                 <Heart className="h-5 w-5 fill-primary text-primary" />
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           ))}
         </div>
       )}

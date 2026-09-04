@@ -1,6 +1,7 @@
 'use client';
 
 import { Heart, MapPin, Star } from 'lucide-react';
+import { motion } from 'motion/react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/lib/auth-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
@@ -61,11 +62,12 @@ export function ExploreScreen({
           {sortedCities.map((city) => {
             const isSelected = selectedCity === city.name;
             return (
-              <button
+              <motion.button
                 type="button"
                 key={city.id}
+                whileTap={{ scale: 0.94 }}
                 onClick={() => onSelectCity(city.name)}
-                className={`group relative h-48 w-36 shrink-0 snap-start overflow-hidden rounded-2xl border text-left transition active:scale-95 cursor-pointer shadow-sm ${
+                className={`group relative h-48 w-36 shrink-0 snap-start overflow-hidden rounded-2xl border text-left transition-colors cursor-pointer shadow-sm ${
                   isSelected
                     ? 'border-primary ring-2 ring-primary/30'
                     : 'border-border/60 hover:border-primary/50'
@@ -92,7 +94,7 @@ export function ExploreScreen({
                     {city.pensionsCount} pensiones
                   </span>
                 </div>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -117,11 +119,12 @@ export function ExploreScreen({
 
         <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x">
           {sortedUniversities.map((uni) => (
-            <button
+            <motion.button
               type="button"
               key={uni.id}
+              whileTap={{ scale: 0.94 }}
               onClick={() => onSelectUniversity(uni)}
-              className="group relative h-48 w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition hover:border-primary/50 active:scale-95 cursor-pointer shadow-sm"
+              className="group relative h-48 w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-colors hover:border-primary/50 cursor-pointer shadow-sm"
             >
               <img
                 src={uni.imageUrl}
@@ -140,15 +143,15 @@ export function ExploreScreen({
               </div>
 
               <div className="absolute bottom-3 left-3 right-3">
-                <h4 className="text-xs font-bold text-white leading-tight line-clamp-2">
+                <h4 className="text-sm font-bold text-white leading-tight line-clamp-2">
                   {uni.name}
                 </h4>
-                <div className="mt-1 flex items-center gap-1 text-[11px] text-zinc-200">
+                <div className="flex items-center gap-1 text-[11px] text-zinc-300 mt-1">
                   <MapPin className="h-3 w-3" />
                   <span>{uni.city}</span>
                 </div>
               </div>
-            </button>
+            </motion.button>
           ))}
         </div>
       </section>
@@ -156,7 +159,7 @@ export function ExploreScreen({
       <section className="px-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-foreground tracking-tight">
-            Pensiones Recomendadas
+            Alojamientos Destacados
           </h3>
           <span className="text-xs text-muted-foreground">
             {featuredPensions.length} alojamientos
@@ -167,7 +170,12 @@ export function ExploreScreen({
           {featuredPensions.map((pension) => {
             const isFav = isFavorite(pension.id);
             return (
-              <div key={pension.id} className="group relative flex flex-col text-left transition">
+              <motion.div
+                key={pension.id}
+                whileHover={{ y: -2 }}
+                transition={{ duration: 0.2 }}
+                className="group relative flex flex-col text-left"
+              >
                 <button
                   type="button"
                   onClick={() => onSelectPension(pension)}
@@ -215,17 +223,19 @@ export function ExploreScreen({
                   </div>
                 </button>
 
-                <button
+                <motion.button
                   type="button"
+                  whileTap={{ scale: 0.8 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                   onClick={() => toggleFavorite(pension.id)}
-                  className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md hover:text-primary transition active:scale-90 shadow-sm border border-border/40"
+                  className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer"
                   aria-label="Guardar en favoritos"
                 >
                   <Heart
                     className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : 'stroke-[2]'}`}
                   />
-                </button>
-              </div>
+                </motion.button>
+              </motion.div>
             );
           })}
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { Compass, Heart, History, MapPin, User } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useAuth } from '@/lib/auth-context';
 import type { NavTab } from '@/lib/types';
 
@@ -36,15 +37,16 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (
-            <button
+            <motion.button
               key={item.id}
               id={`nav-tab-${item.id}`}
               type="button"
+              whileTap={{ scale: 0.9 }}
               onClick={() => onTabChange(item.id)}
-              className={`group relative flex min-h-[48px] min-w-[56px] flex-1 flex-col items-center justify-center rounded-xl py-1 text-xs font-medium transition-all ${
+              className={`group relative flex min-h-[48px] min-w-[56px] flex-1 flex-col items-center justify-center rounded-xl py-1 text-xs font-medium transition-colors ${
                 isActive
                   ? 'text-primary font-semibold'
-                  : 'text-muted-foreground hover:text-foreground active:scale-95'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <div className="relative">
@@ -54,14 +56,24 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                   }`}
                 />
                 {item.badge !== undefined && item.badge > 0 && (
-                  <span className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground"
+                  >
                     {item.badge}
-                  </span>
+                  </motion.span>
                 )}
               </div>
               <span className="mt-1 text-[11px] tracking-tight">{item.label}</span>
-              {isActive && <span className="absolute bottom-0 h-1 w-6 rounded-full bg-primary" />}
-            </button>
+              {isActive && (
+                <motion.span
+                  layoutId="active-bottom-nav-indicator"
+                  transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                  className="absolute bottom-0 h-1 w-6 rounded-full bg-primary"
+                />
+              )}
+            </motion.button>
           );
         })}
       </div>

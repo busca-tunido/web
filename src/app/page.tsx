@@ -1,5 +1,6 @@
 'use client';
 
+import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { AccountScreen } from '@/components/account/account-screen';
 import { AuthScreen } from '@/components/auth/auth-screen';
@@ -77,39 +78,52 @@ export default function HomePage() {
         />
 
         <div className="flex-1">
-          {activeTab === 'explore' && (
-            <ExploreScreen
-              cities={cities}
-              universities={universities}
-              featuredPensions={pensions}
-              selectedCity={selectedCity}
-              onSelectCity={handleSelectCity}
-              onSelectUniversity={handleSelectUniversity}
-              onSelectPension={handleOpenDetail}
-              onNavigateToMap={() => setActiveTab('map')}
-            />
-          )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              className="w-full"
+            >
+              {activeTab === 'explore' && (
+                <ExploreScreen
+                  cities={cities}
+                  universities={universities}
+                  featuredPensions={pensions}
+                  selectedCity={selectedCity}
+                  onSelectCity={handleSelectCity}
+                  onSelectUniversity={handleSelectUniversity}
+                  onSelectPension={handleOpenDetail}
+                  onNavigateToMap={() => setActiveTab('map')}
+                />
+              )}
 
-          {activeTab === 'map' && (
-            <MapScreen
-              pensions={pensions}
-              selectedPension={selectedPension}
-              onSelectPension={setSelectedPension}
-              onOpenPensionDetail={handleOpenDetail}
-            />
-          )}
+              {activeTab === 'map' && (
+                <MapScreen
+                  pensions={pensions}
+                  selectedPension={selectedPension}
+                  onSelectPension={setSelectedPension}
+                  onOpenPensionDetail={handleOpenDetail}
+                />
+              )}
 
-          {activeTab === 'favorites' && (
-            <FavoritesScreen
-              allPensions={pensions}
-              onSelectPension={handleOpenDetail}
-              onExplore={() => setActiveTab('explore')}
-            />
-          )}
+              {activeTab === 'favorites' && (
+                <FavoritesScreen
+                  allPensions={pensions}
+                  onSelectPension={handleOpenDetail}
+                  onExplore={() => setActiveTab('explore')}
+                />
+              )}
 
-          {activeTab === 'history' && <HistoryScreen onExplore={() => setActiveTab('explore')} />}
+              {activeTab === 'history' && (
+                <HistoryScreen onExplore={() => setActiveTab('explore')} />
+              )}
 
-          {activeTab === 'account' && <AccountScreen />}
+              {activeTab === 'account' && <AccountScreen />}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
