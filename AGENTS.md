@@ -1,12 +1,12 @@
 # Context & Architectural Guidelines for AI Coding Assistants
 
-This document provides essential architectural context, domain patterns, and development guidelines for AI coding assistants contributing to **Busca TuNido Web**.
+This document provides essential architectural context, domain patterns, and development guidelines for AI coding assistants contributing to **BuscaTuNido Web**.
 
 ---
 
 ## 1. Project Overview & Architecture
 
-Busca TuNido Web is a mobile-first web application built with [Next.js](https://nextjs.org/) (App Router), [Tailwind CSS](https://tailwindcss.com/), and [shadcn/ui](https://ui.shadcn.com/).
+BuscaTuNido Web is a mobile-first web application built with [Next.js](https://nextjs.org/) (App Router), [Tailwind CSS](https://tailwindcss.com/), and [shadcn/ui](https://ui.shadcn.com/).
 
 ### Core Components Structure (Provisional Baseline):
 
@@ -48,7 +48,6 @@ Busca TuNido Web is a mobile-first web application built with [Next.js](https://
    - All git commit messages must strictly follow the Conventional Commits specification (e.g., `feat`, `fix`, `chore`, `refactor`, `test`, `docs`).
    - Commit messages must be concise, single-line only, and omit any extended body description.
 
-
 ---
 
 ## 3. Task-Driven Lifecycle (TODO Workflow)
@@ -56,6 +55,7 @@ Busca TuNido Web is a mobile-first web application built with [Next.js](https://
 Every frontend UI enhancement, page, or bug fix must strictly follow the repository-specific task file generated inside the `tasks/` directory (`tasks/TODO.md`).
 
 ### Execution Cycle:
+
 1. **Read Scope**: Inspect `tasks/TODO.md` before altering code. Confine all implementation strictly to the active task checklist.
 2. **Track Progress**: Implement items step-by-step, checking off boxes (`- [x]`) as each phase is completed.
 3. **Verify**: Execute verification commands declared in the task (e.g., `pnpm build`, type-checks, responsive viewport validation). All checks must pass before completing the task.
@@ -64,20 +64,25 @@ Every frontend UI enhancement, page, or bug fix must strictly follow the reposit
 6. **Handoff**: Generate a new, clean `tasks/TODO.md` inside `tasks/` for the next discrete task.
 
 ### Standard `TODO.md` Template:
+
 ```markdown
 # Task: [Index] - [Descriptive Title]
 
 ## Objective
+
 [1-2 sentences describing frontend goal and viewport focus]
 
 ## Checklist
+
 - [ ] [Step 1]
 - [ ] [Step 2]
 
 ## Target Files
+
 - `src/app/...`
 
 ## Verification
+
 - Command: `[e.g., pnpm build]`
 ```
 

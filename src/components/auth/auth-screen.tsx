@@ -69,7 +69,7 @@ export function AuthScreen({ onContinueAsGuest }: AuthScreenProps) {
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 border border-primary/30 text-primary shadow-md">
             <Home className="h-6 w-6" />
           </div>
-          <span className="text-2xl font-black tracking-tight text-foreground">Busca TuNido</span>
+          <span className="text-2xl font-black tracking-tight text-foreground">BuscaTuNido</span>
         </div>
 
         <div className="text-center mb-8">
@@ -256,7 +256,7 @@ export function AuthScreen({ onContinueAsGuest }: AuthScreenProps) {
                   Acceso de Prueba e Invitado
                 </DrawerTitle>
                 <DrawerDescription className="text-muted-foreground text-xs">
-                  Selecciona cómo deseas explorar y probar la plataforma Busca TuNido.
+                  Selecciona cómo deseas explorar y probar la plataforma BuscaTuNido.
                 </DrawerDescription>
               </DrawerHeader>
 

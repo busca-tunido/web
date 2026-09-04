@@ -107,7 +107,7 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
                   className="border-primary/40 bg-primary/10 text-primary gap-1 text-[11px]"
                 >
                   <ShieldCheck className="h-3 w-3" />
-                  Verificado Busca TuNido
+                  Verificado BuscaTuNido
                 </Badge>
               )}
               <div className="flex items-center gap-1 text-xs font-semibold text-amber-500">

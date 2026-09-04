@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Busca TuNido - Pensiones y Residencias Universitarias',
+  title: 'BuscaTuNido - Pensiones y Residencias Universitarias',
   description:
     'Plataforma para buscar, comparar y validar pensiones universitarias con precios transparentes y verificación comunitaria.',
 };
