@@ -1,18 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   Drawer,
-  DrawerTrigger,
+  DrawerClose,
   DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
   DrawerDescription,
   DrawerFooter,
-  DrawerClose,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
 } from '@/components/ui/drawer';
 
 type FilterState = {
@@ -91,14 +98,18 @@ export default function Home() {
 
       <section className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:py-20 text-center">
         <div className="mx-auto max-w-2xl flex flex-col items-center gap-4">
-          <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 px-3 py-1">
+          <Badge
+            variant="outline"
+            className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 px-3 py-1"
+          >
             Verified Student Communities
           </Badge>
           <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl sm:leading-tight">
             Find Your Student Home Away From Home
           </h1>
           <p className="text-base text-zinc-400 sm:text-lg">
-            A collaborative platform for relocated university students to search, compare, and validate student housing with clear rules and transparent costs.
+            A collaborative platform for relocated university students to search, compare, and
+            validate student housing with clear rules and transparent costs.
           </p>
         </div>
 
@@ -109,15 +120,27 @@ export default function Home() {
                 <Badge variant="secondary">Featured Listing</Badge>
                 <span className="text-lg font-bold text-white">$280/mo</span>
               </div>
-              <CardTitle className="text-lg text-white mt-2">Residencia Universitaria San Juan</CardTitle>
-              <CardDescription className="text-zinc-400">350m from Central Campus • Private Room</CardDescription>
+              <CardTitle className="text-lg text-white mt-2">
+                Residencia Universitaria San Juan
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                350m from Central Campus • Private Room
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-1.5">
-                <Badge variant="outline" className="border-zinc-700 text-xs">High-Speed WiFi</Badge>
-                <Badge variant="outline" className="border-zinc-700 text-xs">Laundry Included</Badge>
-                <Badge variant="outline" className="border-zinc-700 text-xs">Study Room</Badge>
-                <Badge variant="outline" className="border-zinc-700 text-xs">Curfew: Flexible</Badge>
+                <Badge variant="outline" className="border-zinc-700 text-xs">
+                  High-Speed WiFi
+                </Badge>
+                <Badge variant="outline" className="border-zinc-700 text-xs">
+                  Laundry Included
+                </Badge>
+                <Badge variant="outline" className="border-zinc-700 text-xs">
+                  Study Room
+                </Badge>
+                <Badge variant="outline" className="border-zinc-700 text-xs">
+                  Curfew: Flexible
+                </Badge>
               </div>
             </CardContent>
             <CardFooter className="flex gap-2">

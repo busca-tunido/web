@@ -9,7 +9,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'Busca TuNido - Student Housing & Pensiones',
-  description: 'Find, compare, and validate student housing with transparent prices and community verification.',
+  description:
+    'Find, compare, and validate student housing with transparent prices and community verification.',
 };
 
 export const viewport: Viewport = {
