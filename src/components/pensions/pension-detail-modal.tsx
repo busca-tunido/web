@@ -86,9 +86,9 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
 
             <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
               <div className="flex gap-1.5">
-                {pension.photos.map((_, i) => (
+                {pension.photos.map((photoUrl, i) => (
                   <button
-                    key={`photo-dot-${pension.id}-${i}`}
+                    key={`photo-dot-${pension.id}-${photoUrl}`}
                     type="button"
                     onClick={() => setActivePhotoIdx(i)}
                     className={`h-1.5 rounded-full transition-all ${

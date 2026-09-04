@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -16,6 +16,15 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('system');
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
+
+  const applyThemeClass = useCallback((resolved: 'light' | 'dark') => {
+    const root = document.documentElement;
+    if (resolved === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, []);
 
   useEffect(() => {
     try {
@@ -48,16 +57,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } catch {
       applyThemeClass('dark');
     }
-  }, []);
-
-  const applyThemeClass = (resolved: 'light' | 'dark') => {
-    const root = document.documentElement;
-    if (resolved === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  };
+  }, [applyThemeClass]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);

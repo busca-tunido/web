@@ -31,17 +31,42 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "security": {
-        "noDangerouslySetInnerHtml": "error"
-      },
-      "performance": {
-        "noImgElement": "error"
+      "correctness": {
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error",
+        "useExhaustiveDependencies": "error",
+        "noUndeclaredVariables": "error"
       },
       "suspicious": {
-        "noExplicitAny": "error"
+        "noExplicitAny": "error",
+        "noDoubleEquals": "error",
+        "noDuplicateParameters": "error",
+        "noDuplicateClassMembers": "error"
       },
       "style": {
+        "useConst": "error",
+        "useImportType": "error",
+        "useTemplate": "error",
+        "noNonNullAssertion": "error",
         "noParameterProperties": "off"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "error",
+        "noGlobalEval": "error"
+      },
+      "performance": {
+        "noImgElement": "error",
+        "noAccumulatingSpread": "error",
+        "noDelete": "error"
+      },
+      "a11y": {
+        "useSemanticElements": "error",
+        "useButtonType": "error",
+        "useAltText": "error"
+      },
+      "complexity": {
+        "noExtraBooleanCast": "error",
+        "noUselessFragments": "error"
       }
     }
   }
