@@ -8,9 +8,12 @@ type AuthContextType = {
   user: UserProfile | null;
   token: string | null;
   isAuthenticated: boolean;
+  isGuest: boolean;
+  isLoading: boolean;
   favorites: string[];
   loginAsStudent: (email: string) => Promise<void>;
   loginAsDemo: (role: UserRole) => void;
+  continueAsGuest: () => void;
   logout: () => void;
   toggleFavorite: (pensionId: string) => void;
   isFavorite: (pensionId: string) => boolean;
@@ -55,12 +58,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>(['pen-1', 'pen-2']);
+  const [isGuest, setIsGuest] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     try {
       const savedUser = localStorage.getItem('tunido_user');
       const savedToken = localStorage.getItem('tunido_token');
       const savedFavs = localStorage.getItem('tunido_favs');
+      const savedGuest = sessionStorage.getItem('tunido_guest');
       if (savedUser && savedToken) {
         setUser(JSON.parse(savedUser));
         setToken(savedToken);
@@ -68,8 +74,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (savedFavs) {
         setFavorites(JSON.parse(savedFavs));
       }
+      if (savedGuest === 'true') {
+        setIsGuest(true);
+      }
     } catch {
-      // Ignore storage errors
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -77,35 +87,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const res = await loginWithEmail(email);
     setUser(res.user);
     setToken(res.token);
+    setIsGuest(false);
     try {
       localStorage.setItem('tunido_user', JSON.stringify(res.user));
       localStorage.setItem('tunido_token', res.token);
-    } catch {
-      // Ignore
-    }
+      sessionStorage.removeItem('tunido_guest');
+    } catch {}
   };
 
   const loginAsDemo = (role: UserRole) => {
     const demo = DEMO_USERS[role];
     setUser(demo);
     setToken(`demo-token-${role.toLowerCase()}`);
+    setIsGuest(false);
     try {
       localStorage.setItem('tunido_user', JSON.stringify(demo));
       localStorage.setItem('tunido_token', `demo-token-${role.toLowerCase()}`);
-    } catch {
-      // Ignore
-    }
+      sessionStorage.removeItem('tunido_guest');
+    } catch {}
+  };
+
+  const continueAsGuest = () => {
+    setIsGuest(true);
+    try {
+      sessionStorage.setItem('tunido_guest', 'true');
+    } catch {}
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
+    setIsGuest(false);
     try {
       localStorage.removeItem('tunido_user');
       localStorage.removeItem('tunido_token');
-    } catch {
-      // Ignore
-    }
+      sessionStorage.removeItem('tunido_guest');
+    } catch {}
   };
 
   const toggleFavorite = (pensionId: string) => {
@@ -115,9 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         : [...prev, pensionId];
       try {
         localStorage.setItem('tunido_favs', JSON.stringify(next));
-      } catch {
-        // Ignore
-      }
+      } catch {}
       return next;
     });
   };
@@ -130,9 +145,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         token,
         isAuthenticated: !!user,
+        isGuest,
+        isLoading,
         favorites,
         loginAsStudent,
         loginAsDemo,
+        continueAsGuest,
         logout,
         toggleFavorite,
         isFavorite,

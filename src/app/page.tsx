@@ -9,6 +9,7 @@ import { FavoritesScreen } from '@/components/favorites/favorites-screen';
 import { HistoryScreen } from '@/components/history/history-screen';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { FilterDrawer } from '@/components/layout/filter-drawer';
+import { SplashScreen } from '@/components/layout/splash-screen';
 import { TopSearchBar } from '@/components/layout/top-search-bar';
 import { MapScreen } from '@/components/map/map-screen';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
@@ -19,8 +20,7 @@ import type { CityInfo, NavTab, PensionItem, SearchFilters, UniversityInfo } fro
 import { sortCitiesWithCurrentFirst, useUserLocation } from '@/lib/use-user-location';
 
 export default function HomePage() {
-  const { isAuthenticated } = useAuth();
-  const [isGuest, setIsGuest] = useState(false);
+  const { isAuthenticated, isGuest, isLoading, continueAsGuest } = useAuth();
   const [activeTab, setActiveTab] = useState<NavTab>('explore');
   const [filters, setFilters] = useState<SearchFilters>({ query: '' });
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -72,8 +72,12 @@ export default function HomePage() {
     setIsDetailOpen(true);
   };
 
+  if (isLoading) {
+    return <SplashScreen />;
+  }
+
   if (!isAuthenticated && !isGuest) {
-    return <AuthScreen onContinueAsGuest={() => setIsGuest(true)} />;
+    return <AuthScreen onContinueAsGuest={continueAsGuest} />;
   }
 
   return (
