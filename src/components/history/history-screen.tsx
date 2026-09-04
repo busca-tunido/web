@@ -30,7 +30,7 @@ export function HistoryScreen({ onExplore }: HistoryScreenProps) {
         <div className="flex items-center gap-2.5">
           <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
           <div>
-            <h4 className="text-xs font-bold text-emerald-300">Estudiante Foráneo Verificado</h4>
+            <h4 className="text-xs font-bold text-emerald-300">Estudiante Verificado</h4>
             <p className="text-[11px] text-zinc-300">
               Cumplimiento impecable en pagos y convivencia en tus últimas estadías
             </p>

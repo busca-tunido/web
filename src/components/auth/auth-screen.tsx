@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, CheckCircle2, GraduationCap, Home, Shield, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, GraduationCap, Home, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -77,7 +77,7 @@ export function AuthScreen({ onContinueAsGuest }: AuthScreenProps) {
             Iniciar sesión o regístrate
           </h1>
           <p className="mt-2 text-sm text-zinc-400">
-            Plataforma comunitaria de arriendo y validación para estudiantes foráneos
+            Plataforma comunitaria de arriendo y validación para estudiantes universitarios
           </p>
         </div>
 
@@ -229,8 +229,7 @@ export function AuthScreen({ onContinueAsGuest }: AuthScreenProps) {
         </Card>
 
         <div className="mt-6 flex flex-col gap-2">
-          <div className="flex items-center justify-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+          <div className="flex items-center justify-center">
             <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
               Acceso rápido de prueba
             </span>
