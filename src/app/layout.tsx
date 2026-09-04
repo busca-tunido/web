@@ -32,11 +32,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="es" suppressHydrationWarning className={inter.className}>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(typeof Element!=='undefined'&&Element.prototype.releasePointerCapture){var o=Element.prototype.releasePointerCapture;Element.prototype.releasePointerCapture=function(p){try{if(this.hasPointerCapture(p)){o.call(this,p)}}catch(err){}}}}catch(e){};try{var t=localStorage.getItem('tunido_theme');var d=t==='dark'||((!t||t==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}}catch(e){}})()`,
-          }}
-        />
+        <script src="/theme-init.js" />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground transition-colors duration-200">
         <Providers>{children}</Providers>

@@ -14,6 +14,7 @@ import {
   Wifi,
   Wind,
 } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,10 +54,13 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
 
         <div className="overflow-y-auto flex-1 px-4 pt-1 pb-6">
           <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm">
-            <img
+            <Image
               src={pension.photos[activePhotoIdx] ?? pension.photos[0]}
               alt={pension.title}
-              className="h-full w-full object-cover transition duration-300"
+              fill
+              unoptimized
+              sizes="(max-width: 640px) 100vw, 480px"
+              className="object-cover transition duration-300"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
 

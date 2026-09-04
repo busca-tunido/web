@@ -31,6 +31,12 @@
   "linter": {
     "enabled": true,
     "rules": {
+      "security": {
+        "noDangerouslySetInnerHtml": "error"
+      },
+      "performance": {
+        "noImgElement": "error"
+      },
       "suspicious": {
         "noExplicitAny": "error"
       },

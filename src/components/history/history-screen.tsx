@@ -1,6 +1,7 @@
 'use client';
 
 import { Calendar, CheckCircle2, History, MessageSquare, Star } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,10 +60,13 @@ export function HistoryScreen({ onExplore }: HistoryScreenProps) {
               className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm flex flex-col"
             >
               <div className="relative h-36 w-full overflow-hidden bg-muted">
-                <img
+                <Image
                   src={stay.imageUrl}
                   alt={stay.pensionTitle}
-                  className="h-full w-full object-cover"
+                  fill
+                  unoptimized
+                  sizes="(max-width: 640px) 100vw, 480px"
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
                 <div className="absolute bottom-2.5 left-2.5">

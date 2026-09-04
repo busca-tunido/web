@@ -2,6 +2,7 @@
 
 import { Heart, Star } from 'lucide-react';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
 import type { PensionItem } from '@/lib/types';
@@ -62,10 +63,13 @@ export function FavoritesScreen({ allPensions, onSelectPension, onExplore }: Fav
                 className="w-full flex flex-col text-left cursor-pointer"
               >
                 <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm">
-                  <img
+                  <Image
                     src={pension.photos[0]}
                     alt={pension.title}
-                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    fill
+                    unoptimized
+                    sizes="(max-width: 640px) 100vw, 480px"
+                    className="object-cover transition duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 

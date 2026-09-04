@@ -1,6 +1,7 @@
 'use client';
 
 import { Bell, GraduationCap, Laptop, LogOut, Moon, Shield, Sun, User } from 'lucide-react';
+import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,7 +26,14 @@ export function AccountScreen() {
       <div className="flex items-center gap-3.5">
         <div className="relative h-14 w-14 overflow-hidden rounded-2xl border-2 border-primary/40 bg-card shadow-md">
           {user.avatarUrl ? (
-            <img src={user.avatarUrl} alt={user.firstName} className="h-full w-full object-cover" />
+            <Image
+              src={user.avatarUrl}
+              alt={user.firstName}
+              fill
+              unoptimized
+              sizes="56px"
+              className="object-cover"
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
               <User className="h-6 w-6" />

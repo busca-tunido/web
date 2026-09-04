@@ -2,6 +2,7 @@
 
 import { Heart, MapPin, Star } from 'lucide-react';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/lib/auth-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
@@ -73,10 +74,13 @@ export function ExploreScreen({
                     : 'border-border/60 hover:border-primary/50'
                 }`}
               >
-                <img
+                <Image
                   src={city.imageUrl}
                   alt={city.name}
-                  className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  fill
+                  unoptimized
+                  sizes="144px"
+                  className="object-cover transition duration-300 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
@@ -126,10 +130,13 @@ export function ExploreScreen({
               onClick={() => onSelectUniversity(uni)}
               className="group relative h-48 w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-colors hover:border-primary/50 cursor-pointer shadow-sm"
             >
-              <img
+              <Image
                 src={uni.imageUrl}
                 alt={uni.name}
-                className="h-full w-full object-cover opacity-80 transition duration-300 group-hover:scale-105"
+                fill
+                unoptimized
+                sizes="176px"
+                className="object-cover opacity-80 transition duration-300 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
 
@@ -182,10 +189,13 @@ export function ExploreScreen({
                   className="w-full flex flex-col text-left cursor-pointer"
                 >
                   <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm">
-                    <img
+                    <Image
                       src={pension.photos[0]}
                       alt={pension.title}
-                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      fill
+                      unoptimized
+                      sizes="(max-width: 640px) 100vw, 480px"
+                      className="object-cover transition duration-300 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 

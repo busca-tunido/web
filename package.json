@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "biome lint .",
     "format": "biome format --write .",
-    "check": "biome check --write ."
+    "check": "biome check --write .",
+    "review": "biome check ."
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
