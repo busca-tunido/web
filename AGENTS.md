@@ -44,6 +44,10 @@ Busca TuNido Web is a mobile-first web application built with [Next.js](https://
 4. **Strict Typing (Types over Interfaces)**:
    - Use TypeScript `type` aliases exclusively; `interface` declarations are strictly forbidden.
    - Forbid `any` (prefer `unknown` or generics). Explicitly type props, API responses, and custom handlers; rely on types for simple state.
+5. **Conventional Commits (Concise, Single-Line Only)**:
+   - All git commit messages must strictly follow the Conventional Commits specification (e.g., `feat`, `fix`, `chore`, `refactor`, `test`, `docs`).
+   - Commit messages must be concise, single-line only, and omit any extended body description.
+
 
 ---
 
