@@ -1,8 +1,8 @@
 'use client';
 
-import { ChevronDown, ChevronUp, Heart, Locate, Maximize2, Minimize2, Star } from 'lucide-react';
+import { ChevronDown, ChevronUp, Heart, Locate, Star } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
 import type { UserCoordinates } from '@/lib/use-user-location';
@@ -39,6 +39,7 @@ export function MapScreen({
     selectedPension?.id ?? pensions[0]?.id ?? null,
   );
 
+  const cardListRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<import('leaflet').Map | null>(null);
   const tileLayerRef = useRef<import('leaflet').TileLayer | null>(null);
@@ -47,8 +48,13 @@ export function MapScreen({
   const universityMarkerRef = useRef<import('leaflet').Marker | null>(null);
   const leafletModuleRef = useRef<typeof import('leaflet') | null>(null);
 
-  const activePension =
-    pensions.find((p) => p.id === activePinId) ?? selectedPension ?? pensions[0] ?? null;
+  const displayedPensions = useMemo(() => {
+    if (!activePinId) return pensions;
+    const active = pensions.find((p) => p.id === activePinId);
+    if (!active) return pensions;
+    const others = pensions.filter((p) => p.id !== activePinId);
+    return [active, ...others];
+  }, [pensions, activePinId]);
 
   const renderMarkers = useCallback(() => {
     const L = leafletModuleRef.current;
@@ -90,6 +96,9 @@ export function MapScreen({
         setActivePinId(pension.id);
         onSelectPension(pension);
         setDrawerState('half');
+        if (cardListRef.current) {
+          cardListRef.current.scrollTop = 0;
+        }
       });
 
       marker.addTo(markersGroup);
@@ -276,6 +285,9 @@ export function MapScreen({
   useEffect(() => {
     if (selectedPension) {
       setActivePinId(selectedPension.id);
+      if (cardListRef.current) {
+        cardListRef.current.scrollTop = 0;
+      }
     }
   }, [selectedPension]);
 
@@ -322,13 +334,13 @@ export function MapScreen({
     drawerState === 'minimized'
       ? 'bottom-20'
       : drawerState === 'half'
-        ? 'bottom-[356px]'
+        ? 'bottom-[calc(50%+16px)]'
         : 'bottom-20 opacity-0 pointer-events-none';
 
   return (
     <div
       id="map-screen-container"
-      className="relative h-[calc(100vh-135px)] w-full overflow-hidden bg-background select-none"
+      className="relative h-full w-full overflow-hidden bg-background select-none"
     >
       <div ref={mapContainerRef} className="h-full w-full z-0" />
 
@@ -336,7 +348,7 @@ export function MapScreen({
         type="button"
         id="center-user-location-btn"
         onClick={handleCenterOnUser}
-        className={`absolute right-4 ${buttonBottomClass} z-[400] flex h-11 w-11 items-center justify-center rounded-full border border-border/80 bg-card/95 text-foreground shadow-lg backdrop-blur-md hover:bg-secondary active:scale-90 transition-all duration-300 cursor-pointer`}
+        className={`absolute right-4 ${buttonBottomClass} z-20 flex h-11 w-11 items-center justify-center rounded-full border border-border/80 bg-card/95 text-foreground shadow-lg backdrop-blur-md hover:bg-secondary active:scale-90 transition-all duration-300 cursor-pointer`}
         title="Centrar en mi ubicación"
         aria-label="Centrar en mi ubicación"
       >
@@ -345,11 +357,11 @@ export function MapScreen({
 
       <div
         id="collapsible-pension-drawer"
-        className={`absolute inset-x-0 bottom-0 z-[500] flex flex-col rounded-t-3xl border-t border-border/70 bg-card/95 backdrop-blur-2xl shadow-2xl transition-all duration-300 ease-out ${
-          drawerState === 'minimized' ? 'h-16' : drawerState === 'half' ? 'h-[340px]' : 'h-[88%]'
+        className={`absolute inset-x-0 bottom-0 z-30 flex flex-col rounded-t-3xl border-t border-border/70 bg-card/95 backdrop-blur-2xl shadow-2xl transition-all duration-300 ease-out ${
+          drawerState === 'minimized' ? 'h-16' : drawerState === 'half' ? 'h-[50%]' : 'h-[95%]'
         }`}
       >
-        <div className="w-full flex flex-col items-center justify-center pt-2.5 pb-2 select-none">
+        <div className="w-full flex flex-col items-center justify-center pt-2.5 pb-2 select-none shrink-0">
           <button
             type="button"
             onClick={handleToggleDrawer}
@@ -367,7 +379,7 @@ export function MapScreen({
               {pensions.length} Pensiones disponibles
             </button>
             <div className="flex items-center gap-2 text-xs text-primary font-semibold">
-              {drawerState === 'minimized' && (
+              {drawerState === 'minimized' ? (
                 <button
                   type="button"
                   onClick={() => setDrawerState('half')}
@@ -375,117 +387,25 @@ export function MapScreen({
                 >
                   Ver lista <ChevronUp className="h-4 w-4" />
                 </button>
-              )}
-              {drawerState === 'half' && (
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setDrawerState('maximized')}
-                    className="flex items-center gap-1 hover:underline cursor-pointer"
-                  >
-                    Ver todas <Maximize2 className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDrawerState('minimized')}
-                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
-                  >
-                    Minimizar <ChevronDown className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )}
-              {drawerState === 'maximized' && (
+              ) : (
                 <button
                   type="button"
                   onClick={() => setDrawerState('minimized')}
-                  className="flex items-center gap-1 hover:underline cursor-pointer"
+                  className="flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
-                  Minimizar <Minimize2 className="h-4 w-4" />
+                  Minimizar <ChevronDown className="h-4 w-4" />
                 </button>
               )}
             </div>
           </div>
         </div>
 
-        {drawerState === 'half' && activePension && (
-          <div className="px-5 pt-2 pb-5 flex-1 flex flex-col justify-between">
-            <div className="group relative flex gap-3.5 items-center p-2 rounded-2xl border border-border/60 bg-secondary/30 hover:bg-secondary/60 transition">
-              <button
-                type="button"
-                onClick={() => onOpenPensionDetail(activePension)}
-                className="flex-1 flex gap-3.5 items-center text-left cursor-pointer min-w-0"
-              >
-                <div className="relative h-24 w-28 shrink-0 overflow-hidden rounded-xl bg-muted">
-                  <Image
-                    src={activePension.photos[0]}
-                    alt={activePension.title}
-                    fill
-                    unoptimized
-                    sizes="112px"
-                    className="object-cover group-hover:scale-105 transition duration-300"
-                  />
-                  {activePension.isVerified && (
-                    <span className="absolute bottom-1.5 left-1.5 rounded bg-background/85 px-1.5 py-0.5 text-[9px] font-semibold text-foreground backdrop-blur-sm">
-                      Verificada
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0 flex flex-col gap-1 pr-8">
-                  <div className="flex items-start justify-between gap-1">
-                    <h4 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition">
-                      {activePension.title}
-                    </h4>
-                    <div className="flex items-center gap-1 text-xs font-semibold text-foreground shrink-0">
-                      <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                      <span>{activePension.ratingAverage.toFixed(1)}</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-muted-foreground line-clamp-1">
-                    {activePension.neighborhood}, {activePension.city}
-                  </p>
-
-                  <p className="text-[11px] text-muted-foreground line-clamp-1">
-                    a {activePension.distanceToUniversityMeters}m de campus
-                  </p>
-
-                  <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-sm font-bold text-foreground">
-                      ${activePension.priceMonthlyClp.toLocaleString('es-CL')} CLP
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">/ mes</span>
-                  </div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => toggleFavorite(activePension.id)}
-                className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-foreground backdrop-blur-md hover:text-primary transition active:scale-90 cursor-pointer"
-                aria-label="Guardar en favoritos"
-              >
-                <Heart
-                  className={`h-4 w-4 ${
-                    isFavorite(activePension.id) ? 'fill-primary text-primary' : 'stroke-[2]'
-                  }`}
-                />
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => onOpenPensionDetail(activePension)}
-              className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs text-center shadow hover:opacity-90 active:scale-[0.98] transition cursor-pointer"
-            >
-              Ver detalles de esta pensión
-            </button>
-          </div>
-        )}
-
-        {drawerState === 'maximized' && (
-          <div className="relative flex-1 overflow-y-auto px-5 pb-24 pt-2 flex flex-col gap-6">
-            {pensions.map((pension) => {
+        {drawerState !== 'minimized' && (
+          <div
+            ref={cardListRef}
+            className="relative flex-1 overflow-y-auto px-5 pb-20 pt-2 flex flex-col gap-6"
+          >
+            {displayedPensions.map((pension) => {
               const isFav = isFavorite(pension.id);
 
               return (
@@ -565,7 +485,7 @@ export function MapScreen({
         )}
 
         {drawerState === 'maximized' && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[600]">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40">
             <button
               type="button"
               onClick={() => setDrawerState('minimized')}

@@ -77,8 +77,16 @@ export default function HomePage() {
   }
 
   return (
-    <main className="relative min-h-screen bg-background text-foreground flex flex-col justify-between transition-colors">
-      <div className="mx-auto w-full max-w-lg flex-1 flex flex-col">
+    <main
+      className={`relative ${
+        activeTab === 'map' ? 'h-dvh overflow-hidden' : 'min-h-screen'
+      } bg-background text-foreground flex flex-col justify-between transition-colors`}
+    >
+      <div
+        className={`mx-auto w-full max-w-lg flex-1 flex flex-col ${
+          activeTab === 'map' ? 'h-full overflow-hidden pb-[68px]' : 'pb-20'
+        }`}
+      >
         <TopSearchBar
           filters={filters}
           onFilterChange={setFilters}
@@ -90,7 +98,7 @@ export default function HomePage() {
           }}
         />
 
-        <div className="flex-1">
+        <div className={activeTab === 'map' ? 'flex-1 relative overflow-hidden h-full' : 'flex-1'}>
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -98,7 +106,7 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="w-full"
+              className={activeTab === 'map' ? 'h-full w-full' : 'w-full'}
             >
               {activeTab === 'explore' && (
                 <ExploreScreen
