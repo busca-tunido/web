@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AccountScreen } from '@/components/account/account-screen';
 import { AuthScreen } from '@/components/auth/auth-screen';
 import { ExploreScreen } from '@/components/explore/explore-screen';
@@ -16,6 +16,7 @@ import { fetchCities, fetchPensions, fetchUniversities } from '@/lib/api-client'
 import { useAuth } from '@/lib/auth-context';
 import { MOCK_CITIES, MOCK_PENSIONS, MOCK_UNIVERSITIES } from '@/lib/mock-data';
 import type { CityInfo, NavTab, PensionItem, SearchFilters, UniversityInfo } from '@/lib/types';
+import { sortCitiesWithCurrentFirst, useUserLocation } from '@/lib/use-user-location';
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
@@ -23,10 +24,17 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<NavTab>('explore');
   const [filters, setFilters] = useState<SearchFilters>({ query: '' });
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [selectedUniversity, setSelectedUniversity] = useState<UniversityInfo | null>(null);
 
   const [cities, setCities] = useState<CityInfo[]>(MOCK_CITIES);
   const [universities, setUniversities] = useState<UniversityInfo[]>(MOCK_UNIVERSITIES);
   const [pensions, setPensions] = useState<PensionItem[]>(MOCK_PENSIONS);
+
+  const { userLocation, currentCity, requestLocation } = useUserLocation(cities);
+
+  const sortedCities = useMemo(() => {
+    return sortCitiesWithCurrentFirst(cities, currentCity);
+  }, [cities, currentCity]);
 
   const [selectedPension, setSelectedPension] = useState<PensionItem | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -48,11 +56,13 @@ export default function HomePage() {
 
   const handleSelectCity = (cityName: string) => {
     setSelectedCity(cityName);
+    setSelectedUniversity(null);
     setActiveTab('map');
   };
 
   const handleSelectUniversity = (uni: UniversityInfo) => {
     setSelectedCity(uni.city);
+    setSelectedUniversity(uni);
     setFilters((prev) => ({ ...prev, query: uni.acronym }));
     setActiveTab('map');
   };
@@ -74,7 +84,10 @@ export default function HomePage() {
           onFilterChange={setFilters}
           onOpenFilterDrawer={() => setIsFilterOpen(true)}
           selectedCityName={selectedCity ?? undefined}
-          onClearCity={() => setSelectedCity(null)}
+          onClearCity={() => {
+            setSelectedCity(null);
+            setSelectedUniversity(null);
+          }}
         />
 
         <div className="flex-1">
@@ -89,7 +102,7 @@ export default function HomePage() {
             >
               {activeTab === 'explore' && (
                 <ExploreScreen
-                  cities={cities}
+                  cities={sortedCities}
                   universities={universities}
                   featuredPensions={pensions}
                   selectedCity={selectedCity}
@@ -103,7 +116,12 @@ export default function HomePage() {
               {activeTab === 'map' && (
                 <MapScreen
                   pensions={pensions}
+                  cities={sortedCities}
                   selectedPension={selectedPension}
+                  selectedCity={selectedCity}
+                  selectedUniversity={selectedUniversity}
+                  userLocation={userLocation}
+                  onRequestLocation={requestLocation}
                   onSelectPension={setSelectedPension}
                   onOpenPensionDetail={handleOpenDetail}
                 />

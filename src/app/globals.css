@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -127,4 +128,35 @@
   html {
     @apply font-sans;
   }
+}
+
+div.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  font-family: inherit;
+}
+
+div.leaflet-marker-icon.custom-div-icon {
+  background: transparent;
+  border: none;
+}
+
+@keyframes user-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 14px rgba(59, 130, 246, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+.user-pulse-marker {
+  animation: user-pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
 }
