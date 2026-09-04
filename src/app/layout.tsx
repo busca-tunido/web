@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import { Providers } from '@/components/providers';
 import './globals.css';
 
 const inter = Inter({
@@ -8,9 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Busca TuNido - Student Housing & Pensiones',
+  title: 'Busca TuNido - Pensiones y Residencias Universitarias',
   description:
-    'Find, compare, and validate student housing with transparent prices and community verification.',
+    'Plataforma para buscar, comparar y validar pensiones universitarias con precios transparentes y verificación comunitaria.',
 };
 
 export const viewport: Viewport = {
@@ -26,9 +27,9 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={inter.className}>
-      <body className="min-h-screen bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground">
-        {children}
+    <html lang="es" className={inter.className}>
+      <body className="min-h-screen bg-zinc-950 text-zinc-50 antialiased selection:bg-emerald-500 selection:text-zinc-950">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
