@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  ArrowLeft,
   BookOpen,
   Check,
   Clock,
@@ -18,7 +19,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
@@ -49,7 +49,9 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
         id="pension-detail-drawer"
         className="max-h-[92vh] max-w-lg mx-auto bg-zinc-950 border-zinc-800 text-zinc-50 overflow-hidden flex flex-col"
       >
-        <div className="overflow-y-auto flex-1 px-4 pt-2 pb-6">
+        <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-zinc-700/80 shrink-0" />
+
+        <div className="overflow-y-auto flex-1 px-4 pt-1 pb-6">
           <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-zinc-900 mb-4">
             <img
               src={pension.photos[activePhotoIdx] ?? pension.photos[0]}
@@ -58,11 +60,21 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
             />
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-black/30" />
 
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute top-3 left-3 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 active:scale-90 transition"
+              aria-label="Cerrar detalle"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+
             <div className="absolute top-3 right-3 flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => toggleFavorite(pension.id)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900/80 backdrop-blur-md text-white hover:text-emerald-400"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-white hover:text-emerald-400 active:scale-90 transition"
+                aria-label="Guardar en favoritos"
               >
                 <Heart className={`h-5 w-5 ${isFav ? 'fill-emerald-400 text-emerald-400' : ''}`} />
               </button>
@@ -229,31 +241,22 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
           </div>
         </div>
 
-        <DrawerFooter className="border-t border-zinc-800/80 bg-zinc-950 p-3">
-          <div className="flex gap-2 w-full">
-            <Button
-              id="btn-contact-landlord"
-              onClick={() => setContacted(true)}
-              className="flex-1 h-12 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs"
-            >
-              {contacted ? (
-                <>
-                  <Check className="mr-1.5 h-4 w-4" /> Solicitud Enviada
-                </>
-              ) : (
-                <>
-                  <MessageCircle className="mr-1.5 h-4 w-4" /> Contactar al Propietario
-                </>
-              )}
-            </Button>
-            <DrawerClose
-              render={
-                <Button variant="outline" className="h-12 border-zinc-800 text-zinc-400 px-4">
-                  Cerrar
-                </Button>
-              }
-            />
-          </div>
+        <DrawerFooter className="border-t border-zinc-800/80 bg-zinc-950 p-4">
+          <Button
+            id="btn-contact-landlord"
+            onClick={() => setContacted(true)}
+            className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm rounded-xl shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition"
+          >
+            {contacted ? (
+              <>
+                <Check className="mr-2 h-4 w-4" /> Solicitud Enviada
+              </>
+            ) : (
+              <>
+                <MessageCircle className="mr-2 h-4 w-4" /> Contactar al Propietario
+              </>
+            )}
+          </Button>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
