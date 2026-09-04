@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Heart, MapPin, Star } from 'lucide-react';
+import { Heart, MapPin, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/lib/auth-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
@@ -40,28 +40,6 @@ export function ExploreScreen({
 
   return (
     <div id="explore-screen-view" className="flex flex-col gap-6 pb-28 pt-2">
-      <div className="px-5">
-        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900/60 p-5 shadow-sm">
-          <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">
-            Comunidad Estudiantil
-          </span>
-          <h2 className="text-xl font-bold text-white leading-tight mt-1">
-            Encuentra tu pensión universitaria
-          </h2>
-          <p className="text-xs text-zinc-400 mt-1.5 leading-relaxed">
-            Alojamientos con precios transparentes y opiniones reales de la comunidad estudiantil.
-          </p>
-          <button
-            type="button"
-            onClick={onNavigateToMap}
-            className="mt-3.5 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-xs font-bold text-zinc-950 shadow-md hover:bg-emerald-400 transition active:scale-95"
-          >
-            <span>Ver mapa de precios CLP</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
-
       <section>
         <div className="flex items-center justify-between px-5 mb-3">
           <div>
