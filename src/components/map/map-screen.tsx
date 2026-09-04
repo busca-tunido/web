@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, Heart, Locate, Star } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import { useTheme } from '@/lib/theme-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
 import type { UserCoordinates } from '@/lib/use-user-location';
 
@@ -33,6 +34,7 @@ export function MapScreen({
   onOpenPensionDetail,
 }: MapScreenProps) {
   const { isFavorite, toggleFavorite } = useAuth();
+  const { resolvedTheme } = useTheme();
 
   const [drawerState, setDrawerState] = useState<DrawerState>('minimized');
   const [activePinId, setActivePinId] = useState<string | null>(
@@ -47,6 +49,14 @@ export function MapScreen({
   const userMarkerRef = useRef<import('leaflet').Marker | null>(null);
   const universityMarkerRef = useRef<import('leaflet').Marker | null>(null);
   const leafletModuleRef = useRef<typeof import('leaflet') | null>(null);
+
+  const getTileUrl = useCallback((theme: 'light' | 'dark') => {
+    const apiKey = process.env.NEXT_PUBLIC_CARTO_API_KEY;
+    const keyParam = apiKey ? `?api_key=${apiKey}` : '';
+    return theme === 'dark'
+      ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${keyParam}`
+      : `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${keyParam}`;
+  }, []);
 
   const displayedPensions = useMemo(() => {
     if (!activePinId) return pensions;
@@ -224,10 +234,11 @@ export function MapScreen({
         attributionControl: false,
       });
 
-      const tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+      const tileUrl = getTileUrl(resolvedTheme);
 
       const tileLayer = L.tileLayer(tileUrl, {
-        maxZoom: 19,
+        maxZoom: 20,
+        subdomains: 'abcd',
       }).addTo(map);
 
       tileLayerRef.current = tileLayer;
@@ -262,13 +273,21 @@ export function MapScreen({
     };
   }, [
     cities,
+    getTileUrl,
     renderMarkers,
     renderUserMarker,
     renderUniversityMarker,
+    resolvedTheme,
     selectedCity,
     selectedUniversity,
     userLocation,
   ]);
+
+  useEffect(() => {
+    if (tileLayerRef.current) {
+      tileLayerRef.current.setUrl(getTileUrl(resolvedTheme));
+    }
+  }, [resolvedTheme, getTileUrl]);
 
   useEffect(() => {
     renderMarkers();
