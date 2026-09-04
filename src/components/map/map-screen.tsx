@@ -4,7 +4,6 @@ import { ChevronDown, ChevronUp, Heart, Locate, Maximize2, Minimize2, Star } fro
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { useTheme } from '@/lib/theme-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
 import type { UserCoordinates } from '@/lib/use-user-location';
 
@@ -34,7 +33,6 @@ export function MapScreen({
   onOpenPensionDetail,
 }: MapScreenProps) {
   const { isFavorite, toggleFavorite } = useAuth();
-  const { resolvedTheme } = useTheme();
 
   const [drawerState, setDrawerState] = useState<DrawerState>('minimized');
   const [activePinId, setActivePinId] = useState<string | null>(
@@ -98,6 +96,84 @@ export function MapScreen({
     }
   }, [pensions, activePinId, onSelectPension]);
 
+  const renderUserMarker = useCallback(() => {
+    const L = leafletModuleRef.current;
+    const map = mapInstanceRef.current;
+    if (!L || !map) return;
+
+    if (userLocation) {
+      const userIconHtml = `
+        <div style="position: relative; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+          <div style="position: absolute; width: 68px; height: 68px; border-radius: 9999px; background: rgba(0, 122, 255, 0.18); border: 1.5px solid rgba(0, 122, 255, 0.35);"></div>
+          <div style="position: relative; width: 18px; height: 18px; border-radius: 9999px; background: #007aff; border: 3px solid #ffffff; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);"></div>
+        </div>
+      `;
+
+      const userIcon = L.divIcon({
+        className: 'custom-div-icon',
+        html: userIconHtml,
+        iconSize: [68, 68],
+        iconAnchor: [34, 34],
+      });
+
+      if (userMarkerRef.current) {
+        userMarkerRef.current.setLatLng([userLocation.latitude, userLocation.longitude]);
+        userMarkerRef.current.setIcon(userIcon);
+      } else {
+        userMarkerRef.current = L.marker([userLocation.latitude, userLocation.longitude], {
+          icon: userIcon,
+          zIndexOffset: 3000,
+        }).addTo(map);
+      }
+    } else if (userMarkerRef.current) {
+      userMarkerRef.current.remove();
+      userMarkerRef.current = null;
+    }
+  }, [userLocation]);
+
+  const renderUniversityMarker = useCallback(() => {
+    const L = leafletModuleRef.current;
+    const map = mapInstanceRef.current;
+    if (!L || !map) return;
+
+    if (selectedUniversity) {
+      const uniIconHtml = `
+        <div style="transform: translate(-50%, -100%); cursor: pointer;" class="flex flex-col items-center">
+          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-600 text-white font-bold text-xs shadow-xl border-2 border-white ring-2 ring-emerald-500/40 whitespace-nowrap">
+            <span>🎓</span>
+            <span>${selectedUniversity.acronym}</span>
+          </div>
+          <div class="w-2 h-2 -mt-1 rotate-45 bg-emerald-600 border-r border-b border-white"></div>
+        </div>
+      `;
+      const uniIcon = L.divIcon({
+        className: 'custom-div-icon',
+        html: uniIconHtml,
+        iconSize: [120, 36],
+        iconAnchor: [60, 36],
+      });
+
+      if (universityMarkerRef.current) {
+        universityMarkerRef.current.setLatLng([
+          selectedUniversity.latitude,
+          selectedUniversity.longitude,
+        ]);
+        universityMarkerRef.current.setIcon(uniIcon);
+      } else {
+        universityMarkerRef.current = L.marker(
+          [selectedUniversity.latitude, selectedUniversity.longitude],
+          {
+            icon: uniIcon,
+            zIndexOffset: 1500,
+          },
+        ).addTo(map);
+      }
+    } else if (universityMarkerRef.current) {
+      universityMarkerRef.current.remove();
+      universityMarkerRef.current = null;
+    }
+  }, [selectedUniversity]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -139,14 +215,10 @@ export function MapScreen({
         attributionControl: false,
       });
 
-      const tileUrl =
-        resolvedTheme === 'dark'
-          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-          : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+      const tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
       const tileLayer = L.tileLayer(tileUrl, {
         maxZoom: 19,
-        subdomains: 'abcd',
       }).addTo(map);
 
       tileLayerRef.current = tileLayer;
@@ -162,6 +234,8 @@ export function MapScreen({
       }, 150);
 
       renderMarkers();
+      renderUserMarker();
+      renderUniversityMarker();
     }
 
     initMap();
@@ -177,21 +251,27 @@ export function MapScreen({
       userMarkerRef.current = null;
       universityMarkerRef.current = null;
     };
-  }, [cities, renderMarkers, resolvedTheme, selectedCity, selectedUniversity, userLocation]);
-
-  useEffect(() => {
-    if (tileLayerRef.current) {
-      const tileUrl =
-        resolvedTheme === 'dark'
-          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-          : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-      tileLayerRef.current.setUrl(tileUrl);
-    }
-  }, [resolvedTheme]);
+  }, [
+    cities,
+    renderMarkers,
+    renderUserMarker,
+    renderUniversityMarker,
+    selectedCity,
+    selectedUniversity,
+    userLocation,
+  ]);
 
   useEffect(() => {
     renderMarkers();
   }, [renderMarkers]);
+
+  useEffect(() => {
+    renderUserMarker();
+  }, [renderUserMarker]);
+
+  useEffect(() => {
+    renderUniversityMarker();
+  }, [renderUniversityMarker]);
 
   useEffect(() => {
     if (selectedPension) {
@@ -200,71 +280,11 @@ export function MapScreen({
   }, [selectedPension]);
 
   useEffect(() => {
-    const L = leafletModuleRef.current;
     const map = mapInstanceRef.current;
-    if (!L || !map) return;
-
-    if (userLocation) {
-      if (userMarkerRef.current) {
-        userMarkerRef.current.setLatLng([userLocation.latitude, userLocation.longitude]);
-      } else {
-        const userIcon = L.divIcon({
-          className: 'custom-div-icon',
-          html: '<div style="transform: translate(-50%, -50%);" class="user-pulse-marker" title="Tu ubicación"></div>',
-          iconSize: [20, 20],
-          iconAnchor: [10, 10],
-        });
-        userMarkerRef.current = L.marker([userLocation.latitude, userLocation.longitude], {
-          icon: userIcon,
-          zIndexOffset: 2000,
-        }).addTo(map);
-      }
-    }
-  }, [userLocation]);
-
-  useEffect(() => {
-    const L = leafletModuleRef.current;
-    const map = mapInstanceRef.current;
-    if (!L || !map) return;
-
-    if (selectedUniversity) {
-      const uniIconHtml = `
-        <div style="transform: translate(-50%, -100%); cursor: pointer;" class="flex flex-col items-center">
-          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-600 text-white font-bold text-xs shadow-xl border-2 border-white ring-2 ring-emerald-500/40 whitespace-nowrap">
-            <span>🎓</span>
-            <span>${selectedUniversity.acronym}</span>
-          </div>
-          <div class="w-2 h-2 -mt-1 rotate-45 bg-emerald-600 border-r border-b border-white"></div>
-        </div>
-      `;
-      const uniIcon = L.divIcon({
-        className: 'custom-div-icon',
-        html: uniIconHtml,
-        iconSize: [120, 36],
-        iconAnchor: [60, 36],
-      });
-
-      if (universityMarkerRef.current) {
-        universityMarkerRef.current.setLatLng([
-          selectedUniversity.latitude,
-          selectedUniversity.longitude,
-        ]);
-      } else {
-        universityMarkerRef.current = L.marker(
-          [selectedUniversity.latitude, selectedUniversity.longitude],
-          {
-            icon: uniIcon,
-            zIndexOffset: 1500,
-          },
-        ).addTo(map);
-      }
-      map.flyTo([selectedUniversity.latitude, selectedUniversity.longitude], 15, {
-        duration: 1.2,
-      });
-    } else if (universityMarkerRef.current) {
-      universityMarkerRef.current.remove();
-      universityMarkerRef.current = null;
-    }
+    if (!map || !selectedUniversity) return;
+    map.flyTo([selectedUniversity.latitude, selectedUniversity.longitude], 15, {
+      duration: 1.2,
+    });
   }, [selectedUniversity]);
 
   useEffect(() => {
