@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronDown, ChevronUp, Heart, Locate, Star } from 'lucide-react';
+import { motion, type PanInfo, useDragControls, useMotionValue } from 'motion/react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
@@ -37,12 +38,39 @@ export function MapScreen({
   const { resolvedTheme } = useTheme();
 
   const [drawerState, setDrawerState] = useState<DrawerState>('minimized');
+  const [containerHeight, setContainerHeight] = useState(800);
+  const dragControls = useDragControls();
+
   const [activePinId, setActivePinId] = useState<string | null>(
     selectedPension?.id ?? pensions[0]?.id ?? null,
   );
 
   const cardListRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (mapContainerRef.current) {
+        const h = mapContainerRef.current.clientHeight || window.innerHeight;
+        setContainerHeight(h);
+      }
+    };
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
+  }, []);
+
+  const maximizedY = Math.max(24, Math.round(containerHeight * 0.05));
+  const halfY = Math.round(containerHeight * 0.5);
+  const minimizedY = Math.max(halfY + 60, containerHeight - 68);
+
+  const targetY =
+    drawerState === 'maximized' ? maximizedY : drawerState === 'half' ? halfY : minimizedY;
+  const drawerY = useMotionValue(minimizedY);
+
+  useEffect(() => {
+    drawerY.set(targetY);
+  }, [targetY, drawerY]);
   const mapInstanceRef = useRef<import('leaflet').Map | null>(null);
   const tileLayerRef = useRef<import('leaflet').TileLayer | null>(null);
   const markersLayerRef = useRef<import('leaflet').LayerGroup | null>(null);
@@ -339,6 +367,46 @@ export function MapScreen({
     }
   };
 
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const currentY = drawerY.get();
+    const vy = info.velocity.y;
+
+    if (vy < -400) {
+      if (drawerState === 'minimized') {
+        setDrawerState('half');
+      } else {
+        setDrawerState('maximized');
+      }
+      return;
+    }
+
+    if (vy > 400) {
+      if (drawerState === 'maximized') {
+        setDrawerState('half');
+      } else {
+        setDrawerState('minimized');
+      }
+      return;
+    }
+
+    const snapPoints: Array<{ state: DrawerState; y: number }> = [
+      { state: 'maximized', y: maximizedY },
+      { state: 'half', y: halfY },
+      { state: 'minimized', y: minimizedY },
+    ];
+
+    let closest = snapPoints[0];
+    let minDiff = Math.abs(currentY - snapPoints[0].y);
+    for (const p of snapPoints) {
+      const diff = Math.abs(currentY - p.y);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = p;
+      }
+    }
+    setDrawerState(closest.state);
+  };
+
   const handleToggleDrawer = () => {
     if (drawerState === 'minimized') {
       setDrawerState('half');
@@ -374,20 +442,30 @@ export function MapScreen({
         <Locate className="h-5 w-5 text-primary" />
       </button>
 
-      <div
+      <motion.div
         id="collapsible-pension-drawer"
-        className={`absolute inset-x-0 bottom-0 z-30 flex flex-col rounded-t-3xl border-t border-border/70 bg-card/95 backdrop-blur-2xl shadow-2xl transition-all duration-300 ease-out ${
-          drawerState === 'minimized' ? 'h-16' : drawerState === 'half' ? 'h-[50%]' : 'h-[95%]'
-        }`}
+        drag="y"
+        dragListener={false}
+        dragControls={dragControls}
+        dragConstraints={{ top: maximizedY, bottom: minimizedY }}
+        dragElastic={0.06}
+        style={{ y: drawerY }}
+        animate={{ y: targetY }}
+        transition={{ type: 'spring', damping: 30, stiffness: 280 }}
+        onDragEnd={handleDragEnd}
+        className="absolute inset-x-0 top-0 bottom-0 z-30 flex flex-col rounded-t-3xl border-t border-border/70 bg-card/95 backdrop-blur-2xl shadow-2xl overflow-hidden"
       >
-        <div className="w-full flex flex-col items-center justify-center pt-2.5 pb-2 select-none shrink-0">
+        <div
+          onPointerDown={(e) => dragControls.start(e)}
+          className="w-full flex flex-col items-center justify-center pt-2.5 pb-2 select-none shrink-0 cursor-grab active:cursor-grabbing touch-none"
+        >
           <button
             type="button"
             onClick={handleToggleDrawer}
             className="w-full flex justify-center py-1 cursor-pointer"
             aria-label="Alternar panel"
           >
-            <div className="h-1.5 w-12 rounded-full bg-muted-foreground/40" />
+            <div className="h-1.5 w-12 rounded-full bg-muted-foreground/40 hover:bg-muted-foreground/60 transition-colors" />
           </button>
           <div className="flex w-full items-center justify-between px-5 pt-0.5">
             <button
@@ -419,89 +497,87 @@ export function MapScreen({
           </div>
         </div>
 
-        {drawerState !== 'minimized' && (
-          <div
-            ref={cardListRef}
-            className="relative flex-1 overflow-y-auto px-5 pb-20 pt-2 flex flex-col gap-6"
-          >
-            {displayedPensions.map((pension) => {
-              const isFav = isFavorite(pension.id);
+        <div
+          ref={cardListRef}
+          className="relative flex-1 overflow-y-auto px-5 pb-24 pt-2 flex flex-col gap-6"
+        >
+          {displayedPensions.map((pension) => {
+            const isFav = isFavorite(pension.id);
 
-              return (
-                <div
-                  key={pension.id}
-                  id={`pension-item-${pension.id}`}
-                  className="group relative flex flex-col text-left transition"
+            return (
+              <div
+                key={pension.id}
+                id={`pension-item-${pension.id}`}
+                className="group relative flex flex-col text-left transition"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActivePinId(pension.id);
+                    onSelectPension(pension);
+                    onOpenPensionDetail(pension);
+                  }}
+                  className="w-full flex flex-col text-left cursor-pointer"
                 >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActivePinId(pension.id);
-                      onSelectPension(pension);
-                      onOpenPensionDetail(pension);
-                    }}
-                    className="w-full flex flex-col text-left cursor-pointer"
-                  >
-                    <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm">
-                      <Image
-                        src={pension.photos[0]}
-                        alt={pension.title}
-                        fill
-                        unoptimized
-                        sizes="(max-width: 640px) 100vw, 480px"
-                        className="object-cover transition duration-300 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-
-                      {pension.isVerified && (
-                        <div className="absolute bottom-3 left-3">
-                          <span className="rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold text-foreground backdrop-blur-md border border-border/60">
-                            Verificada
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-2.5 flex flex-col gap-1 w-full">
-                      <div className="flex items-start justify-between gap-2">
-                        <h4 className="text-base font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition">
-                          {pension.title}
-                        </h4>
-                        <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
-                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                          <span>{pension.ratingAverage.toFixed(1)}</span>
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-muted-foreground line-clamp-1">
-                        {pension.neighborhood}, {pension.city} • a{' '}
-                        {pension.distanceToUniversityMeters}m de campus
-                      </p>
-
-                      <div className="mt-0.5 flex items-baseline gap-1">
-                        <span className="text-base font-bold text-foreground">
-                          ${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP
-                        </span>
-                        <span className="text-xs text-muted-foreground">/ mes</span>
-                      </div>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => toggleFavorite(pension.id)}
-                    className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md hover:text-primary transition active:scale-90 shadow-sm border border-border/40 cursor-pointer"
-                    aria-label="Guardar en favoritos"
-                  >
-                    <Heart
-                      className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : 'stroke-[2]'}`}
+                  <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm">
+                    <Image
+                      src={pension.photos[0]}
+                      alt={pension.title}
+                      fill
+                      unoptimized
+                      sizes="(max-width: 640px) 100vw, 480px"
+                      className="object-cover transition duration-300 group-hover:scale-105"
                     />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+
+                    {pension.isVerified && (
+                      <div className="absolute bottom-3 left-3">
+                        <span className="rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold text-foreground backdrop-blur-md border border-border/60">
+                          Verificada
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-2.5 flex flex-col gap-1 w-full">
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="text-base font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition">
+                        {pension.title}
+                      </h4>
+                      <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
+                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                        <span>{pension.ratingAverage.toFixed(1)}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground line-clamp-1">
+                      {pension.neighborhood}, {pension.city} • a{' '}
+                      {pension.distanceToUniversityMeters}m de campus
+                    </p>
+
+                    <div className="mt-0.5 flex items-baseline gap-1">
+                      <span className="text-base font-bold text-foreground">
+                        ${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP
+                      </span>
+                      <span className="text-xs text-muted-foreground">/ mes</span>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => toggleFavorite(pension.id)}
+                  className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md hover:text-primary transition active:scale-90 shadow-sm border border-border/40 cursor-pointer"
+                  aria-label="Guardar en favoritos"
+                >
+                  <Heart
+                    className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : 'stroke-[2]'}`}
+                  />
+                </button>
+              </div>
+            );
+          })}
+        </div>
 
         {drawerState === 'maximized' && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40">
@@ -518,7 +594,7 @@ export function MapScreen({
             </button>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }
