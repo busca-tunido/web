@@ -1,7 +1,7 @@
 'use client';
 
-import { Home } from 'lucide-react';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 
 export function SplashScreen() {
   return (
@@ -21,8 +21,15 @@ export function SplashScreen() {
             animate={{ opacity: [0.3, 0.7, 0.3], scale: [0.95, 1.05, 0.95] }}
             transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
           />
-          <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-primary shadow-md">
-            <Home className="h-7 w-7" />
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-primary/30 bg-card p-2 text-primary shadow-md">
+            <Image
+              src="/icon.png"
+              alt="BuscaTuNido"
+              width={48}
+              height={48}
+              className="object-contain"
+              priority
+            />
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowRight, CheckCircle2, Compass, GraduationCap, Home, Shield } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -65,9 +66,16 @@ export function AuthScreen({ onContinueAsGuest }: AuthScreenProps) {
       className="flex min-h-screen flex-col justify-between bg-background px-4 py-8 text-foreground transition-colors"
     >
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
-        <div className="mb-6 flex items-center justify-center gap-2">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 border border-primary/30 text-primary shadow-md">
-            <Home className="h-6 w-6" />
+        <div className="mb-6 flex items-center justify-center gap-2.5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-card border border-primary/30 p-1.5 shadow-md">
+            <Image
+              src="/icon.png"
+              alt="BuscaTuNido"
+              width={34}
+              height={34}
+              className="object-contain"
+              priority
+            />
           </div>
           <span className="text-2xl font-black tracking-tight text-foreground">BuscaTuNido</span>
         </div>

@@ -156,6 +156,15 @@ export function AccountScreen() {
         <LogOut className="h-4 w-4 mr-2" />
         Cerrar Sesión
       </Button>
+
+      <div className="flex flex-col items-center justify-center pt-4 pb-2 text-center opacity-75">
+        <div className="relative h-8 w-8 mb-1.5">
+          <Image src="/icon.png" alt="BuscaTuNido" fill sizes="32px" className="object-contain" />
+        </div>
+        <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">
+          BuscaTuNido • Tu hogar universitario
+        </p>
+      </div>
     </div>
   );
 }
