@@ -3,6 +3,7 @@
 import { Bell, GraduationCap, Laptop, LogOut, Moon, Shield, Sun, User } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
+import { BrandLogo } from '@/components/ui/brand-logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth-context';
@@ -157,12 +158,10 @@ export function AccountScreen() {
         Cerrar Sesión
       </Button>
 
-      <div className="flex flex-col items-center justify-center pt-4 pb-2 text-center opacity-75">
-        <div className="relative h-8 w-8 mb-1.5">
-          <Image src="/icon.png" alt="BuscaTuNido" fill sizes="32px" className="object-contain" />
-        </div>
-        <p className="text-[11px] font-semibold tracking-wider text-muted-foreground">
-          BuscaTuNido • Tu hogar universitario
+      <div className="flex flex-col items-center justify-center pt-4 pb-2 text-center opacity-80">
+        <BrandLogo size="sm" priority={false} />
+        <p className="mt-1 text-[11px] font-semibold tracking-wider text-muted-foreground">
+          Tu hogar universitario
         </p>
       </div>
     </div>
