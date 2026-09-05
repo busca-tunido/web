@@ -113,7 +113,8 @@ export type StayDurationCategory =
 export type PensionReview = {
   id: string;
   pensionId: string;
-  rating: number;
+  overallRating: number;
+  rating?: number;
   cleanlinessRating?: number;
   landlordRating?: number;
   quietnessRating?: number;
@@ -121,10 +122,11 @@ export type PensionReview = {
   comment: string;
   pros?: string;
   cons?: string;
-  stayDuration: StayDurationCategory;
-  stayYear?: number;
-  isVerifiedStudent: boolean;
-  images: Array<{ id: string; url: string; caption?: string }>;
+  stayDurationCategory?: string;
+  stayDuration?: StayDurationCategory | string;
+  isResidentVerified?: boolean;
+  isVerifiedStudent?: boolean;
+  images?: Array<{ id?: string; url: string; caption?: string }>;
   createdAt: string;
   user: {
     id: string;
@@ -132,7 +134,7 @@ export type PensionReview = {
     lastName: string;
     avatarUrl?: string;
     university?: {
-      name: string;
+      name?: string;
       shortName?: string;
     };
   };
