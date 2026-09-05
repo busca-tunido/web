@@ -99,7 +99,7 @@ async function getPageWsUrl(port) {
 
 async function captureScreen(cdp, baseUrl, theme, targetPath) {
   await cdp.send('Page.navigate', { url: baseUrl });
-  await wait(1200);
+  await wait(1000);
 
   await cdp.send('Runtime.evaluate', {
     expression: `
@@ -120,38 +120,66 @@ async function captureScreen(cdp, baseUrl, theme, targetPath) {
     `,
   });
 
-  await wait(1800);
+  await wait(1500);
 
   await cdp.send('Runtime.evaluate', {
+    awaitPromise: true,
     expression: `
-      const style = document.createElement('style');
-      style.innerHTML = 'nextjs-portal, #__next-build-watcher, [data-nextjs-toast] { display: none !important; }';
-      document.head.appendChild(style);
+      (async () => {
+        const style = document.createElement('style');
+        style.innerHTML = 'nextjs-portal, #__next-build-watcher, [data-nextjs-toast] { display: none !important; }';
+        document.head.appendChild(style);
 
-      const santiagoBtn = Array.from(document.querySelectorAll('button')).find(
-        (b) => b.textContent?.includes('Santiago') && b.textContent?.includes('pensiones')
-      );
-      if (santiagoBtn) {
-        santiagoBtn.click();
-      } else {
-        const mapTab = document.querySelector('#nav-tab-map');
-        if (mapTab) mapTab.click();
-      }
+        for (let i = 0; i < 50; i++) {
+          const santiagoBtn = Array.from(document.querySelectorAll('button')).find(
+            (b) => b.textContent?.includes('Santiago') && b.textContent?.includes('pensiones')
+          );
+          if (santiagoBtn) {
+            santiagoBtn.click();
+          } else {
+            const mapTab = document.querySelector('#nav-tab-map');
+            if (mapTab) mapTab.click();
+          }
+
+          await new Promise((r) => setTimeout(r, 400));
+          if (document.querySelector('.leaflet-container')) {
+            break;
+          }
+        }
+
+        for (let i = 0; i < 30; i++) {
+          const verListaBtn = Array.from(document.querySelectorAll('button')).find((b) =>
+            b.textContent?.includes('Ver lista')
+          );
+          if (verListaBtn) {
+            verListaBtn.click();
+          }
+
+          const isOpened = Array.from(document.querySelectorAll('button')).some((b) =>
+            b.textContent?.includes('Minimizar')
+          );
+          if (isOpened) {
+            break;
+          }
+
+          await new Promise((r) => setTimeout(r, 400));
+        }
+
+        for (let i = 0; i < 20; i++) {
+          const targetPin = Array.from(document.querySelectorAll('.leaflet-marker-icon')).find(
+            (el) => el.textContent?.includes('279.600')
+          );
+          if (targetPin) {
+            targetPin.click();
+            break;
+          }
+          await new Promise((r) => setTimeout(r, 300));
+        }
+      })()
     `,
   });
 
-  await wait(1800);
-
-  await cdp.send('Runtime.evaluate', {
-    expression: `
-      const verListaBtn = Array.from(document.querySelectorAll('button')).find((b) =>
-        b.textContent?.includes('Ver lista')
-      );
-      if (verListaBtn) verListaBtn.click();
-    `,
-  });
-
-  await wait(3000);
+  await wait(3500);
 
   const { data } = await cdp.send('Page.captureScreenshot', { format: 'png' });
   const buffer = Buffer.from(data, 'base64');
