@@ -102,3 +102,38 @@ export type StayHistoryItem = {
   monthlyPaidClp: number;
   imageUrl: string;
 };
+
+export type StayDurationCategory =
+  | 'FEW_DAYS'
+  | 'FEW_WEEKS'
+  | 'ONE_SEMESTER'
+  | 'ONE_YEAR'
+  | 'MORE_THAN_A_YEAR';
+
+export type PensionReview = {
+  id: string;
+  pensionId: string;
+  rating: number;
+  cleanlinessRating?: number;
+  landlordRating?: number;
+  quietnessRating?: number;
+  wifiRating?: number;
+  comment: string;
+  pros?: string;
+  cons?: string;
+  stayDuration: StayDurationCategory;
+  stayYear?: number;
+  isVerifiedStudent: boolean;
+  images: Array<{ id: string; url: string; caption?: string }>;
+  createdAt: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string;
+    university?: {
+      name: string;
+      shortName?: string;
+    };
+  };
+};
