@@ -8,6 +8,12 @@ Mobile-first web application for BuscaTuNido, built with Next.js, Tailwind CSS, 
   <img src="assets/map-light.png" alt="BuscaTuNido - Modo Claro" width="48%" />
 </p>
 
+## Enlaces Públicos / Deployments
+
+- **Web en Producción**: [https://web-theta-three-8zz8it8ws2.vercel.app/](https://web-theta-three-8zz8it8ws2.vercel.app/)
+- **API Backend**: [https://buscatunido-api.onrender.com](https://buscatunido-api.onrender.com)
+- **API Docs (Swagger)**: [https://buscatunido-api.onrender.com/api/docs](https://buscatunido-api.onrender.com/api/docs)
+
 ## Getting Started
 
 ### Prerequisites
@@ -17,11 +23,13 @@ Mobile-first web application for BuscaTuNido, built with Next.js, Tailwind CSS, 
 
 ### Environment Configuration
 
-Create a `.env.local` file in the `web` root (optional for API proxying):
+Create a `.env.local` file in the `web` root (optional for overriding API proxy target):
 
 ```env
 NEXT_PUBLIC_API_URL="http://localhost:4000"
 ```
+
+En producción, el proxy interno de Next.js redirige automáticamente las peticiones de `/api/*` hacia `https://buscatunido-api.onrender.com`.
 
 ### Commands
 
