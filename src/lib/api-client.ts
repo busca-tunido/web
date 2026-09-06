@@ -9,7 +9,12 @@ import type {
   UserProfile,
 } from './types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+if (!API_BASE) {
+  throw new Error(
+    'Missing required environment variable: NEXT_PUBLIC_API_URL must be defined in environment (.env).',
+  );
+}
 
 export type ApiResponseEnvelope<T> = {
   success: boolean;

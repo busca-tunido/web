@@ -42,12 +42,12 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const apiTarget =
-      process.env.API_INTERNAL_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      (process.env.NODE_ENV === 'production'
-        ? 'https://buscatunido-api.onrender.com'
-        : 'http://localhost:4000');
+    const apiTarget = process.env.API_INTERNAL_URL;
+    if (!apiTarget) {
+      throw new Error(
+        'Missing required environment variable: API_INTERNAL_URL must be defined in environment (.env).',
+      );
+    }
     return [
       {
         source: '/api/:path*',
