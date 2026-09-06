@@ -47,6 +47,11 @@ BuscaTuNido Web is a mobile-first web application built with [Next.js](https://n
 5. **Conventional Commits (Concise, Single-Line Only)**:
    - All git commit messages must strictly follow the Conventional Commits specification (e.g., `feat`, `fix`, `chore`, `refactor`, `test`, `docs`).
    - Commit messages must be concise, single-line only, and omit any extended body description.
+6. **Brand Identity & Logo Component**:
+   - Official brand vector asset: `/logo.svg`.
+   - The brand logo must always be rendered using the reusable `<BrandLogo />` component (`src/components/ui/brand-logo.tsx`).
+   - The logo places the nest vector directly beside the `BuscaTuNido` typography in a clean horizontal alignment without card containers, borders, or background boxes.
+   - The brand name must always be written as a single PascalCase token: `BuscaTuNido` (never separated as `Busca Tu Nido`).
 
 ---
 

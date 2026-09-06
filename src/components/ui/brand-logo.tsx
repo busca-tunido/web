@@ -17,10 +17,10 @@ export function BrandLogo({
   priority = true,
 }: BrandLogoProps) {
   const iconDimensions = {
-    sm: { width: 34, height: 24 },
-    md: { width: 44, height: 31 },
-    lg: { width: 54, height: 38 },
-    xl: { width: 68, height: 48 },
+    sm: { width: 74, height: 64 },
+    md: { width: 84, height: 71 },
+    lg: { width: 94, height: 78 },
+    xl: { width: 104, height: 88 },
   }[size];
 
   const textClasses = {
