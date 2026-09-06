@@ -3,15 +3,15 @@
 Mobile-first web application for BuscaTuNido, built with Next.js, Tailwind CSS, and shadcn/ui.
 
 <p align="center">
-  <img src="assets/map-dark.png" alt="BuscaTuNido - Modo Oscuro" width="48%" />
+  <img src="assets/map-dark.png" alt="BuscaTuNido - Dark Mode" width="48%" />
   &nbsp;
-  <img src="assets/map-light.png" alt="BuscaTuNido - Modo Claro" width="48%" />
+  <img src="assets/map-light.png" alt="BuscaTuNido - Light Mode" width="48%" />
 </p>
 
-## Enlaces Públicos / Deployments
+## Public Deployments & Links
 
-- **Web en Producción**: [https://web-theta-three-8zz8it8ws2.vercel.app/](https://web-theta-three-8zz8it8ws2.vercel.app/)
-- **API Backend**: [https://buscatunido-api.onrender.com](https://buscatunido-api.onrender.com)
+- **Web (Production)**: [https://web-theta-three-8zz8it8ws2.vercel.app/](https://web-theta-three-8zz8it8ws2.vercel.app/)
+- **Backend API**: [https://buscatunido-api.onrender.com](https://buscatunido-api.onrender.com)
 - **API Docs (Swagger)**: [https://buscatunido-api.onrender.com/api/docs](https://buscatunido-api.onrender.com/api/docs)
 
 ## Getting Started
@@ -23,13 +23,13 @@ Mobile-first web application for BuscaTuNido, built with Next.js, Tailwind CSS, 
 
 ### Environment Configuration
 
-Create a `.env.local` file in the `web` root (optional for overriding API proxy target):
+Copy `.env.example` to `.env.local` (or `.env`) and adjust values as needed:
 
-```env
-NEXT_PUBLIC_API_URL="http://localhost:4000"
+```bash
+cp .env.example .env.local
 ```
 
-En producción, el proxy interno de Next.js redirige automáticamente las peticiones de `/api/*` hacia `https://buscatunido-api.onrender.com`.
+In production, Next.js internal rewrites automatically proxy `/api/*` requests to `https://buscatunido-api.onrender.com`.
 
 ### Commands
 
@@ -46,6 +46,9 @@ pnpm build
 # Start production server
 pnpm start
 
-# Lint and format
+# Format and lint autofix (Biome)
 pnpm run check
+
+# Code quality check (Biome read-only)
+pnpm run review
 ```
