@@ -26,7 +26,7 @@ BuscaTuNido Web is a mobile-first web application built with [Next.js](https://n
 - `src/hooks/`: Custom state and device hooks (`useMediaQuery`, `useGeolocation`, `useFavorites`).
 - `src/lib/`: API client, query string builders, and formatting utilities.
 - `src/types/`: Strict TypeScript domain types and API contract models.
-- `tasks/TODO.md`: Active task specification being executed.
+- `tasks/[index]_[task-name].md`: Active task specification being executed.
 - `tasks/completed/`: Historical record of finished task specifications.
 
 ---
@@ -35,40 +35,44 @@ BuscaTuNido Web is a mobile-first web application built with [Next.js](https://n
 
 1. **No Code Comments**:
    - Comments inside code are strictly prohibited unless explicitly requested by the user. Code must be self-explanatory through naming and structure.
-2. **Mobile-First Responsive Design**:
+1. **Mobile-First Responsive Design**:
    - Always style for small screens first (unprefixed Tailwind utilities). Use `sm:`, `md:`, `lg:` solely for layout adaptations on larger viewports.
    - Interactive elements must maintain a minimum touch target size of 48px by 48px.
    - Complex filter panels and modal actions must use bottom drawers (`Drawer` component) on mobile viewports.
-3. **No Direct Config File Edits for Dependencies**:
+1. **No Direct Config File Edits for Dependencies**:
    - Never edit `package.json` manually to add packages. Use terminal CLI commands (`pnpm add <pkg>`, `pnpm add -D <pkg>`, `pnpm dlx shadcn@latest add <component>`).
-4. **Strict Typing (Types over Interfaces)**:
+1. **Strict Typing (Types over Interfaces)**:
    - Use TypeScript `type` aliases exclusively; `interface` declarations are strictly forbidden.
    - Forbid `any` (prefer `unknown` or generics). Explicitly type props, API responses, and custom handlers; rely on types for simple state.
-5. **Conventional Commits (Concise, Single-Line Only)**:
+1. **Conventional Commits (Concise, Single-Line Only)**:
    - All git commit messages must strictly follow the Conventional Commits specification (e.g., `feat`, `fix`, `chore`, `refactor`, `test`, `docs`).
    - Commit messages must be concise, single-line only, and omit any extended body description.
-6. **Brand Identity & Logo Component**:
-   - Official brand vector asset: `/logo.svg`.
-   - The brand logo must always be rendered using the reusable `<BrandLogo />` component (`src/components/ui/brand-logo.tsx`).
-   - The logo places the nest vector directly beside the `BuscaTuNido` typography in a clean horizontal alignment without card containers, borders, or background boxes.
-   - The brand name must always be written as a single PascalCase token: `BuscaTuNido` (never separated as `Busca Tu Nido`).
 
 ---
 
-## 3. Task-Driven Lifecycle (TODO Workflow)
+## 3. Task-Driven Lifecycle (`tasks/[index]_[task-name].md` Workflow)
 
-Every frontend UI enhancement, page, or bug fix must strictly follow the repository-specific task file generated inside the `tasks/` directory (`tasks/TODO.md`).
+Every frontend UI enhancement, page, or bug fix must strictly adhere to the following workflow:
 
 ### Execution Cycle:
 
-1. **Read Scope**: Inspect `tasks/TODO.md` before altering code. Confine all implementation strictly to the active task checklist.
-2. **Track Progress**: Implement items step-by-step, checking off boxes (`- [x]`) as each phase is completed.
-3. **Verify**: Execute verification commands declared in the task (e.g., `pnpm build`, type-checks, responsive viewport validation). All checks must pass before completing the task.
-4. **User Verification**: Present the completed checklist, responsive viewports, and verification results to the user for review and explicit approval before archiving.
-5. **Archive as Documentation**: Upon user approval, move/rename the completed `tasks/TODO.md` into `tasks/completed/[index]-[task-name].md` (e.g., `tasks/completed/001-setup-nextjs-app.md`). This creates an immutable history of frontend milestones.
-6. **Handoff**: Generate a new, clean `tasks/TODO.md` inside `tasks/` for the next discrete task.
+1. **Task Breakdown by Purpose**:
+   - Read the user request(s) and create a separate `tasks/[index]_[task-name].md` file for each request that serves a distinct purpose.
+   - *Example*: Improving the touch gestures of a panel and adding a text label to that same panel belong in the same task specification. In contrast, updating a Next.js configuration belongs in a separate task specification.
+1. **Review & Clarification Gate**:
+   - Once all task files are generated, notify the user to review all task specifications in `tasks/`.
+   - Ask clarifying questions if any requirement or detail is ambiguous, and STOP the process so the user can review and approve the tasks.
+1. **Sequential Execution**:
+   - Once the user approves the tasks, execute them one by one until all are completed.
+   - For each task, strictly follow these steps:
+     - **Read Scope**: Inspect `tasks/[index]_[task-name].md` before modifying code. Confine all implementation strictly to the active task checklist.
+     - **Track Progress**: Implement checklist items step-by-step, checking off boxes (`- [x]`) as each phase is completed.
+     - **Verify**: Execute verification commands declared in the task (e.g., `pnpm build`, type-checks, responsive viewport validation). All checks must pass with zero errors.
+     - **User Verification**: Present the completed checklist, responsive viewports, and verification results to the user for review and explicit approval before archiving.
+     - **Archive as Documentation**: Upon user approval, move/rename the completed `tasks/[index]_[task-name].md` into `tasks/completed/[index]_[task-name].md` (e.g., `tasks/completed/001_setup-nextjs-app.md`). This preserves an immutable history of frontend milestones.
+     - **Handoff**: Proceed to the next pending task in the sequence.
 
-### Standard `TODO.md` Template:
+### Standard `[index]_[task-name].md` Template:
 
 ```markdown
 # Task: [Index] - [Descriptive Title]
