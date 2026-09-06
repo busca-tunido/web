@@ -32,9 +32,9 @@ export function BrandLogo({
 
   return (
     <div className={cn('inline-flex flex-col items-center select-none', className)}>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <Image
-          src="/vercel.svg"
+          src="/logo.svg"
           alt="BuscaTuNido"
           width={iconDimensions.width}
           height={iconDimensions.height}
