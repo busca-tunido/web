@@ -6,10 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "biome check --write .",
     "review": "biome check .",
+
     "screenshots": "node scripts/capture-screenshots.mjs"
   },
   "dependencies": {
