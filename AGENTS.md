@@ -54,15 +54,24 @@ BuscaTuNido Web is a mobile-first web application built with [Next.js](https://n
 
 Every frontend UI enhancement, page, or bug fix must strictly adhere to the following workflow:
 
+### Code Quality & Biome Scripts Workflow:
+
+The project utilizes [Biome](https://biomejs.dev/) as a unified, ultra-fast toolchain for formatting and linting. Agents must leverage these dedicated scripts throughout the development workflow:
+
+- `pnpm run format`: Formats source files and enforces styling rules (`biome format --write .`).
+- `pnpm run lint`: Scans for code issues and applies safe linter autofixes (`biome lint --write .`).
+- `pnpm run check`: Unified command combining formatting, import organization, and safe lint autofixes (`biome check --write .`). Agents must run this after modifying code.
+- `pnpm run review`: Read-only verification check (`biome check .`) that returns an error exit code if any unresolved formatting or lint errors exist. Mandatory for validation.
+
 ### Execution Cycle:
 
 1. **Task Breakdown by Purpose**:
    - Read the user request(s) and create a separate `tasks/[index]_[task-name].md` file for each request that serves a distinct purpose.
    - *Example*: Improving the touch gestures of a panel and adding a text label to that same panel belong in the same task specification. In contrast, updating a Next.js configuration belongs in a separate task specification.
-1. **Review & Clarification Gate**:
+2. **Review & Clarification Gate**:
    - Once all task files are generated, notify the user to review all task specifications in `tasks/`.
    - Ask clarifying questions if any requirement or detail is ambiguous, and STOP the process so the user can review and approve the tasks.
-1. **Sequential Execution**:
+3. **Sequential Execution**:
    - Once the user approves the tasks, execute them one by one until all are completed.
    - For each task, strictly follow these steps:
      - **Read Scope**: Inspect `tasks/[index]_[task-name].md` before modifying code. Confine all implementation strictly to the active task checklist.
@@ -95,8 +104,8 @@ Every frontend UI enhancement, page, or bug fix must strictly adhere to the foll
 
 ## Verification
 
-- Linter & Formatter: `pnpm run check && pnpm run review`
-- Build: `pnpm build`
+- Code Quality (Biome): `pnpm run check && pnpm run review`
+- Build & Typecheck: `pnpm build`
 ```
 
 <!-- BEGIN:nextjs-agent-rules -->
