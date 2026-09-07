@@ -6,12 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "biome check --write .",
     "review": "biome check .",
-
     "screenshots": "node scripts/capture-screenshots.mjs"
   },
   "dependencies": {
@@ -35,6 +33,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "schema-dts": "^2.0.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
