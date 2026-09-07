@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'web-git-main-joseleivas-projects.vercel.app',
+        hostname: 'buscatunido.vercel.app',
       },
       {
         protocol: 'https',

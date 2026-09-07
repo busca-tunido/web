@@ -10,7 +10,7 @@ Mobile-first web application for BuscaTuNido, built with Next.js, Tailwind CSS, 
 
 ## Public Deployments & Links
 
-- **Web (Production)**: [https://web-git-main-joseleivas-projects.vercel.app/](https://web-git-main-joseleivas-projects.vercel.app/)
+- **Web (Production)**: [https://buscatunido.vercel.app/](https://buscatunido.vercel.app/)
 - **Backend API**: [https://buscatunido-api.onrender.com](https://buscatunido-api.onrender.com)
 - **API Docs (Swagger)**: [https://buscatunido-api.onrender.com/api/docs](https://buscatunido-api.onrender.com/api/docs)
 
