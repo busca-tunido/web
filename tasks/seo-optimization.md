@@ -31,11 +31,13 @@ Implement a comprehensive Search Engine Optimization (SEO) architecture for the 
 - Create `src/app/sitemap.ts`:
   - Generate entries for core public pages with `lastModified`, `changeFrequency`, and `priority`.
 
-### 3. Structured Data (Schema.org JSON-LD)
-- Create a reusable JSON-LD component (`src/components/seo/json-ld.tsx`):
-  - `Organization` & `WebSite` schema on root layout.
+### 3. Structured Data (Schema.org JSON-LD with `schema-dts`)
+- Add `schema-dts` (`pnpm add -D schema-dts`) to provide strict TypeScript type safety for Schema.org vocabulary.
+- Create a reusable JSON-LD helper component (`src/components/seo/json-ld.tsx`):
+  - Typed `WithContext<WebSite>` and `WithContext<Organization>` schemas on root layout.
   - Search action definition (`potentialAction` with `SearchAction`).
-  - `Accommodation` / `Residence` schema for individual pension detail views.
+  - Typed `WithContext<Accommodation>` / `Residence` schema for individual pension detail views.
+  - Render sanitized `<script type="application/ld+json">` for Google Search / Rich Results.
 
 ### 4. Semantic HTML & Accessible Hierarchy
 - Ensure each page has a single, semantic `<h1>` element.
@@ -45,10 +47,11 @@ Implement a comprehensive Search Engine Optimization (SEO) architecture for the 
 
 ## Checklist
 
+- [ ] Install `schema-dts` as dev dependency via `pnpm add -D schema-dts`.
 - [ ] Define `metadataBase`, title template, keywords, OpenGraph, and Twitter tags in `src/app/layout.tsx`.
 - [ ] Create `src/app/robots.ts` defining crawl rules and referencing sitemap.
 - [ ] Create `src/app/sitemap.ts` generating public URL entries and priorities.
-- [ ] Implement `src/components/seo/json-ld.tsx` for Schema.org structured data.
+- [ ] Implement `src/components/seo/json-ld.tsx` using `schema-dts` for Schema.org structured data.
 - [ ] Integrate JSON-LD structured data into root layout.
 - [ ] Verify semantic headings and image `alt` attributes across public views.
 - [ ] Validate code quality and formatting with Biome (`pnpm run check && pnpm run review`).
