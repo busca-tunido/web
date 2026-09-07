@@ -9,7 +9,7 @@ Implement a comprehensive Search Engine Optimization (SEO) architecture for the 
 ## Detailed Scope
 
 ### 1. Global & Route Metadata (`src/app/layout.tsx`)
-- Configure `metadataBase` using the production URL (`https://web-theta-three-8zz8it8ws2.vercel.app` or `NEXT_PUBLIC_APP_URL`).
+- Configure `metadataBase` using the production URL (`https://web-git-main-joseleivas-projects.vercel.app` or `NEXT_PUBLIC_APP_URL`).
 - Define title template: `{ default: 'BuscaTuNido - Pensiones y Residencias Universitarias en Chile', template: '%s | BuscaTuNido' }`.
 - Provide targeted descriptive meta description highlighting housing search, student verification, transparent pricing, and university proximity.
 - Add relevant keywords: `pensiones universitarias`, `residencias estudiantiles`, `arriendo estudiantes chile`, `alojamiento santiago`, `pensiones valparaiso`, `concepcion`, `valdivia`.
@@ -27,7 +27,7 @@ Implement a comprehensive Search Engine Optimization (SEO) architecture for the 
 - Create `src/app/robots.ts`:
   - Allow indexing for all public routes (`/`, `/explore`, `/pensions/*`).
   - Disallow private/account routes (`/api/*`, `/cuenta/*`, `/admin/*`).
-  - Link canonical sitemap (`https://web-theta-three-8zz8it8ws2.vercel.app/sitemap.xml`).
+  - Link canonical sitemap (`https://web-git-main-joseleivas-projects.vercel.app/sitemap.xml`).
 - Create `src/app/sitemap.ts`:
   - Generate entries for core public pages with `lastModified`, `changeFrequency`, and `priority`.
 

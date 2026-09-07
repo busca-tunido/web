@@ -10,7 +10,7 @@ Mobile-first web application for BuscaTuNido, built with Next.js, Tailwind CSS, 
 
 ## Public Deployments & Links
 
-- **Web (Production)**: [https://web-theta-three-8zz8it8ws2.vercel.app/](https://web-theta-three-8zz8it8ws2.vercel.app/)
+- **Web (Production)**: [https://web-git-main-joseleivas-projects.vercel.app/](https://web-git-main-joseleivas-projects.vercel.app/)
 - **Backend API**: [https://buscatunido-api.onrender.com](https://buscatunido-api.onrender.com)
 - **API Docs (Swagger)**: [https://buscatunido-api.onrender.com/api/docs](https://buscatunido-api.onrender.com/api/docs)
 

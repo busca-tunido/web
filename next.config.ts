@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'web-theta-three-8zz8it8ws2.vercel.app',
+        hostname: 'web-git-main-joseleivas-projects.vercel.app',
       },
       {
         protocol: 'https',
