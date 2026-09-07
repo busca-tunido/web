@@ -8,10 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth-context';
 import { type Theme, useTheme } from '@/lib/theme-context';
-import type { UserRole } from '@/lib/types';
 
 export function AccountScreen() {
-  const { user, logout, loginAsDemo } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, setTheme, resolvedTheme } = useTheme();
 
   if (!user) return null;
@@ -100,30 +99,6 @@ export function AccountScreen() {
         </CardContent>
       </Card>
 
-      <Card className="border-border bg-card shadow-sm">
-        <CardContent className="p-4 flex flex-col gap-3">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Cambiar Rol Activo (Modo Prueba)
-          </h3>
-          <div className="grid grid-cols-3 gap-2">
-            {(['STUDENT', 'LANDLORD', 'ADMIN'] as UserRole[]).map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => loginAsDemo(r)}
-                className={`rounded-xl border p-2.5 text-xs font-semibold transition active:scale-95 ${
-                  user.role === r
-                    ? 'border-primary bg-primary/15 text-primary shadow-sm'
-                    : 'border-border bg-background/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}
-              >
-                {r === 'STUDENT' ? 'Estudiante' : r === 'LANDLORD' ? 'Propietario' : 'Admin'}
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       <div className="flex flex-col gap-2">
         <button
           type="button"
@@ -133,7 +108,9 @@ export function AccountScreen() {
             <Shield className="h-4 w-4 text-muted-foreground" />
             <span>Validación de Matrícula Institucional</span>
           </div>
-          <Badge className="bg-primary/20 text-primary border-0 text-[10px]">Acreditado</Badge>
+          <Badge className="bg-primary/20 text-primary border-0 text-[10px]">
+            {user.role === 'STUDENT' ? 'Acreditado' : 'Verificado'}
+          </Badge>
         </button>
 
         <button

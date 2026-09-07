@@ -295,19 +295,21 @@ export async function loginWithEmail(
     // Fallback
   }
 
-  const isStudent = email.includes('.cl') || email.includes('alu') || email.includes('est');
+  const isLandlord = email.includes('propietario') || email.includes('contacto');
+  const isStudent = !isLandlord;
   return {
     user: {
-      id: 'demo-user-1',
+      id: isLandlord ? 'usr-landlord-demo' : 'usr-student-demo',
       email,
-      firstName: isStudent ? 'Camila' : 'Rodrigo',
-      lastName: isStudent ? 'Valenzuela' : 'Fuentes',
-      role: isStudent ? 'STUDENT' : 'LANDLORD',
+      firstName: isLandlord ? 'Propietario' : 'Estudiante',
+      lastName: 'Demo',
+      role: isLandlord ? 'LANDLORD' : 'STUDENT',
       universityName: isStudent ? 'Universidad de Chile' : undefined,
-      isForeignStudent: true,
-      avatarUrl:
-        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+      isForeignStudent: isStudent,
+      avatarUrl: isLandlord
+        ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
+        : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
     },
-    token: 'mock-jwt-token-preview',
+    token: isLandlord ? 'mock-jwt-token-landlord' : 'mock-jwt-token-student',
   };
 }

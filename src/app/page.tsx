@@ -20,7 +20,7 @@ import type { CityInfo, NavTab, PensionItem, SearchFilters, UniversityInfo } fro
 import { sortCitiesWithCurrentFirst, useUserLocation } from '@/lib/use-user-location';
 
 export default function HomePage() {
-  const { isAuthenticated, isGuest, isLoading, continueAsGuest } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<NavTab>('explore');
   const [filters, setFilters] = useState<SearchFilters>({ query: '' });
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -76,8 +76,8 @@ export default function HomePage() {
     return <SplashScreen />;
   }
 
-  if (!isAuthenticated && !isGuest) {
-    return <AuthScreen onContinueAsGuest={continueAsGuest} />;
+  if (!isAuthenticated) {
+    return <AuthScreen />;
   }
 
   return (
