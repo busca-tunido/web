@@ -1,21 +1,29 @@
 'use client';
 
-import { Heart, MapPin, Star } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
+import { InfinitePensionList } from '@/components/pensions/infinite-pension-list';
+import { NearbyCitiesBar } from '@/components/pensions/nearby-cities-bar';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/lib/auth-context';
-import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
+import type { CityInfo, NearbyCityCount, PensionItem, UniversityInfo } from '@/lib/types';
 
 type ExploreScreenProps = {
   cities: CityInfo[];
   universities: UniversityInfo[];
   featuredPensions: PensionItem[];
   selectedCity: string | null;
-  onSelectCity: (cityName: string) => void;
+  onSelectCity: (cityName: string | null) => void;
   onSelectUniversity: (uni: UniversityInfo) => void;
   onSelectPension: (pension: PensionItem) => void;
   onNavigateToMap: () => void;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  isLoadingPensions?: boolean;
+  onLoadMorePensions?: () => void;
+  nearbyCityCounts?: NearbyCityCount[];
+  totalPensions?: number;
+  onResetFilters?: () => void;
 };
 
 export function ExploreScreen({
@@ -27,9 +35,14 @@ export function ExploreScreen({
   onSelectUniversity,
   onSelectPension,
   onNavigateToMap,
+  hasMore = false,
+  isLoadingMore = false,
+  isLoadingPensions = false,
+  onLoadMorePensions = () => {},
+  nearbyCityCounts = [],
+  totalPensions,
+  onResetFilters,
 }: ExploreScreenProps) {
-  const { isFavorite, toggleFavorite } = useAuth();
-
   const sortedCities = [...cities].sort((a, b) => {
     if (a.isCurrentCity) return -1;
     if (b.isCurrentCity) return 1;
@@ -61,13 +74,13 @@ export function ExploreScreen({
 
         <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x">
           {sortedCities.map((city) => {
-            const isSelected = selectedCity === city.name;
+            const isSelected = selectedCity?.toLowerCase() === city.name.toLowerCase();
             return (
               <motion.button
                 type="button"
                 key={city.id}
                 whileTap={{ scale: 0.94 }}
-                onClick={() => onSelectCity(city.name)}
+                onClick={() => onSelectCity(isSelected ? null : city.name)}
                 className={`group relative h-48 w-36 shrink-0 snap-start overflow-hidden rounded-2xl border text-left transition-colors cursor-pointer shadow-sm ${
                   isSelected
                     ? 'border-primary ring-2 ring-primary/30'
@@ -109,7 +122,7 @@ export function ExploreScreen({
           <div>
             <h3 className="text-lg font-bold text-foreground tracking-tight">Universidades</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Universidades con residencias cercanas
+              Encuentra alojamiento cerca de tu campus
             </p>
           </div>
           <button
@@ -117,7 +130,7 @@ export function ExploreScreen({
             onClick={onNavigateToMap}
             className="text-xs font-semibold text-primary hover:opacity-80 transition"
           >
-            Ver más
+            Ver mapa
           </button>
         </div>
 
@@ -163,92 +176,35 @@ export function ExploreScreen({
         </div>
       </section>
 
-      <section className="px-5">
-        <div className="flex items-center justify-between mb-4">
+      {nearbyCityCounts.length > 0 && (
+        <NearbyCitiesBar
+          cities={nearbyCityCounts}
+          selectedCity={selectedCity}
+          onSelectCity={onSelectCity}
+        />
+      )}
+
+      <section>
+        <div className="flex items-center justify-between px-5 mb-4">
           <h3 className="text-lg font-bold text-foreground tracking-tight">
             Alojamientos Destacados
           </h3>
           <span className="text-xs text-muted-foreground">
-            {featuredPensions.length} alojamientos
+            {totalPensions !== undefined
+              ? `${totalPensions} alojamientos`
+              : `${featuredPensions.length} alojamientos`}
           </span>
         </div>
 
-        <div className="flex flex-col gap-7">
-          {featuredPensions.map((pension) => {
-            const isFav = isFavorite(pension.id);
-            return (
-              <motion.div
-                key={pension.id}
-                whileHover={{ y: -2 }}
-                transition={{ duration: 0.2 }}
-                className="group relative flex flex-col text-left"
-              >
-                <button
-                  type="button"
-                  onClick={() => onSelectPension(pension)}
-                  className="w-full flex flex-col text-left cursor-pointer"
-                >
-                  <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm">
-                    <Image
-                      src={pension.photos[0]}
-                      alt={pension.title}
-                      fill
-                      unoptimized
-                      sizes="(max-width: 640px) 100vw, 480px"
-                      className="object-cover transition duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-
-                    {pension.isVerified && (
-                      <div className="absolute bottom-3 left-3">
-                        <span className="rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold text-foreground backdrop-blur-md border border-border/60">
-                          Verificada
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-2.5 flex flex-col gap-1 w-full">
-                    <div className="flex items-start justify-between gap-2">
-                      <h4 className="text-base font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition">
-                        {pension.title}
-                      </h4>
-                      <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
-                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                        <span>{pension.ratingAverage.toFixed(1)}</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      {pension.neighborhood}, {pension.city} • a{' '}
-                      {pension.distanceToUniversityMeters}m de campus
-                    </p>
-
-                    <div className="mt-0.5 flex items-baseline gap-1">
-                      <span className="text-base font-bold text-foreground">
-                        ${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP
-                      </span>
-                      <span className="text-xs text-muted-foreground">/ mes</span>
-                    </div>
-                  </div>
-                </button>
-
-                <motion.button
-                  type="button"
-                  whileTap={{ scale: 0.8 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                  onClick={() => toggleFavorite(pension.id)}
-                  className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer"
-                  aria-label="Guardar en favoritos"
-                >
-                  <Heart
-                    className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : 'stroke-[2]'}`}
-                  />
-                </motion.button>
-              </motion.div>
-            );
-          })}
-        </div>
+        <InfinitePensionList
+          items={featuredPensions}
+          hasMore={hasMore}
+          isLoading={isLoadingPensions}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={onLoadMorePensions}
+          onSelectPension={onSelectPension}
+          onResetFilters={onResetFilters}
+        />
       </section>
     </div>
   );

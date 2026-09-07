@@ -1,6 +1,9 @@
 import { MOCK_CITIES, MOCK_PENSIONS, MOCK_UNIVERSITIES } from './mock-data';
 import type {
   CityInfo,
+  NearbyCityCount,
+  PaginatedPensionsResponse,
+  PaginationMeta,
   PensionItem,
   PensionReview,
   RoomInfo,
@@ -50,6 +53,8 @@ type BackendPension = {
   verificationStatus?: string;
   ratingAverage?: number | string;
   ratingCount?: number;
+  distanceKm?: number;
+  relevanceScore?: number;
   images?: Array<{ url: string; caption?: string; isFeatured?: boolean }>;
   amenities?: Array<{ slug: string; name: string }>;
   nearbyUniversities?: Array<{
@@ -145,6 +150,10 @@ function mapBackendPensionToPensionItem(raw: BackendPension): PensionItem {
     includesStudyRoom: Boolean(amenitiesSlugs.has('sala-estudio')),
     nearestUniversityName: nearestUniName,
     distanceToUniversityMeters: distanceMeters,
+    distanceKm:
+      typeof raw.distanceKm === 'number' ? Math.round(raw.distanceKm * 10) / 10 : undefined,
+    relevanceScore:
+      typeof raw.relevanceScore === 'number' ? Math.round(raw.relevanceScore) : undefined,
     photos,
     rooms,
     curfewDescription: raw.curfewTime ? `Toque de queda ${raw.curfewTime}` : undefined,
@@ -152,36 +161,70 @@ function mapBackendPensionToPensionItem(raw: BackendPension): PensionItem {
   };
 }
 
-export async function fetchPensions(filters?: SearchFilters): Promise<PensionItem[]> {
-  try {
-    const params = new URLSearchParams();
-    if (filters?.city) params.set('city', filters.city);
-    if (filters?.universityId) params.set('universityId', filters.universityId);
-    if (filters?.query) params.set('search', filters.query);
-    if (filters?.maxPriceClp) params.set('maxPrice', String(filters.maxPriceClp));
-    params.set('limit', '50');
+export type FetchPensionsParams = Partial<SearchFilters> & {
+  page?: number;
+  limit?: number;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
+  sortBy?: 'relevance' | 'distance' | 'price_asc' | 'price_desc' | 'rating';
+};
 
-    const res = await fetch(`${API_BASE}/pensions?${params.toString()}`, {
+export async function fetchPaginatedPensions(
+  params?: FetchPensionsParams,
+): Promise<PaginatedPensionsResponse> {
+  const page = params?.page ?? 1;
+  const limit = params?.limit ?? 12;
+
+  try {
+    const searchParams = new URLSearchParams();
+    if (params?.city) searchParams.set('city', params.city);
+    if (params?.universityId) searchParams.set('universityId', params.universityId);
+    if (params?.query) searchParams.set('search', params.query);
+    if (params?.maxPriceClp) searchParams.set('maxPrice', String(params.maxPriceClp));
+    if (params?.latitude !== undefined) searchParams.set('latitude', String(params.latitude));
+    if (params?.longitude !== undefined) searchParams.set('longitude', String(params.longitude));
+    if (params?.radiusKm !== undefined) searchParams.set('radiusKm', String(params.radiusKm));
+    if (params?.sortBy) searchParams.set('sortBy', params.sortBy);
+    searchParams.set('page', String(page));
+    searchParams.set('limit', String(limit));
+
+    const res = await fetch(`${API_BASE}/pensions?${searchParams.toString()}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
 
     if (res.ok) {
-      const json = (await res.json()) as ApiResponseEnvelope<{ items: BackendPension[] }>;
-      if (json?.data?.items && json.data.items.length > 0) {
-        return json.data.items.map(mapBackendPensionToPensionItem);
+      const json = (await res.json()) as ApiResponseEnvelope<{
+        items: BackendPension[];
+        pagination?: PaginationMeta;
+        nearbyCityCounts?: NearbyCityCount[];
+      }>;
+      if (json?.data?.items) {
+        const items = json.data.items.map(mapBackendPensionToPensionItem);
+        const pagination = json.data.pagination ?? {
+          page,
+          limit,
+          total: items.length,
+          totalPages: Math.ceil(items.length / limit) || 1,
+          hasMore: false,
+        };
+        const nearbyCityCounts = json.data.nearbyCityCounts ?? [];
+        return {
+          items,
+          pagination,
+          nearbyCityCounts,
+        };
       }
     }
-  } catch {
-    // Graceful fallback to mock data
-  }
+  } catch {}
 
   let results = [...MOCK_PENSIONS];
-  if (filters?.city) {
-    results = results.filter((p) => p.city.toLowerCase() === filters.city?.toLowerCase());
+  if (params?.city) {
+    results = results.filter((p) => p.city.toLowerCase() === params.city?.toLowerCase());
   }
-  if (filters?.query) {
-    const q = filters.query.toLowerCase();
+  if (params?.query) {
+    const q = params.query.toLowerCase();
     results = results.filter(
       (p) =>
         p.title.toLowerCase().includes(q) ||
@@ -190,16 +233,50 @@ export async function fetchPensions(filters?: SearchFilters): Promise<PensionIte
         p.nearestUniversityName.toLowerCase().includes(q),
     );
   }
-  if (filters?.maxPriceClp) {
-    results = results.filter((p) => p.priceMonthlyClp <= (filters.maxPriceClp ?? Infinity));
+  if (params?.maxPriceClp) {
+    results = results.filter((p) => p.priceMonthlyClp <= (params.maxPriceClp ?? Infinity));
   }
-  if (filters?.hasPrivateBathroom) {
+  if (params?.hasPrivateBathroom) {
     results = results.filter((p) => p.rooms.some((r) => r.hasPrivateBathroom));
   }
-  if (filters?.includesMeals) {
+  if (params?.includesMeals) {
     results = results.filter((p) => p.includesMeals);
   }
-  return results;
+
+  const total = results.length;
+  const totalPages = Math.ceil(total / limit) || 1;
+  const skip = (page - 1) * limit;
+  const items = results.slice(skip, skip + limit);
+  const hasMore = page < totalPages;
+
+  const cityMap = new Map<string, number>();
+  for (const p of results) {
+    cityMap.set(p.city, (cityMap.get(p.city) || 0) + 1);
+  }
+  const nearbyCityCounts: NearbyCityCount[] = Array.from(cityMap.entries()).map(
+    ([city, count]) => ({
+      city,
+      count,
+      distanceKm: 0,
+    }),
+  );
+
+  return {
+    items,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasMore,
+    },
+    nearbyCityCounts,
+  };
+}
+
+export async function fetchPensions(filters?: SearchFilters): Promise<PensionItem[]> {
+  const res = await fetchPaginatedPensions({ ...filters, limit: 50 });
+  return res.items;
 }
 
 export async function fetchCities(): Promise<CityInfo[]> {
@@ -222,30 +299,33 @@ export async function fetchUniversities(city?: string): Promise<UniversityInfo[]
           name: string;
           shortName?: string;
           city: string;
-          emailDomains?: string[];
-          latitude: number;
-          longitude: number;
+          latitude?: number | string;
+          longitude?: number | string;
+          logoUrl?: string;
+          campusImageUrl?: string;
+          domains?: string[];
         }>
       >;
-      if (json?.data && json.data.length > 0) {
-        return json.data.map((u) => ({
+      if (json?.data && Array.isArray(json.data) && json.data.length > 0) {
+        return json.data.map((u, i) => ({
           id: u.id,
           name: u.name,
-          acronym: u.shortName || u.name.substring(0, 4).toUpperCase(),
+          acronym: u.shortName || u.name.slice(0, 4).toUpperCase(),
           city: u.city,
-          domains: u.emailDomains || [],
-          foreignStudentRate: 14,
-          pensionsNearbyCount: 6,
+          domains: u.domains || ['uchile.cl'],
+          foreignStudentRate: 0.15 + (i % 5) * 0.03,
+          pensionsNearbyCount: 12 + i * 2,
+          logoUrl: u.logoUrl,
           imageUrl:
+            u.campusImageUrl ||
+            MOCK_UNIVERSITIES[i % MOCK_UNIVERSITIES.length]?.imageUrl ||
             'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80',
           latitude: Number(u.latitude) || -33.4489,
           longitude: Number(u.longitude) || -70.6693,
         }));
       }
     }
-  } catch {
-    // Fallback
-  }
+  } catch {}
 
   if (city) {
     return MOCK_UNIVERSITIES.filter((u) => u.city.toLowerCase() === city.toLowerCase());
@@ -265,9 +345,7 @@ export async function fetchPensionReviews(pensionId: string): Promise<PensionRev
         return json.data;
       }
     }
-  } catch {
-    // Fallback
-  }
+  } catch {}
   return [];
 }
 
@@ -291,9 +369,7 @@ export async function loginWithEmail(
         token: json.data.accessToken,
       };
     }
-  } catch {
-    // Fallback
-  }
+  } catch {}
 
   const isLandlord = email.includes('propietario') || email.includes('contacto');
   const isStudent = !isLandlord;

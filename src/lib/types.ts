@@ -71,10 +71,32 @@ export type PensionItem = {
   includesStudyRoom: boolean;
   nearestUniversityName: string;
   distanceToUniversityMeters: number;
+  distanceKm?: number;
+  relevanceScore?: number;
   photos: string[];
   rooms: RoomInfo[];
   curfewDescription?: string;
   visitsPolicy?: string;
+};
+
+export type NearbyCityCount = {
+  city: string;
+  count: number;
+  distanceKm: number;
+};
+
+export type PaginationMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+};
+
+export type PaginatedPensionsResponse = {
+  items: PensionItem[];
+  pagination: PaginationMeta;
+  nearbyCityCounts: NearbyCityCount[];
 };
 
 export type SearchFilters = {

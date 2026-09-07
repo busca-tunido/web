@@ -13,9 +13,10 @@ import { SplashScreen } from '@/components/layout/splash-screen';
 import { TopSearchBar } from '@/components/layout/top-search-bar';
 import { MapScreen } from '@/components/map/map-screen';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
-import { fetchCities, fetchPensions, fetchUniversities } from '@/lib/api-client';
+import { useInfinitePensions } from '@/hooks/use-infinite-pensions';
+import { fetchCities, fetchUniversities } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
-import { MOCK_CITIES, MOCK_PENSIONS, MOCK_UNIVERSITIES } from '@/lib/mock-data';
+import { MOCK_CITIES, MOCK_UNIVERSITIES } from '@/lib/mock-data';
 import type { CityInfo, NavTab, PensionItem, SearchFilters, UniversityInfo } from '@/lib/types';
 import { sortCitiesWithCurrentFirst, useUserLocation } from '@/lib/use-user-location';
 
@@ -28,7 +29,6 @@ export default function HomePage() {
 
   const [cities, setCities] = useState<CityInfo[]>(MOCK_CITIES);
   const [universities, setUniversities] = useState<UniversityInfo[]>(MOCK_UNIVERSITIES);
-  const [pensions, setPensions] = useState<PensionItem[]>(MOCK_PENSIONS);
 
   const { userLocation, currentCity, requestLocation } = useUserLocation(cities);
 
@@ -40,19 +40,42 @@ export default function HomePage() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+  const effectiveFilters = useMemo(
+    () => ({
+      ...filters,
+      city: selectedCity ?? undefined,
+      universityId: selectedUniversity?.id,
+    }),
+    [filters, selectedCity, selectedUniversity],
+  );
+
+  const {
+    items: pensions,
+    hasMore,
+    isLoading: isLoadingPensions,
+    isLoadingMore,
+    loadMore: loadMorePensions,
+    nearbyCityCounts,
+    total: totalPensions,
+  } = useInfinitePensions({
+    filters: effectiveFilters,
+    latitude: userLocation?.latitude,
+    longitude: userLocation?.longitude,
+    radiusKm: 30,
+    sortBy: 'relevance',
+  });
+
   useEffect(() => {
-    async function loadData() {
-      const [c, u, p] = await Promise.all([
+    async function loadMetadata() {
+      const [c, u] = await Promise.all([
         fetchCities(),
         fetchUniversities(selectedCity ?? undefined),
-        fetchPensions({ ...filters, city: selectedCity ?? undefined }),
       ]);
       setCities(c);
       setUniversities(u);
-      setPensions(p);
     }
-    loadData();
-  }, [filters, selectedCity]);
+    loadMetadata();
+  }, [selectedCity]);
 
   const handleSelectCity = (cityName: string) => {
     setSelectedCity(cityName);
@@ -70,6 +93,12 @@ export default function HomePage() {
   const handleOpenDetail = (pension: PensionItem) => {
     setSelectedPension(pension);
     setIsDetailOpen(true);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedCity(null);
+    setSelectedUniversity(null);
+    setFilters({ query: '' });
   };
 
   if (isLoading) {
@@ -118,10 +147,24 @@ export default function HomePage() {
                   universities={universities}
                   featuredPensions={pensions}
                   selectedCity={selectedCity}
-                  onSelectCity={handleSelectCity}
+                  onSelectCity={(city) => {
+                    if (city === null) {
+                      setSelectedCity(null);
+                      setSelectedUniversity(null);
+                    } else {
+                      handleSelectCity(city);
+                    }
+                  }}
                   onSelectUniversity={handleSelectUniversity}
                   onSelectPension={handleOpenDetail}
                   onNavigateToMap={() => setActiveTab('map')}
+                  hasMore={hasMore}
+                  isLoadingMore={isLoadingMore}
+                  isLoadingPensions={isLoadingPensions}
+                  onLoadMorePensions={loadMorePensions}
+                  nearbyCityCounts={nearbyCityCounts}
+                  totalPensions={totalPensions}
+                  onResetFilters={handleResetFilters}
                 />
               )}
 
