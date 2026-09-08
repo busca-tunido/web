@@ -20,7 +20,7 @@ type PensionReviewsModalProps = {
   reviews: PensionReview[];
 };
 
-type FilterCategory = 'ALL' | 'WITH_PHOTOS' | '5_STARS' | '4_PLUS' | 'LONG_STAY';
+type FilterCategory = 'ALL' | 'WITH_PHOTOS' | '5_STARS' | '4_PLUS' | 'LOW_RATING' | 'LONG_STAY';
 
 function formatStayDuration(cat?: string): string {
   switch (cat) {
@@ -119,6 +119,9 @@ export function PensionReviewsModal({
       }
       if (activeFilter === '4_PLUS') {
         return rating >= 4;
+      }
+      if (activeFilter === 'LOW_RATING') {
+        return rating < 4;
       }
       if (activeFilter === 'LONG_STAY') {
         const dur = r.stayDurationCategory || r.stayDuration;
@@ -295,6 +298,18 @@ export function PensionReviewsModal({
               }`}
             >
               5 Estrellas
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveFilter('LOW_RATING')}
+              className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                activeFilter === 'LOW_RATING'
+                  ? 'bg-foreground text-background'
+                  : 'border border-border bg-card text-foreground hover:bg-secondary'
+              }`}
+            >
+              Bajas calificaciones
             </button>
 
             <button

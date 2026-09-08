@@ -168,6 +168,32 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
               },
             },
           },
+          {
+            id: `fallback-rev-4-${pension.id}`,
+            pensionId: pension.id,
+            overallRating: 3,
+            cleanlinessRating: 3,
+            landlordRating: 3,
+            quietnessRating: 2,
+            wifiRating: 3,
+            comment:
+              'La pensión está bien ubicada, pero en época de calor las piezas del segundo piso son bastante calurosas y a veces el ruido de la calle dificulta estudiar.',
+            stayDurationCategory: 'FEW_WEEKS',
+            isResidentVerified: true,
+            createdAt: '2026-05-18T12:00:00Z',
+            images: [],
+            user: {
+              id: 'user-val-4',
+              firstName: 'Diego',
+              lastName: 'Morales',
+              avatarUrl:
+                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80',
+              university: {
+                shortName: 'UDP',
+                name: 'Universidad Diego Portales',
+              },
+            },
+          },
         ]);
       }
     }
