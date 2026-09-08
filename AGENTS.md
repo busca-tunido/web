@@ -44,6 +44,10 @@ BuscaTuNido Web is a mobile-first web application built with [Next.js](https://n
 1. **Strict Typing (Types over Interfaces)**:
    - Use TypeScript `type` aliases exclusively; `interface` declarations are strictly forbidden.
    - Forbid `any` (prefer `unknown` or generics). Explicitly type props, API responses, and custom handlers; rely on types for simple state.
+1. **Exclusive for Authenticated & Registered Users (No Guests Allowed)**:
+   - The application is strictly and exclusively for registered users who have logged in.
+   - Guest browsing, guest mode toggles, or unauthenticated interactions are strictly prohibited.
+   - Any unauthenticated state must block interaction and prompt immediate login or registration.
 1. **Conventional Commits (Concise, Single-Line Only)**:
    - All git commit messages must strictly follow the Conventional Commits specification (e.g., `feat`, `fix`, `chore`, `refactor`, `test`, `docs`).
    - Commit messages must be concise, single-line only, and omit any extended body description.
