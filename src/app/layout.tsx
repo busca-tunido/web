@@ -6,6 +6,7 @@ import './globals.css';
 
 const inter = Inter({
   subsets: ['latin'],
+  variable: '--font-sans',
   display: 'swap',
 });
 
@@ -96,7 +97,7 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="es" suppressHydrationWarning className={inter.className}>
+    <html lang="es" suppressHydrationWarning className={`${inter.variable} ${inter.className}`}>
       <head>
         <script src="/theme-init.js" />
         <RootJsonLd />
