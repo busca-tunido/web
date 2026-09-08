@@ -65,10 +65,10 @@ export function PublishReviewModal({
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [showSubRatings, setShowSubRatings] = useState(false);
 
-  const [cleanlinessRating, setCleanlinessRating] = useState<number>(5);
-  const [landlordRating, setLandlordRating] = useState<number>(5);
-  const [quietnessRating, setQuietnessRating] = useState<number>(5);
-  const [wifiRating, setWifiRating] = useState<number>(5);
+  const [cleanlinessRating, setCleanlinessRating] = useState<number | null>(null);
+  const [landlordRating, setLandlordRating] = useState<number | null>(null);
+  const [quietnessRating, setQuietnessRating] = useState<number | null>(null);
+  const [wifiRating, setWifiRating] = useState<number | null>(null);
 
   const [stayDuration, setStayDuration] = useState<StayDurationCategory>('ONE_SEMESTER');
   const [comment, setComment] = useState('');
@@ -128,10 +128,10 @@ export function PublishReviewModal({
 
       const reviewPayload = {
         overallRating,
-        cleanlinessRating: showSubRatings ? cleanlinessRating : overallRating,
-        landlordRating: showSubRatings ? landlordRating : overallRating,
-        quietnessRating: showSubRatings ? quietnessRating : overallRating,
-        wifiRating: showSubRatings ? wifiRating : overallRating,
+        cleanlinessRating: cleanlinessRating ?? undefined,
+        landlordRating: landlordRating ?? undefined,
+        quietnessRating: quietnessRating ?? undefined,
+        wifiRating: wifiRating ?? undefined,
         comment: comment.trim(),
         stayDurationCategory: stayDuration,
         images: uploadedUrls,
@@ -143,10 +143,10 @@ export function PublishReviewModal({
         id: `rev-${Date.now()}`,
         pensionId: pension.id,
         overallRating,
-        cleanlinessRating: showSubRatings ? cleanlinessRating : overallRating,
-        landlordRating: showSubRatings ? landlordRating : overallRating,
-        quietnessRating: showSubRatings ? quietnessRating : overallRating,
-        wifiRating: showSubRatings ? wifiRating : overallRating,
+        cleanlinessRating: cleanlinessRating ?? undefined,
+        landlordRating: landlordRating ?? undefined,
+        quietnessRating: quietnessRating ?? undefined,
+        wifiRating: wifiRating ?? undefined,
         comment: comment.trim(),
         stayDurationCategory: stayDuration,
         isResidentVerified: true,
@@ -289,23 +289,33 @@ export function PublishReviewModal({
                     <Sparkles className="h-3.5 w-3.5 text-primary" />
                     <span>Limpieza e Higiene</span>
                   </div>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((v) => (
-                      <button
-                        key={`clean-${v}`}
-                        type="button"
-                        onClick={() => setCleanlinessRating(v)}
-                        className="p-0.5"
-                      >
-                        <Star
-                          className={`h-4 w-4 ${
-                            v <= cleanlinessRating
-                              ? 'fill-amber-500 text-amber-500'
-                              : 'fill-muted text-muted-foreground/30'
-                          }`}
-                        />
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((v) => (
+                        <button
+                          key={`clean-${v}`}
+                          type="button"
+                          onClick={() => setCleanlinessRating(cleanlinessRating === v ? null : v)}
+                          className="p-0.5 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                          aria-label={`Limpieza ${v} estrellas`}
+                        >
+                          <Star
+                            className={`h-4 w-4 ${
+                              cleanlinessRating !== null && v <= cleanlinessRating
+                                ? 'fill-amber-500 text-amber-500'
+                                : 'fill-muted text-muted-foreground/30'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <span className="w-16 text-[10px] text-right font-medium text-muted-foreground">
+                      {cleanlinessRating !== null ? (
+                        `${cleanlinessRating}/5`
+                      ) : (
+                        <span className="text-muted-foreground/50">Opcional</span>
+                      )}
+                    </span>
                   </div>
                 </div>
 
@@ -314,23 +324,33 @@ export function PublishReviewModal({
                     <Zap className="h-3.5 w-3.5 text-primary" />
                     <span>Trato y Convivencia con el Dueño</span>
                   </div>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((v) => (
-                      <button
-                        key={`landlord-${v}`}
-                        type="button"
-                        onClick={() => setLandlordRating(v)}
-                        className="p-0.5"
-                      >
-                        <Star
-                          className={`h-4 w-4 ${
-                            v <= landlordRating
-                              ? 'fill-amber-500 text-amber-500'
-                              : 'fill-muted text-muted-foreground/30'
-                          }`}
-                        />
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((v) => (
+                        <button
+                          key={`landlord-${v}`}
+                          type="button"
+                          onClick={() => setLandlordRating(landlordRating === v ? null : v)}
+                          className="p-0.5 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                          aria-label={`Trato del dueño ${v} estrellas`}
+                        >
+                          <Star
+                            className={`h-4 w-4 ${
+                              landlordRating !== null && v <= landlordRating
+                                ? 'fill-amber-500 text-amber-500'
+                                : 'fill-muted text-muted-foreground/30'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <span className="w-16 text-[10px] text-right font-medium text-muted-foreground">
+                      {landlordRating !== null ? (
+                        `${landlordRating}/5`
+                      ) : (
+                        <span className="text-muted-foreground/50">Opcional</span>
+                      )}
+                    </span>
                   </div>
                 </div>
 
@@ -339,23 +359,33 @@ export function PublishReviewModal({
                     <Wind className="h-3.5 w-3.5 text-primary" />
                     <span>Tranquilidad y Silencio para Estudiar</span>
                   </div>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((v) => (
-                      <button
-                        key={`quiet-${v}`}
-                        type="button"
-                        onClick={() => setQuietnessRating(v)}
-                        className="p-0.5"
-                      >
-                        <Star
-                          className={`h-4 w-4 ${
-                            v <= quietnessRating
-                              ? 'fill-amber-500 text-amber-500'
-                              : 'fill-muted text-muted-foreground/30'
-                          }`}
-                        />
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((v) => (
+                        <button
+                          key={`quiet-${v}`}
+                          type="button"
+                          onClick={() => setQuietnessRating(quietnessRating === v ? null : v)}
+                          className="p-0.5 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                          aria-label={`Tranquilidad ${v} estrellas`}
+                        >
+                          <Star
+                            className={`h-4 w-4 ${
+                              quietnessRating !== null && v <= quietnessRating
+                                ? 'fill-amber-500 text-amber-500'
+                                : 'fill-muted text-muted-foreground/30'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <span className="w-16 text-[10px] text-right font-medium text-muted-foreground">
+                      {quietnessRating !== null ? (
+                        `${quietnessRating}/5`
+                      ) : (
+                        <span className="text-muted-foreground/50">Opcional</span>
+                      )}
+                    </span>
                   </div>
                 </div>
 
@@ -364,23 +394,33 @@ export function PublishReviewModal({
                     <Wifi className="h-3.5 w-3.5 text-primary" />
                     <span>Calidad del Internet y Wi-Fi</span>
                   </div>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((v) => (
-                      <button
-                        key={`wifi-${v}`}
-                        type="button"
-                        onClick={() => setWifiRating(v)}
-                        className="p-0.5"
-                      >
-                        <Star
-                          className={`h-4 w-4 ${
-                            v <= wifiRating
-                              ? 'fill-amber-500 text-amber-500'
-                              : 'fill-muted text-muted-foreground/30'
-                          }`}
-                        />
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((v) => (
+                        <button
+                          key={`wifi-${v}`}
+                          type="button"
+                          onClick={() => setWifiRating(wifiRating === v ? null : v)}
+                          className="p-0.5 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                          aria-label={`Internet ${v} estrellas`}
+                        >
+                          <Star
+                            className={`h-4 w-4 ${
+                              wifiRating !== null && v <= wifiRating
+                                ? 'fill-amber-500 text-amber-500'
+                                : 'fill-muted text-muted-foreground/30'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <span className="w-16 text-[10px] text-right font-medium text-muted-foreground">
+                      {wifiRating !== null ? (
+                        `${wifiRating}/5`
+                      ) : (
+                        <span className="text-muted-foreground/50">Opcional</span>
+                      )}
+                    </span>
                   </div>
                 </div>
               </div>
