@@ -160,3 +160,14 @@ div.leaflet-marker-icon.custom-div-icon {
 .user-pulse-marker {
   animation: user-pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
 }
+
+.no-scrollbar,
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

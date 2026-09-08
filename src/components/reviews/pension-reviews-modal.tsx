@@ -274,7 +274,7 @@ export function PensionReviewsModal({
             </div>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar -mx-1 px-1">
+          <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar -mx-1 px-1 shrink-0">
             <button
               type="button"
               onClick={() => setActiveFilter('ALL')}
@@ -418,7 +418,7 @@ export function PensionReviewsModal({
                     <p className="text-xs text-foreground/90 leading-relaxed">{review.comment}</p>
 
                     {photos.length > 0 && (
-                      <div className="flex gap-2 overflow-x-auto pt-1 pb-1">
+                      <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar shrink-0">
                         {photos.map((img, photoIdx) => (
                           <button
                             key={`review-photo-${review.id}-${photoIdx}`}
