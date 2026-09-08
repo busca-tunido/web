@@ -6,7 +6,6 @@ import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerHeader,
@@ -57,7 +56,6 @@ export function PensionReviewsModal({
   reviews,
 }: PensionReviewsModalProps) {
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('ALL');
-  const [helpfulLikes, setHelpfulLikes] = useState<Record<string, number>>({});
   const [userLiked, setUserLiked] = useState<Record<string, boolean>>({});
   const [enlargedPhoto, setEnlargedPhoto] = useState<string | null>(null);
 
@@ -131,14 +129,10 @@ export function PensionReviewsModal({
   }, [reviews, activeFilter]);
 
   const toggleHelpful = (reviewId: string) => {
-    setUserLiked((prev) => {
-      const nextLiked = !prev[reviewId];
-      setHelpfulLikes((prevCounts) => ({
-        ...prevCounts,
-        [reviewId]: (prevCounts[reviewId] || 0) + (nextLiked ? 1 : -1),
-      }));
-      return { ...prev, [reviewId]: nextLiked };
-    });
+    setUserLiked((prev) => ({
+      ...prev,
+      [reviewId]: !prev[reviewId],
+    }));
   };
 
   return (
@@ -156,18 +150,9 @@ export function PensionReviewsModal({
             </button>
             <div>
               <h3 className="text-base font-bold text-foreground">Reseñas de la pensión</h3>
-              <p className="text-[11px] text-muted-foreground truncate max-w-[240px]">
-                {pension.title}
-              </p>
+              <p className="text-[11px] text-muted-foreground truncate max-w-sm">{pension.title}</p>
             </div>
           </div>
-
-          <DrawerClose
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
-            aria-label="Cerrar"
-          >
-            <X className="h-4 w-4" />
-          </DrawerClose>
         </div>
 
         <DrawerHeader className="sr-only">
@@ -336,7 +321,7 @@ export function PensionReviewsModal({
                 const photos = review.images?.slice(0, 3) || [];
                 const isLiked = Boolean(userLiked[review.id]);
                 const baseLikes = (review.comment.length % 4) + 1;
-                const likesCount = (helpfulLikes[review.id] || 0) + baseLikes;
+                const likesCount = baseLikes + (isLiked ? 1 : 0);
 
                 return (
                   <div

@@ -580,7 +580,7 @@ export function MapScreen({
         </div>
 
         {drawerState === 'maximized' && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40">
+          <div className="absolute bottom-[5.25rem] left-1/2 -translate-x-1/2 z-40">
             <button
               type="button"
               onClick={() => setDrawerState('minimized')}
