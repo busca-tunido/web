@@ -40,6 +40,8 @@ export function BrandLogo({
           height={iconDimensions.height}
           priority={priority}
           className="object-contain shrink-0"
+          style={{ width: iconDimensions.width, height: iconDimensions.height }}
+          suppressHydrationWarning
         />
         <span className={cn('font-black tracking-tight text-foreground leading-none', textClasses)}>
           BuscaTuNido
