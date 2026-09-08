@@ -487,6 +487,43 @@ export const MOCK_STAY_HISTORY: StayHistoryItem[] = [
     monthlyPaidClp: 279600,
     imageUrl:
       'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80',
+    review: {
+      id: 'my-rev-1',
+      pensionId: 'pen-1',
+      overallRating: 5,
+      cleanlinessRating: 5,
+      landlordRating: 5,
+      quietnessRating: 4,
+      wifiRating: 5,
+      comment:
+        'Mi experiencia en Residencia República Estudiantil fue excelente durante todo el año académico 2025. Los gastos comunes siempre claros, la señal de internet nunca falló para estudiar y la cercanía al metro República ahorra muchísimo tiempo diario.',
+      stayDurationCategory: 'ONE_YEAR',
+      isResidentVerified: true,
+      createdAt: '2025-12-22T14:30:00Z',
+      images: [
+        {
+          id: 'img-my-1',
+          url: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80',
+          caption: 'Pieza individual',
+        },
+        {
+          id: 'img-my-2',
+          url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=600&q=80',
+          caption: 'Espacio de estudio',
+        },
+      ],
+      user: {
+        id: 'me',
+        firstName: 'Tomás',
+        lastName: 'González',
+        avatarUrl:
+          'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
+        university: {
+          shortName: 'UCHILE',
+          name: 'Universidad de Chile',
+        },
+      },
+    },
   },
   {
     id: 'stay-2',
@@ -501,5 +538,31 @@ export const MOCK_STAY_HISTORY: StayHistoryItem[] = [
     monthlyPaidClp: 235327,
     imageUrl:
       'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80',
+    review: {
+      id: 'my-rev-2',
+      pensionId: 'pen-4',
+      overallRating: 4,
+      cleanlinessRating: 4,
+      landlordRating: 5,
+      quietnessRating: 4,
+      wifiRating: 4,
+      comment:
+        'Muy buen lugar para vivir el primer año de universidad en Santiago Centro. La cocina compartida se mantiene limpia y el anfitrión siempre fue muy atento.',
+      stayDurationCategory: 'ONE_YEAR',
+      isResidentVerified: true,
+      createdAt: '2024-12-18T10:00:00Z',
+      images: [],
+      user: {
+        id: 'me',
+        firstName: 'Tomás',
+        lastName: 'González',
+        avatarUrl:
+          'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
+        university: {
+          shortName: 'UCHILE',
+          name: 'Universidad de Chile',
+        },
+      },
+    },
   },
 ];

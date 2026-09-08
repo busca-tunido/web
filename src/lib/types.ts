@@ -123,6 +123,7 @@ export type StayHistoryItem = {
   hasReview: boolean;
   monthlyPaidClp: number;
   imageUrl: string;
+  review?: PensionReview;
 };
 
 export type StayDurationCategory =

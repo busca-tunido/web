@@ -6,6 +6,8 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MOCK_STAY_HISTORY } from '@/lib/mock-data';
+import type { StayHistoryItem } from '@/lib/types';
+import { UserReviewModal } from './user-review-modal';
 
 type HistoryScreenProps = {
   onExplore?: () => void;
@@ -13,6 +15,7 @@ type HistoryScreenProps = {
 
 export function HistoryScreen({ onExplore }: HistoryScreenProps) {
   const [stays] = useState(MOCK_STAY_HISTORY);
+  const [selectedReviewStay, setSelectedReviewStay] = useState<StayHistoryItem | null>(null);
 
   return (
     <div id="history-screen-view" className="flex flex-col gap-4 px-4 pb-28 pt-2">
@@ -106,7 +109,8 @@ export function HistoryScreen({ onExplore }: HistoryScreenProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 border-border text-[11px] text-foreground hover:bg-secondary"
+                    onClick={() => setSelectedReviewStay(stay)}
+                    className="h-8 border-border text-[11px] text-foreground hover:bg-secondary cursor-pointer"
                   >
                     <MessageSquare className="mr-1 h-3 w-3" /> Ver reseña
                   </Button>
@@ -116,6 +120,12 @@ export function HistoryScreen({ onExplore }: HistoryScreenProps) {
           ))}
         </div>
       )}
+
+      <UserReviewModal
+        isOpen={Boolean(selectedReviewStay)}
+        onClose={() => setSelectedReviewStay(null)}
+        stay={selectedReviewStay}
+      />
     </div>
   );
 }
