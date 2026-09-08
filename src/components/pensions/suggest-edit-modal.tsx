@@ -467,52 +467,52 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label
-                    htmlFor="suggest-address-input"
-                    className="block text-[11px] font-medium text-muted-foreground mb-1"
-                  >
-                    Dirección
-                  </label>
-                  <input
-                    id="suggest-address-input"
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="w-full rounded-xl border border-border bg-background px-2.5 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="suggest-neighborhood-input"
-                    className="block text-[11px] font-medium text-muted-foreground mb-1"
-                  >
-                    Barrio / Comuna
-                  </label>
-                  <input
-                    id="suggest-neighborhood-input"
-                    type="text"
-                    value={neighborhood}
-                    onChange={(e) => setNeighborhood(e.target.value)}
-                    className="w-full rounded-xl border border-border bg-background px-2.5 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="suggest-city-input"
-                    className="block text-[11px] font-medium text-muted-foreground mb-1"
-                  >
-                    Ciudad
-                  </label>
-                  <input
-                    id="suggest-city-input"
-                    type="text"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-full rounded-xl border border-border bg-background px-2.5 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
-                  />
-                </div>
+              <div>
+                <label
+                  htmlFor="suggest-address-input"
+                  className="block text-[11px] font-medium text-muted-foreground mb-1"
+                >
+                  Dirección
+                </label>
+                <input
+                  id="suggest-address-input"
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="suggest-neighborhood-input"
+                  className="block text-[11px] font-medium text-muted-foreground mb-1"
+                >
+                  Barrio / Comuna
+                </label>
+                <input
+                  id="suggest-neighborhood-input"
+                  type="text"
+                  value={neighborhood}
+                  onChange={(e) => setNeighborhood(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="suggest-city-input"
+                  className="block text-[11px] font-medium text-muted-foreground mb-1"
+                >
+                  Ciudad
+                </label>
+                <input
+                  id="suggest-city-input"
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                />
               </div>
             </div>
           </details>
