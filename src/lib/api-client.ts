@@ -1,3 +1,5 @@
+import createClient from 'openapi-fetch';
+import type { components, paths } from './api-schema';
 import { MOCK_CITIES, MOCK_PENSIONS, MOCK_UNIVERSITIES } from './mock-data';
 import type {
   CityInfo,
@@ -19,6 +21,10 @@ if (!API_BASE) {
   );
 }
 
+export const apiClient = createClient<paths>({
+  baseUrl: API_BASE,
+});
+
 export type ApiResponseEnvelope<T> = {
   success: boolean;
   statusCode: number;
@@ -26,7 +32,10 @@ export type ApiResponseEnvelope<T> = {
   data: T;
 };
 
-type BackendPension = {
+export type CreateProposalInput = components['schemas']['CreateProposalDto'];
+export type CreateReviewInput = components['schemas']['CreateReviewDto'];
+
+type ApiPensionPayload = {
   id: string;
   slug?: string;
   title: string;
@@ -34,9 +43,9 @@ type BackendPension = {
   address?: string;
   neighborhood?: string;
   city: string;
-  latitude: number | string;
-  longitude: number | string;
-  baseMonthlyPrice: number | string;
+  latitude?: number | string;
+  longitude?: number | string;
+  baseMonthlyPrice?: number | string;
   deposit?: number | string | null;
   currency?: string;
   waterIncluded?: boolean;
@@ -55,8 +64,8 @@ type BackendPension = {
   ratingCount?: number;
   distanceKm?: number;
   relevanceScore?: number;
-  images?: Array<{ url: string; caption?: string; isFeatured?: boolean }>;
-  amenities?: Array<{ slug: string; name: string }>;
+  images?: Array<{ url: string; caption?: string; isFeatured?: boolean } | string>;
+  amenities?: Array<{ slug: string; name?: string }>;
   nearbyUniversities?: Array<{
     distanceMeters?: number;
     walkingMinutes?: number;
@@ -80,7 +89,7 @@ type BackendPension = {
   };
 };
 
-function mapBackendPensionToPensionItem(raw: BackendPension): PensionItem {
+function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem {
   const images = Array.isArray(raw.images)
     ? raw.images.map((img) => (typeof img === 'string' ? img : img.url))
     : [];
@@ -96,7 +105,7 @@ function mapBackendPensionToPensionItem(raw: BackendPension): PensionItem {
     firstNearby?.university?.shortName || firstNearby?.university?.name || 'Universidad de Chile';
   const distanceMeters = firstNearby?.distanceMeters ?? 450;
 
-  const amenitiesSlugs = new Set(raw.amenities?.map((a) => a.slug) || []);
+  const amenitiesSlugs = new Set((raw.amenities || []).map((a) => a.slug));
 
   const rooms: RoomInfo[] =
     Array.isArray(raw.rooms) && raw.rooms.length > 0
@@ -177,31 +186,31 @@ export async function fetchPaginatedPensions(
   const limit = params?.limit ?? 12;
 
   try {
-    const searchParams = new URLSearchParams();
-    if (params?.city) searchParams.set('city', params.city);
-    if (params?.universityId) searchParams.set('universityId', params.universityId);
-    if (params?.query) searchParams.set('search', params.query);
-    if (params?.maxPriceClp) searchParams.set('maxPrice', String(params.maxPriceClp));
-    if (params?.latitude !== undefined) searchParams.set('latitude', String(params.latitude));
-    if (params?.longitude !== undefined) searchParams.set('longitude', String(params.longitude));
-    if (params?.radiusKm !== undefined) searchParams.set('radiusKm', String(params.radiusKm));
-    if (params?.sortBy) searchParams.set('sortBy', params.sortBy);
-    searchParams.set('page', String(page));
-    searchParams.set('limit', String(limit));
-
-    const res = await fetch(`${API_BASE}/pensions?${searchParams.toString()}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+    const { response } = await apiClient.GET('/pensions', {
+      params: {
+        query: {
+          city: params?.city,
+          universityId: params?.universityId,
+          search: params?.query,
+          maxPrice: params?.maxPriceClp,
+          latitude: params?.latitude,
+          longitude: params?.longitude,
+          radiusKm: params?.radiusKm,
+          sortBy: params?.sortBy,
+          page,
+          limit,
+        },
+      },
     });
 
-    if (res.ok) {
-      const json = (await res.json()) as ApiResponseEnvelope<{
-        items: BackendPension[];
+    if (response.ok) {
+      const json = (await response.json()) as ApiResponseEnvelope<{
+        items: ApiPensionPayload[];
         pagination?: PaginationMeta;
         nearbyCityCounts?: NearbyCityCount[];
       }>;
       if (json?.data?.items) {
-        const items = json.data.items.map(mapBackendPensionToPensionItem);
+        const items = json.data.items.map(mapRawPensionToPensionItem);
         const pagination = json.data.pagination ?? {
           page,
           limit,
@@ -285,15 +294,14 @@ export async function fetchCities(): Promise<CityInfo[]> {
 
 export async function fetchUniversities(city?: string): Promise<UniversityInfo[]> {
   try {
-    const url = city
-      ? `${API_BASE}/universities?city=${encodeURIComponent(city)}`
-      : `${API_BASE}/universities`;
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+    const { response } = await apiClient.GET('/universities', {
+      params: {
+        query: city ? { city } : undefined,
+      },
     });
-    if (res.ok) {
-      const json = (await res.json()) as ApiResponseEnvelope<
+
+    if (response.ok) {
+      const json = (await response.json()) as ApiResponseEnvelope<
         Array<{
           id: string;
           name: string;
@@ -335,12 +343,14 @@ export async function fetchUniversities(city?: string): Promise<UniversityInfo[]
 
 export async function fetchPensionReviews(pensionId: string): Promise<PensionReview[]> {
   try {
-    const res = await fetch(`${API_BASE}/pensions/${encodeURIComponent(pensionId)}/reviews`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+    const { response } = await apiClient.GET('/pensions/{pensionId}/reviews', {
+      params: {
+        path: { pensionId },
+      },
     });
-    if (res.ok) {
-      const json = (await res.json()) as ApiResponseEnvelope<PensionReview[]>;
+
+    if (response.ok) {
+      const json = (await response.json()) as ApiResponseEnvelope<PensionReview[]>;
       if (json?.data && Array.isArray(json.data)) {
         return json.data;
       }
@@ -354,13 +364,12 @@ export async function loginWithEmail(
   password = 'Password123!',
 ): Promise<{ user: UserProfile; token: string }> {
   try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+    const { response } = await apiClient.POST('/auth/login', {
+      body: { email, password },
     });
-    if (res.ok) {
-      const json = (await res.json()) as ApiResponseEnvelope<{
+
+    if (response.ok) {
+      const json = (await response.json()) as ApiResponseEnvelope<{
         user: UserProfile;
         accessToken: string;
       }>;
@@ -387,5 +396,95 @@ export async function loginWithEmail(
         : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
     },
     token: isLandlord ? 'mock-jwt-token-landlord' : 'mock-jwt-token-student',
+  };
+}
+
+export async function submitPensionReview(
+  pensionId: string,
+  review: CreateReviewInput,
+  token?: string,
+): Promise<PensionReview | null> {
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const { response } = await apiClient.POST('/pensions/{pensionId}/reviews', {
+    params: {
+      path: { pensionId },
+    },
+    body: review,
+    headers,
+  });
+
+  if (response.ok) {
+    const json = (await response.json()) as ApiResponseEnvelope<PensionReview>;
+    return json.data;
+  }
+  const errJson = (await response.json().catch(() => ({}))) as { message?: string };
+  throw new Error(errJson.message || 'No se pudo publicar la reseña');
+}
+
+export async function submitPensionProposal(
+  pensionId: string,
+  proposal: CreateProposalInput,
+  token?: string,
+): Promise<{ id: string } | null> {
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const { response } = await apiClient.POST('/pensions/{id}/proposals', {
+    params: {
+      path: { id: pensionId },
+    },
+    body: proposal,
+    headers,
+  });
+
+  if (response.ok) {
+    const json = (await response.json()) as ApiResponseEnvelope<{ id: string }>;
+    return json.data;
+  }
+  const errJson = (await response.json().catch(() => ({}))) as { message?: string };
+  throw new Error(errJson.message || 'No se pudo enviar la propuesta');
+}
+
+export async function uploadImageFile(
+  file: File,
+  token?: string,
+): Promise<{ url: string; thumbnailUrl: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE}/uploads/images`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(err.message || 'Error al subir la imagen');
+  }
+
+  const json = (await res.json()) as ApiResponseEnvelope<{
+    url: string;
+    thumbnailUrl: string;
+    width: number;
+    height: number;
+    format: string;
+    size: number;
+  }>;
+
+  return {
+    url: json.data.url,
+    thumbnailUrl: json.data.thumbnailUrl,
   };
 }
