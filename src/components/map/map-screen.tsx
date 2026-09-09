@@ -1,9 +1,16 @@
 'use client';
 
-import { ChevronDown, ChevronUp, Heart, Locate, Star } from 'lucide-react';
-import { motion, type PanInfo, useDragControls, useMotionValue } from 'motion/react';
+import { ChevronDown, ChevronUp, Heart, Loader2, Locate, Star } from 'lucide-react';
+import {
+  AnimatePresence,
+  motion,
+  type PanInfo,
+  useDragControls,
+  useMotionValue,
+} from 'motion/react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { fetchPaginatedPensions } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
@@ -48,6 +55,19 @@ export function MapScreen({
   const [drawerState, setDrawerState] = useState<DrawerState>('minimized');
   const [containerHeight, setContainerHeight] = useState(800);
   const dragControls = useDragControls();
+
+  const [mapPensions, setMapPensions] = useState<PensionItem[]>(pensions);
+  const [isAreaLoading, setIsAreaLoading] = useState(false);
+
+  useEffect(() => {
+    setMapPensions(pensions);
+  }, [pensions]);
+
+  const mapPensionsRef = useRef(mapPensions);
+  mapPensionsRef.current = mapPensions;
+
+  const moveEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const activeRequestIdRef = useRef(0);
 
   const [activePinId, setActivePinId] = useState<string | null>(selectedPension?.id ?? null);
 
@@ -104,12 +124,12 @@ export function MapScreen({
   }, []);
 
   const displayedPensions = useMemo(() => {
-    if (!activePinId) return pensions;
-    const active = pensions.find((p) => p.id === activePinId);
-    if (!active) return pensions;
-    const others = pensions.filter((p) => p.id !== activePinId);
+    if (!activePinId) return mapPensions;
+    const active = mapPensions.find((p) => p.id === activePinId);
+    if (!active) return mapPensions;
+    const others = mapPensions.filter((p) => p.id !== activePinId);
     return [active, ...others];
-  }, [pensions, activePinId]);
+  }, [mapPensions, activePinId]);
 
   const renderMarkers = useCallback(() => {
     const L = leafletModuleRef.current;
@@ -119,7 +139,7 @@ export function MapScreen({
 
     markersGroup.clearLayers();
 
-    for (const pension of pensions) {
+    for (const pension of mapPensions) {
       const isSelected = pension.id === activePinId;
       const formattedPrice = `$${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP`;
 
@@ -159,7 +179,7 @@ export function MapScreen({
 
       marker.addTo(markersGroup);
     }
-  }, [pensions, activePinId, onSelectPension, panToPension]);
+  }, [mapPensions, activePinId, onSelectPension, panToPension]);
 
   const renderUserMarker = useCallback(() => {
     const L = leafletModuleRef.current;
@@ -260,6 +280,58 @@ export function MapScreen({
   const panToPensionRef = useRef(panToPension);
   panToPensionRef.current = panToPension;
 
+  const handleMapMoveEnd = useCallback(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    if (moveEndTimeoutRef.current) {
+      clearTimeout(moveEndTimeoutRef.current);
+    }
+
+    moveEndTimeoutRef.current = setTimeout(async () => {
+      const currentMap = mapInstanceRef.current;
+      if (!currentMap) return;
+
+      const bounds = currentMap.getBounds();
+      const currentList = mapPensionsRef.current;
+
+      const hasAnyVisible = currentList.some((p) => bounds.contains([p.latitude, p.longitude]));
+
+      if (!hasAnyVisible) {
+        setIsAreaLoading(true);
+      }
+
+      const requestId = ++activeRequestIdRef.current;
+
+      try {
+        const res = await fetchPaginatedPensions({
+          minLat: bounds.getSouth(),
+          maxLat: bounds.getNorth(),
+          minLng: bounds.getWest(),
+          maxLng: bounds.getEast(),
+          limit: 50,
+        });
+
+        if (requestId === activeRequestIdRef.current) {
+          setMapPensions(res.items);
+          setActivePinId((prev) => {
+            if (!prev) return null;
+            const stillExists = res.items.some((p) => p.id === prev);
+            return stillExists ? prev : null;
+          });
+        }
+      } catch {
+      } finally {
+        if (requestId === activeRequestIdRef.current) {
+          setIsAreaLoading(false);
+        }
+      }
+    }, 400);
+  }, []);
+
+  const handleMapMoveEndRef = useRef(handleMapMoveEnd);
+  handleMapMoveEndRef.current = handleMapMoveEnd;
+
   useEffect(() => {
     let isMounted = true;
 
@@ -314,6 +386,10 @@ export function MapScreen({
       tileLayerRef.current = tileLayer;
       mapInstanceRef.current = map;
 
+      map.on('moveend', () => {
+        handleMapMoveEndRef.current();
+      });
+
       const markersGroup = L.layerGroup().addTo(map);
       markersLayerRef.current = markersGroup;
 
@@ -341,6 +417,9 @@ export function MapScreen({
 
     return () => {
       isMounted = false;
+      if (moveEndTimeoutRef.current) {
+        clearTimeout(moveEndTimeoutRef.current);
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -476,6 +555,23 @@ export function MapScreen({
       className="relative h-full w-full overflow-hidden bg-background select-none"
     >
       <div ref={mapContainerRef} className="h-full w-full z-0" />
+
+      <AnimatePresence>
+        {isAreaLoading && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+          >
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card/90 border border-border/80 text-xs font-semibold text-foreground shadow-lg backdrop-blur-md">
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+              <span>Buscando en esta zona...</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <button
         type="button"

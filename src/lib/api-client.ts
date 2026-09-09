@@ -176,6 +176,10 @@ export type FetchPensionsParams = Partial<SearchFilters> & {
   latitude?: number;
   longitude?: number;
   radiusKm?: number;
+  minLat?: number;
+  maxLat?: number;
+  minLng?: number;
+  maxLng?: number;
   sortBy?: 'relevance' | 'distance' | 'price_asc' | 'price_desc' | 'rating';
 };
 
@@ -196,10 +200,14 @@ export async function fetchPaginatedPensions(
           latitude: params?.latitude,
           longitude: params?.longitude,
           radiusKm: params?.radiusKm,
+          minLat: params?.minLat,
+          maxLat: params?.maxLat,
+          minLng: params?.minLng,
+          maxLng: params?.maxLng,
           sortBy: params?.sortBy,
           page,
           limit,
-        },
+        } as Record<string, unknown>,
       },
     });
 
@@ -229,6 +237,16 @@ export async function fetchPaginatedPensions(
   } catch {}
 
   let results = [...MOCK_PENSIONS];
+  const minLat = params?.minLat;
+  const maxLat = params?.maxLat;
+  const minLng = params?.minLng;
+  const maxLng = params?.maxLng;
+  if (minLat !== undefined && maxLat !== undefined) {
+    results = results.filter((p) => p.latitude >= minLat && p.latitude <= maxLat);
+  }
+  if (minLng !== undefined && maxLng !== undefined) {
+    results = results.filter((p) => p.longitude >= minLng && p.longitude <= maxLng);
+  }
   if (params?.city) {
     results = results.filter((p) => p.city.toLowerCase() === params.city?.toLowerCase());
   }
