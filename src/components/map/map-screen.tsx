@@ -140,8 +140,8 @@ export function MapScreen({
       const customIcon = L.divIcon({
         className: 'custom-div-icon',
         html: iconHtml,
-        iconSize: [120, 32],
-        iconAnchor: [60, 16],
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
       });
 
       const marker = L.marker([pension.latitude, pension.longitude], {
@@ -216,8 +216,8 @@ export function MapScreen({
       const uniIcon = L.divIcon({
         className: 'custom-div-icon',
         html: uniIconHtml,
-        iconSize: [120, 36],
-        iconAnchor: [60, 36],
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
       });
 
       if (universityMarkerRef.current) {

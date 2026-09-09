@@ -124,11 +124,13 @@ export function PensionReviewsPreview({
                 </div>
 
                 <div className="flex items-center gap-1 mb-1.5 text-amber-500">
-                  {Array.from({ length: 5 }).map((_, idx) => (
+                  {[1, 2, 3, 4, 5].map((value) => (
                     <Star
-                      key={`star-${review.id}-${idx}`}
+                      key={`star-${review.id}-${value}`}
                       className={`h-3 w-3 ${
-                        idx < rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'
+                        value < rating
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'text-muted-foreground/30'
                       }`}
                     />
                   ))}
