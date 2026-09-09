@@ -55,12 +55,14 @@ export function MapScreen({
 
   const cardListRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const containerHeightRef = useRef(containerHeight);
 
   useEffect(() => {
     const updateHeight = () => {
       if (mapContainerRef.current) {
         const h = mapContainerRef.current.clientHeight || window.innerHeight;
         setContainerHeight(h);
+        containerHeightRef.current = h;
       }
     };
     updateHeight();
@@ -85,6 +87,23 @@ export function MapScreen({
   const userMarkerRef = useRef<import('leaflet').Marker | null>(null);
   const universityMarkerRef = useRef<import('leaflet').Marker | null>(null);
   const leafletModuleRef = useRef<typeof import('leaflet') | null>(null);
+
+  const panToPension = useCallback((lat: number, lng: number) => {
+    const map = mapInstanceRef.current;
+    const L = leafletModuleRef.current;
+    if (!map || !L) return;
+
+    const zoom = map.getZoom();
+    const markerPoint = map.project([lat, lng], zoom);
+    const height = map.getSize().y || containerHeightRef.current || 800;
+    const topBarHeight = 68;
+    const drawerTop = height * 0.5;
+    const visibleCenterY = (topBarHeight + drawerTop) / 2;
+    const yOffset = height / 2 - visibleCenterY;
+
+    const targetCenter = map.unproject(L.point(markerPoint.x, markerPoint.y + yOffset), zoom);
+    map.panTo(targetCenter, { animate: true });
+  }, []);
 
   const displayedPensions = useMemo(() => {
     if (!activePinId) return pensions;
@@ -137,12 +156,12 @@ export function MapScreen({
         if (cardListRef.current) {
           cardListRef.current.scrollTop = 0;
         }
-        map.panTo([pension.latitude, pension.longitude], { animate: true });
+        panToPension(pension.latitude, pension.longitude);
       });
 
       marker.addTo(markersGroup);
     }
-  }, [pensions, activePinId, onSelectPension]);
+  }, [pensions, activePinId, onSelectPension, panToPension]);
 
   const renderUserMarker = useCallback(() => {
     const L = leafletModuleRef.current;
@@ -240,6 +259,9 @@ export function MapScreen({
   const renderUniversityMarkerRef = useRef(renderUniversityMarker);
   renderUniversityMarkerRef.current = renderUniversityMarker;
 
+  const panToPensionRef = useRef(panToPension);
+  panToPensionRef.current = panToPension;
+
   useEffect(() => {
     let isMounted = true;
 
@@ -306,6 +328,15 @@ export function MapScreen({
       renderMarkersRef.current();
       renderUserMarkerRef.current();
       renderUniversityMarkerRef.current();
+
+      const initialPension = initProps.selectedPension;
+      if (initialPension) {
+        setTimeout(() => {
+          if (isMounted) {
+            panToPensionRef.current(initialPension.latitude, initialPension.longitude);
+          }
+        }, 160);
+      }
     }
 
     initMap();
@@ -347,19 +378,9 @@ export function MapScreen({
       if (cardListRef.current) {
         cardListRef.current.scrollTop = 0;
       }
-      const map = mapInstanceRef.current;
-      if (map) {
-        const center = map.getCenter();
-        const distLat = Math.abs(center.lat - selectedPension.latitude);
-        const distLng = Math.abs(center.lng - selectedPension.longitude);
-        if (distLat > 0.0001 || distLng > 0.0001) {
-          map.panTo([selectedPension.latitude, selectedPension.longitude], {
-            animate: true,
-          });
-        }
-      }
+      panToPension(selectedPension.latitude, selectedPension.longitude);
     }
-  }, [selectedPension]);
+  }, [selectedPension, panToPension]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
