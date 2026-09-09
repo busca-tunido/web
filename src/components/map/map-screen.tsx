@@ -143,7 +143,7 @@ export function MapScreen({
                ${formattedPrice}
              </div>
            </div>`
-				: `<div style="transform: translate(-50%, -50%); cursor: pointer;">
+				: `<div style="width: 100px; transform: translate(-50%, -50%); cursor: pointer;">
              <div class="px-2.5 py-1 rounded-full text-xs font-bold shadow-md bg-card text-foreground border border-border hover:border-primary/60 hover:bg-secondary flex items-center justify-center whitespace-nowrap">
                ${formattedPrice}
              </div>
