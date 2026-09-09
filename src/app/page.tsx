@@ -24,7 +24,7 @@ export default function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<NavTab>('explore');
   const [filters, setFilters] = useState<SearchFilters>({ query: '' });
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [mapTargetCity, setMapTargetCity] = useState<string | null>(null);
   const [selectedUniversity, setSelectedUniversity] = useState<UniversityInfo | null>(null);
 
   const [cities, setCities] = useState<CityInfo[]>(MOCK_CITIES);
@@ -43,10 +43,9 @@ export default function HomePage() {
   const effectiveFilters = useMemo(
     () => ({
       ...filters,
-      city: selectedCity ?? undefined,
       universityId: selectedUniversity?.id,
     }),
-    [filters, selectedCity, selectedUniversity],
+    [filters, selectedUniversity],
   );
 
   const {
@@ -67,24 +66,21 @@ export default function HomePage() {
 
   useEffect(() => {
     async function loadMetadata() {
-      const [c, u] = await Promise.all([
-        fetchCities(),
-        fetchUniversities(selectedCity ?? undefined),
-      ]);
+      const [c, u] = await Promise.all([fetchCities(), fetchUniversities()]);
       setCities(c);
       setUniversities(u);
     }
     loadMetadata();
-  }, [selectedCity]);
+  }, []);
 
   const handleSelectCity = (cityName: string) => {
-    setSelectedCity(cityName);
+    setMapTargetCity(cityName);
     setSelectedUniversity(null);
     setActiveTab('map');
   };
 
   const handleSelectUniversity = (uni: UniversityInfo) => {
-    setSelectedCity(uni.city);
+    setMapTargetCity(uni.city);
     setSelectedUniversity(uni);
     setFilters((prev) => ({ ...prev, query: uni.acronym }));
     setActiveTab('map');
@@ -96,7 +92,7 @@ export default function HomePage() {
   };
 
   const handleResetFilters = () => {
-    setSelectedCity(null);
+    setMapTargetCity(null);
     setSelectedUniversity(null);
     setFilters({ query: '' });
   };
@@ -124,10 +120,9 @@ export default function HomePage() {
           filters={filters}
           onFilterChange={setFilters}
           onOpenFilterDrawer={() => setIsFilterOpen(true)}
-          selectedCityName={selectedCity ?? undefined}
+          selectedCityName={filters.city}
           onClearCity={() => {
-            setSelectedCity(null);
-            setSelectedUniversity(null);
+            setFilters((prev) => ({ ...prev, city: undefined }));
           }}
         />
 
@@ -146,10 +141,10 @@ export default function HomePage() {
                   cities={sortedCities}
                   universities={universities}
                   featuredPensions={pensions}
-                  selectedCity={selectedCity}
+                  selectedCity={null}
                   onSelectCity={(city) => {
                     if (city === null) {
-                      setSelectedCity(null);
+                      setMapTargetCity(null);
                       setSelectedUniversity(null);
                     } else {
                       handleSelectCity(city);
@@ -173,7 +168,7 @@ export default function HomePage() {
                   pensions={pensions}
                   cities={sortedCities}
                   selectedPension={selectedPension}
-                  selectedCity={selectedCity}
+                  selectedCity={mapTargetCity}
                   selectedUniversity={selectedUniversity}
                   userLocation={userLocation}
                   onRequestLocation={requestLocation}
