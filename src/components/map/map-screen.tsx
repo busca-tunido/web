@@ -23,6 +23,14 @@ type MapScreenProps = {
 
 type DrawerState = 'minimized' | 'half' | 'maximized';
 
+function getTileUrl(theme: 'light' | 'dark') {
+  const apiKey = process.env.NEXT_PUBLIC_CARTO_API_KEY;
+  const keyParam = apiKey ? `?api_key=${apiKey}` : '';
+  return theme === 'dark'
+    ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${keyParam}`
+    : `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${keyParam}`;
+}
+
 export function MapScreen({
   pensions,
   cities,
@@ -78,14 +86,6 @@ export function MapScreen({
   const universityMarkerRef = useRef<import('leaflet').Marker | null>(null);
   const leafletModuleRef = useRef<typeof import('leaflet') | null>(null);
 
-  const getTileUrl = useCallback((theme: 'light' | 'dark') => {
-    const apiKey = process.env.NEXT_PUBLIC_CARTO_API_KEY;
-    const keyParam = apiKey ? `?api_key=${apiKey}` : '';
-    return theme === 'dark'
-      ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${keyParam}`
-      : `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${keyParam}`;
-  }, []);
-
   const displayedPensions = useMemo(() => {
     if (!activePinId) return pensions;
     const active = pensions.find((p) => p.id === activePinId);
@@ -137,6 +137,7 @@ export function MapScreen({
         if (cardListRef.current) {
           cardListRef.current.scrollTop = 0;
         }
+        map.panTo([pension.latitude, pension.longitude], { animate: true });
       });
 
       marker.addTo(markersGroup);
@@ -221,37 +222,58 @@ export function MapScreen({
     }
   }, [selectedUniversity]);
 
+  const initPropsRef = useRef({
+    selectedPension,
+    selectedUniversity,
+    selectedCity,
+    userLocation,
+    cities,
+    resolvedTheme,
+  });
+
+  const renderMarkersRef = useRef(renderMarkers);
+  renderMarkersRef.current = renderMarkers;
+
+  const renderUserMarkerRef = useRef(renderUserMarker);
+  renderUserMarkerRef.current = renderUserMarker;
+
+  const renderUniversityMarkerRef = useRef(renderUniversityMarker);
+  renderUniversityMarkerRef.current = renderUniversityMarker;
+
   useEffect(() => {
     let isMounted = true;
 
     async function initMap() {
       const L = await import('leaflet');
       if (!isMounted || !mapContainerRef.current) return;
+      if (mapInstanceRef.current) return;
       leafletModuleRef.current = L;
-
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
 
       let initialLat = -33.4489;
       let initialLng = -70.6693;
       let initialZoom = 13;
 
-      if (selectedUniversity) {
-        initialLat = selectedUniversity.latitude;
-        initialLng = selectedUniversity.longitude;
+      const initProps = initPropsRef.current;
+      if (initProps.selectedPension) {
+        initialLat = initProps.selectedPension.latitude;
+        initialLng = initProps.selectedPension.longitude;
         initialZoom = 15;
-      } else if (selectedCity) {
-        const cityMatch = cities.find((c) => c.name.toLowerCase() === selectedCity.toLowerCase());
+      } else if (initProps.selectedUniversity) {
+        initialLat = initProps.selectedUniversity.latitude;
+        initialLng = initProps.selectedUniversity.longitude;
+        initialZoom = 15;
+      } else if (initProps.selectedCity) {
+        const cityMatch = initProps.cities.find(
+          (c) => c.name.toLowerCase() === initProps.selectedCity?.toLowerCase(),
+        );
         if (cityMatch) {
           initialLat = cityMatch.latitude;
           initialLng = cityMatch.longitude;
           initialZoom = 13;
         }
-      } else if (userLocation) {
-        initialLat = userLocation.latitude;
-        initialLng = userLocation.longitude;
+      } else if (initProps.userLocation) {
+        initialLat = initProps.userLocation.latitude;
+        initialLng = initProps.userLocation.longitude;
         initialZoom = 14;
       }
 
@@ -262,7 +284,7 @@ export function MapScreen({
         attributionControl: false,
       });
 
-      const tileUrl = getTileUrl(resolvedTheme);
+      const tileUrl = getTileUrl(initProps.resolvedTheme);
 
       const tileLayer = L.tileLayer(tileUrl, {
         maxZoom: 20,
@@ -281,9 +303,9 @@ export function MapScreen({
         }
       }, 150);
 
-      renderMarkers();
-      renderUserMarker();
-      renderUniversityMarker();
+      renderMarkersRef.current();
+      renderUserMarkerRef.current();
+      renderUniversityMarkerRef.current();
     }
 
     initMap();
@@ -299,23 +321,13 @@ export function MapScreen({
       userMarkerRef.current = null;
       universityMarkerRef.current = null;
     };
-  }, [
-    cities,
-    getTileUrl,
-    renderMarkers,
-    renderUserMarker,
-    renderUniversityMarker,
-    resolvedTheme,
-    selectedCity,
-    selectedUniversity,
-    userLocation,
-  ]);
+  }, []);
 
   useEffect(() => {
     if (tileLayerRef.current) {
       tileLayerRef.current.setUrl(getTileUrl(resolvedTheme));
     }
-  }, [resolvedTheme, getTileUrl]);
+  }, [resolvedTheme]);
 
   useEffect(() => {
     renderMarkers();
@@ -334,6 +346,17 @@ export function MapScreen({
       setActivePinId(selectedPension.id);
       if (cardListRef.current) {
         cardListRef.current.scrollTop = 0;
+      }
+      const map = mapInstanceRef.current;
+      if (map) {
+        const center = map.getCenter();
+        const distLat = Math.abs(center.lat - selectedPension.latitude);
+        const distLng = Math.abs(center.lng - selectedPension.longitude);
+        if (distLat > 0.0001 || distLng > 0.0001) {
+          map.panTo([selectedPension.latitude, selectedPension.longitude], {
+            animate: true,
+          });
+        }
       }
     }
   }, [selectedPension]);
