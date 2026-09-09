@@ -74,12 +74,14 @@ export default function HomePage() {
   }, []);
 
   const handleSelectCity = (cityName: string) => {
+    setSelectedPension(null);
     setMapTargetCity(cityName);
     setSelectedUniversity(null);
     setActiveTab('map');
   };
 
   const handleSelectUniversity = (uni: UniversityInfo) => {
+    setSelectedPension(null);
     setMapTargetCity(uni.city);
     setSelectedUniversity(uni);
     setFilters((prev) => ({ ...prev, query: uni.acronym }));
@@ -92,6 +94,7 @@ export default function HomePage() {
   };
 
   const handleResetFilters = () => {
+    setSelectedPension(null);
     setMapTargetCity(null);
     setSelectedUniversity(null);
     setFilters({ query: '' });
@@ -144,6 +147,7 @@ export default function HomePage() {
                   selectedCity={null}
                   onSelectCity={(city) => {
                     if (city === null) {
+                      setSelectedPension(null);
                       setMapTargetCity(null);
                       setSelectedUniversity(null);
                     } else {
