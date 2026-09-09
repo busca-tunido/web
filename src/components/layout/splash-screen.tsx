@@ -15,7 +15,7 @@ export function SplashScreen() {
         transition={{ duration: 0.35, ease: 'easeOut' }}
         className="flex flex-col items-center gap-4 text-center"
       >
-        <BrandLogo size="lg" />
+        <BrandLogo size="lg" priority={false} />
 
         <span className="text-xs font-medium text-muted-foreground">
           Tu hogar universitario en Chile

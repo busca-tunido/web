@@ -14,7 +14,7 @@ export function BrandLogo({
   size = 'md',
   className,
   showSubtitle = false,
-  priority = true,
+  priority = false,
 }: BrandLogoProps) {
   const iconDimensions = {
     sm: { width: 74, height: 64 },

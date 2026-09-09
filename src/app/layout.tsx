@@ -8,6 +8,7 @@ const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
+  preload: false,
 });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://buscatunido.vercel.app';
@@ -102,7 +103,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <script src="/theme-init.js" />
         <RootJsonLd />
       </head>
-      <body className="min-h-screen bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground transition-colors duration-200">
+      <body
+        className={`${inter.className} min-h-screen bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground transition-colors duration-200`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -73,7 +73,7 @@ export function ExploreScreen({
         </div>
 
         <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x">
-          {sortedCities.map((city) => {
+          {sortedCities.map((city, index) => {
             const isSelected = selectedCity?.toLowerCase() === city.name.toLowerCase();
             return (
               <motion.button
@@ -92,6 +92,7 @@ export function ExploreScreen({
                   alt={city.name}
                   fill
                   unoptimized
+                  loading={index < 3 ? 'eager' : 'lazy'}
                   sizes="144px"
                   className="object-cover transition duration-300 group-hover:scale-105"
                 />
@@ -135,7 +136,7 @@ export function ExploreScreen({
         </div>
 
         <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x">
-          {sortedUniversities.map((uni) => (
+          {sortedUniversities.map((uni, index) => (
             <motion.button
               type="button"
               key={uni.id}
@@ -148,6 +149,7 @@ export function ExploreScreen({
                 alt={uni.name}
                 fill
                 unoptimized
+                loading={index < 3 ? 'eager' : 'lazy'}
                 sizes="176px"
                 className="object-cover opacity-80 transition duration-300 group-hover:scale-105"
               />

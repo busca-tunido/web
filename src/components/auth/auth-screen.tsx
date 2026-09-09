@@ -90,7 +90,7 @@ export function AuthScreen() {
     >
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
         <div className="mb-6 flex items-center justify-center">
-          <BrandLogo size="md" />
+          <BrandLogo size="md" priority={false} />
         </div>
 
         <div className="text-center mb-8">

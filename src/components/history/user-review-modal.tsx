@@ -46,8 +46,8 @@ export function UserReviewModal({ isOpen, onClose, stay }: UserReviewModalProps)
       lastName: user?.lastName || 'González',
       avatarUrl: user?.avatarUrl,
       university: {
-        shortName: user?.university?.shortName || 'UCHILE',
-        name: user?.university?.name || 'Universidad de Chile',
+        shortName: user?.universityName ? 'UCHILE' : 'UCHILE',
+        name: user?.universityName || 'Universidad de Chile',
       },
     },
   };
