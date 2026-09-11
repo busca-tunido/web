@@ -69,12 +69,12 @@ Implement an intuitive two-step authentication and registration pipeline on the 
 
 ## Checklist
 
-- [ ] Implement `src/components/auth/email-check-step.tsx` verifying email existence via API: execute Camino A (existing UI password prompt with "Cambiar correo" and "Acceder ->") if registered, or Camino B (open `<StudentRegisterModal />`) if unregistered.
-- [ ] Implement `src/components/auth/student-register-modal.tsx` with student fields and dynamic university selection.
-- [ ] Wire registration submit with `authService.registerStudent()` and automatic session login in `useAuthFlow`.
-- [ ] Connect robust error handling for network timeouts and duplicate emails.
-- [ ] Write component tests in `tests/components/auth-flow.spec.tsx` verifying email check step and modal triggers.
-- [ ] Validate code quality with Biome (`pnpm run check && pnpm run review`).
+- [x] Implement `src/components/auth/email-check-step.tsx` verifying email existence via API: execute Camino A (existing UI password prompt with "Cambiar correo" and "Acceder ->") if registered, or Camino B (open `<StudentRegisterModal />`) if unregistered.
+- [x] Implement `src/components/auth/student-register-modal.tsx` with student fields and dynamic university selection.
+- [x] Wire registration submit with `authService.registerStudent()` and automatic session login in `useAuthFlow`.
+- [x] Connect robust error handling for network timeouts and duplicate emails.
+- [x] Write component tests in `tests/components/auth-flow.spec.tsx` verifying email check step and modal triggers.
+- [x] Validate code quality with Biome (`pnpm run check && pnpm run review`).
 
 ## Verification
 
