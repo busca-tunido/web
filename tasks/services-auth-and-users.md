@@ -37,10 +37,10 @@ Implement 100% of the backend API endpoints for authentication, session verifica
 
 ## Checklist
 
-- [ ] Implement `src/services/auth.service.ts` covering 100% of auth endpoints (`/auth/register`, `/auth/login`, `/auth/me`).
-- [ ] Implement `src/services/moderation.service.ts` covering 100% of moderation endpoints (`/moderation/reviews/:id/visibility`, `/moderation/pensions/:id/status`).
-- [ ] Strictly type all request bodies and return values with OpenAPI contracts (`paths` from `api-schema.d.ts`).
-- [ ] Validate code quality with Biome (`pnpm run check && pnpm run review`).
+- [x] Implement `src/services/auth.service.ts` covering 100% of auth endpoints (`/auth/register`, `/auth/login`, `/auth/me`).
+- [x] Implement `src/services/moderation.service.ts` covering 100% of moderation endpoints (`/moderation/reviews/:id/visibility`, `/moderation/pensions/:id/status`).
+- [x] Strictly type all request bodies and return values with OpenAPI contracts (`paths` from `api-schema.d.ts`).
+- [x] Validate code quality with Biome (`pnpm run check && pnpm run review`).
 
 ## Verification
 
