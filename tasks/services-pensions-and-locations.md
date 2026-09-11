@@ -54,12 +54,12 @@ Implement 100% of the backend API endpoints for pensions, individual rooms, and 
 
 ## Checklist
 
-- [ ] Implement `src/services/pensions.service.ts` covering 100% of pensions endpoints (`GET /pensions`, `GET /pensions/:idOrSlug`, `POST`, `PATCH`, `DELETE`).
-- [ ] Implement `src/services/rooms.service.ts` covering 100% of room endpoints (`GET`, `POST`, `PATCH`, `DELETE`).
-- [ ] Implement `src/services/universities.service.ts` covering 100% of universities endpoints (`GET`, `POST`, `PATCH`, `DELETE`).
-- [ ] Implement `src/services/locations.service.ts` for city extraction and GPS sorting.
-- [ ] Ensure all query parameters and payload types use `api-schema.d.ts` OpenAPI types.
-- [ ] Validate code quality with Biome (`pnpm run check && pnpm run review`).
+- [x] Implement `src/services/pensions.service.ts` covering 100% of pensions endpoints (`GET /pensions`, `GET /pensions/:idOrSlug`, `POST`, `PATCH`, `DELETE`).
+- [x] Implement `src/services/rooms.service.ts` covering 100% of room endpoints (`GET`, `POST`, `PATCH`, `DELETE`).
+- [x] Implement `src/services/universities.service.ts` covering 100% of universities endpoints (`GET`, `POST`, `PATCH`, `DELETE`).
+- [x] Implement `src/services/locations.service.ts` for city extraction and GPS sorting.
+- [x] Ensure all query parameters and payload types use `api-schema.d.ts` OpenAPI types.
+- [x] Validate code quality with Biome (`pnpm run check && pnpm run review`).
 
 ## Verification
 
