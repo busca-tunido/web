@@ -3,9 +3,12 @@
 import { MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
+import { Suspense } from 'react';
 import { InfinitePensionList } from '@/components/pensions/infinite-pension-list';
 import { NearbyCitiesBar } from '@/components/pensions/nearby-cities-bar';
 import { Badge } from '@/components/ui/badge';
+import { ExploreSkeleton } from '@/components/ui/skeletons/explore-skeleton';
+import { PensionCardSkeleton } from '@/components/ui/skeletons/pension-card-skeleton';
 import type { CityInfo, NearbyCityCount, PensionItem, UniversityInfo } from '@/lib/types';
 
 type ExploreScreenProps = {
@@ -186,28 +189,75 @@ export function ExploreScreen({
         />
       )}
 
-      <section>
-        <div className="flex items-center justify-between px-5 mb-4">
-          <h3 className="text-lg font-bold text-foreground tracking-tight">
-            Alojamientos Destacados
-          </h3>
-          <span className="text-xs text-muted-foreground">
-            {totalPensions !== undefined
-              ? `${totalPensions} alojamientos`
-              : `${featuredPensions.length} alojamientos`}
-          </span>
-        </div>
-
-        <InfinitePensionList
-          items={featuredPensions}
+      <Suspense fallback={<ExploreSkeleton />}>
+        <PensionListSection
+          featuredPensions={featuredPensions}
+          totalPensions={totalPensions}
           hasMore={hasMore}
-          isLoading={isLoadingPensions}
+          isLoadingPensions={isLoadingPensions}
           isLoadingMore={isLoadingMore}
-          onLoadMore={onLoadMorePensions}
+          onLoadMorePensions={onLoadMorePensions}
           onSelectPension={onSelectPension}
           onResetFilters={onResetFilters}
         />
-      </section>
+      </Suspense>
     </div>
+  );
+}
+
+type PensionListSectionProps = {
+  featuredPensions: PensionItem[];
+  totalPensions?: number;
+  hasMore: boolean;
+  isLoadingPensions: boolean;
+  isLoadingMore: boolean;
+  onLoadMorePensions: () => void;
+  onSelectPension: (pension: PensionItem) => void;
+  onResetFilters?: () => void;
+};
+
+function PensionListSection({
+  featuredPensions,
+  totalPensions,
+  hasMore,
+  isLoadingPensions,
+  isLoadingMore,
+  onLoadMorePensions,
+  onSelectPension,
+  onResetFilters,
+}: PensionListSectionProps) {
+  if (isLoadingPensions && featuredPensions.length === 0) {
+    return (
+      <div className="px-4 flex flex-col gap-6 sm:grid sm:grid-cols-2">
+        {[1, 2, 3, 4].map((id) => (
+          <PensionCardSkeleton key={`pension-loading-${id}`} />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <section>
+      <div className="flex items-center justify-between px-5 mb-4">
+        <h3 className="text-lg font-bold text-foreground tracking-tight">
+          Alojamientos Destacados
+        </h3>
+        <span className="text-xs text-muted-foreground">
+          {totalPensions !== undefined
+            ? `${totalPensions} alojamientos`
+            : `${featuredPensions.length} alojamientos`}
+        </span>
+      </div>
+
+      <InfinitePensionList
+        items={featuredPensions}
+        hasMore={hasMore}
+        isLoading={isLoadingPensions}
+        isLoadingMore={isLoadingMore}
+        onLoadMore={onLoadMorePensions}
+        onSelectPension={onSelectPension}
+        onResetFilters={onResetFilters}
+      />
+    </section>
   );
 }

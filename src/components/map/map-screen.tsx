@@ -9,7 +9,8 @@ import {
   useMotionValue,
 } from 'motion/react';
 import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
 import { fetchPaginatedPensions } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
@@ -643,82 +644,17 @@ export function MapScreen({
           ref={cardListRef}
           className="relative flex-1 overflow-y-auto px-5 pb-24 pt-2 flex flex-col gap-6"
         >
-          {displayedPensions.map((pension) => {
-            const isFav = isFavorite(pension.id);
-
-            return (
-              <div
-                key={pension.id}
-                id={`pension-item-${pension.id}`}
-                className="group relative flex flex-col text-left transition"
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActivePinId(pension.id);
-                    onSelectPension(pension);
-                    onOpenPensionDetail(pension);
-                  }}
-                  className="w-full flex flex-col text-left cursor-pointer"
-                >
-                  <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm">
-                    <Image
-                      src={pension.photos[0]}
-                      alt={pension.title}
-                      fill
-                      unoptimized
-                      sizes="(max-width: 640px) 100vw, 480px"
-                      className="object-cover transition duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-
-                    {pension.isVerified && (
-                      <div className="absolute bottom-3 left-3">
-                        <span className="rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold text-foreground backdrop-blur-md border border-border/60">
-                          Verificada
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-2.5 flex flex-col gap-1 w-full">
-                    <div className="flex items-start justify-between gap-2">
-                      <h4 className="text-base font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition">
-                        {pension.title}
-                      </h4>
-                      <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
-                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                        <span>{pension.ratingAverage.toFixed(1)}</span>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      {pension.neighborhood}, {pension.city} • a{' '}
-                      {pension.distanceToUniversityMeters}m de campus
-                    </p>
-
-                    <div className="mt-0.5 flex items-baseline gap-1">
-                      <span className="text-base font-bold text-foreground">
-                        ${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP
-                      </span>
-                      <span className="text-xs text-muted-foreground">/ mes</span>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => toggleFavorite(pension.id)}
-                  className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md hover:text-primary transition active:scale-90 shadow-sm border border-border/40 cursor-pointer"
-                  aria-label="Guardar en favoritos"
-                >
-                  <Heart
-                    className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : 'stroke-[2]'}`}
-                  />
-                </button>
-              </div>
-            );
-          })}
+          <Suspense fallback={<MapDrawerSkeleton />}>
+            <MapDrawerPensionList
+              displayedPensions={displayedPensions}
+              isAreaLoading={isAreaLoading}
+              isFavorite={isFavorite}
+              toggleFavorite={toggleFavorite}
+              onSelectPension={onSelectPension}
+              onOpenPensionDetail={onOpenPensionDetail}
+              setActivePinId={setActivePinId}
+            />
+          </Suspense>
         </div>
 
         {drawerState === 'maximized' && (
@@ -738,5 +674,108 @@ export function MapScreen({
         )}
       </motion.div>
     </div>
+  );
+}
+
+type MapDrawerPensionListProps = {
+  displayedPensions: PensionItem[];
+  isAreaLoading: boolean;
+  isFavorite: (id: string) => boolean;
+  toggleFavorite: (id: string) => void;
+  onSelectPension: (pension: PensionItem) => void;
+  onOpenPensionDetail: (pension: PensionItem) => void;
+  setActivePinId: (id: string) => void;
+};
+
+function MapDrawerPensionList({
+  displayedPensions,
+  isAreaLoading,
+  isFavorite,
+  toggleFavorite,
+  onSelectPension,
+  onOpenPensionDetail,
+  setActivePinId,
+}: MapDrawerPensionListProps) {
+  if (isAreaLoading && displayedPensions.length === 0) {
+    return <MapDrawerSkeleton />;
+  }
+
+  return (
+    <>
+      {displayedPensions.map((pension) => {
+        const isFav = isFavorite(pension.id);
+
+        return (
+          <div
+            key={pension.id}
+            id={`pension-item-${pension.id}`}
+            className="group relative flex flex-col text-left transition"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setActivePinId(pension.id);
+                onSelectPension(pension);
+                onOpenPensionDetail(pension);
+              }}
+              className="w-full flex flex-col text-left cursor-pointer"
+            >
+              <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm">
+                <Image
+                  src={pension.photos[0]}
+                  alt={pension.title}
+                  fill
+                  unoptimized
+                  sizes="(max-width: 640px) 100vw, 480px"
+                  className="object-cover transition duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+
+                {pension.isVerified && (
+                  <div className="absolute bottom-3 left-3">
+                    <span className="rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold text-foreground backdrop-blur-md border border-border/60">
+                      Verificada
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-2.5 flex flex-col gap-1 w-full">
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="text-base font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition">
+                    {pension.title}
+                  </h4>
+                  <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <span>{pension.ratingAverage.toFixed(1)}</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground line-clamp-1">
+                  {pension.neighborhood}, {pension.city} • a {pension.distanceToUniversityMeters}m
+                  de campus
+                </p>
+
+                <div className="mt-0.5 flex items-baseline gap-1">
+                  <span className="text-base font-bold text-foreground">
+                    ${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP
+                  </span>
+                  <span className="text-xs text-muted-foreground">/ mes</span>
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => toggleFavorite(pension.id)}
+              className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md hover:text-primary transition active:scale-90 shadow-sm border border-border/40 cursor-pointer"
+              aria-label="Guardar en favoritos"
+            >
+              <Heart className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : 'stroke-[2]'}`} />
+            </button>
+          </div>
+        );
+      })}
+    </>
   );
 }

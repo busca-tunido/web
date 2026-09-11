@@ -2,7 +2,7 @@
 
 import { Award, Camera, ChevronLeft, Star, X } from 'lucide-react';
 import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import {
   Drawer,
   DrawerContent,
@@ -10,6 +10,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import { ReviewsSkeleton } from '@/components/ui/skeletons/reviews-skeleton';
 import type { PensionItem, PensionReview } from '@/lib/types';
 import { ReviewCard } from './review-card';
 
@@ -298,30 +299,14 @@ export function PensionReviewsModal({
             </button>
           </div>
 
-          <div className="flex flex-col gap-4">
-            {filteredReviews.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground">
-                <p className="text-xs">No hay reseñas con los filtros seleccionados.</p>
-              </div>
-            ) : (
-              filteredReviews.map((review) => {
-                const isLiked = Boolean(userLiked[review.id]);
-                const baseLikes = (review.comment.length % 4) + 1;
-                const likesCount = baseLikes + (isLiked ? 1 : 0);
-
-                return (
-                  <ReviewCard
-                    key={`full-review-${review.id}`}
-                    review={review}
-                    isLiked={isLiked}
-                    likesCount={likesCount}
-                    onToggleHelpful={toggleHelpful}
-                    onEnlargePhoto={setEnlargedPhoto}
-                  />
-                );
-              })
-            )}
-          </div>
+          <Suspense fallback={<ReviewsSkeleton />}>
+            <ReviewFeedList
+              filteredReviews={filteredReviews}
+              userLiked={userLiked}
+              toggleHelpful={toggleHelpful}
+              setEnlargedPhoto={setEnlargedPhoto}
+            />
+          </Suspense>
         </div>
 
         {enlargedPhoto && (
@@ -357,5 +342,48 @@ export function PensionReviewsModal({
         )}
       </DrawerContent>
     </Drawer>
+  );
+}
+
+type ReviewFeedListProps = {
+  filteredReviews: PensionReview[];
+  userLiked: Record<string, boolean>;
+  toggleHelpful: (id: string) => void;
+  setEnlargedPhoto: (url: string | null) => void;
+};
+
+function ReviewFeedList({
+  filteredReviews,
+  userLiked,
+  toggleHelpful,
+  setEnlargedPhoto,
+}: ReviewFeedListProps) {
+  if (filteredReviews.length === 0) {
+    return (
+      <div className="rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground">
+        <p className="text-xs">No hay reseñas con los filtros seleccionados.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {filteredReviews.map((review) => {
+        const isLiked = Boolean(userLiked[review.id]);
+        const baseLikes = (review.comment.length % 4) + 1;
+        const likesCount = baseLikes + (isLiked ? 1 : 0);
+
+        return (
+          <ReviewCard
+            key={`full-review-${review.id}`}
+            review={review}
+            isLiked={isLiked}
+            likesCount={likesCount}
+            onToggleHelpful={toggleHelpful}
+            onEnlargePhoto={setEnlargedPhoto}
+          />
+        );
+      })}
+    </div>
   );
 }
