@@ -33,14 +33,17 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.11",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/react": "^16.3.3",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "happy-dom": "^20.14.3",
     "openapi-typescript": "^7.13.0",
     "schema-dts": "^2.0.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.0"
   },
   "packageManager": "pnpm@12.4.1"
 }

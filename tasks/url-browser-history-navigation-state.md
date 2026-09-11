@@ -44,12 +44,12 @@ Synchronize all active panel transitions, opened modals, bottom sheets, and deta
 
 ## Checklist
 
-- [ ] Implement `src/hooks/use-url-navigation-state.ts` parsing and pushing URL query parameters.
-- [ ] Connect browser `popstate` event listener to gracefully sync active tab, modal, and drawer states.
-- [ ] Ensure pressing the browser back button `<` closes open drawers/modals first before switching tabs.
-- [ ] Ensure direct deep linking via URL initializes the corresponding tab or detail modal on initial page mount.
-- [ ] Write unit tests in `tests/hooks/use-url-navigation-state.spec.ts` covering parameter serialization, history push, and popstate handling.
-- [ ] Validate code quality with Biome (`pnpm run check && pnpm run review`).
+- [x] Implement `src/hooks/use-url-navigation-state.ts` parsing and pushing URL query parameters.
+- [x] Connect browser `popstate` event listener to gracefully sync active tab, modal, and drawer states.
+- [x] Ensure pressing the browser back button `<` closes open drawers/modals first before switching tabs.
+- [x] Ensure direct deep linking via URL initializes the corresponding tab or detail modal on initial page mount.
+- [x] Write unit tests in `tests/hooks/use-url-navigation-state.spec.ts` covering parameter serialization, history push, and popstate handling.
+- [x] Validate code quality with Biome (`pnpm run check && pnpm run review`).
 
 ## Verification
 
