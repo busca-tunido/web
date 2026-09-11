@@ -59,13 +59,13 @@ Implement 100% of the backend API endpoints for community interaction, favorites
 
 ## Checklist
 
-- [ ] Implement `src/services/reviews.service.ts` covering 100% of reviews API endpoints (`GET`, `POST`, `PATCH`, `DELETE`).
-- [ ] Implement `src/services/favorites.service.ts` covering 100% of favorites API endpoints (`GET`, `POST`, `DELETE`).
-- [ ] Implement `src/services/proposals.service.ts` covering 100% of edit proposal API endpoints.
-- [ ] Implement `src/services/reports.service.ts` covering 100% of user report API endpoints.
-- [ ] Implement `src/services/uploads.service.ts` covering multipart image upload API endpoint (`POST /uploads/images`).
-- [ ] Ensure all service functions use generated OpenAPI types from `api-schema.d.ts` without any `any`.
-- [ ] Validate code quality with Biome (`pnpm run check && pnpm run review`).
+- [x] Implement `src/services/reviews.service.ts` covering 100% of reviews API endpoints (`GET`, `POST`, `PATCH`, `DELETE`).
+- [x] Implement `src/services/favorites.service.ts` covering 100% of favorites API endpoints (`GET`, `POST`, `DELETE`).
+- [x] Implement `src/services/proposals.service.ts` covering 100% of edit proposal API endpoints.
+- [x] Implement `src/services/reports.service.ts` covering 100% of user report API endpoints.
+- [x] Implement `src/services/uploads.service.ts` covering multipart image upload API endpoint (`POST /uploads/images`).
+- [x] Ensure all service functions use generated OpenAPI types from `api-schema.d.ts` without any `any`.
+- [x] Validate code quality with Biome (`pnpm run check && pnpm run review`).
 
 ## Verification
 
