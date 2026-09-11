@@ -16,9 +16,7 @@ import type {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE) {
-  throw new Error(
-    'Missing required environment variable: NEXT_PUBLIC_API_URL must be defined in environment (.env).',
-  );
+  throw new Error('Missing env var: NEXT_PUBLIC_API_URL must be defined in environment (.env).');
 }
 
 export const apiClient = createClient<paths>({

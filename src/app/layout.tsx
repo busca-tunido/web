@@ -11,7 +11,10 @@ const inter = Inter({
   preload: false,
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://buscatunido.vercel.app';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL;
+if (!APP_URL) {
+  throw new Error('Missing env var: NEXT_PUBLIC_APP_URL must be defined in environment (.env).');
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
