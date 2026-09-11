@@ -50,11 +50,11 @@ Standardize client-side form validation across the web application using Zod wit
 
 ## Checklist
 
-- [ ] Define Zod schemas in `src/lib/validations/auth.schema.ts`, `reviews.schema.ts`, and `pensions.schema.ts`.
-- [ ] Create `src/hooks/use-form-validation.ts` with real-time feedback and touched-state tracking.
-- [ ] Create `src/components/ui/form-field.tsx` with accessible error tags and transition animations.
-- [ ] Write unit tests in `tests/validations/schemas.spec.ts` verifying all schema constraints and error messages.
-- [ ] Validate code quality with Biome (`pnpm run check && pnpm run review`).
+- [x] Define Zod schemas in `src/lib/validations/auth.schema.ts`, `reviews.schema.ts`, and `pensions.schema.ts`.
+- [x] Create `src/hooks/use-form-validation.ts` with real-time feedback and touched-state tracking.
+- [x] Create `src/components/ui/form-field.tsx` with accessible error tags and transition animations.
+- [x] Write unit tests in `tests/validations/schemas.spec.ts` verifying all schema constraints and error messages.
+- [x] Validate code quality with Biome (`pnpm run check && pnpm run review`).
 
 ## Verification
 
