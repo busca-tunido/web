@@ -51,14 +51,14 @@ Implement modern progressive streaming and client-side hydration boundaries usin
 
 ## Checklist
 
-- [ ] Create reusable skeleton primitives in `src/components/ui/skeletons/` for pension cards, explore feed, map drawer, favorites, history, and reviews.
-- [ ] Integrate `<Suspense>` boundaries into `ExploreScreen` with `ExploreSkeleton`.
-- [ ] Integrate `<Suspense>` boundaries into `MapScreen` drawer with `MapDrawerSkeleton`.
-- [ ] Integrate `<Suspense>` boundaries into `FavoritesScreen` with `FavoritesSkeleton`.
-- [ ] Integrate `<Suspense>` boundaries into `HistoryScreen` with `HistorySkeleton`.
-- [ ] Integrate `<Suspense>` boundaries into `ReviewsModal` with `ReviewsSkeleton`.
-- [ ] Validate code quality with Biome (`pnpm run check && pnpm run review`).
-- [ ] Verify build with `pnpm run build`.
+- [x] Create reusable skeleton primitives in `src/components/ui/skeletons/` for pension cards, explore feed, map drawer, favorites, history, and reviews.
+- [x] Integrate `<Suspense>` boundaries into `ExploreScreen` with `ExploreSkeleton`.
+- [x] Integrate `<Suspense>` boundaries into `MapScreen` drawer with `MapDrawerSkeleton`.
+- [x] Integrate `<Suspense>` boundaries into `FavoritesScreen` with `FavoritesSkeleton`.
+- [x] Integrate `<Suspense>` boundaries into `HistoryScreen` with `HistorySkeleton`.
+- [x] Integrate `<Suspense>` boundaries into `ReviewsModal` with `ReviewsSkeleton`.
+- [x] Validate code quality with Biome (`pnpm run check && pnpm run review`).
+- [x] Verify build with `pnpm run build`.
 
 ## Verification
 
