@@ -59,12 +59,12 @@ Decouple the frontend into two completely distinct application shells: `<Student
 
 ## Checklist
 
-- [ ] Create `src/hooks/use-user-role.ts` with discriminant tagged union typing.
-- [ ] Create `src/components/shells/landlord-app-shell.tsx` containing ONLY the Account/Profile screen and sign out action.
-- [ ] Extract full student experience into `src/components/shells/student-app-shell.tsx`.
-- [ ] Create `src/components/common/unimplemented-role-banner.tsx` for non-student unimplemented states.
-- [ ] Implement `src/components/shells/role-router.tsx` to switch cleanly between student and landlord layouts.
-- [ ] Validate code quality with Biome (`pnpm run check && pnpm run review`).
+- [x] Create `src/hooks/use-user-role.ts` with discriminant tagged union typing.
+- [x] Create `src/components/shells/landlord-app-shell.tsx` containing ONLY the Account/Profile screen and sign out action.
+- [x] Extract full student experience into `src/components/shells/student-app-shell.tsx`.
+- [x] Create `src/components/common/unimplemented-role-banner.tsx` for non-student unimplemented states.
+- [x] Implement `src/components/shells/role-router.tsx` to switch cleanly between student and landlord layouts.
+- [x] Validate code quality with Biome (`pnpm run check && pnpm run review`).
 
 ## Verification
 
