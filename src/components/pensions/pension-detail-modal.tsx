@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Clock,
   Heart,
+  Loader2,
   MapPin,
   PenLine,
   ShieldCheck,
@@ -16,7 +17,8 @@ import {
   Wind,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { NetworkErrorBanner, NetworkErrorState } from '@/components/common/network-error-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,9 +29,11 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { fetchPensionReviews } from '@/lib/api-client';
+import { fetchPensionReviews, mapRawPensionToItem } from '@/lib/api-client';
+import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
 import type { PensionItem, PensionReview } from '@/lib/types';
+import { pensionsService } from '@/services/pensions.service';
 import { PensionReviewsModal } from '../reviews/pension-reviews-modal';
 import { PensionReviewsPreview } from '../reviews/pension-reviews-preview';
 import { PublishReviewModal } from '../reviews/publish-review-modal';
@@ -37,12 +41,18 @@ import { AmenitiesBreakdownModal } from './amenities-breakdown-modal';
 import { SuggestEditModal } from './suggest-edit-modal';
 
 type PensionDetailModalProps = {
-  pension: PensionItem | null;
+  pension?: PensionItem | null;
+  pensionId?: string | null;
   isOpen: boolean;
   onClose: () => void;
 };
 
-export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailModalProps) {
+export function PensionDetailModal({
+  pension: initialPension = null,
+  pensionId = null,
+  isOpen,
+  onClose,
+}: PensionDetailModalProps) {
   const { isFavorite, toggleFavorite } = useAuth();
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [reviews, setReviews] = useState<PensionReview[]>([]);
@@ -51,22 +61,58 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
   const [isPublishReviewOpen, setIsPublishReviewOpen] = useState(false);
   const [isSuggestEditOpen, setIsSuggestEditOpen] = useState(false);
 
+  const [livePension, setLivePension] = useState<PensionItem | null>(initialPension);
+  const [isLoadingDetail, setIsLoadingDetail] = useState<boolean>(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+
+  const activePension = livePension ?? initialPension;
+  const targetId = activePension?.id ?? pensionId ?? null;
+
   const [ratingStats, setRatingStats] = useState({
-    average: pension?.ratingAverage ?? 4.5,
-    count: pension?.reviewsCount ?? 0,
+    average: activePension?.ratingAverage ?? 4.5,
+    count: activePension?.reviewsCount ?? 0,
   });
 
   useEffect(() => {
-    if (!pension) return;
+    setLivePension(initialPension);
+  }, [initialPension]);
+
+  const loadLivePension = useCallback(async (): Promise<void> => {
+    if (!targetId) return;
+    setIsLoadingDetail(true);
+    setDetailError(null);
+    try {
+      const res = await pensionsService.fetchPensionById(targetId);
+      if (isApiSuccess(res)) {
+        const mapped = mapRawPensionToItem(res.data as unknown as Record<string, unknown>);
+        setLivePension(mapped);
+      } else {
+        setDetailError(res.message);
+      }
+    } catch (err) {
+      setDetailError(err instanceof Error ? err.message : 'Error al cargar detalle');
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  }, [targetId]);
+
+  useEffect(() => {
+    if (isOpen && targetId) {
+      loadLivePension();
+    }
+  }, [isOpen, targetId, loadLivePension]);
+
+  useEffect(() => {
+    if (!activePension) return;
     setRatingStats({
-      average: pension.ratingAverage,
-      count: pension.reviewsCount,
+      average: activePension.ratingAverage,
+      count: activePension.reviewsCount,
     });
     let isCancelled = false;
 
     async function loadReviews() {
-      if (!pension) return;
-      const data = await fetchPensionReviews(pension.id);
+      if (!activePension) return;
+      const data = await fetchPensionReviews(activePension.id);
       if (isCancelled) return;
 
       if (data && data.length > 0) {
@@ -74,8 +120,8 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
       } else {
         setReviews([
           {
-            id: `fallback-rev-1-${pension.id}`,
-            pensionId: pension.id,
+            id: `fallback-rev-1-${activePension.id}`,
+            pensionId: activePension.id,
             overallRating: 5,
             cleanlinessRating: 5,
             landlordRating: 5,
@@ -111,8 +157,8 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
             },
           },
           {
-            id: `fallback-rev-2-${pension.id}`,
-            pensionId: pension.id,
+            id: `fallback-rev-2-${activePension.id}`,
+            pensionId: activePension.id,
             overallRating: 4,
             cleanlinessRating: 4,
             landlordRating: 5,
@@ -143,8 +189,8 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
             },
           },
           {
-            id: `fallback-rev-3-${pension.id}`,
-            pensionId: pension.id,
+            id: `fallback-rev-3-${activePension.id}`,
+            pensionId: activePension.id,
             overallRating: 5,
             cleanlinessRating: 5,
             landlordRating: 4,
@@ -169,8 +215,8 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
             },
           },
           {
-            id: `fallback-rev-4-${pension.id}`,
-            pensionId: pension.id,
+            id: `fallback-rev-4-${activePension.id}`,
+            pensionId: activePension.id,
             overallRating: 3,
             cleanlinessRating: 3,
             landlordRating: 3,
@@ -203,10 +249,40 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
     return () => {
       isCancelled = true;
     };
-  }, [pension]);
+  }, [activePension]);
 
-  if (!pension) return null;
+  if (!isOpen) return null;
 
+  if (!activePension && isLoadingDetail) {
+    return (
+      <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DrawerContent className="max-h-[92vh] max-w-lg mx-auto bg-card border-border p-6 flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center gap-3 py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-xs text-muted-foreground">Cargando detalles de la pensión...</p>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  if (!activePension && detailError) {
+    return (
+      <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DrawerContent className="max-h-[92vh] max-w-lg mx-auto bg-card border-border p-6">
+          <NetworkErrorState
+            message={detailError}
+            onRetry={loadLivePension}
+            isRetrying={isLoadingDetail}
+          />
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  if (!activePension) return null;
+
+  const pension = activePension;
   const isFav = isFavorite(pension.id);
 
   const handleReviewPublished = (newReview: PensionReview) => {
@@ -231,6 +307,14 @@ export function PensionDetailModal({ pension, isOpen, onClose }: PensionDetailMo
           <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
 
           <div className="overflow-y-auto flex-1 px-4 pt-1 pb-6">
+            {detailError && (
+              <NetworkErrorBanner
+                message={detailError}
+                onRetry={loadLivePension}
+                isRetrying={isLoadingDetail}
+                className="mb-3"
+              />
+            )}
             <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm">
               <Image
                 src={pension.photos[activePhotoIdx] ?? pension.photos[0]}

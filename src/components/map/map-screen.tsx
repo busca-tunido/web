@@ -11,11 +11,13 @@ import {
 import Image from 'next/image';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
-import { fetchPaginatedPensions } from '@/lib/api-client';
+import { mapRawPensionToItem } from '@/lib/api-client';
+import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
 import type { UserCoordinates } from '@/lib/use-user-location';
+import { pensionsService } from '@/services/pensions.service';
 
 type MapScreenProps = {
   pensions: PensionItem[];
@@ -305,7 +307,7 @@ export function MapScreen({
       const requestId = ++activeRequestIdRef.current;
 
       try {
-        const res = await fetchPaginatedPensions({
+        const res = await pensionsService.fetchPaginatedPensions({
           minLat: bounds.getSouth(),
           maxLat: bounds.getNorth(),
           minLng: bounds.getWest(),
@@ -313,11 +315,14 @@ export function MapScreen({
           limit: 50,
         });
 
-        if (requestId === activeRequestIdRef.current) {
-          setMapPensions(res.items);
+        if (requestId === activeRequestIdRef.current && isApiSuccess(res)) {
+          const mappedItems = res.data.items.map((dto) =>
+            mapRawPensionToItem(dto as unknown as Record<string, unknown>),
+          );
+          setMapPensions(mappedItems);
           setActivePinId((prev) => {
             if (!prev) return null;
-            const stillExists = res.items.some((p) => p.id === prev);
+            const stillExists = mappedItems.some((p) => p.id === prev);
             return stillExists ? prev : null;
           });
         }

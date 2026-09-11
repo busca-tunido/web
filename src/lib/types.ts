@@ -103,10 +103,13 @@ export type SearchFilters = {
   query: string;
   city?: string;
   universityId?: string;
+  minPriceClp?: number;
   maxPriceClp?: number;
   hasPrivateBathroom?: boolean;
   includesMeals?: boolean;
   genderPreference?: 'MIXED' | 'FEMALE_ONLY' | 'MALE_ONLY' | 'ALL';
+  roomType?: 'SINGLE' | 'SHARED';
+  sortBy?: 'relevance' | 'distance' | 'price_asc' | 'price_desc' | 'rating';
 };
 
 export type NavTab = 'explore' | 'favorites' | 'map' | 'history' | 'account';

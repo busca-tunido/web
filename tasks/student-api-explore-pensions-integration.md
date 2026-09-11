@@ -56,12 +56,12 @@ Connect real backend API endpoints to the student Explore and Map experiences: i
 
 ## Checklist
 
-- [ ] Implement concurrent metadata loading with `Promise.allSettled()` in `useStudentPensionsFeed`.
-- [ ] Connect `ExploreScreen` and `MapScreen` to real `pensionsService.fetchPaginatedPensions()` and `fetchNearbyPensions()`.
-- [ ] Implement `src/components/common/network-error-state.tsx` with user-friendly retry controls.
-- [ ] Connect `PensionDetailModal` to real `fetchPensionById()` backend endpoint.
-- [ ] Write unit tests in `tests/hooks/use-student-pensions-feed.spec.ts` mocking network success and failure states.
-- [ ] Validate code quality with Biome (`pnpm run check && pnpm run review`).
+- [x] Implement concurrent metadata loading with `Promise.allSettled()` in `useStudentPensionsFeed`.
+- [x] Connect `ExploreScreen` and `MapScreen` to real `pensionsService.fetchPaginatedPensions()` and `fetchNearbyPensions()`.
+- [x] Implement `src/components/common/network-error-state.tsx` with user-friendly retry controls.
+- [x] Connect `PensionDetailModal` to real `fetchPensionById()` backend endpoint.
+- [x] Write unit tests in `tests/hooks/use-student-pensions-feed.spec.ts` mocking network success and failure states.
+- [x] Validate code quality with Biome (`pnpm run check && pnpm run review`).
 
 ## Verification
 

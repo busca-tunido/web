@@ -4,6 +4,7 @@ import { MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { Suspense } from 'react';
+import { NetworkErrorBanner } from '@/components/common/network-error-state';
 import { InfinitePensionList } from '@/components/pensions/infinite-pension-list';
 import { NearbyCitiesBar } from '@/components/pensions/nearby-cities-bar';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,9 @@ type ExploreScreenProps = {
   nearbyCityCounts?: NearbyCityCount[];
   totalPensions?: number;
   onResetFilters?: () => void;
+  error?: string | null;
+  onRetry?: () => void;
+  isRetrying?: boolean;
 };
 
 export function ExploreScreen({
@@ -45,6 +49,9 @@ export function ExploreScreen({
   nearbyCityCounts = [],
   totalPensions,
   onResetFilters,
+  error,
+  onRetry,
+  isRetrying = false,
 }: ExploreScreenProps) {
   const sortedCities = [...cities].sort((a, b) => {
     if (a.isCurrentCity) return -1;
@@ -187,6 +194,12 @@ export function ExploreScreen({
           selectedCity={selectedCity}
           onSelectCity={onSelectCity}
         />
+      )}
+
+      {error && (
+        <div className="px-5">
+          <NetworkErrorBanner message={error} onRetry={onRetry} isRetrying={isRetrying} />
+        </div>
       )}
 
       <Suspense fallback={<ExploreSkeleton />}>

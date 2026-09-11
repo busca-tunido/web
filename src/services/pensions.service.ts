@@ -12,13 +12,16 @@ import type {
 } from '@/types/api-contracts';
 import { mapRoomDto } from './rooms.service';
 
-export type PensionFilterParams = NonNullable<
-  operations['PensionsController_findAll']['parameters']['query']
+export type PensionFilterParams = Omit<
+  NonNullable<operations['PensionsController_findAll']['parameters']['query']>,
+  'genderPreference'
 > & {
+  genderPreference?: 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY' | 'MIXED';
   minLat?: number;
   maxLat?: number;
   minLng?: number;
   maxLng?: number;
+  roomType?: 'SINGLE' | 'SHARED';
 };
 
 type RawPensionsResponse = {
@@ -207,6 +210,7 @@ export async function fetchPaginatedPensions(
     page,
     limit,
     hasMore,
+    nearbyCityCounts: raw.nearbyCityCounts,
   };
 
   return createSuccess(payload, response.statusCode);
@@ -277,3 +281,28 @@ export async function deletePension(id: string): Promise<ApiResponse<{ success: 
     response.statusCode,
   );
 }
+
+export async function fetchNearbyPensions(
+  latitude: number,
+  longitude: number,
+  radiusKm = 30,
+): Promise<ApiResponse<PaginatedPensionsResponse>> {
+  return fetchPaginatedPensions({
+    latitude,
+    longitude,
+    radiusKm,
+    sortBy: 'distance',
+  });
+}
+
+export const fetchPensionById = fetchPensionDetail;
+
+export const pensionsService = {
+  fetchPaginatedPensions,
+  fetchPensionDetail,
+  fetchPensionById,
+  fetchNearbyPensions,
+  createPension,
+  updatePension,
+  deletePension,
+};
