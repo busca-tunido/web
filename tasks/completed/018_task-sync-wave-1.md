@@ -22,13 +22,13 @@ Integrate and reconcile parallel worker outputs from Wave 1: consolidate all ser
 
 ## Checklist
 
-- [ ] Verify that all Wave 1 tasks have completed checklists (`- [x]`).
-- [ ] Merge worker branches/worktrees into base integration branch.
-- [ ] Wire up consolidated exports in `src/services/index.ts` and `src/lib/validations/index.ts`.
-- [ ] Audit endpoint completeness: confirm 100% of backend API routes (Auth, Pensions, Rooms, Universities, Reviews, Favorites, Proposals, Reports, Moderation, Uploads) have corresponding functions in `src/services/`.
-- [ ] Run Biome checks and resolve any import or formatting warnings (`pnpm run check && pnpm run review`).
-- [ ] Run typecheck build (`pnpm build`).
-- [ ] Clean up temporary worker worktrees.
+- [x] Verify that all Wave 1 tasks have completed checklists (`- [x]`).
+- [x] Merge worker branches/worktrees into base integration branch.
+- [x] Wire up consolidated exports in `src/services/index.ts` and `src/lib/validations/index.ts`.
+- [x] Audit endpoint completeness: confirm 100% of backend API routes (Auth, Pensions, Rooms, Universities, Reviews, Favorites, Proposals, Reports, Moderation, Uploads) have corresponding functions in `src/services/`.
+- [x] Run Biome checks and resolve any import or formatting warnings (`pnpm run check && pnpm run review`).
+- [x] Run typecheck build (`pnpm build`).
+- [x] Clean up temporary worker worktrees.
 
 ## Verification
 
