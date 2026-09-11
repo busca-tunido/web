@@ -19,9 +19,10 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { submitPensionProposal } from '@/lib/api-client';
-import { useAuth } from '@/lib/auth-context';
+import { isApiSuccess } from '@/lib/api-response';
 import type { PensionItem } from '@/lib/types';
+import { submitPensionProposal } from '@/services/proposals.service';
+import type { CreateProposalDto } from '@/types/api-contracts';
 
 type SuggestEditModalProps = {
   isOpen: boolean;
@@ -47,8 +48,6 @@ const AMENITY_CATALOG: AmenityCatalogItem[] = [
 ];
 
 export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalProps) {
-  const { token } = useAuth();
-
   const [activeAmenities, setActiveAmenities] = useState<string[]>(() => {
     const initial: string[] = [];
     if (pension.includesWifi) initial.push('wifi-alta-velocidad');
@@ -136,15 +135,15 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
 
     try {
       const proposedChanges = calculateProposedChanges();
-      await submitPensionProposal(
-        pension.id,
-        {
-          type: 'FULL_UPDATE',
-          proposedChanges: proposedChanges as Record<string, never>,
-          submissionNotes: submissionNotes.trim(),
-        },
-        token ?? undefined,
-      );
+      const res = await submitPensionProposal(pension.id, {
+        type: 'FULL_UPDATE',
+        proposedChanges: proposedChanges as CreateProposalDto['proposedChanges'],
+        submissionNotes: submissionNotes.trim(),
+      });
+
+      if (!isApiSuccess(res)) {
+        throw new Error(res.message);
+      }
 
       setSuccessBanner(true);
       setTimeout(() => {

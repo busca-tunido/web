@@ -56,14 +56,14 @@ Wire authentic backend API endpoints for all student interactive features: user 
 
 ## Checklist
 
-- [ ] Implement `src/hooks/use-student-favorites.ts` with optimistic updates and error reversion.
-- [ ] Connect `FavoritesScreen` to live backend favorites API.
-- [ ] Implement `src/hooks/use-stay-history.ts` and connect `HistoryScreen` using `Intl.DateTimeFormat`.
-- [ ] Implement `src/hooks/use-pension-reviews.ts` for listing, publishing (max 3 images), and helpful voting.
-- [ ] Connect `ReviewsModal` and `PublishReviewModal` to real review endpoints.
-- [ ] Connect `SuggestEditProposalModal` to edit proposal API endpoint.
-- [ ] Write unit tests in `tests/hooks/use-student-community.spec.ts` mocking responses and optimistic rollback.
-- [ ] Validate code quality with Biome (`pnpm run check && pnpm run review`).
+- [x] Implement `src/hooks/use-student-favorites.ts` with optimistic updates and error reversion.
+- [x] Connect `FavoritesScreen` to live backend favorites API.
+- [x] Implement `src/hooks/use-stay-history.ts` and connect `HistoryScreen` using `Intl.DateTimeFormat`.
+- [x] Implement `src/hooks/use-pension-reviews.ts` for listing, publishing (max 3 images), and helpful voting.
+- [x] Connect `ReviewsModal` and `PublishReviewModal` to real review endpoints.
+- [x] Connect `SuggestEditProposalModal` to edit proposal API endpoint.
+- [x] Write unit tests in `tests/hooks/use-student-community.spec.ts` mocking responses and optimistic rollback.
+- [x] Validate code quality with Biome (`pnpm run check && pnpm run review`).
 
 ## Verification
 

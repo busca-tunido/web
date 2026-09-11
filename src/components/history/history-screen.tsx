@@ -6,7 +6,7 @@ import { Suspense, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { HistorySkeleton } from '@/components/ui/skeletons/history-skeleton';
-import { MOCK_STAY_HISTORY } from '@/lib/mock-data';
+import { useStayHistory } from '@/hooks/use-stay-history';
 import type { StayHistoryItem } from '@/lib/types';
 import { UserReviewModal } from './user-review-modal';
 
@@ -15,7 +15,7 @@ type HistoryScreenProps = {
 };
 
 export function HistoryScreen({ onExplore }: HistoryScreenProps) {
-  const [stays] = useState(MOCK_STAY_HISTORY);
+  const { stays, formatDateRange } = useStayHistory();
   const [selectedReviewStay, setSelectedReviewStay] = useState<StayHistoryItem | null>(null);
 
   return (
@@ -47,6 +47,7 @@ export function HistoryScreen({ onExplore }: HistoryScreenProps) {
           stays={stays}
           onExplore={onExplore}
           onSelectReviewStay={setSelectedReviewStay}
+          formatDateRange={formatDateRange}
         />
       </Suspense>
 
@@ -63,9 +64,10 @@ type HistoryListProps = {
   stays: StayHistoryItem[];
   onExplore?: () => void;
   onSelectReviewStay: (stay: StayHistoryItem) => void;
+  formatDateRange: (start: string, end: string) => string;
 };
 
-function HistoryList({ stays, onExplore, onSelectReviewStay }: HistoryListProps) {
+function HistoryList({ stays, onExplore, onSelectReviewStay, formatDateRange }: HistoryListProps) {
   if (stays.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center">
@@ -122,9 +124,7 @@ function HistoryList({ stays, onExplore, onSelectReviewStay }: HistoryListProps)
 
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>
-                {stay.startDate} hasta {stay.endDate}
-              </span>
+              <span>{formatDateRange(stay.startDate, stay.endDate)}</span>
             </div>
 
             <div className="flex items-center justify-between border-t border-border pt-2.5">
