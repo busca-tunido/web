@@ -22,13 +22,13 @@ Integrate Wave 2 deliverables into the main page entrypoint (`src/app/page.tsx`)
 
 ## Checklist
 
-- [ ] Verify all checklists in Wave 2 tasks are marked completed (`- [x]`).
-- [ ] Merge worker branches/worktrees into base integration branch.
-- [ ] Refactor `src/app/page.tsx` to delegate rendering to `<RoleRouter />`.
-- [ ] Connect `useUrlNavigationState` inside `<StudentAppShell />` to handle tab transitions and modal overlays.
-- [ ] Run full Biome validation (`pnpm run check && pnpm run review`).
-- [ ] Execute build check (`pnpm build`).
-- [ ] Teardown temporary worktrees.
+- [x] Verify all checklists in Wave 2 tasks are marked completed (`- [x]`).
+- [x] Merge worker branches/worktrees into base integration branch.
+- [x] Refactor `src/app/page.tsx` to delegate rendering to `<RoleRouter />`.
+- [x] Connect `useUrlNavigationState` inside `<StudentAppShell />` to handle tab transitions and modal overlays.
+- [x] Run full Biome validation (`pnpm run check && pnpm run review`).
+- [x] Execute build check (`pnpm build`).
+- [x] Teardown temporary worktrees.
 
 ## Verification
 

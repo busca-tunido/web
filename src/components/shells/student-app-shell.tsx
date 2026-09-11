@@ -12,6 +12,7 @@ import { TopSearchBar } from '@/components/layout/top-search-bar';
 import { MapScreen } from '@/components/map/map-screen';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import { useInfinitePensions } from '@/hooks/use-infinite-pensions';
+import { useUrlNavigationState } from '@/hooks/use-url-navigation-state';
 import { fetchCities, fetchUniversities } from '@/lib/api-client';
 import { MOCK_CITIES, MOCK_UNIVERSITIES } from '@/lib/mock-data';
 import type { CityInfo, NavTab, PensionItem, SearchFilters, UniversityInfo } from '@/lib/types';
@@ -22,9 +23,26 @@ export type StudentAppShellProps = {
 };
 
 export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps) {
-  const [activeTab, setActiveTab] = useState<NavTab>(initialTab);
-  const [filters, setFilters] = useState<SearchFilters>({ query: '' });
-  const [mapTargetCity, setMapTargetCity] = useState<string | null>(null);
+  const {
+    tab: activeTab,
+    navigateTab,
+    city: urlCity,
+    uni: urlUni,
+    setCityAndUni,
+    pensionId: urlPensionId,
+    openPensionDetail,
+    closePensionDetail,
+    isPensionDetailOpen,
+    isFiltersOpen,
+    openFilters,
+    closeFilters,
+  } = useUrlNavigationState({ defaultTab: initialTab });
+
+  const [filters, setFilters] = useState<SearchFilters>(() => ({
+    query: urlUni || '',
+    city: urlCity || undefined,
+  }));
+  const [mapTargetCity, setMapTargetCity] = useState<string | null>(urlCity);
   const [selectedUniversity, setSelectedUniversity] = useState<UniversityInfo | null>(null);
 
   const [cities, setCities] = useState<CityInfo[]>(MOCK_CITIES);
@@ -37,8 +55,6 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
   }, [cities, currentCity]);
 
   const [selectedPension, setSelectedPension] = useState<PensionItem | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const effectiveFilters = useMemo(
     () => ({
@@ -73,11 +89,23 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
     loadMetadata();
   }, []);
 
+  useEffect(() => {
+    if (urlPensionId && (!selectedPension || selectedPension.id !== urlPensionId)) {
+      const found = pensions.find((p) => p.id === urlPensionId);
+      if (found) {
+        setSelectedPension(found);
+      }
+    } else if (!urlPensionId && selectedPension) {
+      setSelectedPension(null);
+    }
+  }, [urlPensionId, pensions, selectedPension]);
+
   const handleSelectCity = (cityName: string) => {
     setSelectedPension(null);
     setMapTargetCity(cityName);
     setSelectedUniversity(null);
-    setActiveTab('map');
+    setCityAndUni({ city: cityName, uni: null });
+    navigateTab('map');
   };
 
   const handleSelectUniversity = (uni: UniversityInfo) => {
@@ -85,12 +113,18 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
     setMapTargetCity(uni.city);
     setSelectedUniversity(uni);
     setFilters((prev) => ({ ...prev, query: uni.acronym }));
-    setActiveTab('map');
+    setCityAndUni({ city: uni.city, uni: uni.acronym });
+    navigateTab('map');
   };
 
   const handleOpenDetail = (pension: PensionItem) => {
     setSelectedPension(pension);
-    setIsDetailOpen(true);
+    openPensionDetail(pension.id);
+  };
+
+  const handleCloseDetail = () => {
+    closePensionDetail();
+    setSelectedPension(null);
   };
 
   const handleResetFilters = () => {
@@ -98,6 +132,7 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
     setMapTargetCity(null);
     setSelectedUniversity(null);
     setFilters({ query: '' });
+    setCityAndUni({ city: null, uni: null });
   };
 
   return (
@@ -114,7 +149,7 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
         <TopSearchBar
           filters={filters}
           onFilterChange={setFilters}
-          onOpenFilterDrawer={() => setIsFilterOpen(true)}
+          onOpenFilterDrawer={openFilters}
           selectedCityName={filters.city}
           onClearCity={() => {
             setFilters((prev) => ({ ...prev, city: undefined }));
@@ -148,7 +183,7 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
                   }}
                   onSelectUniversity={handleSelectUniversity}
                   onSelectPension={handleOpenDetail}
-                  onNavigateToMap={() => setActiveTab('map')}
+                  onNavigateToMap={() => navigateTab('map')}
                   hasMore={hasMore}
                   isLoadingMore={isLoadingMore}
                   isLoadingPensions={isLoadingPensions}
@@ -177,12 +212,12 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
                 <FavoritesScreen
                   allPensions={pensions}
                   onSelectPension={handleOpenDetail}
-                  onExplore={() => setActiveTab('explore')}
+                  onExplore={() => navigateTab('explore')}
                 />
               )}
 
               {activeTab === 'history' && (
-                <HistoryScreen onExplore={() => setActiveTab('explore')} />
+                <HistoryScreen onExplore={() => navigateTab('explore')} />
               )}
 
               {activeTab === 'account' && <AccountScreen />}
@@ -191,17 +226,17 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
         </div>
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNav activeTab={activeTab} onTabChange={navigateTab} />
 
       <PensionDetailModal
         pension={selectedPension}
-        isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
+        isOpen={isPensionDetailOpen}
+        onClose={handleCloseDetail}
       />
 
       <FilterDrawer
-        isOpen={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
+        isOpen={isFiltersOpen}
+        onClose={closeFilters}
         filters={filters}
         onApply={setFilters}
       />
