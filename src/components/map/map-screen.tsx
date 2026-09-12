@@ -589,7 +589,7 @@ export function MapScreen({
               isFavorite={isFavorite}
               toggleFavorite={toggleFavorite}
               onSelectPension={(p) => {
-                panToPension(p);
+                panToPension(p.latitude, p.longitude);
                 onSelectPension(p);
               }}
               onOpenPensionDetail={onOpenPensionDetail}
