@@ -22,13 +22,13 @@ Integrate and reconcile all student API hooks and components from Wave 3 into `<
 
 ## Checklist
 
-- [ ] Verify all checklists in Wave 3 tasks are marked completed (`- [x]`).
-- [ ] Merge worker branches/worktrees into base integration branch.
-- [ ] Reconcile state handoffs between `AuthContext`, `StudentAppShell`, and child screens.
-- [ ] Test end-to-end integration: login/register -> explore feed -> map bounds -> open pension -> toggle favorite -> publish review -> view stays.
-- [ ] Run Biome checks and resolve any diagnostics (`pnpm run check && pnpm run review`).
-- [ ] Execute build check (`pnpm build`).
-- [ ] Teardown temporary worktrees.
+- [x] Verify all checklists in Wave 3 tasks are marked completed (`- [x]`).
+- [x] Merge worker branches/worktrees into base integration branch.
+- [x] Reconcile state handoffs between `AuthContext`, `StudentAppShell`, and child screens.
+- [x] Test end-to-end integration: login/register -> explore feed -> map bounds -> open pension -> toggle favorite -> publish review -> view stays.
+- [x] Run Biome checks and resolve any diagnostics (`pnpm run check && pnpm run review`).
+- [x] Execute build check (`pnpm build`).
+- [x] Teardown temporary worktrees.
 
 ## Verification
 

@@ -1,7 +1,8 @@
 'use client';
 
-import { ArrowRight, CheckCircle2, GraduationCap, Home, Lock, Mail } from 'lucide-react';
+import { ArrowRight, Home, Lock, Mail } from 'lucide-react';
 import { useState } from 'react';
+import { EmailCheckStep } from '@/components/auth/email-check-step';
 import { BrandLogo } from '@/components/ui/brand-logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,49 +20,11 @@ import { useAuth } from '@/lib/auth-context';
 
 export function AuthScreen() {
   const { login } = useAuth();
-  const [studentEmail, setStudentEmail] = useState('estudiante.demo@uchile.cl');
-  const [studentPassword, setStudentPassword] = useState('Password123!');
-  const [studentStep, setStudentStep] = useState<'email' | 'password'>('email');
-  const [studentLoading, setStudentLoading] = useState(false);
-  const [studentError, setStudentError] = useState('');
-
   const [landlordEmail, setLandlordEmail] = useState('propietario.demo@buscatunido.cl');
   const [landlordPassword, setLandlordPassword] = useState('Password123!');
   const [landlordLoading, setLandlordLoading] = useState(false);
   const [landlordError, setLandlordError] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  const isEduEmail =
-    studentEmail.endsWith('.edu') ||
-    studentEmail.endsWith('.cl') ||
-    studentEmail.includes('alumnos') ||
-    studentEmail.includes('est') ||
-    studentEmail.includes('uchile') ||
-    studentEmail.includes('uc');
-
-  const handleStudentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStudentError('');
-
-    if (!studentEmail.trim() || !studentEmail.includes('@')) {
-      setStudentError('Ingresa un correo institucional válido');
-      return;
-    }
-
-    if (studentStep === 'email') {
-      setStudentStep('password');
-      return;
-    }
-
-    setStudentLoading(true);
-    try {
-      await login(studentEmail, studentPassword);
-    } catch {
-      setStudentError('Error al autenticar. Verifica las credenciales.');
-    } finally {
-      setStudentLoading(false);
-    }
-  };
 
   const handleLandlordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,89 +67,7 @@ export function AuthScreen() {
 
         <Card className="border-border bg-card shadow-lg">
           <CardContent className="p-6 flex flex-col gap-6">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-primary">
-                  <GraduationCap className="h-3.5 w-3.5" />
-                </div>
-                <h2 className="text-base font-semibold text-foreground">Soy estudiante</h2>
-              </div>
-
-              <form onSubmit={handleStudentSubmit} className="flex flex-col gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label
-                    htmlFor="student-email"
-                    className="text-xs font-medium text-muted-foreground"
-                  >
-                    Correo institucional universitario
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="student-email"
-                      type="email"
-                      required
-                      value={studentEmail}
-                      onChange={(e) => setStudentEmail(e.target.value)}
-                      placeholder="ejemplo@alumnos.uchile.cl"
-                      className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
-                    />
-                  </div>
-                  {studentEmail && isEduEmail && (
-                    <div className="flex items-center gap-1.5 text-[11px] text-primary mt-1">
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      <span>Dominio institucional detectado</span>
-                    </div>
-                  )}
-                </div>
-
-                {studentStep === 'password' && (
-                  <div className="flex flex-col gap-1.5 animate-in fade-in-50 duration-200">
-                    <div className="flex items-center justify-between">
-                      <label
-                        htmlFor="student-password"
-                        className="text-xs font-medium text-muted-foreground"
-                      >
-                        Contraseña
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => setStudentStep('email')}
-                        className="text-[11px] text-primary hover:underline"
-                      >
-                        Cambiar correo
-                      </button>
-                    </div>
-                    <input
-                      id="student-password"
-                      type="password"
-                      required
-                      value={studentPassword}
-                      onChange={(e) => setStudentPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
-                    />
-                  </div>
-                )}
-
-                {studentError && (
-                  <p className="text-xs text-destructive font-medium">{studentError}</p>
-                )}
-
-                <Button
-                  id="btn-student-continue"
-                  type="submit"
-                  disabled={studentLoading}
-                  className="mt-2 h-12 w-full bg-primary font-bold text-primary-foreground hover:opacity-90 text-sm shadow-md active:scale-[0.98] transition"
-                >
-                  {studentLoading
-                    ? 'Validando...'
-                    : studentStep === 'email'
-                      ? 'Continuar'
-                      : 'Acceder'}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </form>
-            </div>
+            <EmailCheckStep />
 
             <div className="relative flex items-center justify-center">
               <div className="w-full border-t border-border" />

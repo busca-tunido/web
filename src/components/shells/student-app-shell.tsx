@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 import { AccountScreen } from '@/components/account/account-screen';
+import { NetworkErrorBanner } from '@/components/common/network-error-state';
 import { ExploreScreen } from '@/components/explore/explore-screen';
 import { FavoritesScreen } from '@/components/favorites/favorites-screen';
 import { HistoryScreen } from '@/components/history/history-screen';
@@ -11,12 +12,10 @@ import { FilterDrawer } from '@/components/layout/filter-drawer';
 import { TopSearchBar } from '@/components/layout/top-search-bar';
 import { MapScreen } from '@/components/map/map-screen';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
-import { useInfinitePensions } from '@/hooks/use-infinite-pensions';
+import { useStudentPensionsFeed } from '@/hooks/use-student-pensions-feed';
 import { useUrlNavigationState } from '@/hooks/use-url-navigation-state';
-import { fetchCities, fetchUniversities } from '@/lib/api-client';
-import { MOCK_CITIES, MOCK_UNIVERSITIES } from '@/lib/mock-data';
 import type { CityInfo, NavTab, PensionItem, SearchFilters, UniversityInfo } from '@/lib/types';
-import { sortCitiesWithCurrentFirst, useUserLocation } from '@/lib/use-user-location';
+import { useUserLocation } from '@/lib/use-user-location';
 
 export type StudentAppShellProps = {
   initialTab?: NavTab;
@@ -45,14 +44,8 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
   const [mapTargetCity, setMapTargetCity] = useState<string | null>(urlCity);
   const [selectedUniversity, setSelectedUniversity] = useState<UniversityInfo | null>(null);
 
-  const [cities, setCities] = useState<CityInfo[]>(MOCK_CITIES);
-  const [universities, setUniversities] = useState<UniversityInfo[]>(MOCK_UNIVERSITIES);
-
-  const { userLocation, currentCity, requestLocation } = useUserLocation(cities);
-
-  const sortedCities = useMemo(() => {
-    return sortCitiesWithCurrentFirst(cities, currentCity);
-  }, [cities, currentCity]);
+  const [tentativeCities, setTentativeCities] = useState<CityInfo[]>([]);
+  const { userLocation, currentCity, requestLocation } = useUserLocation(tentativeCities);
 
   const [selectedPension, setSelectedPension] = useState<PensionItem | null>(null);
 
@@ -65,29 +58,30 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
   );
 
   const {
-    items: pensions,
+    cities,
+    universities,
+    pensions,
+    total: totalPensions,
     hasMore,
-    isLoading: isLoadingPensions,
+    isLoadingPensions,
     isLoadingMore,
     loadMore: loadMorePensions,
     nearbyCityCounts,
-    total: totalPensions,
-  } = useInfinitePensions({
+    error: pensionsError,
+    refetch: refetchPensions,
+  } = useStudentPensionsFeed({
     filters: effectiveFilters,
-    latitude: userLocation?.latitude,
-    longitude: userLocation?.longitude,
-    radiusKm: 30,
+    userLocation,
+    currentCity: currentCity?.name ?? null,
     sortBy: 'relevance',
+    radiusKm: 30,
   });
 
   useEffect(() => {
-    async function loadMetadata() {
-      const [c, u] = await Promise.all([fetchCities(), fetchUniversities()]);
-      setCities(c);
-      setUniversities(u);
+    if (cities.length > 0) {
+      setTentativeCities(cities);
     }
-    loadMetadata();
-  }, []);
+  }, [cities]);
 
   useEffect(() => {
     if (urlPensionId && (!selectedPension || selectedPension.id !== urlPensionId)) {
@@ -156,6 +150,12 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
           }}
         />
 
+        {pensionsError && (
+          <div className="px-4 pt-2">
+            <NetworkErrorBanner message={pensionsError} onRetry={refetchPensions} />
+          </div>
+        )}
+
         <div className={activeTab === 'map' ? 'flex-1 relative overflow-hidden h-full' : 'flex-1'}>
           <AnimatePresence mode="wait">
             <motion.div
@@ -168,7 +168,7 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
             >
               {activeTab === 'explore' && (
                 <ExploreScreen
-                  cities={sortedCities}
+                  cities={cities}
                   universities={universities}
                   featuredPensions={pensions}
                   selectedCity={null}
@@ -197,7 +197,7 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
               {activeTab === 'map' && (
                 <MapScreen
                   pensions={pensions}
-                  cities={sortedCities}
+                  cities={cities}
                   selectedPension={selectedPension}
                   selectedCity={mapTargetCity}
                   selectedUniversity={selectedUniversity}
