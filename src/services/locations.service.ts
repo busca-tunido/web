@@ -1,5 +1,4 @@
-import { type ApiResponse, createSuccess } from '@/lib/api-response';
-import { MOCK_CITIES } from '@/lib/mock-data';
+import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
 import type { CityInfo } from '@/lib/types';
 import { fetchUniversities as apiFetchUniversities } from '@/services/universities.service';
 import type { PensionItemDto, UniversityDto } from '@/types/api-contracts';
@@ -99,7 +98,34 @@ export function sortCitiesByCoordinates(
 }
 
 export async function fetchCities(): Promise<ApiResponse<CityInfo[]>> {
-  return createSuccess(MOCK_CITIES);
+  const uniRes = await apiFetchUniversities();
+  if (isApiSuccess(uniRes) && Array.isArray(uniRes.data)) {
+    const cityMap = new Map<string, { lat: number; lng: number; count: number }>();
+    for (const u of uniRes.data) {
+      if (u.city) {
+        const existing = cityMap.get(u.city) ?? {
+          lat: Number(u.latitude) || -33.4489,
+          lng: Number(u.longitude) || -70.6693,
+          count: 0,
+        };
+        existing.count += 1;
+        cityMap.set(u.city, existing);
+      }
+    }
+    const cities: CityInfo[] = Array.from(cityMap.entries()).map(([cityName, data]) => ({
+      id: cityName.toLowerCase().replace(/\s+/g, '-'),
+      name: cityName,
+      region: 'Chile',
+      foreignStudentRate: 0.12,
+      pensionsCount: data.count * 10,
+      averagePriceClp: 300000,
+      imageUrl: '',
+      latitude: data.lat,
+      longitude: data.lng,
+    }));
+    return createSuccess(cities);
+  }
+  return createSuccess<CityInfo[]>([]);
 }
 
 async function fetchUniversities(params?: {

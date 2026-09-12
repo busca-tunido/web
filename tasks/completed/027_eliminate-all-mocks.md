@@ -47,13 +47,13 @@ Completely purge all hardcoded mock arrays, fake data objects, and fallback fixt
 
 ## Checklist
 
-- [ ] Delete `src/lib/mock-data.ts`.
-- [ ] Remove all fallback mock code and mock imports from `src/lib/api-client.ts`.
-- [ ] Update `src/app/page.tsx` to initialize empty state without mock constants.
-- [ ] Update `src/components/history/history-screen.tsx` to rely on real service calls.
-- [ ] Execute ripgrep audit (`rg`) across `src/` confirming 0 occurrences of `MOCK_` remain.
-- [ ] Validate code quality with Biome (`pnpm run check && pnpm run review`).
-- [ ] Verify build with `pnpm run build`.
+- [x] Delete `src/lib/mock-data.ts`.
+- [x] Remove all fallback mock code and mock imports from `src/lib/api-client.ts`.
+- [x] Update `src/app/page.tsx` to initialize empty state without mock constants.
+- [x] Update `src/components/history/history-screen.tsx` to rely on real service calls.
+- [x] Execute ripgrep audit (`rg`) across `src/` confirming 0 occurrences of `MOCK_` remain.
+- [x] Validate code quality with Biome (`pnpm run check && pnpm run review`).
+- [x] Verify build with `pnpm run build`.
 
 ## Verification
 

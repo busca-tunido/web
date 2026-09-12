@@ -1,6 +1,5 @@
 import createClient from 'openapi-fetch';
 import type { components, paths } from './api-schema';
-import { MOCK_CITIES, MOCK_PENSIONS, MOCK_UNIVERSITIES } from './mock-data';
 import type {
   CityInfo,
   NearbyCityCount,
@@ -241,68 +240,16 @@ export async function fetchPaginatedPensions(
     }
   } catch {}
 
-  let results = [...MOCK_PENSIONS];
-  const minLat = params?.minLat;
-  const maxLat = params?.maxLat;
-  const minLng = params?.minLng;
-  const maxLng = params?.maxLng;
-  if (minLat !== undefined && maxLat !== undefined) {
-    results = results.filter((p) => p.latitude >= minLat && p.latitude <= maxLat);
-  }
-  if (minLng !== undefined && maxLng !== undefined) {
-    results = results.filter((p) => p.longitude >= minLng && p.longitude <= maxLng);
-  }
-  if (params?.city) {
-    results = results.filter((p) => p.city.toLowerCase() === params.city?.toLowerCase());
-  }
-  if (params?.query) {
-    const q = params.query.toLowerCase();
-    results = results.filter(
-      (p) =>
-        p.title.toLowerCase().includes(q) ||
-        p.neighborhood.toLowerCase().includes(q) ||
-        p.city.toLowerCase().includes(q) ||
-        p.nearestUniversityName.toLowerCase().includes(q),
-    );
-  }
-  if (params?.maxPriceClp) {
-    results = results.filter((p) => p.priceMonthlyClp <= (params.maxPriceClp ?? Infinity));
-  }
-  if (params?.hasPrivateBathroom) {
-    results = results.filter((p) => p.rooms.some((r) => r.hasPrivateBathroom));
-  }
-  if (params?.includesMeals) {
-    results = results.filter((p) => p.includesMeals);
-  }
-
-  const total = results.length;
-  const totalPages = Math.ceil(total / limit) || 1;
-  const skip = (page - 1) * limit;
-  const items = results.slice(skip, skip + limit);
-  const hasMore = page < totalPages;
-
-  const cityMap = new Map<string, number>();
-  for (const p of results) {
-    cityMap.set(p.city, (cityMap.get(p.city) || 0) + 1);
-  }
-  const nearbyCityCounts: NearbyCityCount[] = Array.from(cityMap.entries()).map(
-    ([city, count]) => ({
-      city,
-      count,
-      distanceKm: 0,
-    }),
-  );
-
   return {
-    items,
+    items: [],
     pagination: {
       page,
       limit,
-      total,
-      totalPages,
-      hasMore,
+      total: 0,
+      totalPages: 0,
+      hasMore: false,
     },
-    nearbyCityCounts,
+    nearbyCityCounts: [],
   };
 }
 
@@ -312,7 +259,37 @@ export async function fetchPensions(filters?: SearchFilters): Promise<PensionIte
 }
 
 export async function fetchCities(): Promise<CityInfo[]> {
-  return MOCK_CITIES;
+  try {
+    const { response } = await apiClient.GET('/universities');
+    if (response.ok) {
+      const json = (await response.json()) as ApiResponseEnvelope<
+        Array<{ city: string; latitude?: number | string; longitude?: number | string }>
+      >;
+      if (json?.data && Array.isArray(json.data)) {
+        const cityMap = new Map<string, { lat: number; lng: number }>();
+        for (const u of json.data) {
+          if (u.city && !cityMap.has(u.city)) {
+            cityMap.set(u.city, {
+              lat: Number(u.latitude) || -33.4489,
+              lng: Number(u.longitude) || -70.6693,
+            });
+          }
+        }
+        return Array.from(cityMap.entries()).map(([cityName, coords]) => ({
+          id: cityName.toLowerCase().replace(/\s+/g, '-'),
+          name: cityName,
+          region: 'Chile',
+          foreignStudentRate: 0.12,
+          pensionsCount: 0,
+          averagePriceClp: 300000,
+          imageUrl: '',
+          latitude: coords.lat,
+          longitude: coords.lng,
+        }));
+      }
+    }
+  } catch {}
+  return [];
 }
 
 export async function fetchUniversities(city?: string): Promise<UniversityInfo[]> {
@@ -349,7 +326,6 @@ export async function fetchUniversities(city?: string): Promise<UniversityInfo[]
           logoUrl: u.logoUrl,
           imageUrl:
             u.campusImageUrl ||
-            MOCK_UNIVERSITIES[i % MOCK_UNIVERSITIES.length]?.imageUrl ||
             'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80',
           latitude: Number(u.latitude) || -33.4489,
           longitude: Number(u.longitude) || -70.6693,
@@ -358,10 +334,7 @@ export async function fetchUniversities(city?: string): Promise<UniversityInfo[]
     }
   } catch {}
 
-  if (city) {
-    return MOCK_UNIVERSITIES.filter((u) => u.city.toLowerCase() === city.toLowerCase());
-  }
-  return MOCK_UNIVERSITIES;
+  return [];
 }
 
 export async function fetchPensionReviews(pensionId: string): Promise<PensionReview[]> {
@@ -386,40 +359,22 @@ export async function loginWithEmail(
   email: string,
   password = 'Password123!',
 ): Promise<{ user: UserProfile; token: string }> {
-  try {
-    const { response } = await apiClient.POST('/auth/login', {
-      body: { email, password },
-    });
+  const { response } = await apiClient.POST('/auth/login', {
+    body: { email, password },
+  });
 
-    if (response.ok) {
-      const json = (await response.json()) as ApiResponseEnvelope<{
-        user: UserProfile;
-        accessToken: string;
-      }>;
-      return {
-        user: json.data.user,
-        token: json.data.accessToken,
-      };
-    }
-  } catch {}
-
-  const isLandlord = email.includes('propietario') || email.includes('contacto');
-  const isStudent = !isLandlord;
-  return {
-    user: {
-      id: isLandlord ? 'usr-landlord-demo' : 'usr-student-demo',
-      email,
-      firstName: isLandlord ? 'Propietario' : 'Estudiante',
-      lastName: 'Demo',
-      role: isLandlord ? 'LANDLORD' : 'STUDENT',
-      universityName: isStudent ? 'Universidad de Chile' : undefined,
-      isForeignStudent: isStudent,
-      avatarUrl: isLandlord
-        ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
-        : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-    },
-    token: isLandlord ? 'mock-jwt-token-landlord' : 'mock-jwt-token-student',
-  };
+  if (response.ok) {
+    const json = (await response.json()) as ApiResponseEnvelope<{
+      user: UserProfile;
+      accessToken: string;
+    }>;
+    return {
+      user: json.data.user,
+      token: json.data.accessToken,
+    };
+  }
+  const err = (await response.json().catch(() => ({}))) as { message?: string };
+  throw new Error(err.message || 'Credenciales inválidas');
 }
 
 export async function submitPensionReview(

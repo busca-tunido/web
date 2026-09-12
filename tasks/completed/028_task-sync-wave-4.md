@@ -21,12 +21,12 @@ Perform final project certification across the entire `web` codebase: ensure zer
 
 ## Checklist
 
-- [ ] Confirm `src/lib/mock-data.ts` is deleted and unreferenced.
-- [ ] Confirm 100% of backend API endpoints are available in `src/services/`.
-- [ ] Run Biome strict check and review (`pnpm run check && pnpm run review`) with zero warnings or errors.
-- [ ] Execute production build (`pnpm build`).
-- [ ] Teardown any remaining temporary git worktrees.
-- [ ] Present completion summary to user for final review and approval.
+- [x] Confirm `src/lib/mock-data.ts` is deleted and unreferenced.
+- [x] Confirm 100% of backend API endpoints are available in `src/services/`.
+- [x] Run Biome strict check and review (`pnpm run check && pnpm run review`) with zero warnings or errors.
+- [x] Execute production build (`pnpm build`).
+- [x] Teardown any remaining temporary git worktrees.
+- [x] Present completion summary to user for final review and approval.
 
 ## Verification
 
