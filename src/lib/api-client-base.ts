@@ -100,7 +100,12 @@ export async function apiFetch<T>(
     requestHeaders.set('Authorization', `Bearer ${token}`);
   }
 
-  if (!(restConfig.body instanceof FormData) && !requestHeaders.has('Content-Type')) {
+  if (
+    restConfig.body !== undefined &&
+    restConfig.body !== null &&
+    !(restConfig.body instanceof FormData) &&
+    !requestHeaders.has('Content-Type')
+  ) {
     requestHeaders.set('Content-Type', 'application/json');
   }
 
