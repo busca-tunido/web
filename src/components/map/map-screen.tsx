@@ -34,7 +34,7 @@ type MapScreenProps = {
 type DrawerState = 'minimized' | 'half' | 'maximized';
 
 function getTileUrl(theme: 'light' | 'dark') {
-  const apiKey = process.env.NEXT_PUBLIC_CARTO_API_KEY || 'cb1_3i1o_1_c5ca501042200197cd42d292';
+  const apiKey = process.env.NEXT_PUBLIC_CARTO_API_KEY;
   const keyParam = apiKey ? `?key=${apiKey}` : '';
   return theme === 'dark'
     ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${keyParam}`
