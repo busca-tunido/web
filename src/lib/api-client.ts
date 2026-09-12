@@ -1,5 +1,6 @@
 import createClient from 'openapi-fetch';
 import type { components, paths } from './api-schema';
+import { getCityImageUrl, getUniversityImageUrl } from './location-images';
 import type {
   CityInfo,
   NearbyCityCount,
@@ -282,7 +283,7 @@ export async function fetchCities(): Promise<CityInfo[]> {
           foreignStudentRate: 0.12,
           pensionsCount: 0,
           averagePriceClp: 300000,
-          imageUrl: '',
+          imageUrl: getCityImageUrl(cityName),
           latitude: coords.lat,
           longitude: coords.lng,
         }));
@@ -324,9 +325,7 @@ export async function fetchUniversities(city?: string): Promise<UniversityInfo[]
           foreignStudentRate: 0.15 + (i % 5) * 0.03,
           pensionsNearbyCount: 12 + i * 2,
           logoUrl: u.logoUrl,
-          imageUrl:
-            u.campusImageUrl ||
-            'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80',
+          imageUrl: u.campusImageUrl || getUniversityImageUrl(u.name, u.shortName),
           latitude: Number(u.latitude) || -33.4489,
           longitude: Number(u.longitude) || -70.6693,
         }));

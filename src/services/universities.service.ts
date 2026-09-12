@@ -1,5 +1,6 @@
 import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
+import { getUniversityImageUrl } from '@/lib/location-images';
 import type {
   CreateUniversityDto,
   UniversityDto,
@@ -7,20 +8,24 @@ import type {
 } from '@/types/api-contracts';
 
 export function mapUniversityDto(raw: Record<string, unknown>): UniversityDto {
+  const name = String(raw.name ?? '');
+  const acronym = String(raw.acronym ?? raw.shortName ?? '');
+  const rawImage =
+    typeof raw.imageUrl === 'string' && raw.imageUrl.trim().length > 0
+      ? raw.imageUrl
+      : typeof raw.campusImageUrl === 'string' && raw.campusImageUrl.trim().length > 0
+        ? raw.campusImageUrl
+        : undefined;
+
   return {
     id: String(raw.id ?? ''),
-    name: String(raw.name ?? ''),
-    acronym: String(raw.acronym ?? raw.shortName ?? ''),
+    name,
+    acronym,
     city: String(raw.city ?? ''),
     campus: typeof raw.campus === 'string' ? raw.campus : undefined,
     latitude: Number(raw.latitude ?? 0),
     longitude: Number(raw.longitude ?? 0),
-    imageUrl:
-      typeof raw.imageUrl === 'string'
-        ? raw.imageUrl
-        : typeof raw.campusImageUrl === 'string'
-          ? raw.campusImageUrl
-          : undefined,
+    imageUrl: rawImage ?? getUniversityImageUrl(name, acronym),
   };
 }
 

@@ -10,6 +10,7 @@ import { NearbyCitiesBar } from '@/components/pensions/nearby-cities-bar';
 import { Badge } from '@/components/ui/badge';
 import { ExploreSkeleton } from '@/components/ui/skeletons/explore-skeleton';
 import { PensionCardSkeleton } from '@/components/ui/skeletons/pension-card-skeleton';
+import { getCityImageUrl, getUniversityImageUrl } from '@/lib/location-images';
 import type { CityInfo, NearbyCityCount, PensionItem, UniversityInfo } from '@/lib/types';
 
 type ExploreScreenProps = {
@@ -85,6 +86,11 @@ export function ExploreScreen({
         <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x">
           {sortedCities.map((city, index) => {
             const isSelected = selectedCity?.toLowerCase() === city.name.toLowerCase();
+            const cityImg =
+              city.imageUrl && city.imageUrl.trim().length > 0
+                ? city.imageUrl
+                : getCityImageUrl(city.name);
+
             return (
               <motion.button
                 type="button"
@@ -97,15 +103,17 @@ export function ExploreScreen({
                     : 'border-border/60 hover:border-primary/50'
                 }`}
               >
-                <Image
-                  src={city.imageUrl}
-                  alt={city.name}
-                  fill
-                  unoptimized
-                  loading={index < 3 ? 'eager' : 'lazy'}
-                  sizes="144px"
-                  className="object-cover transition duration-300 group-hover:scale-105"
-                />
+                {cityImg && (
+                  <Image
+                    src={cityImg}
+                    alt={city.name}
+                    fill
+                    unoptimized
+                    loading={index < 3 ? 'eager' : 'lazy'}
+                    sizes="144px"
+                    className="object-cover transition duration-300 group-hover:scale-105"
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
                 {city.isCurrentCity && (
@@ -146,45 +154,54 @@ export function ExploreScreen({
         </div>
 
         <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x">
-          {sortedUniversities.map((uni, index) => (
-            <motion.button
-              type="button"
-              key={uni.id}
-              whileTap={{ scale: 0.94 }}
-              onClick={() => onSelectUniversity(uni)}
-              className="group relative h-48 w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-colors hover:border-primary/50 cursor-pointer shadow-sm"
-            >
-              <Image
-                src={uni.imageUrl}
-                alt={uni.name}
-                fill
-                unoptimized
-                loading={index < 3 ? 'eager' : 'lazy'}
-                sizes="176px"
-                className="object-cover opacity-80 transition duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
+          {sortedUniversities.map((uni, index) => {
+            const uniImg =
+              uni.imageUrl && uni.imageUrl.trim().length > 0
+                ? uni.imageUrl
+                : getUniversityImageUrl(uni.name, uni.acronym);
 
-              <div className="absolute top-2.5 left-2.5">
-                <Badge
-                  variant="outline"
-                  className="border-white/20 bg-black/60 text-white font-bold text-[10px] backdrop-blur-sm"
-                >
-                  {uni.acronym}
-                </Badge>
-              </div>
+            return (
+              <motion.button
+                type="button"
+                key={uni.id}
+                whileTap={{ scale: 0.94 }}
+                onClick={() => onSelectUniversity(uni)}
+                className="group relative h-48 w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-colors hover:border-primary/50 cursor-pointer shadow-sm"
+              >
+                {uniImg && (
+                  <Image
+                    src={uniImg}
+                    alt={uni.name}
+                    fill
+                    unoptimized
+                    loading={index < 3 ? 'eager' : 'lazy'}
+                    sizes="176px"
+                    className="object-cover opacity-80 transition duration-300 group-hover:scale-105"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
 
-              <div className="absolute bottom-3 left-3 right-3">
-                <h4 className="text-sm font-bold text-white leading-tight line-clamp-2">
-                  {uni.name}
-                </h4>
-                <div className="flex items-center gap-1 text-[11px] text-zinc-300 mt-1">
-                  <MapPin className="h-3 w-3" />
-                  <span>{uni.city}</span>
+                <div className="absolute top-2.5 left-2.5">
+                  <Badge
+                    variant="outline"
+                    className="border-white/20 bg-black/60 text-white font-bold text-[10px] backdrop-blur-sm"
+                  >
+                    {uni.acronym}
+                  </Badge>
                 </div>
-              </div>
-            </motion.button>
-          ))}
+
+                <div className="absolute bottom-3 left-3 right-3">
+                  <h4 className="text-sm font-bold text-white leading-tight line-clamp-2">
+                    {uni.name}
+                  </h4>
+                  <div className="flex items-center gap-1 text-[11px] text-zinc-300 mt-1">
+                    <MapPin className="h-3 w-3" />
+                    <span>{uni.city}</span>
+                  </div>
+                </div>
+              </motion.button>
+            );
+          })}
         </div>
       </section>
 

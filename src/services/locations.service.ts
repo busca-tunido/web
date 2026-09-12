@@ -1,4 +1,5 @@
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
+import { getCityImageUrl } from '@/lib/location-images';
 import type { CityInfo } from '@/lib/types';
 import { fetchUniversities as apiFetchUniversities } from '@/services/universities.service';
 import type { PensionItemDto, UniversityDto } from '@/types/api-contracts';
@@ -119,7 +120,7 @@ export async function fetchCities(): Promise<ApiResponse<CityInfo[]>> {
       foreignStudentRate: 0.12,
       pensionsCount: data.count * 10,
       averagePriceClp: 300000,
-      imageUrl: '',
+      imageUrl: getCityImageUrl(cityName),
       latitude: data.lat,
       longitude: data.lng,
     }));
