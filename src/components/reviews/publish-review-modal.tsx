@@ -26,9 +26,12 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { submitPensionReview, uploadImageFile } from '@/lib/api-client';
+import { createReviewSchema } from '@/hooks/use-pension-reviews';
+import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
 import type { PensionItem, PensionReview, StayDurationCategory } from '@/lib/types';
+import { reviewsService } from '@/services/reviews.service';
+import { uploadSingleImage } from '@/services/uploads.service';
 
 type PublishReviewModalProps = {
   isOpen: boolean;
@@ -59,7 +62,7 @@ export function PublishReviewModal({
   pension,
   onReviewPublished,
 }: PublishReviewModalProps) {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
 
   const [overallRating, setOverallRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -105,8 +108,19 @@ export function PublishReviewModal({
   };
 
   const handleSubmit = async () => {
-    if (comment.trim().length < 10) {
-      setErrorMessage('Tu reseña debe tener al menos 10 caracteres.');
+    const validation = createReviewSchema.safeParse({
+      rating: overallRating,
+      comment: comment.trim(),
+      cleanlinessRating: cleanlinessRating ?? undefined,
+      landlordRating: landlordRating ?? undefined,
+      locationRating: quietnessRating ?? undefined,
+      stayDuration,
+      images: selectedFiles.map((f) => f.previewUrl),
+    });
+
+    if (!validation.success) {
+      const firstError = validation.error.issues[0]?.message || 'Verifica los campos ingresados.';
+      setErrorMessage(firstError);
       return;
     }
 
@@ -117,9 +131,11 @@ export function PublishReviewModal({
       const uploadedUrls: string[] = [];
       for (const item of selectedFiles) {
         try {
-          const res = await uploadImageFile(item.file, token ?? undefined);
-          if (res?.url) {
-            uploadedUrls.push(res.url);
+          const res = await uploadSingleImage(item.file);
+          if (isApiSuccess(res) && res.data.url) {
+            uploadedUrls.push(res.data.url);
+          } else {
+            uploadedUrls.push(item.previewUrl);
           }
         } catch {
           uploadedUrls.push(item.previewUrl);
@@ -128,29 +144,34 @@ export function PublishReviewModal({
 
       const reviewPayload = {
         overallRating,
+        comment: comment.trim(),
         cleanlinessRating: cleanlinessRating ?? undefined,
         landlordRating: landlordRating ?? undefined,
         quietnessRating: quietnessRating ?? undefined,
         wifiRating: wifiRating ?? undefined,
-        comment: comment.trim(),
         stayDurationCategory: stayDuration,
         images: uploadedUrls,
       };
 
-      const result = await submitPensionReview(pension.id, reviewPayload, token ?? undefined);
+      const result = await reviewsService.createReview(pension.id, reviewPayload);
 
-      const createdReview: PensionReview = result ?? {
-        id: `rev-${Date.now()}`,
+      if (!isApiSuccess(result)) {
+        throw new Error(result.message);
+      }
+
+      const serverReview = result.data;
+      const createdReview: PensionReview = {
+        id: serverReview.id || `rev-${Date.now()}`,
         pensionId: pension.id,
-        overallRating,
-        cleanlinessRating: cleanlinessRating ?? undefined,
-        landlordRating: landlordRating ?? undefined,
-        quietnessRating: quietnessRating ?? undefined,
+        overallRating: serverReview.rating ?? overallRating,
+        cleanlinessRating: serverReview.cleanlinessRating ?? cleanlinessRating ?? undefined,
+        landlordRating: serverReview.landlordRating ?? landlordRating ?? undefined,
+        quietnessRating: serverReview.locationRating ?? quietnessRating ?? undefined,
         wifiRating: wifiRating ?? undefined,
-        comment: comment.trim(),
+        comment: serverReview.comment ?? comment.trim(),
         stayDurationCategory: stayDuration,
         isResidentVerified: true,
-        createdAt: new Date().toISOString(),
+        createdAt: serverReview.createdAt ?? new Date().toISOString(),
         images: uploadedUrls.map((url, i) => ({ id: `img-${i}`, url })),
         user: {
           id: user?.id || 'usr-current',
@@ -185,7 +206,7 @@ export function PublishReviewModal({
     }
   };
 
-  const isMinLength = comment.trim().length >= 10;
+  const isMinLength = comment.trim().length >= 15;
   const currentRatingValue = hoverRating || overallRating;
 
   return (
@@ -462,10 +483,10 @@ export function PublishReviewModal({
               </h4>
               <span
                 className={`text-[11px] ${
-                  comment.length < 10 ? 'text-amber-500' : 'text-muted-foreground'
+                  comment.length < 15 ? 'text-amber-500' : 'text-muted-foreground'
                 }`}
               >
-                {comment.length} / 1000 (mín. 10 caracteres)
+                {comment.length} / 1000 (mín. 15 caracteres)
               </span>
             </div>
             <textarea

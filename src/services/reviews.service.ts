@@ -154,9 +154,34 @@ export async function deleteReview(reviewId: string): Promise<ApiResponse<{ succ
   return response;
 }
 
+export async function voteReviewHelpful(
+  reviewId: string,
+): Promise<ApiResponse<{ helpfulCount: number; voted: boolean }>> {
+  const response = await apiFetch<{ helpfulCount?: number; voted?: boolean }>(
+    `/reviews/${encodeURIComponent(reviewId)}/helpful`,
+    {
+      method: 'POST',
+    },
+  );
+
+  if (isApiSuccess(response)) {
+    return createSuccess(
+      {
+        helpfulCount: response.data.helpfulCount ?? 1,
+        voted: response.data.voted ?? true,
+      },
+      response.statusCode,
+    );
+  }
+
+  return response;
+}
+
 export const reviewsService = {
   fetchPensionReviews,
   createPensionReview,
+  createReview: createPensionReview,
   updateReview,
   deleteReview,
+  voteReviewHelpful,
 };

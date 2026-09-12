@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { FavoritesSkeleton } from '@/components/ui/skeletons/favorites-skeleton';
-import { useAuth } from '@/lib/auth-context';
+import { useStudentFavorites } from '@/hooks/use-student-favorites';
 import type { PensionItem } from '@/lib/types';
 
 type FavoritesScreenProps = {
@@ -16,8 +16,8 @@ type FavoritesScreenProps = {
 };
 
 export function FavoritesScreen({ allPensions, onSelectPension, onExplore }: FavoritesScreenProps) {
-  const { favorites, toggleFavorite } = useAuth();
-  const savedPensions = allPensions.filter((p) => favorites.includes(p.id));
+  const { favorites, isFavorite, toggleFavorite, errorMessage, clearError } = useStudentFavorites();
+  const savedPensions = allPensions.filter((p) => favorites.includes(p.id) || isFavorite(p.id));
 
   return (
     <div id="favorites-screen-view" className="flex flex-col gap-6 px-4 pb-28 pt-2">
@@ -41,6 +41,19 @@ export function FavoritesScreen({ allPensions, onSelectPension, onExplore }: Fav
           toggleFavorite={toggleFavorite}
         />
       </Suspense>
+
+      {errorMessage && (
+        <div className="fixed bottom-20 left-4 right-4 z-50 flex items-center justify-between rounded-xl bg-destructive text-destructive-foreground px-4 py-3 text-xs font-semibold shadow-lg">
+          <span>{errorMessage}</span>
+          <button
+            type="button"
+            onClick={clearError}
+            className="ml-2 text-xs underline cursor-pointer"
+          >
+            Cerrar
+          </button>
+        </div>
+      )}
     </div>
   );
 }
