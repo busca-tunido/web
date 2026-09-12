@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { authService } from '@/services/auth.service';
+import { favoritesService } from '@/services/favorites.service';
 import { isApiSuccess } from './api-response';
 import type { UserProfile } from './types';
 
@@ -22,7 +23,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [favorites, setFavorites] = useState<string[]>(['pen-1', 'pen-2']);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -35,13 +36,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setToken(savedToken);
       }
       if (savedFavs) {
-        setFavorites(JSON.parse(savedFavs));
+        const parsed = JSON.parse(savedFavs);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(
+            (id: unknown) => typeof id === 'string' && !id.startsWith('pen-'),
+          );
+          setFavorites(cleaned);
+          localStorage.setItem('tunido_favs', JSON.stringify(cleaned));
+        }
       }
     } catch {
     } finally {
       setIsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!token) {
+      setFavorites([]);
+      return;
+    }
+    favoritesService
+      .fetchStudentFavorites()
+      .then((res) => {
+        if (isApiSuccess(res)) {
+          const ids = res.data.map((p) => p.id);
+          setFavorites(ids);
+          try {
+            localStorage.setItem('tunido_favs', JSON.stringify(ids));
+          } catch {}
+        }
+      })
+      .catch(() => {});
+  }, [token]);
 
   const login = async (email: string, password = 'Password123!') => {
     const res = await authService.loginWithCredentials({ email, password });
@@ -67,23 +94,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setUser(null);
     setToken(null);
+    setFavorites([]);
     try {
       localStorage.removeItem('tunido_user');
       localStorage.removeItem('tunido_token');
+      localStorage.removeItem('tunido_favs');
       sessionStorage.removeItem('tunido_guest');
     } catch {}
   };
 
   const toggleFavorite = (pensionId: string) => {
-    setFavorites((prev) => {
-      const next = prev.includes(pensionId)
-        ? prev.filter((id) => id !== pensionId)
-        : [...prev, pensionId];
-      try {
-        localStorage.setItem('tunido_favs', JSON.stringify(next));
-      } catch {}
-      return next;
-    });
+    const wasFav = favorites.includes(pensionId);
+    const next = wasFav ? favorites.filter((id) => id !== pensionId) : [...favorites, pensionId];
+    setFavorites(next);
+    try {
+      localStorage.setItem('tunido_favs', JSON.stringify(next));
+    } catch {}
+    if (token) {
+      favoritesService.toggleFavorite(pensionId, wasFav).catch(() => {});
+    }
   };
 
   const isFavorite = (pensionId: string) => favorites.includes(pensionId);
