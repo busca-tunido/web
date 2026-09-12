@@ -80,6 +80,7 @@ export async function addFavorite(pensionId: string): Promise<ApiResponse<{ succ
     `/favorites/${encodeURIComponent(pensionId)}`,
     {
       method: 'POST',
+      body: JSON.stringify({}),
     },
   );
 
