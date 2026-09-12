@@ -37,14 +37,14 @@ export type ApiResponseEnvelope<T> = {
 export type CreateProposalInput = components['schemas']['CreateProposalDto'];
 export type CreateReviewInput = components['schemas']['CreateReviewDto'];
 
-type ApiPensionPayload = {
-  id: string;
+export type ApiPensionPayload = {
+  id?: string;
   slug?: string;
-  title: string;
+  title?: string;
   description?: string;
   address?: string;
   neighborhood?: string;
-  city: string;
+  city?: string;
   latitude?: number | string;
   longitude?: number | string;
   baseMonthlyPrice?: number | string;
@@ -91,7 +91,7 @@ type ApiPensionPayload = {
   };
 };
 
-function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem {
+export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem {
   const images = Array.isArray(raw.images)
     ? raw.images.map((img) => (typeof img === 'string' ? img : img.url))
     : [];
@@ -132,14 +132,15 @@ function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem {
           },
         ];
 
+  const pensionId = String(raw.id ?? '');
   return {
-    id: raw.id,
-    slug: raw.slug ?? `pension-${raw.id}`,
-    title: raw.title,
+    id: pensionId,
+    slug: raw.slug ?? `pension-${pensionId}`,
+    title: raw.title ?? 'Pensión Universitaria',
     description: raw.description ?? '',
     address: raw.address ?? '',
     neighborhood: raw.neighborhood ?? 'Centro',
-    city: raw.city,
+    city: raw.city ?? 'Santiago',
     latitude: Number(raw.latitude) || -33.4489,
     longitude: Number(raw.longitude) || -70.6693,
     priceMonthlyClp: Number(raw.baseMonthlyPrice) || 280000,
@@ -171,6 +172,8 @@ function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem {
     visitsPolicy: raw.guestsAllowed ? 'Visitas permitidas' : 'Sin visitas',
   };
 }
+
+export const mapRawPensionToItem = mapRawPensionToPensionItem;
 
 export type FetchPensionsParams = Partial<SearchFilters> & {
   page?: number;

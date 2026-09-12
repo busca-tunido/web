@@ -11,6 +11,10 @@ export type UseInfinitePensionsOptions = {
   radiusKm?: number;
   sortBy?: 'relevance' | 'distance' | 'price_asc' | 'price_desc' | 'rating';
   limit?: number;
+  minLat?: number;
+  maxLat?: number;
+  minLng?: number;
+  maxLng?: number;
 };
 
 export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
@@ -21,6 +25,10 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
     radiusKm = 30,
     sortBy = 'relevance',
     limit = 12,
+    minLat,
+    maxLat,
+    minLng,
+    maxLng,
   } = options || {};
 
   const [items, setItems] = useState<PensionItem[]>([]);
@@ -61,6 +69,10 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
         longitude,
         radiusKm,
         sortBy,
+        minLat,
+        maxLat,
+        minLng,
+        maxLng,
         page: 1,
         limit,
       });
@@ -94,6 +106,10 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
     radiusKm,
     sortBy,
     limit,
+    minLat,
+    maxLat,
+    minLng,
+    maxLng,
   ]);
 
   useEffect(() => {
@@ -120,6 +136,10 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
         longitude,
         radiusKm,
         sortBy,
+        minLat,
+        maxLat,
+        minLng,
+        maxLng,
         page: nextPage,
         limit,
       });
@@ -159,6 +179,10 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
     radiusKm,
     sortBy,
     limit,
+    minLat,
+    maxLat,
+    minLng,
+    maxLng,
     page,
     hasMore,
     isLoading,

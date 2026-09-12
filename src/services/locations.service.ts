@@ -1,3 +1,7 @@
+import { type ApiResponse, createSuccess } from '@/lib/api-response';
+import { MOCK_CITIES } from '@/lib/mock-data';
+import type { CityInfo } from '@/lib/types';
+import { fetchUniversities as apiFetchUniversities } from '@/services/universities.service';
 import type { PensionItemDto, UniversityDto } from '@/types/api-contracts';
 
 export type CityLocationItem = {
@@ -93,3 +97,25 @@ export function sortCitiesByCoordinates(
 ): Array<CityLocationItem & { distanceKm: number }> {
   return sortLocationsByDistance(cities, userLat, userLng);
 }
+
+export async function fetchCities(): Promise<ApiResponse<CityInfo[]>> {
+  return createSuccess(MOCK_CITIES);
+}
+
+async function fetchUniversities(params?: {
+  city?: string;
+}): Promise<ApiResponse<UniversityDto[]>> {
+  return apiFetchUniversities(params);
+}
+
+export const locationsService = {
+  fetchCities,
+  fetchUniversities,
+  calculateHaversineDistanceKm,
+  extractUniqueCities,
+  extractUniqueCitiesFromPensions,
+  extractUniqueCitiesFromUniversities,
+  extractCitiesWithCounts,
+  sortLocationsByDistance,
+  sortCitiesByCoordinates,
+};

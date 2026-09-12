@@ -114,6 +114,11 @@ export type PaginatedResponse<T> = {
   page: number;
   limit: number;
   hasMore: boolean;
+  nearbyCityCounts?: Array<{
+    city: string;
+    count: number;
+    distanceKm?: number;
+  }>;
 };
 
 export type PaginatedPensionsResponse = PaginatedResponse<PensionItemDto>;

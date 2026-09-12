@@ -5,6 +5,9 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom',
+    env: {
+      NEXT_PUBLIC_API_URL: 'http://localhost:4000/api',
+    },
   },
   resolve: {
     alias: {
