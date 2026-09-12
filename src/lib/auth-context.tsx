@@ -1,7 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { loginWithEmail } from './api-client';
+import { authService } from '@/services/auth.service';
+import { isApiSuccess } from './api-response';
 import type { UserProfile } from './types';
 
 type AuthContextType = {
@@ -43,12 +44,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password = 'Password123!') => {
-    const res = await loginWithEmail(email, password);
-    setUser(res.user);
-    setToken(res.token);
+    const res = await authService.loginWithCredentials({ email, password });
+    if (!isApiSuccess(res)) {
+      throw new Error(res.message);
+    }
+    const profile: UserProfile = {
+      id: res.data.user.id,
+      email: res.data.user.email,
+      firstName: res.data.user.firstName,
+      lastName: res.data.user.lastName,
+      role: res.data.user.role,
+    };
+    setUser(profile);
+    setToken(res.data.token);
     try {
-      localStorage.setItem('tunido_user', JSON.stringify(res.user));
-      localStorage.setItem('tunido_token', res.token);
+      localStorage.setItem('tunido_user', JSON.stringify(profile));
+      localStorage.setItem('tunido_token', res.data.token);
       sessionStorage.removeItem('tunido_guest');
     } catch {}
   };

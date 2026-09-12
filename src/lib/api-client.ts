@@ -359,22 +359,25 @@ export async function loginWithEmail(
   email: string,
   password = 'Password123!',
 ): Promise<{ user: UserProfile; token: string }> {
-  const { response } = await apiClient.POST('/auth/login', {
+  const { data, error, response } = await apiClient.POST('/auth/login', {
     body: { email, password },
   });
 
-  if (response.ok) {
-    const json = (await response.json()) as ApiResponseEnvelope<{
+  if (response.ok && data) {
+    const envelope = data as ApiResponseEnvelope<{
       user: UserProfile;
       accessToken: string;
     }>;
     return {
-      user: json.data.user,
-      token: json.data.accessToken,
+      user: envelope.data.user,
+      token: envelope.data.accessToken,
     };
   }
-  const err = (await response.json().catch(() => ({}))) as { message?: string };
-  throw new Error(err.message || 'Credenciales inválidas');
+  const errMessage =
+    typeof error === 'object' && error !== null && 'message' in error
+      ? String((error as { message: unknown }).message)
+      : 'Credenciales inválidas';
+  throw new Error(errMessage);
 }
 
 export async function submitPensionReview(
@@ -387,7 +390,7 @@ export async function submitPensionReview(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const { response } = await apiClient.POST('/pensions/{pensionId}/reviews', {
+  const { data, error, response } = await apiClient.POST('/pensions/{pensionId}/reviews', {
     params: {
       path: { pensionId },
     },
@@ -395,12 +398,15 @@ export async function submitPensionReview(
     headers,
   });
 
-  if (response.ok) {
-    const json = (await response.json()) as ApiResponseEnvelope<PensionReview>;
-    return json.data;
+  if (response.ok && data) {
+    const envelope = data as ApiResponseEnvelope<PensionReview>;
+    return envelope.data;
   }
-  const errJson = (await response.json().catch(() => ({}))) as { message?: string };
-  throw new Error(errJson.message || 'No se pudo publicar la reseña');
+  const errMessage =
+    typeof error === 'object' && error !== null && 'message' in error
+      ? String((error as { message: unknown }).message)
+      : 'No se pudo publicar la reseña';
+  throw new Error(errMessage);
 }
 
 export async function submitPensionProposal(
@@ -413,7 +419,7 @@ export async function submitPensionProposal(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const { response } = await apiClient.POST('/pensions/{id}/proposals', {
+  const { data, error, response } = await apiClient.POST('/pensions/{id}/proposals', {
     params: {
       path: { id: pensionId },
     },
@@ -421,12 +427,15 @@ export async function submitPensionProposal(
     headers,
   });
 
-  if (response.ok) {
-    const json = (await response.json()) as ApiResponseEnvelope<{ id: string }>;
-    return json.data;
+  if (response.ok && data) {
+    const envelope = data as ApiResponseEnvelope<{ id: string }>;
+    return envelope.data;
   }
-  const errJson = (await response.json().catch(() => ({}))) as { message?: string };
-  throw new Error(errJson.message || 'No se pudo enviar la propuesta');
+  const errMessage =
+    typeof error === 'object' && error !== null && 'message' in error
+      ? String((error as { message: unknown }).message)
+      : 'No se pudo enviar la propuesta';
+  throw new Error(errMessage);
 }
 
 export async function uploadImageFile(

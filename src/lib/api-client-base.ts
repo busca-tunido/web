@@ -33,6 +33,58 @@ function getAuthToken(): string | null {
   }
 }
 
+function formatFriendlyErrorMessage(statusCode: number, rawMessage?: string): string {
+  if (statusCode >= 500) {
+    return 'Hubo un inconveniente con el servidor. Por favor, intenta de nuevo más tarde.';
+  }
+
+  if (statusCode === 401) {
+    return 'Credenciales incorrectas. Verifica tu correo y contraseña.';
+  }
+
+  if (statusCode === 403) {
+    return 'No tienes permisos para realizar esta acción.';
+  }
+
+  if (statusCode === 404) {
+    return 'El recurso solicitado no fue encontrado.';
+  }
+
+  if (statusCode === 409) {
+    if (
+      rawMessage?.toLowerCase().includes('email') ||
+      rawMessage?.toLowerCase().includes('correo')
+    ) {
+      return 'Ya existe una cuenta registrada con este correo electrónico.';
+    }
+    return 'Ya existe un registro con estos datos.';
+  }
+
+  if (statusCode === 400) {
+    if (
+      rawMessage &&
+      !rawMessage.includes('\n') &&
+      !rawMessage.includes('{') &&
+      rawMessage.length < 120 &&
+      !rawMessage.toLowerCase().includes('error')
+    ) {
+      return rawMessage;
+    }
+    return 'Los datos ingresados no son válidos. Por favor, revisa la información ingresada.';
+  }
+
+  if (
+    rawMessage &&
+    !rawMessage.includes('\n') &&
+    !rawMessage.includes('{') &&
+    rawMessage.length < 100
+  ) {
+    return rawMessage;
+  }
+
+  return 'Ocurrió un error inesperado al procesar la solicitud.';
+}
+
 export async function apiFetch<T>(
   endpoint: string,
   config: RequestConfig = {},
@@ -83,10 +135,12 @@ export async function apiFetch<T>(
         errorType = 'CONFLICT_ERROR';
       }
 
-      const message =
+      const rawServerMessage =
         typeof responseData === 'object' && responseData !== null && 'message' in responseData
           ? String(responseData.message)
-          : response.statusText || 'Error en la petición';
+          : response.statusText || undefined;
+
+      const message = formatFriendlyErrorMessage(statusCode, rawServerMessage);
 
       return createError(message, statusCode, errorType, responseData);
     }
@@ -102,16 +156,18 @@ export async function apiFetch<T>(
 
     if (error instanceof DOMException && error.name === 'AbortError') {
       return createError(
-        'La solicitud tardó demasiado tiempo en responder. Intenta de nuevo.',
+        'La solicitud tardó demasiado tiempo en responder. Revisa tu conexión e intenta de nuevo.',
         408,
         'NETWORK_ERROR',
       );
     }
 
-    const message =
-      error instanceof Error ? error.message : 'No pudimos conectar con el servidor de BuscaTuNido';
-
-    return createError(message, 0, 'NETWORK_ERROR', error);
+    return createError(
+      'No se pudo establecer conexión con el servidor. Verifica tu conexión a internet o intenta más tarde.',
+      0,
+      'NETWORK_ERROR',
+      error,
+    );
   }
 }
 

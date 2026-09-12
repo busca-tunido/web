@@ -137,8 +137,12 @@ export function useAuthFlow(options: UseAuthFlowOptions = {}): UseAuthFlowReturn
         await login(email.trim(), password);
         options.onLoginSuccess?.();
         return true;
-      } catch {
-        setError('Error al autenticar. Verifica las credenciales.');
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error && err.message
+            ? err.message
+            : 'Error al autenticar. Verifica las credenciales.';
+        setError(message);
         return false;
       } finally {
         setIsSubmittingLogin(false);
