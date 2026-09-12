@@ -84,6 +84,7 @@ export function MapScreen({
         const h = mapContainerRef.current.clientHeight || window.innerHeight;
         setContainerHeight(h);
         containerHeightRef.current = h;
+        mapInstanceRef.current?.invalidateSize();
       }
     };
     updateHeight();
@@ -558,126 +559,166 @@ export function MapScreen({
   return (
     <div
       id="map-screen-container"
-      className="relative h-full w-full overflow-hidden bg-background select-none"
+      className="relative flex h-full w-full overflow-hidden bg-background select-none"
     >
-      <div ref={mapContainerRef} className="h-full w-full z-0" />
-
-      <AnimatePresence>
-        {isAreaLoading && (
-          <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
-          >
-            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card/90 border border-border/80 text-xs font-semibold text-foreground shadow-lg backdrop-blur-md">
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-              <span>Buscando en esta zona...</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <button
-        type="button"
-        id="center-user-location-btn"
-        onClick={handleCenterOnUser}
-        className={`absolute right-4 ${buttonBottomClass} z-20 flex h-11 w-11 items-center justify-center rounded-full border border-border/80 bg-card/95 text-foreground shadow-lg backdrop-blur-md hover:bg-secondary active:scale-90 transition-all duration-300 cursor-pointer`}
-        title="Centrar en mi ubicación"
-        aria-label="Centrar en mi ubicación"
+      <aside
+        id="desktop-map-sidebar"
+        className="hidden lg:flex w-[440px] xl:w-[480px] 2xl:w-[520px] shrink-0 h-full flex-col border-r border-border/70 bg-card/95 backdrop-blur-xl z-20 overflow-hidden"
       >
-        <Locate className="h-5 w-5 text-primary" />
-      </button>
-
-      <motion.div
-        id="collapsible-pension-drawer"
-        drag="y"
-        dragListener={false}
-        dragControls={dragControls}
-        dragConstraints={{ top: maximizedY, bottom: minimizedY }}
-        dragElastic={0.06}
-        style={{ y: drawerY }}
-        animate={{ y: targetY }}
-        transition={{ type: 'spring', damping: 30, stiffness: 280 }}
-        onDragEnd={handleDragEnd}
-        className="absolute inset-x-0 top-0 bottom-0 z-30 flex flex-col rounded-t-3xl border-t border-border/70 bg-card/95 backdrop-blur-2xl shadow-2xl overflow-hidden"
-      >
-        <div
-          onPointerDown={(e) => dragControls.start(e)}
-          className="w-full flex flex-col items-center justify-center pt-2.5 pb-2 select-none shrink-0 cursor-grab active:cursor-grabbing touch-none"
-        >
-          <button
-            type="button"
-            onClick={handleToggleDrawer}
-            className="w-full flex justify-center py-1 cursor-pointer"
-            aria-label="Alternar panel"
-          >
-            <div className="h-1.5 w-12 rounded-full bg-muted-foreground/40 hover:bg-muted-foreground/60 transition-colors" />
-          </button>
-          <div className="flex w-full items-center justify-between px-5 pt-0.5">
-            <button
-              type="button"
-              onClick={handleToggleDrawer}
-              className="text-sm font-bold text-foreground tracking-tight hover:text-primary transition cursor-pointer text-left"
-            >
-              {pensions.length} Pensiones disponibles
-            </button>
-            <div className="flex items-center gap-2 text-xs text-primary font-semibold">
-              {drawerState === 'minimized' ? (
-                <button
-                  type="button"
-                  onClick={() => setDrawerState('half')}
-                  className="flex items-center gap-1 hover:underline cursor-pointer"
-                >
-                  Ver lista <ChevronUp className="h-4 w-4" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setDrawerState('minimized')}
-                  className="flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  Minimizar <ChevronDown className="h-4 w-4" />
-                </button>
-              )}
-            </div>
+        <div className="p-4 border-b border-border/60 flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-bold text-foreground tracking-tight">
+              {displayedPensions.length} Pensiones disponibles
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Explora en el listado o interactúa con los marcadores
+            </p>
           </div>
+          {selectedCity && (
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 shrink-0">
+              {selectedCity}
+            </span>
+          )}
         </div>
 
-        <div
-          ref={cardListRef}
-          className="relative flex-1 overflow-y-auto px-5 pb-24 pt-2 flex flex-col gap-6"
-        >
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
           <Suspense fallback={<MapDrawerSkeleton />}>
             <MapDrawerPensionList
               displayedPensions={displayedPensions}
               isAreaLoading={isAreaLoading}
               isFavorite={isFavorite}
               toggleFavorite={toggleFavorite}
-              onSelectPension={onSelectPension}
+              onSelectPension={(p) => {
+                panToPension(p);
+                onSelectPension(p);
+              }}
               onOpenPensionDetail={onOpenPensionDetail}
               setActivePinId={setActivePinId}
             />
           </Suspense>
         </div>
+      </aside>
 
-        {drawerState === 'maximized' && (
-          <div className="absolute bottom-[5.25rem] left-1/2 -translate-x-1/2 z-40">
+      <div className="relative flex-1 h-full w-full overflow-hidden">
+        <div ref={mapContainerRef} className="h-full w-full z-0" />
+
+        <AnimatePresence>
+          {isAreaLoading && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+            >
+              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-card/90 border border-border/80 text-xs font-semibold text-foreground shadow-lg backdrop-blur-md">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                <span>Buscando en esta zona...</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <button
+          type="button"
+          id="center-user-location-btn"
+          onClick={handleCenterOnUser}
+          className={`absolute right-4 ${buttonBottomClass} lg:bottom-6 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-border/80 bg-card/95 text-foreground shadow-lg backdrop-blur-md hover:bg-secondary active:scale-90 transition-all duration-300 cursor-pointer`}
+          title="Centrar en mi ubicación"
+          aria-label="Centrar en mi ubicación"
+        >
+          <Locate className="h-5 w-5 text-primary" />
+        </button>
+
+        <motion.div
+          id="collapsible-pension-drawer"
+          drag="y"
+          dragListener={false}
+          dragControls={dragControls}
+          dragConstraints={{ top: maximizedY, bottom: minimizedY }}
+          dragElastic={0.06}
+          style={{ y: drawerY }}
+          animate={{ y: targetY }}
+          transition={{ type: 'spring', damping: 30, stiffness: 280 }}
+          onDragEnd={handleDragEnd}
+          className="absolute inset-x-0 top-0 bottom-0 z-30 flex flex-col rounded-t-3xl border-t border-border/70 bg-card/95 backdrop-blur-2xl shadow-2xl overflow-hidden lg:hidden"
+        >
+          <div
+            onPointerDown={(e) => dragControls.start(e)}
+            className="w-full flex flex-col items-center justify-center pt-2.5 pb-2 select-none shrink-0 cursor-grab active:cursor-grabbing touch-none"
+          >
             <button
               type="button"
-              onClick={() => setDrawerState('minimized')}
-              className="flex items-center gap-2 rounded-full bg-foreground text-background px-5 py-2.5 text-xs font-bold shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
-              aria-label="Volver al mapa"
+              onClick={handleToggleDrawer}
+              className="w-full flex justify-center py-1 cursor-pointer"
+              aria-label="Alternar panel"
             >
-              <span>Mapa</span>
-              <span role="img" aria-label="mapa">
-                🗺️
-              </span>
+              <div className="h-1.5 w-12 rounded-full bg-muted-foreground/40 hover:bg-muted-foreground/60 transition-colors" />
             </button>
+            <div className="flex w-full items-center justify-between px-5 pt-0.5">
+              <button
+                type="button"
+                onClick={handleToggleDrawer}
+                className="text-sm font-bold text-foreground tracking-tight hover:text-primary transition cursor-pointer text-left"
+              >
+                {pensions.length} Pensiones disponibles
+              </button>
+              <div className="flex items-center gap-2 text-xs text-primary font-semibold">
+                {drawerState === 'minimized' ? (
+                  <button
+                    type="button"
+                    onClick={() => setDrawerState('half')}
+                    className="flex items-center gap-1 hover:underline cursor-pointer"
+                  >
+                    Ver lista <ChevronUp className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setDrawerState('minimized')}
+                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    Minimizar <ChevronDown className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-        )}
-      </motion.div>
+
+          <div
+            ref={cardListRef}
+            className="relative flex-1 overflow-y-auto px-5 pb-24 pt-2 flex flex-col gap-6"
+          >
+            <Suspense fallback={<MapDrawerSkeleton />}>
+              <MapDrawerPensionList
+                displayedPensions={displayedPensions}
+                isAreaLoading={isAreaLoading}
+                isFavorite={isFavorite}
+                toggleFavorite={toggleFavorite}
+                onSelectPension={onSelectPension}
+                onOpenPensionDetail={onOpenPensionDetail}
+                setActivePinId={setActivePinId}
+              />
+            </Suspense>
+          </div>
+
+          {drawerState === 'maximized' && (
+            <div className="absolute bottom-[5.25rem] left-1/2 -translate-x-1/2 z-40">
+              <button
+                type="button"
+                onClick={() => setDrawerState('minimized')}
+                className="flex items-center gap-2 rounded-full bg-foreground text-background px-5 py-2.5 text-xs font-bold shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                aria-label="Volver al mapa"
+              >
+                <span>Mapa</span>
+                <span role="img" aria-label="mapa">
+                  🗺️
+                </span>
+              </button>
+            </div>
+          )}
+        </motion.div>
+      </div>
     </div>
   );
 }

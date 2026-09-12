@@ -30,7 +30,7 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
     <nav
       id="main-bottom-navigation"
       aria-label="Navegación principal"
-      className="fixed bottom-0 inset-x-0 z-50 border-t border-border/60 bg-card/90 backdrop-blur-xl pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-1.5 transition-colors"
+      className="fixed bottom-0 inset-x-0 z-50 border-t border-border/60 bg-card/90 backdrop-blur-xl pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-1.5 transition-colors md:hidden"
     >
       <div className="mx-auto flex max-w-lg items-center justify-around px-2">
         {navItems.map((item) => {

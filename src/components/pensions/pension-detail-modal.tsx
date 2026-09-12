@@ -256,7 +256,7 @@ export function PensionDetailModal({
   if (!activePension && isLoadingDetail) {
     return (
       <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent className="max-h-[92vh] max-w-lg mx-auto bg-card border-border p-6 flex flex-col items-center justify-center">
+        <DrawerContent className="max-h-[92vh] max-w-lg md:max-w-xl mx-auto md:rounded-3xl bg-card border-border p-6 flex flex-col items-center justify-center">
           <div className="flex flex-col items-center gap-3 py-16">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-xs text-muted-foreground">Cargando detalles de la pensión...</p>
@@ -269,7 +269,7 @@ export function PensionDetailModal({
   if (!activePension && detailError) {
     return (
       <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent className="max-h-[92vh] max-w-lg mx-auto bg-card border-border p-6">
+        <DrawerContent className="max-h-[92vh] max-w-lg md:max-w-xl mx-auto md:rounded-3xl bg-card border-border p-6">
           <NetworkErrorState
             message={detailError}
             onRetry={loadLivePension}
@@ -303,11 +303,11 @@ export function PensionDetailModal({
       <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DrawerContent
           id="pension-detail-drawer"
-          className="max-h-[92vh] max-w-lg mx-auto bg-card border-border text-foreground overflow-hidden flex flex-col"
+          className="max-h-[92vh] max-w-lg md:max-w-4xl mx-auto bg-card border-border text-foreground overflow-hidden flex flex-col md:rounded-3xl"
         >
-          <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
+          <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0 md:hidden" />
 
-          <div className="overflow-y-auto flex-1 px-4 pt-1 pb-6">
+          <div className="overflow-y-auto flex-1 px-4 md:px-8 pt-2 pb-6">
             {detailError && (
               <NetworkErrorBanner
                 message={detailError}
@@ -316,7 +316,7 @@ export function PensionDetailModal({
                 className="mb-3"
               />
             )}
-            <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm">
+            <div className="relative h-64 md:h-88 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm">
               <Image
                 src={pension.photos[activePhotoIdx] ?? pension.photos[0]}
                 alt={pension.title}
@@ -555,7 +555,7 @@ export function PensionDetailModal({
             </div>
           </div>
 
-          <DrawerFooter className="border-t border-border/80 bg-card p-4">
+          <DrawerFooter className="border-t border-border/80 bg-card p-4 md:px-8">
             {hasAlreadyReviewed ? (
               <Button
                 id="btn-view-user-review"

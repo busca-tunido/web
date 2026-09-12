@@ -243,9 +243,9 @@ export function PublishReviewModal({
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent
         id="publish-review-drawer"
-        className="max-h-[92vh] max-w-lg mx-auto bg-card border-border text-foreground flex flex-col overflow-hidden"
+        className="max-h-[92vh] max-w-lg md:max-w-2xl mx-auto bg-card border-border text-foreground flex flex-col overflow-hidden md:rounded-3xl"
       >
-        <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
+        <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0 md:hidden" />
 
         <div className="flex items-center justify-between px-4 py-2 border-b border-border/60">
           <button
@@ -262,7 +262,7 @@ export function PublishReviewModal({
           <div className="w-8" />
         </div>
 
-        <div className="overflow-y-auto flex-1 px-4 py-4 space-y-5">
+        <div className="overflow-y-auto flex-1 px-4 md:px-8 py-4 space-y-5">
           <DrawerHeader className="p-0 text-left">
             <DrawerTitle className="text-lg font-bold text-foreground">
               Califica tu experiencia en {pension.title}
@@ -580,7 +580,7 @@ export function PublishReviewModal({
           </section>
         </div>
 
-        <div className="border-t border-border/80 bg-card p-4">
+        <div className="border-t border-border/80 bg-card p-4 md:px-8">
           <Button
             id="btn-submit-review"
             onClick={handleSubmit}

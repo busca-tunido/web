@@ -8,6 +8,7 @@ import { ExploreScreen } from '@/components/explore/explore-screen';
 import { FavoritesScreen } from '@/components/favorites/favorites-screen';
 import { HistoryScreen } from '@/components/history/history-screen';
 import { BottomNav } from '@/components/layout/bottom-nav';
+import { DesktopNavbar } from '@/components/layout/desktop-navbar';
 import { FilterDrawer } from '@/components/layout/filter-drawer';
 import { TopSearchBar } from '@/components/layout/top-search-bar';
 import { MapScreen } from '@/components/map/map-screen';
@@ -135,9 +136,24 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
         activeTab === 'map' ? 'h-dvh overflow-hidden' : 'min-h-screen'
       } bg-background text-foreground flex flex-col justify-between transition-colors`}
     >
+      <DesktopNavbar
+        activeTab={activeTab}
+        onTabChange={navigateTab}
+        filters={filters}
+        onFilterChange={setFilters}
+        onOpenFilterModal={openFilters}
+        selectedCityName={filters.city}
+        onClearCity={() => {
+          setFilters((prev) => ({ ...prev, city: undefined }));
+        }}
+        onResetFilters={handleResetFilters}
+      />
+
       <div
-        className={`mx-auto w-full max-w-lg flex-1 flex flex-col ${
-          activeTab === 'map' ? 'h-full overflow-hidden pb-[68px]' : 'pb-20'
+        className={`w-full flex-1 flex flex-col ${
+          activeTab === 'map'
+            ? 'h-full overflow-hidden pb-[68px] md:pb-0'
+            : 'mx-auto max-w-lg md:max-w-7xl md:px-6 lg:px-8 pb-20 md:pb-12'
         }`}
       >
         <TopSearchBar

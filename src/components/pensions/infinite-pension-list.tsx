@@ -54,8 +54,8 @@ export function InfinitePensionList({
 
   if (isLoading && items.length === 0) {
     return (
-      <div className="flex flex-col gap-6 px-5">
-        {[1, 2, 3].map((i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-5 md:px-0">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
           <div key={i} className="flex flex-col gap-2.5 animate-pulse">
             <div className="aspect-[16/10] w-full rounded-2xl bg-muted" />
             <div className="h-5 w-3/4 rounded-md bg-muted" />
@@ -92,7 +92,7 @@ export function InfinitePensionList({
   }
 
   return (
-    <div className="flex flex-col gap-7 px-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-5 md:px-0">
       {items.map((pension) => (
         <PensionCard
           key={pension.id}

@@ -65,9 +65,9 @@ export function ExploreScreen({
   );
 
   return (
-    <div id="explore-screen-view" className="flex flex-col gap-6 pb-28 pt-2">
+    <div id="explore-screen-view" className="flex flex-col gap-8 pb-20 md:pb-12 pt-2">
       <section>
-        <div className="flex items-center justify-between px-5 mb-3">
+        <div className="flex items-center justify-between px-5 md:px-0 mb-3">
           <div>
             <h3 className="text-lg font-bold text-foreground tracking-tight">Ciudades</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -83,7 +83,7 @@ export function ExploreScreen({
           </button>
         </div>
 
-        <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x">
+        <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x md:grid md:grid-cols-6 md:px-0 md:gap-4 md:overflow-visible">
           {sortedCities.map((city, index) => {
             const isSelected = selectedCity?.toLowerCase() === city.name.toLowerCase();
             const cityImg =
@@ -97,7 +97,7 @@ export function ExploreScreen({
                 key={city.id}
                 whileTap={{ scale: 0.94 }}
                 onClick={() => onSelectCity(isSelected ? null : city.name)}
-                className={`group relative h-48 w-36 shrink-0 snap-start overflow-hidden rounded-2xl border text-left transition-colors cursor-pointer shadow-sm ${
+                className={`group relative h-48 w-36 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border text-left transition-colors cursor-pointer shadow-sm ${
                   isSelected
                     ? 'border-primary ring-2 ring-primary/30'
                     : 'border-border/60 hover:border-primary/50'
@@ -137,7 +137,7 @@ export function ExploreScreen({
       </section>
 
       <section>
-        <div className="flex items-center justify-between px-5 mb-3">
+        <div className="flex items-center justify-between px-5 md:px-0 mb-3">
           <div>
             <h3 className="text-lg font-bold text-foreground tracking-tight">Universidades</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -153,7 +153,7 @@ export function ExploreScreen({
           </button>
         </div>
 
-        <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x">
+        <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x md:grid md:grid-cols-5 md:px-0 md:gap-4 md:overflow-visible">
           {sortedUniversities.map((uni, index) => {
             const uniImg =
               uni.imageUrl && uni.imageUrl.trim().length > 0
@@ -166,7 +166,7 @@ export function ExploreScreen({
                 key={uni.id}
                 whileTap={{ scale: 0.94 }}
                 onClick={() => onSelectUniversity(uni)}
-                className="group relative h-48 w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-colors hover:border-primary/50 cursor-pointer shadow-sm"
+                className="group relative h-48 w-44 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-colors hover:border-primary/50 cursor-pointer shadow-sm"
               >
                 {uniImg && (
                   <Image
@@ -258,8 +258,8 @@ function PensionListSection({
 }: PensionListSectionProps) {
   if (isLoadingPensions && featuredPensions.length === 0) {
     return (
-      <div className="px-4 flex flex-col gap-6 sm:grid sm:grid-cols-2">
-        {[1, 2, 3, 4].map((id) => (
+      <div className="px-4 md:px-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((id) => (
           <PensionCardSkeleton key={`pension-loading-${id}`} />
         ))}
       </div>
@@ -268,7 +268,7 @@ function PensionListSection({
 
   return (
     <section>
-      <div className="flex items-center justify-between px-5 mb-4">
+      <div className="flex items-center justify-between px-5 md:px-0 mb-4">
         <h3 className="text-lg font-bold text-foreground tracking-tight">
           Alojamientos Destacados
         </h3>

@@ -19,7 +19,7 @@ export function HistoryScreen({ onExplore }: HistoryScreenProps) {
   const [selectedReviewStay, setSelectedReviewStay] = useState<StayHistoryItem | null>(null);
 
   return (
-    <div id="history-screen-view" className="flex flex-col gap-4 px-4 pb-28 pt-2">
+    <div id="history-screen-view" className="flex flex-col gap-5 px-4 md:px-0 pb-20 md:pb-12 pt-2">
       <div>
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-primary" />
@@ -85,7 +85,7 @@ function HistoryList({ stays, onExplore, onSelectReviewStay, formatDateRange }: 
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       {stays.map((stay) => {
         const stayImg =
           stay.imageUrl && stay.imageUrl.trim().length > 0

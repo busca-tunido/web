@@ -50,16 +50,18 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent
         id="filter-drawer-content"
-        className="max-w-lg mx-auto bg-card border-border text-foreground"
+        className="max-w-lg md:max-w-2xl mx-auto bg-card border-border text-foreground md:rounded-3xl"
       >
-        <DrawerHeader className="text-left">
-          <DrawerTitle className="text-foreground text-lg">Filtros de Búsqueda</DrawerTitle>
+        <DrawerHeader className="text-left md:px-6 md:pt-6">
+          <DrawerTitle className="text-foreground text-lg font-bold">
+            Filtros de Búsqueda
+          </DrawerTitle>
           <DrawerDescription className="text-xs text-muted-foreground">
             Encuentra pensiones que se ajusten a tu presupuesto universitario y preferencias
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="p-4 flex flex-col gap-5">
+        <div className="p-4 md:p-6 flex flex-col gap-5 md:grid md:grid-cols-2 md:gap-6">
           <div>
             <span className="text-xs font-semibold text-foreground block mb-2">
               Presupuesto Máximo Mensual

@@ -50,7 +50,7 @@ export function AmenitiesBreakdownModal({
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent
         id="amenities-breakdown-drawer"
-        className="max-h-[92vh] max-w-lg mx-auto bg-card border-border text-foreground flex flex-col overflow-hidden"
+        className="max-h-[92vh] max-w-lg md:max-w-2xl mx-auto md:rounded-3xl bg-card border-border text-foreground flex flex-col overflow-hidden"
       >
         <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
 

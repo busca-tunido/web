@@ -39,7 +39,10 @@ export function FavoritesScreen({ allPensions, onSelectPension, onExplore }: Fav
   }, [allPensions, favoritePensions, favorites, isFavorite]);
 
   return (
-    <div id="favorites-screen-view" className="flex flex-col gap-6 px-4 pb-28 pt-2">
+    <div
+      id="favorites-screen-view"
+      className="flex flex-col gap-6 px-4 md:px-0 pb-20 md:pb-12 pt-2"
+    >
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-foreground">Tus Favoritos</h2>
@@ -112,7 +115,7 @@ function FavoritesGrid({
   }
 
   return (
-    <div className="flex flex-col gap-7 sm:grid sm:grid-cols-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {savedPensions.map((pension) => (
         <motion.div
           key={pension.id}

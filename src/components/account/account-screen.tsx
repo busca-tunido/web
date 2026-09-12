@@ -22,7 +22,10 @@ export function AccountScreen() {
   ];
 
   return (
-    <div id="account-screen-view" className="flex flex-col gap-5 px-4 pb-28 pt-2">
+    <div
+      id="account-screen-view"
+      className="flex flex-col gap-6 px-4 md:px-0 max-w-2xl mx-auto w-full pb-20 md:pb-12 pt-2"
+    >
       <div className="flex items-center gap-3.5">
         <div className="relative h-14 w-14 overflow-hidden rounded-2xl border-2 border-primary/40 bg-card shadow-md">
           {user.avatarUrl ? (

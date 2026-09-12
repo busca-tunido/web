@@ -26,7 +26,7 @@ export function TopSearchBar({
     (selectedCityName ? 1 : 0);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 px-4 py-3 backdrop-blur-xl transition-colors">
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 px-4 py-3 backdrop-blur-xl transition-colors md:hidden">
       <div className="mx-auto flex max-w-lg flex-col gap-2">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">

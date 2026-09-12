@@ -12,8 +12,8 @@ export function LandlordAppShell() {
 
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col justify-between transition-colors">
-      <div className="mx-auto w-full max-w-lg flex-1 flex flex-col pb-8">
-        <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur px-4 py-3 flex items-center justify-between shadow-xs">
+      <div className="mx-auto w-full max-w-lg md:max-w-4xl flex-1 flex flex-col pb-12">
+        <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur px-4 md:px-8 py-3.5 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-2">
             <BrandLogo size="sm" priority={false} />
             <Badge

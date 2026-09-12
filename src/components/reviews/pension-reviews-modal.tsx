@@ -123,7 +123,7 @@ export function PensionReviewsModal({
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent className="max-h-[92dvh] flex flex-col bg-background border-border select-none">
+      <DrawerContent className="max-h-[92dvh] max-w-lg md:max-w-3xl mx-auto flex flex-col bg-background border-border select-none md:rounded-3xl">
         <div className="flex items-center justify-between px-5 py-3 border-b border-border/70 shrink-0">
           <div className="flex items-center gap-2">
             <button

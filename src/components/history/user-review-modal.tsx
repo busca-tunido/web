@@ -63,7 +63,7 @@ export function UserReviewModal({ isOpen, onClose, stay }: UserReviewModalProps)
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent
         id="user-review-drawer"
-        className="max-h-[92dvh] flex flex-col bg-background border-border select-none"
+        className="max-h-[92dvh] flex flex-col bg-background border-border select-none max-w-lg md:max-w-2xl mx-auto md:rounded-3xl"
       >
         <div className="flex items-center justify-between px-5 py-3 border-b border-border/70 shrink-0">
           <div className="flex items-center gap-2">

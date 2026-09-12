@@ -180,7 +180,7 @@ export function StudentRegisterModal({
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent className="max-h-[92dvh] flex flex-col bg-background text-foreground">
+      <DrawerContent className="max-h-[92dvh] max-w-lg md:max-w-xl mx-auto md:rounded-3xl flex flex-col bg-background text-foreground">
         <DrawerHeader className="text-left px-5 pt-4 pb-2 border-b border-border">
           <div className="flex items-center gap-2 mb-1">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/20 text-primary">
