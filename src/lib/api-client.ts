@@ -111,9 +111,9 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
 
   const rooms: RoomInfo[] =
     Array.isArray(raw.rooms) && raw.rooms.length > 0
-      ? raw.rooms.map((r) => ({
-          id: r.id,
-          title: r.title ?? 'Habitación individual',
+      ? raw.rooms.map((r, idx) => ({
+          id: r.id ? String(r.id) : `room-${String(raw.id ?? 'pension')}-${idx + 1}`,
+          title: r.title ?? `Habitación ${idx + 1}`,
           roomType: r.roomType === 'SHARED' ? 'SHARED' : 'SINGLE',
           priceMonthlyClp: Number(r.priceMonthly) || Number(raw.baseMonthlyPrice) || 280000,
           hasPrivateBathroom: Boolean(r.hasPrivateBathroom),

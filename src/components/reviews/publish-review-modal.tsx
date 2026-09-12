@@ -29,6 +29,7 @@ import {
 import { createReviewSchema } from '@/hooks/use-pension-reviews';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
+import { prepareImageForUpload, validateImageFile } from '@/lib/image-utils';
 import type { PensionItem, PensionReview, StayDurationCategory } from '@/lib/types';
 import { reviewsService } from '@/services/reviews.service';
 import { uploadSingleImage } from '@/services/uploads.service';
@@ -81,19 +82,38 @@ export function PublishReviewModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successBanner, setSuccessBanner] = useState(false);
 
-  const handlePhotoSelect = (e: ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
     const availableSlots = 3 - selectedFiles.length;
     const filesToAdd = Array.from(files).slice(0, availableSlots);
 
-    const newEntries = filesToAdd.map((file) => ({
-      file,
-      previewUrl: URL.createObjectURL(file),
-    }));
+    const newEntries: Array<{ file: File; previewUrl: string }> = [];
+    for (const file of filesToAdd) {
+      const validation = validateImageFile(file);
+      if (!validation.valid) {
+        setErrorMessage(validation.error || 'Formato de imagen no compatible');
+        continue;
+      }
+      try {
+        const prepared = await prepareImageForUpload(file);
+        newEntries.push({
+          file: prepared,
+          previewUrl: URL.createObjectURL(prepared),
+        });
+      } catch (err) {
+        setErrorMessage(
+          err instanceof Error
+            ? err.message
+            : 'No se pudo procesar la imagen seleccionada. Por favor, intenta con otra.',
+        );
+      }
+    }
 
-    setSelectedFiles((prev) => [...prev, ...newEntries]);
+    if (newEntries.length > 0) {
+      setSelectedFiles((prev) => [...prev, ...newEntries]);
+    }
     e.target.value = '';
   };
 
@@ -130,15 +150,16 @@ export function PublishReviewModal({
     try {
       const uploadedUrls: string[] = [];
       for (const item of selectedFiles) {
-        try {
-          const res = await uploadSingleImage(item.file);
-          if (isApiSuccess(res) && res.data.url) {
-            uploadedUrls.push(res.data.url);
-          } else {
-            uploadedUrls.push(item.previewUrl);
-          }
-        } catch {
-          uploadedUrls.push(item.previewUrl);
+        const res = await uploadSingleImage(item.file);
+        if (isApiSuccess(res) && res.data.url) {
+          uploadedUrls.push(res.data.url);
+        } else {
+          const failMsg = !isApiSuccess(res)
+            ? res.message
+            : 'No fue posible subir la imagen. Verifica tu conexión e intenta de nuevo.';
+          setErrorMessage(failMsg);
+          setIsSubmitting(false);
+          return;
         }
       }
 
@@ -156,7 +177,9 @@ export function PublishReviewModal({
       const result = await reviewsService.createReview(pension.id, reviewPayload);
 
       if (!isApiSuccess(result)) {
-        throw new Error(result.message);
+        setErrorMessage(result.message || 'Ocurrió un error al enviar tu reseña.');
+        setIsSubmitting(false);
+        return;
       }
 
       const serverReview = result.data;

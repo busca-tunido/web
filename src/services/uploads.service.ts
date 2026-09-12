@@ -9,6 +9,7 @@ export async function uploadSingleImage(file: File): Promise<ApiResponse<UploadI
   return apiFetch<UploadImageResult>('/uploads/images', {
     method: 'POST',
     body: formData,
+    timeoutMs: 60000,
   });
 }
 
@@ -28,6 +29,7 @@ export async function uploadImages(formData: FormData): Promise<ApiResponse<{ ur
       return apiFetch<UploadImageResult>('/uploads/images', {
         method: 'POST',
         body: singleFd,
+        timeoutMs: 60000,
       });
     });
 
@@ -57,6 +59,7 @@ export async function uploadImages(formData: FormData): Promise<ApiResponse<{ ur
   const response = await apiFetch<UploadImageResult | { urls?: string[] }>('/uploads/images', {
     method: 'POST',
     body: payload,
+    timeoutMs: 60000,
   });
 
   if (isApiSuccess(response)) {

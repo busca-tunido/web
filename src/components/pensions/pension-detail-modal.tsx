@@ -350,7 +350,7 @@ export function PensionDetailModal({
                 <div className="flex gap-1.5">
                   {pension.photos.map((photoUrl, i) => (
                     <button
-                      key={`photo-dot-${pension.id}-${photoUrl}`}
+                      key={`photo-dot-${pension.id}-${i}-${photoUrl}`}
                       type="button"
                       onClick={() => setActivePhotoIdx(i)}
                       className={`h-1.5 rounded-full transition-all ${
@@ -516,9 +516,9 @@ export function PensionDetailModal({
                 Habitaciones Disponibles
               </h4>
               <div className="flex flex-col gap-2">
-                {pension.rooms.map((room) => (
+                {pension.rooms.map((room, idx) => (
                   <div
-                    key={room.id}
+                    key={room.id || `room-${pension.id}-${idx}`}
                     className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3"
                   >
                     <div>
