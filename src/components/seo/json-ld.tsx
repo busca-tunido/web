@@ -5,6 +5,7 @@ export function RootJsonLd() {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'BuscaTuNido',
+    alternateName: ['TuNido', 'Busca Tu Nido', 'BuscaTuNido Chile'],
     url: 'https://buscatunido.vercel.app',
     description:
       'Plataforma comunitaria para buscar, comparar y validar pensiones universitarias en Chile con verificación estudiantil.',
@@ -21,7 +22,7 @@ export function RootJsonLd() {
     '@type': 'Organization',
     name: 'BuscaTuNido',
     url: 'https://buscatunido.vercel.app',
-    logo: 'https://buscatunido.vercel.app/apple-touch-icon.png',
+    logo: 'https://buscatunido.vercel.app/icon.png',
     sameAs: ['https://github.com/busca-tunido'],
   };
 
