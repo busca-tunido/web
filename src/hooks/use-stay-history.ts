@@ -58,6 +58,13 @@ export function useStayHistory() {
 
   useEffect(() => {
     loadStays();
+    const handleRefresh = () => {
+      loadStays();
+    };
+    window.addEventListener('tunido_review_published', handleRefresh);
+    return () => {
+      window.removeEventListener('tunido_review_published', handleRefresh);
+    };
   }, [loadStays]);
 
   const pendingReviewStays = useMemo(() => {

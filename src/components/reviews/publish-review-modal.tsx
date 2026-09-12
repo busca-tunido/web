@@ -209,6 +209,9 @@ export function PublishReviewModal({
       };
 
       setSuccessBanner(true);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('tunido_review_published'));
+      }
       onReviewPublished(createdReview);
 
       setTimeout(() => {
@@ -217,7 +220,11 @@ export function PublishReviewModal({
       }, 1500);
     } catch (err: unknown) {
       const errStr = (err as Error)?.message || '';
-      if (errStr.includes('409') || errStr.toLowerCase().includes('already reviewed')) {
+      if (
+        errStr.includes('409') ||
+        errStr.toLowerCase().includes('already reviewed') ||
+        errStr.toLowerCase().includes('ya has publicado')
+      ) {
         setErrorMessage(
           'Ya has publicado una reseña para esta pensión. Puedes editar tu opinión existente desde tu perfil.',
         );

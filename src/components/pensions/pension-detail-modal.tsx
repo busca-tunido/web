@@ -53,7 +53,7 @@ export function PensionDetailModal({
   isOpen,
   onClose,
 }: PensionDetailModalProps) {
-  const { isFavorite, toggleFavorite } = useAuth();
+  const { user, isFavorite, toggleFavorite } = useAuth();
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [reviews, setReviews] = useState<PensionReview[]>([]);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
@@ -284,6 +284,7 @@ export function PensionDetailModal({
 
   const pension = activePension;
   const isFav = isFavorite(pension.id);
+  const hasAlreadyReviewed = Boolean(user && reviews.some((r) => r.user?.id === user.id));
 
   const handleReviewPublished = (newReview: PensionReview) => {
     setReviews((prev) => [newReview, ...prev]);
@@ -555,13 +556,25 @@ export function PensionDetailModal({
           </div>
 
           <DrawerFooter className="border-t border-border/80 bg-card p-4">
-            <Button
-              id="btn-publish-review"
-              onClick={() => setIsPublishReviewOpen(true)}
-              className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer"
-            >
-              <PenLine className="mr-2 h-4 w-4" /> Publicar una reseña
-            </Button>
+            {hasAlreadyReviewed ? (
+              <Button
+                id="btn-view-user-review"
+                variant="outline"
+                onClick={() => setIsReviewsModalOpen(true)}
+                className="w-full h-12 border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-sm rounded-xl transition cursor-pointer"
+              >
+                <Check className="mr-2 h-4 w-4 text-primary" /> Ya calificaste esta pensión (Ver
+                opiniones)
+              </Button>
+            ) : (
+              <Button
+                id="btn-publish-review"
+                onClick={() => setIsPublishReviewOpen(true)}
+                className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer"
+              >
+                <PenLine className="mr-2 h-4 w-4" /> Publicar una reseña
+              </Button>
+            )}
           </DrawerFooter>
         </DrawerContent>
       </Drawer>

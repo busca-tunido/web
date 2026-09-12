@@ -57,6 +57,12 @@ function formatFriendlyErrorMessage(statusCode: number, rawMessage?: string): st
     ) {
       return 'Ya existe una cuenta registrada con este correo electrónico.';
     }
+    if (
+      rawMessage?.toLowerCase().includes('review') ||
+      rawMessage?.toLowerCase().includes('reseña')
+    ) {
+      return 'Ya has publicado una reseña para esta pensión.';
+    }
     return 'Ya existe un registro con estos datos.';
   }
 
