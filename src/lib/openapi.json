@@ -65,6 +65,29 @@
         "tags": ["Auth"]
       }
     },
+    "/auth/check-email": {
+      "get": {
+        "operationId": "AuthController_checkEmail",
+        "parameters": [
+          {
+            "name": "email",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "estudiante.demo@uchile.cl",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Check email status returned"
+          }
+        },
+        "summary": "Check if an email address is already registered",
+        "tags": ["Auth"]
+      }
+    },
     "/auth/me": {
       "get": {
         "operationId": "AuthController_getProfile",
@@ -212,6 +235,46 @@
             "schema": {
               "default": 30,
               "example": 30,
+              "type": "number"
+            }
+          },
+          {
+            "name": "minLat",
+            "required": false,
+            "in": "query",
+            "description": "Minimum latitude boundary (South)",
+            "schema": {
+              "example": -33.5,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxLat",
+            "required": false,
+            "in": "query",
+            "description": "Maximum latitude boundary (North)",
+            "schema": {
+              "example": -33.4,
+              "type": "number"
+            }
+          },
+          {
+            "name": "minLng",
+            "required": false,
+            "in": "query",
+            "description": "Minimum longitude boundary (West)",
+            "schema": {
+              "example": -70.7,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxLng",
+            "required": false,
+            "in": "query",
+            "description": "Maximum longitude boundary (East)",
+            "schema": {
+              "example": -70.6,
               "type": "number"
             }
           },
@@ -737,6 +800,24 @@
           }
         ],
         "summary": "Post a review for a pension (Authenticated students)",
+        "tags": ["Reviews"]
+      }
+    },
+    "/stays": {
+      "get": {
+        "operationId": "ReviewsController_findUserStays",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of student stays"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get stay history for current authenticated student based on their reviews",
         "tags": ["Reviews"]
       }
     },
@@ -1317,6 +1398,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "413": {
+            "description": "File size exceeds limit"
           }
         },
         "security": [
