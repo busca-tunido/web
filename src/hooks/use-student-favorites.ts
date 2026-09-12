@@ -18,7 +18,14 @@ export function useStudentFavorites(initialFavorites?: string[]) {
       const res = await favoritesService.fetchStudentFavorites();
       if (isApiSuccess(res)) {
         setFavoritePensions(res.data);
-        setFavorites(res.data.map((p) => p.id));
+        const ids = res.data.map((p) => p.id);
+        setFavorites(ids);
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('tunido_favs', JSON.stringify(ids));
+            window.dispatchEvent(new CustomEvent('tunido_favs_updated', { detail: ids }));
+          } catch {}
+        }
       }
     } catch {
       setErrorMessage('No se pudo cargar la lista de favoritos.');
@@ -55,6 +62,15 @@ export function useStudentFavorites(initialFavorites?: string[]) {
           setFavoritePensions(previousPensions);
           setErrorMessage('No se pudo actualizar tu lista de favoritos. Reintentando...');
           return wasFav;
+        }
+        if (typeof window !== 'undefined') {
+          try {
+            const nextFavs = wasFav
+              ? previousFavorites.filter((id) => id !== pensionId)
+              : [...previousFavorites, pensionId];
+            localStorage.setItem('tunido_favs', JSON.stringify(nextFavs));
+            window.dispatchEvent(new CustomEvent('tunido_favs_updated', { detail: nextFavs }));
+          } catch {}
         }
         return res.data.isFavorite;
       } catch {

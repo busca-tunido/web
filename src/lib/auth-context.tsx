@@ -52,6 +52,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const handleFavsUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<string[]>;
+      if (Array.isArray(customEvent.detail)) {
+        setFavorites(customEvent.detail);
+      }
+    };
+    window.addEventListener('tunido_favs_updated', handleFavsUpdate);
+    return () => {
+      window.removeEventListener('tunido_favs_updated', handleFavsUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!token) {
       setFavorites([]);
       return;
@@ -64,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setFavorites(ids);
           try {
             localStorage.setItem('tunido_favs', JSON.stringify(ids));
+            window.dispatchEvent(new CustomEvent('tunido_favs_updated', { detail: ids }));
           } catch {}
         }
       })
@@ -100,6 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('tunido_token');
       localStorage.removeItem('tunido_favs');
       sessionStorage.removeItem('tunido_guest');
+      window.dispatchEvent(new CustomEvent('tunido_favs_updated', { detail: [] }));
     } catch {}
   };
 
@@ -109,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setFavorites(next);
     try {
       localStorage.setItem('tunido_favs', JSON.stringify(next));
+      window.dispatchEvent(new CustomEvent('tunido_favs_updated', { detail: next }));
     } catch {}
     if (token) {
       favoritesService.toggleFavorite(pensionId, wasFav).catch(() => {});

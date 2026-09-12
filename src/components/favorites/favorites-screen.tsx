@@ -3,10 +3,11 @@
 import { Heart, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { FavoritesSkeleton } from '@/components/ui/skeletons/favorites-skeleton';
 import { useStudentFavorites } from '@/hooks/use-student-favorites';
+import { mapRawPensionToItem } from '@/lib/api-client';
 import type { PensionItem } from '@/lib/types';
 
 type FavoritesScreenProps = {
@@ -16,8 +17,26 @@ type FavoritesScreenProps = {
 };
 
 export function FavoritesScreen({ allPensions, onSelectPension, onExplore }: FavoritesScreenProps) {
-  const { favorites, isFavorite, toggleFavorite, errorMessage, clearError } = useStudentFavorites();
-  const savedPensions = allPensions.filter((p) => favorites.includes(p.id) || isFavorite(p.id));
+  const { favorites, isFavorite, toggleFavorite, errorMessage, clearError, favoritePensions } =
+    useStudentFavorites();
+
+  const savedPensions = useMemo(() => {
+    const mappedApiPensions = favoritePensions.map((dto) =>
+      mapRawPensionToItem(dto as unknown as Record<string, unknown>),
+    );
+    const mapById = new Map<string, PensionItem>();
+    for (const p of allPensions) {
+      if (favorites.includes(p.id) || isFavorite(p.id)) {
+        mapById.set(p.id, p);
+      }
+    }
+    for (const p of mappedApiPensions) {
+      if (!mapById.has(p.id) && (favorites.includes(p.id) || isFavorite(p.id))) {
+        mapById.set(p.id, p);
+      }
+    }
+    return Array.from(mapById.values());
+  }, [allPensions, favoritePensions, favorites, isFavorite]);
 
   return (
     <div id="favorites-screen-view" className="flex flex-col gap-6 px-4 pb-28 pt-2">
