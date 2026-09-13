@@ -1,9 +1,9 @@
 'use client';
 
-import { MapPin } from 'lucide-react';
+import { ChevronDown, MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { NetworkErrorBanner } from '@/components/common/network-error-state';
 import { InfinitePensionList } from '@/components/pensions/infinite-pension-list';
 import { NearbyCitiesBar } from '@/components/pensions/nearby-cities-bar';
@@ -54,6 +54,8 @@ export function ExploreScreen({
   onRetry,
   isRetrying = false,
 }: ExploreScreenProps) {
+  const [isExpandedUniversities, setIsExpandedUniversities] = useState(false);
+
   const sortedCities = [...cities].sort((a, b) => {
     if (a.isCurrentCity) return -1;
     if (b.isCurrentCity) return 1;
@@ -160,13 +162,17 @@ export function ExploreScreen({
                 ? uni.imageUrl
                 : getUniversityImageUrl(uni.name, uni.acronym);
 
+            const isDesktopHidden = !isExpandedUniversities && index >= 5;
+
             return (
               <motion.button
                 type="button"
                 key={uni.id}
                 whileTap={{ scale: 0.94 }}
                 onClick={() => onSelectUniversity(uni)}
-                className="group relative h-48 w-44 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-colors hover:border-primary/50 cursor-pointer shadow-sm"
+                className={`group relative h-48 w-44 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-colors hover:border-primary/50 cursor-pointer shadow-sm ${
+                  isDesktopHidden ? 'md:hidden' : ''
+                }`}
               >
                 {uniImg && (
                   <Image
@@ -203,6 +209,28 @@ export function ExploreScreen({
             );
           })}
         </div>
+
+        {sortedUniversities.length > 5 && (
+          <div className="hidden md:flex justify-center mt-3">
+            <button
+              type="button"
+              id="btn-toggle-universities-desktop"
+              onClick={() => setIsExpandedUniversities((prev) => !prev)}
+              className="flex items-center gap-1.5 rounded-full border border-border/80 bg-card px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary hover:border-primary/40 transition cursor-pointer shadow-xs"
+            >
+              <span>
+                {isExpandedUniversities
+                  ? 'Ver menos'
+                  : `Ver más (${sortedUniversities.length - 5} más)`}
+              </span>
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${
+                  isExpandedUniversities ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+          </div>
+        )}
       </section>
 
       {nearbyCityCounts.length > 0 && (
