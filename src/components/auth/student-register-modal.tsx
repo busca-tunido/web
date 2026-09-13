@@ -2,6 +2,7 @@
 
 import { AlertCircle, Eye, EyeOff, GraduationCap, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { UniversitySearchSelect } from '@/components/auth/university-search-select';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -301,23 +302,14 @@ export function StudentRegisterModal({
             required
             error={touched.universityId ? errors.universityId : undefined}
           >
-            <select
+            <UniversitySearchSelect
               id="register-student-university"
-              required
+              universities={universities}
               value={values.universityId}
-              onChange={(e) => handleChange('universityId', e.target.value)}
+              onChange={(val) => handleChange('universityId', val)}
               onBlur={() => handleBlur('universityId')}
-              className="min-h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
-            >
-              <option value="" disabled>
-                Selecciona tu universidad
-              </option>
-              {universities.map((uni) => (
-                <option key={uni.id} value={uni.id}>
-                  {uni.name} ({uni.acronym})
-                </option>
-              ))}
-            </select>
+              hasError={Boolean(touched.universityId && errors.universityId)}
+            />
           </FormField>
 
           <FormField
