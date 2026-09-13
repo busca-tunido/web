@@ -63,7 +63,14 @@ export function MapScreen({
   const [isAreaLoading, setIsAreaLoading] = useState(false);
 
   useEffect(() => {
-    setMapPensions(pensions);
+    setMapPensions((prev) => {
+      const currentActiveId = activePinIdRef.current;
+      const activePension = currentActiveId ? prev.find((p) => p.id === currentActiveId) : null;
+      if (activePension && !pensions.some((p) => p.id === activePension.id)) {
+        return [activePension, ...pensions];
+      }
+      return pensions;
+    });
   }, [pensions]);
 
   const mapPensionsRef = useRef(mapPensions);
@@ -73,8 +80,12 @@ export function MapScreen({
   const activeRequestIdRef = useRef(0);
 
   const [activePinId, setActivePinId] = useState<string | null>(selectedPension?.id ?? null);
+  const activePinIdRef = useRef<string | null>(activePinId);
+  activePinIdRef.current = activePinId;
+  const lastPannedPensionIdRef = useRef<string | null>(selectedPension?.id ?? null);
 
   const cardListRef = useRef<HTMLDivElement>(null);
+  const desktopListRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const containerHeightRef = useRef(containerHeight);
 
@@ -172,11 +183,15 @@ export function MapScreen({
       });
 
       marker.on('click', () => {
+        lastPannedPensionIdRef.current = pension.id;
         setActivePinId(pension.id);
         onSelectPension(pension);
         setDrawerState('half');
         if (cardListRef.current) {
           cardListRef.current.scrollTop = 0;
+        }
+        if (desktopListRef.current) {
+          desktopListRef.current.scrollTop = 0;
         }
         panToPension(pension.latitude, pension.longitude);
       });
@@ -320,12 +335,16 @@ export function MapScreen({
           const mappedItems = res.data.items.map((dto) =>
             mapRawPensionToItem(dto as unknown as Record<string, unknown>),
           );
-          setMapPensions(mappedItems);
-          setActivePinId((prev) => {
-            if (!prev) return null;
-            const stillExists = mappedItems.some((p) => p.id === prev);
-            return stillExists ? prev : null;
-          });
+          const currentActiveId = activePinIdRef.current;
+          const activePension = currentActiveId
+            ? mapPensionsRef.current.find((p) => p.id === currentActiveId)
+            : null;
+
+          let updatedList = mappedItems;
+          if (activePension && !mappedItems.some((p) => p.id === activePension.id)) {
+            updatedList = [activePension, ...mappedItems];
+          }
+          setMapPensions(updatedList);
         }
       } catch {
       } finally {
@@ -462,9 +481,13 @@ export function MapScreen({
       if (cardListRef.current) {
         cardListRef.current.scrollTop = 0;
       }
-      panToPension(selectedPension.latitude, selectedPension.longitude);
-    } else {
-      setActivePinId(null);
+      if (desktopListRef.current) {
+        desktopListRef.current.scrollTop = 0;
+      }
+      if (lastPannedPensionIdRef.current !== selectedPension.id) {
+        lastPannedPensionIdRef.current = selectedPension.id;
+        panToPension(selectedPension.latitude, selectedPension.longitude);
+      }
     }
   }, [selectedPension, panToPension]);
 
@@ -581,7 +604,7 @@ export function MapScreen({
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
+        <div ref={desktopListRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
           <Suspense fallback={<MapDrawerSkeleton />}>
             <MapDrawerPensionList
               displayedPensions={displayedPensions}
@@ -661,7 +684,7 @@ export function MapScreen({
                 onClick={handleToggleDrawer}
                 className="text-sm font-bold text-foreground tracking-tight hover:text-primary transition cursor-pointer text-left"
               >
-                {pensions.length} Pensiones disponibles
+                {displayedPensions.length} Pensiones disponibles
               </button>
               <div className="flex items-center gap-2 text-xs text-primary font-semibold">
                 {drawerState === 'minimized' ? (

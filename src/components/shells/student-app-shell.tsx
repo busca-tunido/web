@@ -85,15 +85,13 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
   }, [cities]);
 
   useEffect(() => {
-    if (urlPensionId && (!selectedPension || selectedPension.id !== urlPensionId)) {
+    if (urlPensionId && selectedPension?.id !== urlPensionId) {
       const found = pensions.find((p) => p.id === urlPensionId);
       if (found) {
         setSelectedPension(found);
       }
-    } else if (!urlPensionId && selectedPension) {
-      setSelectedPension(null);
     }
-  }, [urlPensionId, pensions, selectedPension]);
+  }, [urlPensionId, pensions, selectedPension?.id]);
 
   const handleSelectCity = (cityName: string) => {
     setSelectedPension(null);
