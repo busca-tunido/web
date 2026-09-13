@@ -53,7 +53,7 @@ export function PensionReviewsPreview({
             <h4 className="text-sm font-bold text-foreground">Reseñas de estudiantes</h4>
             <span className="flex items-center gap-0.5 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
               <Star className="h-3 w-3 fill-current" />
-              {pension.ratingAverage.toFixed(1)}
+              {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
             </span>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -61,108 +61,125 @@ export function PensionReviewsPreview({
           </p>
         </div>
 
+        {totalCount > 0 && (
+          <button
+            type="button"
+            onClick={onOpenFullReviews}
+            className="text-xs font-semibold text-primary hover:opacity-80 transition flex items-center gap-0.5 cursor-pointer shrink-0"
+          >
+            <span>Ver todas</span>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
+      {displayReviews.length === 0 ? (
+        <div className="py-6 text-center rounded-xl border border-dashed border-border/80 bg-background/50">
+          <p className="text-xs font-medium text-muted-foreground">
+            Esta pensión aún no tiene reseñas de estudiantes.
+          </p>
+          <p className="text-[11px] text-muted-foreground/70 mt-1">
+            Sé el primero en calificar tu experiencia.
+          </p>
+        </div>
+      ) : (
+        <div className="flex gap-3 overflow-x-auto pb-2 snap-x no-scrollbar -mx-1 px-1">
+          {displayReviews.map((review) => {
+            const rating = review.overallRating ?? review.rating ?? 5;
+            const photoCount = review.images?.length ?? 0;
+
+            return (
+              <div
+                key={review.id}
+                className="w-[270px] shrink-0 snap-start rounded-xl border border-border bg-background/90 p-3.5 flex flex-col justify-between shadow-xs transition hover:border-primary/40"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-muted border border-border">
+                        {review.user.avatarUrl ? (
+                          <Image
+                            src={review.user.avatarUrl}
+                            alt={review.user.firstName}
+                            fill
+                            sizes="32px"
+                            unoptimized
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center font-bold text-xs text-muted-foreground">
+                            {review.user.firstName.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="truncate">
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs font-bold text-foreground truncate">
+                            {review.user.firstName} {review.user.lastName?.charAt(0)}.
+                          </span>
+                          {(review.isResidentVerified || review.isVerifiedStudent) && (
+                            <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />
+                          )}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">
+                          {formatStayDuration(review.stayDurationCategory || review.stayDuration)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {photoCount > 0 && (
+                      <span className="flex items-center gap-1 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shrink-0">
+                        <Camera className="h-3 w-3" />
+                        {photoCount}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1 mb-1.5 text-amber-500">
+                    {[1, 2, 3, 4, 5].map((starVal) => (
+                      <Star
+                        key={`star-${review.id}-${starVal}`}
+                        className={`h-3 w-3 ${
+                          starVal < rating
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'text-muted-foreground/30'
+                        }`}
+                      />
+                    ))}
+                    <span className="text-[10px] text-muted-foreground ml-1">
+                      {formatDate(review.createdAt)}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-foreground/90 leading-relaxed line-clamp-3 italic">
+                    "{review.comment}"
+                  </p>
+                </div>
+
+                {review.user.university?.shortName && (
+                  <div className="mt-3 flex items-center gap-1 text-[10px] font-medium text-muted-foreground pt-2 border-t border-border/60">
+                    <GraduationCap className="h-3 w-3 text-primary" />
+                    <span>{review.user.university.shortName}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {totalCount > 0 && (
         <button
           type="button"
           onClick={onOpenFullReviews}
-          className="text-xs font-semibold text-primary hover:opacity-80 transition flex items-center gap-0.5 cursor-pointer shrink-0"
+          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-primary/30 bg-primary/5 py-2.5 text-xs font-bold text-primary hover:bg-primary/10 transition cursor-pointer"
         >
-          <span>Ver todas</span>
-          <ChevronRight className="h-3.5 w-3.5" />
+          <span>
+            Ver todas las {totalCount} {totalCount === 1 ? 'reseña' : 'reseñas'}
+          </span>
+          <ArrowRight className="h-3.5 w-3.5" />
         </button>
-      </div>
-
-      <div className="flex gap-3 overflow-x-auto pb-2 snap-x no-scrollbar -mx-1 px-1">
-        {displayReviews.map((review) => {
-          const rating = review.overallRating ?? review.rating ?? 5;
-          const photoCount = review.images?.length ?? 0;
-
-          return (
-            <div
-              key={review.id}
-              className="w-[270px] shrink-0 snap-start rounded-xl border border-border bg-background/90 p-3.5 flex flex-col justify-between shadow-xs transition hover:border-primary/40"
-            >
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-muted border border-border">
-                      {review.user.avatarUrl ? (
-                        <Image
-                          src={review.user.avatarUrl}
-                          alt={review.user.firstName}
-                          fill
-                          sizes="32px"
-                          unoptimized
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center font-bold text-xs text-muted-foreground">
-                          {review.user.firstName.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="truncate">
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs font-bold text-foreground truncate">
-                          {review.user.firstName} {review.user.lastName?.charAt(0)}.
-                        </span>
-                        {(review.isResidentVerified || review.isVerifiedStudent) && (
-                          <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />
-                        )}
-                      </div>
-                      <span className="text-[10px] text-muted-foreground">
-                        {formatStayDuration(review.stayDurationCategory || review.stayDuration)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {photoCount > 0 && (
-                    <span className="flex items-center gap-1 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shrink-0">
-                      <Camera className="h-3 w-3" />
-                      {photoCount}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-1 mb-1.5 text-amber-500">
-                  {[1, 2, 3, 4, 5].map((starVal) => (
-                    <Star
-                      key={`star-${review.id}-${starVal}`}
-                      className={`h-3 w-3 ${
-                        starVal < rating
-                          ? 'fill-amber-400 text-amber-400'
-                          : 'text-muted-foreground/30'
-                      }`}
-                    />
-                  ))}
-                  <span className="text-[10px] text-muted-foreground ml-1">
-                    {formatDate(review.createdAt)}
-                  </span>
-                </div>
-
-                <p className="text-xs text-foreground/90 leading-relaxed line-clamp-3 italic">
-                  "{review.comment}"
-                </p>
-              </div>
-
-              {review.user.university?.shortName && (
-                <div className="mt-3 flex items-center gap-1 text-[10px] font-medium text-muted-foreground pt-2 border-t border-border/60">
-                  <GraduationCap className="h-3 w-3 text-primary" />
-                  <span>{review.user.university.shortName}</span>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <button
-        type="button"
-        onClick={onOpenFullReviews}
-        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-primary/30 bg-primary/5 py-2.5 text-xs font-bold text-primary hover:bg-primary/10 transition cursor-pointer"
-      >
-        <span>Ver todas las {totalCount} reseñas</span>
-        <ArrowRight className="h-3.5 w-3.5" />
-      </button>
+      )}
     </div>
   );
 }

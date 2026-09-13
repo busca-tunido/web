@@ -34,8 +34,6 @@ export function PensionReviewsModal({
   const [userLiked, setUserLiked] = useState<Record<string, boolean>>({});
   const [enlargedPhoto, setEnlargedPhoto] = useState<string | null>(null);
 
-  const totalReviewsCount = Math.max(reviews.length, pension.reviewsCount);
-
   const starCounts = useMemo(() => {
     const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     for (const r of reviews) {
@@ -63,22 +61,21 @@ export function PensionReviewsModal({
     }
 
     if (count === 0) {
-      const fallbackScore = Number(pension.ratingAverage.toFixed(1)) || 4.5;
       return {
-        cleanliness: fallbackScore,
-        landlord: fallbackScore,
-        quietness: fallbackScore,
-        wifi: fallbackScore,
+        cleanliness: 0,
+        landlord: 0,
+        quietness: 0,
+        wifi: 0,
       };
     }
 
     return {
-      cleanliness: Number((cleanSum / count || pension.ratingAverage).toFixed(1)),
-      landlord: Number((landlordSum / count || pension.ratingAverage).toFixed(1)),
-      quietness: Number((quietSum / count || pension.ratingAverage).toFixed(1)),
-      wifi: Number((wifiSum / count || pension.ratingAverage).toFixed(1)),
+      cleanliness: Number((cleanSum / count).toFixed(1)),
+      landlord: Number((landlordSum / count).toFixed(1)),
+      quietness: Number((quietSum / count).toFixed(1)),
+      wifi: Number((wifiSum / count).toFixed(1)),
     };
-  }, [reviews, pension.ratingAverage]);
+  }, [reviews]);
 
   const filteredReviews = useMemo(() => {
     return reviews.filter((r) => {
@@ -147,172 +144,198 @@ export function PensionReviewsModal({
           <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 p-5 text-center">
             <div className="flex items-center gap-3">
               <span className="text-4xl font-black tracking-tight text-foreground">
-                {pension.ratingAverage.toFixed(2)}
+                {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
               </span>
               <div className="flex flex-col items-start">
                 <div className="flex items-center gap-0.5 text-amber-500">
                   {[1, 2, 3, 4, 5].map((starVal) => (
                     <Star
                       key={`star-${starVal}`}
-                      className="h-4 w-4 fill-amber-400 text-amber-400"
+                      className={`h-4 w-4 ${
+                        pension.ratingAverage >= starVal
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'text-muted-foreground/30'
+                      }`}
                     />
                   ))}
                 </div>
                 <span className="text-xs font-semibold text-muted-foreground mt-0.5">
-                  {totalReviewsCount} reseñas verificadas
+                  {reviews.length > 0
+                    ? `${reviews.length} ${reviews.length === 1 ? 'reseña verificada' : 'reseñas verificadas'}`
+                    : 'Sin reseñas registradas'}
                 </span>
               </div>
             </div>
 
-            <div className="mt-3.5 flex items-center gap-1.5 rounded-full bg-background px-3 py-1 border border-border text-xs font-semibold text-foreground shadow-xs">
-              <Award className="h-3.5 w-3.5 text-primary" />
-              <span>Favorito de estudiantes universitarios</span>
-            </div>
-
-            <p className="text-[11px] text-muted-foreground mt-2 max-w-sm">
-              Calificación destacada por su ambiente de estudio, excelente conexión a internet y
-              trato hospitalario del anfitrión.
-            </p>
+            {pension.ratingAverage >= 4.5 && reviews.length > 0 && (
+              <div className="mt-3.5 flex items-center gap-1.5 rounded-full bg-background px-3 py-1 border border-border text-xs font-semibold text-foreground shadow-xs">
+                <Award className="h-3.5 w-3.5 text-primary" />
+                <span>Favorito de estudiantes universitarios</span>
+              </div>
+            )}
           </div>
 
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2.5">
-              Desglose de calificaciones
-            </h4>
-            <div className="flex flex-col gap-1.5">
-              {[5, 4, 3, 2, 1].map((stars) => {
-                const count = starCounts[stars as keyof typeof starCounts] || 0;
-                const total = Math.max(reviews.length, 1);
-                const percent = Math.round((count / total) * 100);
+          {reviews.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
+              <Star className="h-8 w-8 text-muted-foreground/30 mb-2" />
+              <p className="text-sm font-semibold text-foreground">
+                Esta pensión aún no tiene reseñas
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                Las calificaciones y comentarios de estudiantes aparecerán aquí cuando califiquen su
+                estadía.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2.5">
+                  Desglose de calificaciones
+                </h4>
+                <div className="flex flex-col gap-1.5">
+                  {[5, 4, 3, 2, 1].map((stars) => {
+                    const count = starCounts[stars as keyof typeof starCounts] || 0;
+                    const total = Math.max(reviews.length, 1);
+                    const percent = Math.round((count / total) * 100);
 
-                return (
-                  <div key={`breakdown-${stars}`} className="flex items-center gap-2 text-xs">
-                    <span className="w-5 text-right font-semibold text-muted-foreground">
-                      {stars}
-                    </span>
-                    <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
-                    <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all duration-500"
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                    <span className="w-8 text-right text-[11px] text-muted-foreground">
-                      {percent}%
+                    return (
+                      <div key={`breakdown-${stars}`} className="flex items-center gap-2 text-xs">
+                        <span className="w-5 text-right font-semibold text-muted-foreground">
+                          {stars}
+                        </span>
+                        <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
+                        <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all duration-500"
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+                        <span className="w-8 text-right text-[11px] text-muted-foreground">
+                          {percent}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-foreground">Limpieza</span>
+                    <span className="text-xs font-bold text-primary">
+                      {categoryAverages.cleanliness}
                     </span>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                  <p className="text-[10px] text-muted-foreground">Áreas comunes y sanitarios</p>
+                </div>
 
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-foreground">Limpieza</span>
-                <span className="text-xs font-bold text-primary">
-                  {categoryAverages.cleanliness}
-                </span>
+                <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-foreground">Anfitrión</span>
+                    <span className="text-xs font-bold text-primary">
+                      {categoryAverages.landlord}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Atención y resolución</p>
+                </div>
+
+                <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-foreground">
+                      Silencio / Estudio
+                    </span>
+                    <span className="text-xs font-bold text-primary">
+                      {categoryAverages.quietness}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Ambiente para concentrarse</p>
+                </div>
+
+                <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-foreground">
+                      Conectividad Wi-Fi
+                    </span>
+                    <span className="text-xs font-bold text-primary">{categoryAverages.wifi}</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Estabilidad y velocidad</p>
+                </div>
               </div>
-              <p className="text-[10px] text-muted-foreground">Áreas comunes y sanitarios</p>
-            </div>
 
-            <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-foreground">Anfitrión</span>
-                <span className="text-xs font-bold text-primary">{categoryAverages.landlord}</span>
+              <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar -mx-1 px-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setActiveFilter('ALL')}
+                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                    activeFilter === 'ALL'
+                      ? 'bg-foreground text-background'
+                      : 'border border-border bg-card text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  Todas ({reviews.length})
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveFilter('WITH_PHOTOS')}
+                  className={`shrink-0 flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                    activeFilter === 'WITH_PHOTOS'
+                      ? 'bg-foreground text-background'
+                      : 'border border-border bg-card text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  <Camera className="h-3.5 w-3.5" />
+                  <span>Con fotos</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveFilter('5_STARS')}
+                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                    activeFilter === '5_STARS'
+                      ? 'bg-foreground text-background'
+                      : 'border border-border bg-card text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  5 Estrellas
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveFilter('LOW_RATING')}
+                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                    activeFilter === 'LOW_RATING'
+                      ? 'bg-foreground text-background'
+                      : 'border border-border bg-card text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  Bajas calificaciones
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveFilter('LONG_STAY')}
+                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                    activeFilter === 'LONG_STAY'
+                      ? 'bg-foreground text-background'
+                      : 'border border-border bg-card text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  Larga Estadía (&gt;1 año)
+                </button>
               </div>
-              <p className="text-[10px] text-muted-foreground">Atención y resolución</p>
-            </div>
 
-            <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-foreground">Silencio / Estudio</span>
-                <span className="text-xs font-bold text-primary">{categoryAverages.quietness}</span>
-              </div>
-              <p className="text-[10px] text-muted-foreground">Ambiente para concentrarse</p>
-            </div>
-
-            <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-foreground">Conectividad Wi-Fi</span>
-                <span className="text-xs font-bold text-primary">{categoryAverages.wifi}</span>
-              </div>
-              <p className="text-[10px] text-muted-foreground">Estabilidad y velocidad</p>
-            </div>
-          </div>
-
-          <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar -mx-1 px-1 shrink-0">
-            <button
-              type="button"
-              onClick={() => setActiveFilter('ALL')}
-              className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                activeFilter === 'ALL'
-                  ? 'bg-foreground text-background'
-                  : 'border border-border bg-card text-foreground hover:bg-secondary'
-              }`}
-            >
-              Todas ({reviews.length})
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveFilter('WITH_PHOTOS')}
-              className={`shrink-0 flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                activeFilter === 'WITH_PHOTOS'
-                  ? 'bg-foreground text-background'
-                  : 'border border-border bg-card text-foreground hover:bg-secondary'
-              }`}
-            >
-              <Camera className="h-3.5 w-3.5" />
-              <span>Con fotos</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveFilter('5_STARS')}
-              className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                activeFilter === '5_STARS'
-                  ? 'bg-foreground text-background'
-                  : 'border border-border bg-card text-foreground hover:bg-secondary'
-              }`}
-            >
-              5 Estrellas
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveFilter('LOW_RATING')}
-              className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                activeFilter === 'LOW_RATING'
-                  ? 'bg-foreground text-background'
-                  : 'border border-border bg-card text-foreground hover:bg-secondary'
-              }`}
-            >
-              Bajas calificaciones
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveFilter('LONG_STAY')}
-              className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                activeFilter === 'LONG_STAY'
-                  ? 'bg-foreground text-background'
-                  : 'border border-border bg-card text-foreground hover:bg-secondary'
-              }`}
-            >
-              Larga Estadía (&gt;1 año)
-            </button>
-          </div>
-
-          <Suspense fallback={<ReviewsSkeleton />}>
-            <ReviewFeedList
-              filteredReviews={filteredReviews}
-              userLiked={userLiked}
-              toggleHelpful={toggleHelpful}
-              setEnlargedPhoto={setEnlargedPhoto}
-            />
-          </Suspense>
+              <Suspense fallback={<ReviewsSkeleton />}>
+                <ReviewFeedList
+                  filteredReviews={filteredReviews}
+                  userLiked={userLiked}
+                  toggleHelpful={toggleHelpful}
+                  setEnlargedPhoto={setEnlargedPhoto}
+                />
+              </Suspense>
+            </>
+          )}
         </div>
 
         {enlargedPhoto && (

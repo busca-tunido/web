@@ -32,11 +32,6 @@ import {
 import { fetchPensionReviews, mapRawPensionToItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
-import {
-  calculateRatingStats,
-  generateRandomReviewsForPension,
-  getDeterministicPensionRating,
-} from '@/lib/mock-reviews-generator';
 import type { PensionItem, PensionReview } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 import { PensionReviewsModal } from '../reviews/pension-reviews-modal';
@@ -73,23 +68,19 @@ export function PensionDetailModal({
   const activePension = livePension ?? initialPension;
   const targetId = activePension?.id ?? pensionId ?? null;
 
-  const [ratingStats, setRatingStats] = useState(() => {
-    if (
-      activePension?.ratingAverage &&
-      activePension.ratingAverage > 0 &&
-      activePension.ratingAverage !== 4.5
-    ) {
-      return {
-        average: activePension.ratingAverage,
-        count: activePension.reviewsCount ?? 0,
-      };
-    }
-    const det = getDeterministicPensionRating(targetId ?? 'pension');
-    return {
-      average: det.ratingAverage,
-      count: det.reviewsCount,
-    };
+  const [ratingStats, setRatingStats] = useState({
+    average: activePension?.ratingAverage ?? 0,
+    count: activePension?.reviewsCount ?? 0,
   });
+
+  useEffect(() => {
+    if (activePension) {
+      setRatingStats({
+        average: activePension.ratingAverage ?? 0,
+        count: activePension.reviewsCount ?? 0,
+      });
+    }
+  }, [activePension]);
 
   useEffect(() => {
     setLivePension(initialPension);
@@ -121,32 +112,36 @@ export function PensionDetailModal({
   }, [isOpen, targetId, loadLivePension]);
 
   useEffect(() => {
-    if (!activePension) return;
+    if (!activePension?.id) return;
     let isCancelled = false;
 
     async function loadReviews() {
       if (!activePension) return;
-      let fetchedReviews: PensionReview[] = [];
       try {
         const res = await fetchPensionReviews(activePension.id);
+        if (isCancelled) return;
         if (Array.isArray(res) && res.length > 0) {
-          fetchedReviews = res;
+          setReviews(res);
+          const sum = res.reduce((acc, r) => acc + (r.overallRating ?? r.rating ?? 0), 0);
+          setRatingStats({
+            average: Math.round((sum / res.length) * 10) / 10,
+            count: res.length,
+          });
+        } else {
+          setReviews([]);
+          setRatingStats({
+            average: activePension.ratingAverage ?? 0,
+            count: activePension.reviewsCount ?? 0,
+          });
         }
-      } catch {}
-
-      if (isCancelled) return;
-
-      if (fetchedReviews.length > 0) {
-        setReviews(fetchedReviews);
-        setRatingStats(calculateRatingStats(fetchedReviews));
-      } else {
-        const generated = generateRandomReviewsForPension(
-          activePension.id,
-          activePension.title,
-          activePension.city,
-        );
-        setReviews(generated);
-        setRatingStats(calculateRatingStats(generated));
+      } catch {
+        if (!isCancelled) {
+          setReviews([]);
+          setRatingStats({
+            average: activePension.ratingAverage ?? 0,
+            count: activePension.reviewsCount ?? 0,
+          });
+        }
       }
     }
 
@@ -156,6 +151,31 @@ export function PensionDetailModal({
       isCancelled = true;
     };
   }, [activePension]);
+
+  const pension = useMemo(() => {
+    if (!activePension) return null;
+    return {
+      ...activePension,
+      ratingAverage: ratingStats.average,
+      reviewsCount: ratingStats.count,
+    };
+  }, [activePension, ratingStats]);
+
+  const isFav = isFavorite(pension?.id ?? '');
+  const hasAlreadyReviewed = Boolean(user && reviews.some((r) => r.user?.id === user.id));
+
+  const handleReviewPublished = (newReview: PensionReview) => {
+    setReviews((prev) => [newReview, ...prev]);
+    setRatingStats((prev) => {
+      const newCount = prev.count + 1;
+      const reviewScore = newReview.overallRating ?? newReview.rating ?? 5;
+      const newAvg = (prev.average * prev.count + reviewScore) / newCount;
+      return {
+        average: Math.round(newAvg * 10) / 10,
+        count: newCount,
+      };
+    });
+  };
 
   if (!isOpen) return null;
 
@@ -186,29 +206,7 @@ export function PensionDetailModal({
     );
   }
 
-  if (!activePension) return null;
-
-  const pension = useMemo(() => {
-    return {
-      ...activePension,
-      ratingAverage: ratingStats.average,
-      reviewsCount: ratingStats.count,
-    };
-  }, [activePension, ratingStats]);
-  const isFav = isFavorite(pension.id);
-  const hasAlreadyReviewed = Boolean(user && reviews.some((r) => r.user?.id === user.id));
-
-  const handleReviewPublished = (newReview: PensionReview) => {
-    setReviews((prev) => [newReview, ...prev]);
-    setRatingStats((prev) => {
-      const newCount = prev.count + 1;
-      const newAvg = (prev.average * prev.count + newReview.overallRating) / newCount;
-      return {
-        average: Math.round(newAvg * 10) / 10,
-        count: newCount,
-      };
-    });
-  };
+  if (!pension) return null;
 
   return (
     <>
@@ -295,9 +293,13 @@ export function PensionDetailModal({
                   className="flex items-center gap-1 text-xs font-semibold text-amber-500 hover:opacity-80 transition cursor-pointer"
                 >
                   <Star className="h-3.5 w-3.5 fill-amber-500" />
-                  <span>{ratingStats.average.toFixed(1)}</span>
+                  <span>{ratingStats.average > 0 ? ratingStats.average.toFixed(1) : 'Nuevo'}</span>
                   <span className="text-muted-foreground font-normal underline decoration-muted-foreground/40">
-                    ({Math.max(ratingStats.count, reviews.length)} reseñas)
+                    (
+                    {ratingStats.count > 0
+                      ? `${ratingStats.count} ${ratingStats.count === 1 ? 'reseña' : 'reseñas'}`
+                      : 'Sin reseñas'}
+                    )
                   </span>
                 </button>
               </div>

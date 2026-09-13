@@ -1,7 +1,6 @@
 import createClient from 'openapi-fetch';
 import type { components, paths } from './api-schema';
 import { getCityImageUrl, getUniversityImageUrl } from './location-images';
-import { getDeterministicPensionRating } from './mock-reviews-generator';
 import type {
   CityInfo,
   NearbyCityCount,
@@ -65,6 +64,7 @@ export type ApiPensionPayload = {
   verificationStatus?: string;
   ratingAverage?: number | string;
   ratingCount?: number;
+  reviewsCount?: number;
   distanceKm?: number;
   relevanceScore?: number;
   images?: Array<{ url: string; caption?: string; isFeatured?: boolean } | string>;
@@ -146,14 +146,8 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
     longitude: Number(raw.longitude) || -70.6693,
     priceMonthlyClp: Number(raw.baseMonthlyPrice) || 280000,
     depositClp: Number(raw.deposit) || 0,
-    ratingAverage:
-      Number(raw.ratingAverage) > 0
-        ? Number(raw.ratingAverage)
-        : getDeterministicPensionRating(pensionId).ratingAverage,
-    reviewsCount:
-      Number(raw.ratingCount ?? raw._count?.reviews ?? 0) > 0
-        ? Number(raw.ratingCount ?? raw._count?.reviews)
-        : getDeterministicPensionRating(pensionId).reviewsCount,
+    ratingAverage: Number(raw.ratingAverage) || 0,
+    reviewsCount: Number(raw.ratingCount ?? raw.reviewsCount ?? raw._count?.reviews ?? 0),
     isVerified:
       raw.verificationStatus === 'OFFICIALLY_VERIFIED' ||
       raw.verificationStatus === 'COMMUNITY_VERIFIED',

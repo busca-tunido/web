@@ -155,7 +155,9 @@ function FavoritesGrid({
                 </h4>
                 <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
                   <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                  <span>{pension.ratingAverage.toFixed(1)}</span>
+                  <span>
+                    {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
+                  </span>
                 </div>
               </div>
 
