@@ -44,10 +44,6 @@ export function PensionReviewsModal({
         counts[score as keyof typeof counts] = (counts[score as keyof typeof counts] || 0) + 1;
       }
     }
-    if (reviews.length === 0) {
-      counts[5] = 4;
-      counts[4] = 1;
-    }
     return counts;
   }, [reviews]);
 
@@ -67,21 +63,22 @@ export function PensionReviewsModal({
     }
 
     if (count === 0) {
+      const fallbackScore = Number(pension.ratingAverage.toFixed(1)) || 4.5;
       return {
-        cleanliness: 4.8,
-        landlord: 4.9,
-        quietness: 4.7,
-        wifi: 4.9,
+        cleanliness: fallbackScore,
+        landlord: fallbackScore,
+        quietness: fallbackScore,
+        wifi: fallbackScore,
       };
     }
 
     return {
-      cleanliness: Number((cleanSum / count || 4.8).toFixed(1)),
-      landlord: Number((landlordSum / count || 4.9).toFixed(1)),
-      quietness: Number((quietSum / count || 4.7).toFixed(1)),
-      wifi: Number((wifiSum / count || 4.9).toFixed(1)),
+      cleanliness: Number((cleanSum / count || pension.ratingAverage).toFixed(1)),
+      landlord: Number((landlordSum / count || pension.ratingAverage).toFixed(1)),
+      quietness: Number((quietSum / count || pension.ratingAverage).toFixed(1)),
+      wifi: Number((wifiSum / count || pension.ratingAverage).toFixed(1)),
     };
-  }, [reviews]);
+  }, [reviews, pension.ratingAverage]);
 
   const filteredReviews = useMemo(() => {
     return reviews.filter((r) => {

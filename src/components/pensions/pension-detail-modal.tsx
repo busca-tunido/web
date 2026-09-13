@@ -17,7 +17,7 @@ import {
   Wind,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { NetworkErrorBanner, NetworkErrorState } from '@/components/common/network-error-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,11 @@ import {
 import { fetchPensionReviews, mapRawPensionToItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
+import {
+  calculateRatingStats,
+  generateRandomReviewsForPension,
+  getDeterministicPensionRating,
+} from '@/lib/mock-reviews-generator';
 import type { PensionItem, PensionReview } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 import { PensionReviewsModal } from '../reviews/pension-reviews-modal';
@@ -68,9 +73,22 @@ export function PensionDetailModal({
   const activePension = livePension ?? initialPension;
   const targetId = activePension?.id ?? pensionId ?? null;
 
-  const [ratingStats, setRatingStats] = useState({
-    average: activePension?.ratingAverage ?? 4.5,
-    count: activePension?.reviewsCount ?? 0,
+  const [ratingStats, setRatingStats] = useState(() => {
+    if (
+      activePension?.ratingAverage &&
+      activePension.ratingAverage > 0 &&
+      activePension.ratingAverage !== 4.5
+    ) {
+      return {
+        average: activePension.ratingAverage,
+        count: activePension.reviewsCount ?? 0,
+      };
+    }
+    const det = getDeterministicPensionRating(targetId ?? 'pension');
+    return {
+      average: det.ratingAverage,
+      count: det.reviewsCount,
+    };
   });
 
   useEffect(() => {
@@ -104,143 +122,31 @@ export function PensionDetailModal({
 
   useEffect(() => {
     if (!activePension) return;
-    setRatingStats({
-      average: activePension.ratingAverage,
-      count: activePension.reviewsCount,
-    });
     let isCancelled = false;
 
     async function loadReviews() {
       if (!activePension) return;
-      const data = await fetchPensionReviews(activePension.id);
+      let fetchedReviews: PensionReview[] = [];
+      try {
+        const res = await fetchPensionReviews(activePension.id);
+        if (Array.isArray(res) && res.length > 0) {
+          fetchedReviews = res;
+        }
+      } catch {}
+
       if (isCancelled) return;
 
-      if (data && data.length > 0) {
-        setReviews(data);
+      if (fetchedReviews.length > 0) {
+        setReviews(fetchedReviews);
+        setRatingStats(calculateRatingStats(fetchedReviews));
       } else {
-        setReviews([
-          {
-            id: `fallback-rev-1-${activePension.id}`,
-            pensionId: activePension.id,
-            overallRating: 5,
-            cleanlinessRating: 5,
-            landlordRating: 5,
-            quietnessRating: 4,
-            wifiRating: 5,
-            comment:
-              'Excelente ambiente universitario y muy cercano al campus. Las habitaciones son luminosas y los gastos comunes están siempre al día. La dueña es muy comprensiva en épocas de exámenes.',
-            stayDurationCategory: 'ONE_YEAR',
-            isResidentVerified: true,
-            createdAt: '2026-08-12T14:20:00Z',
-            images: [
-              {
-                id: 'img-1',
-                url: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80',
-                caption: 'Dormitorio individual ordenado',
-              },
-              {
-                id: 'img-2',
-                url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=600&q=80',
-                caption: 'Espacio de estudio iluminado',
-              },
-            ],
-            user: {
-              id: 'user-val-1',
-              firstName: 'Camila',
-              lastName: 'Valenzuela',
-              avatarUrl:
-                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
-              university: {
-                shortName: 'UCHILE',
-                name: 'Universidad de Chile',
-              },
-            },
-          },
-          {
-            id: `fallback-rev-2-${activePension.id}`,
-            pensionId: activePension.id,
-            overallRating: 4,
-            cleanlinessRating: 4,
-            landlordRating: 5,
-            quietnessRating: 4,
-            wifiRating: 4,
-            comment:
-              'Buena conectividad con el metro y micros. La cocina tiene todo lo necesario para prepararse almuerzos. El internet fibra óptica funciona impecable para clases online.',
-            stayDurationCategory: 'ONE_SEMESTER',
-            isResidentVerified: true,
-            createdAt: '2026-07-28T10:00:00Z',
-            images: [
-              {
-                id: 'img-3',
-                url: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80',
-                caption: 'Cocina compartida amplia',
-              },
-            ],
-            user: {
-              id: 'user-val-2',
-              firstName: 'Matías',
-              lastName: 'Reyes',
-              avatarUrl:
-                'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=120&q=80',
-              university: {
-                shortName: 'PUCC',
-                name: 'Pontificia Universidad Católica',
-              },
-            },
-          },
-          {
-            id: `fallback-rev-3-${activePension.id}`,
-            pensionId: activePension.id,
-            overallRating: 5,
-            cleanlinessRating: 5,
-            landlordRating: 4,
-            quietnessRating: 5,
-            wifiRating: 5,
-            comment:
-              'Estudié Derecho y necesitaba mucho silencio para leer. El lugar respetó estrictamente los horarios de descanso. Totalmente recomendado para estudiantes de regiones.',
-            stayDurationCategory: 'MORE_THAN_A_YEAR',
-            isResidentVerified: true,
-            createdAt: '2026-06-15T18:30:00Z',
-            images: [],
-            user: {
-              id: 'user-val-3',
-              firstName: 'Valentina',
-              lastName: 'Soto',
-              avatarUrl:
-                'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80',
-              university: {
-                shortName: 'USACH',
-                name: 'Universidad de Santiago',
-              },
-            },
-          },
-          {
-            id: `fallback-rev-4-${activePension.id}`,
-            pensionId: activePension.id,
-            overallRating: 3,
-            cleanlinessRating: 3,
-            landlordRating: 3,
-            quietnessRating: 2,
-            wifiRating: 3,
-            comment:
-              'La pensión está bien ubicada, pero en época de calor las piezas del segundo piso son bastante calurosas y a veces el ruido de la calle dificulta estudiar.',
-            stayDurationCategory: 'FEW_WEEKS',
-            isResidentVerified: true,
-            createdAt: '2026-05-18T12:00:00Z',
-            images: [],
-            user: {
-              id: 'user-val-4',
-              firstName: 'Diego',
-              lastName: 'Morales',
-              avatarUrl:
-                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80',
-              university: {
-                shortName: 'UDP',
-                name: 'Universidad Diego Portales',
-              },
-            },
-          },
-        ]);
+        const generated = generateRandomReviewsForPension(
+          activePension.id,
+          activePension.title,
+          activePension.city,
+        );
+        setReviews(generated);
+        setRatingStats(calculateRatingStats(generated));
       }
     }
 
@@ -282,7 +188,13 @@ export function PensionDetailModal({
 
   if (!activePension) return null;
 
-  const pension = activePension;
+  const pension = useMemo(() => {
+    return {
+      ...activePension,
+      ratingAverage: ratingStats.average,
+      reviewsCount: ratingStats.count,
+    };
+  }, [activePension, ratingStats]);
   const isFav = isFavorite(pension.id);
   const hasAlreadyReviewed = Boolean(user && reviews.some((r) => r.user?.id === user.id));
 
