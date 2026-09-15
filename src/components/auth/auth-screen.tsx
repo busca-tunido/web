@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowRight, Home, Lock, Mail } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 import { EmailCheckStep } from '@/components/auth/email-check-step';
 import { BrandLogo } from '@/components/ui/brand-logo';
@@ -99,19 +100,18 @@ export function AuthScreen() {
                     </DrawerTitle>
                   </div>
                   <DrawerDescription className="text-muted-foreground text-xs">
-                    Accede con tu cuenta de propietario para publicar y administrar tus pensiones
-                    universitarias.
+                    Ingresa con tu correo y contraseña registrados como propietario de pensión.
                   </DrawerDescription>
                 </DrawerHeader>
 
-                <form onSubmit={handleLandlordSubmit} className="p-4 flex flex-col gap-3.5">
+                <form onSubmit={handleLandlordSubmit} className="p-4 flex flex-col gap-4">
                   <div className="flex flex-col gap-1.5">
                     <label
                       htmlFor="landlord-email"
-                      className="text-xs font-medium text-muted-foreground flex items-center gap-1.5"
+                      className="text-xs font-semibold text-foreground flex items-center gap-1.5"
                     >
-                      <Mail className="h-3.5 w-3.5" />
-                      Correo electrónico de propietario
+                      <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                      Correo del Propietario
                     </label>
                     <input
                       id="landlord-email"
@@ -119,7 +119,7 @@ export function AuthScreen() {
                       required
                       value={landlordEmail}
                       onChange={(e) => setLandlordEmail(e.target.value)}
-                      placeholder="propietario@buscatunido.cl"
+                      placeholder="propietario@ejemplo.com"
                       className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                     />
                   </div>
@@ -127,9 +127,9 @@ export function AuthScreen() {
                   <div className="flex flex-col gap-1.5">
                     <label
                       htmlFor="landlord-password"
-                      className="text-xs font-medium text-muted-foreground flex items-center gap-1.5"
+                      className="text-xs font-semibold text-foreground flex items-center gap-1.5"
                     >
-                      <Lock className="h-3.5 w-3.5" />
+                      <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                       Contraseña
                     </label>
                     <input
@@ -175,6 +175,33 @@ export function AuthScreen() {
           </CardContent>
         </Card>
       </div>
+
+      <footer className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs text-muted-foreground">
+        <Link
+          href="/terms"
+          className="inline-flex min-h-12 items-center underline-offset-4 transition-colors hover:text-foreground hover:underline"
+        >
+          Términos
+        </Link>
+        <Link
+          href="/privacy"
+          className="inline-flex min-h-12 items-center underline-offset-4 transition-colors hover:text-foreground hover:underline"
+        >
+          Privacidad
+        </Link>
+        <Link
+          href="/faq"
+          className="inline-flex min-h-12 items-center underline-offset-4 transition-colors hover:text-foreground hover:underline"
+        >
+          Preguntas Frecuentes
+        </Link>
+        <Link
+          href="/contact"
+          className="inline-flex min-h-12 items-center underline-offset-4 transition-colors hover:text-foreground hover:underline"
+        >
+          Contacto
+        </Link>
+      </footer>
     </div>
   );
 }

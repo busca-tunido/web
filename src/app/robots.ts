@@ -5,12 +5,15 @@ export default function robots(): MetadataRoute.Robots {
   if (!baseUrl) {
     throw new Error('Missing env var: NEXT_PUBLIC_APP_URL must be defined in environment (.env).');
   }
+
+  const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+
   return {
     rules: {
       userAgent: '*',
-      allow: '/',
+      allow: ['/', '/terms', '/privacy', '/faq', '/contact'],
       disallow: ['/api/', '/cuenta/', '/admin/'],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: `${cleanBaseUrl}/sitemap.xml`,
   };
 }
