@@ -10,7 +10,7 @@ import {
   Plus,
   Send,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -21,6 +21,11 @@ import {
 } from '@/components/ui/drawer';
 import { useSuggestEdit } from '@/hooks/use-suggest-edit';
 import type { PensionItem } from '@/lib/types';
+import {
+  calculateProposedDiff,
+  createInitialSuggestEditState,
+  suggestEditReducer,
+} from '@/reducers/suggest-edit-reducer';
 
 type SuggestEditModalProps = {
   isOpen: boolean;
@@ -46,83 +51,26 @@ const AMENITY_CATALOG: AmenityCatalogItem[] = [
 ];
 
 export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalProps) {
-  const [activeAmenities, setActiveAmenities] = useState<string[]>(() => {
-    const initial: string[] = [];
-    if (pension.includesWifi) initial.push('wifi-alta-velocidad');
-    if (pension.includesMeals) initial.push('comida-incluida');
-    if (pension.includesLaundry) initial.push('lavanderia');
-    if (pension.includesStudyRoom) initial.push('sala-estudio');
-    return initial;
-  });
-
-  const [monthlyPrice, setMonthlyPrice] = useState<number>(pension.priceMonthlyClp);
-  const [deposit, setDeposit] = useState<number>(pension.depositClp);
-
-  const [waterIncluded, setWaterIncluded] = useState(true);
-  const [electricityIncluded, setElectricityIncluded] = useState(true);
-  const [gasIncluded, setGasIncluded] = useState(true);
-  const [internetIncluded, setInternetIncluded] = useState(pension.includesWifi);
-
-  const [curfewText, setCurfewText] = useState(pension.curfewDescription || '');
-  const [guestsAllowed, setGuestsAllowed] = useState(
-    pension.visitsPolicy?.toLowerCase().includes('permitidas') ?? false,
+  const [state, dispatch] = useReducer(
+    suggestEditReducer,
+    pension,
+    createInitialSuggestEditState,
   );
-  const [petsAllowed, setPetsAllowed] = useState(false);
-  const [smokingAllowed, setSmokingAllowed] = useState(false);
-
-  const [title, setTitle] = useState(pension.title);
-  const [description, setDescription] = useState(pension.description);
-  const [address, setAddress] = useState(pension.address);
-  const [neighborhood, setNeighborhood] = useState(pension.neighborhood);
-  const [city, setCity] = useState(pension.city);
-
-  const [submissionNotes, setSubmissionNotes] = useState('');
   const { isSubmitting, errorMessage, successBanner, submitProposal } = useSuggestEdit(pension.id);
 
+  useEffect(() => {
+    if (isOpen) {
+      dispatch({ type: 'RESET_TO_PENSION', pension });
+    }
+  }, [isOpen, pension]);
+
   const toggleAmenity = (slug: string) => {
-    setActiveAmenities((prev) =>
-      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug],
-    );
-  };
-
-  const calculateProposedChanges = () => {
-    const changes: Record<string, unknown> = {};
-
-    if (title !== pension.title) changes.title = title.trim();
-    if (description !== pension.description) changes.description = description.trim();
-    if (address !== pension.address) changes.address = address.trim();
-    if (neighborhood !== pension.neighborhood) changes.neighborhood = neighborhood.trim();
-    if (city !== pension.city) changes.city = city.trim();
-    if (monthlyPrice !== pension.priceMonthlyClp) changes.baseMonthlyPrice = monthlyPrice;
-    if (deposit !== pension.depositClp) changes.deposit = deposit;
-
-    changes.waterIncluded = waterIncluded;
-    changes.electricityIncluded = electricityIncluded;
-    changes.gasIncluded = gasIncluded;
-    changes.internetIncluded = internetIncluded;
-    changes.guestsAllowed = guestsAllowed;
-    changes.petsAllowed = petsAllowed;
-    changes.smokingAllowed = smokingAllowed;
-    if (curfewText.trim()) changes.curfewTime = curfewText.trim();
-
-    const originalAmenities: string[] = [];
-    if (pension.includesWifi) originalAmenities.push('wifi-alta-velocidad');
-    if (pension.includesMeals) originalAmenities.push('comida-incluida');
-    if (pension.includesLaundry) originalAmenities.push('lavanderia');
-    if (pension.includesStudyRoom) originalAmenities.push('sala-estudio');
-
-    const amenitiesToAdd = activeAmenities.filter((a) => !originalAmenities.includes(a));
-    const amenitiesToRemove = originalAmenities.filter((a) => !activeAmenities.includes(a));
-
-    if (amenitiesToAdd.length > 0) changes.amenitiesToAdd = amenitiesToAdd;
-    if (amenitiesToRemove.length > 0) changes.amenitiesToRemove = amenitiesToRemove;
-
-    return changes;
+    dispatch({ type: 'TOGGLE_AMENITY', slug });
   };
 
   const handleSubmit = async () => {
-    const proposedChanges = calculateProposedChanges();
-    const ok = await submitProposal(submissionNotes, proposedChanges);
+    const proposedChanges = calculateProposedDiff(pension, state);
+    const ok = await submitProposal(state.submissionNotes, proposedChanges);
     if (ok) {
       setTimeout(() => {
         onClose();
@@ -189,7 +137,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
             </div>
             <div className="flex flex-wrap gap-2">
               {AMENITY_CATALOG.map((item) => {
-                const isSelected = activeAmenities.includes(item.slug);
+                const isSelected = state.activeAmenities.includes(item.slug);
                 return (
                   <button
                     key={item.slug}
@@ -229,8 +177,14 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <input
                   id="suggest-price-input"
                   type="number"
-                  value={monthlyPrice}
-                  onChange={(e) => setMonthlyPrice(Number(e.target.value) || 0)}
+                  value={state.monthlyPrice}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'SET_FIELD',
+                      field: 'monthlyPrice',
+                      value: Number(e.target.value) || 0,
+                    })
+                  }
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                 />
               </div>
@@ -245,8 +199,14 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <input
                   id="suggest-deposit-input"
                   type="number"
-                  value={deposit}
-                  onChange={(e) => setDeposit(Number(e.target.value) || 0)}
+                  value={state.deposit}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'SET_FIELD',
+                      field: 'deposit',
+                      value: Number(e.target.value) || 0,
+                    })
+                  }
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                 />
               </div>
@@ -259,9 +219,15 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <button
                   type="button"
-                  onClick={() => setWaterIncluded(!waterIncluded)}
+                  onClick={() =>
+                    dispatch({
+                      type: 'SET_FIELD',
+                      field: 'waterIncluded',
+                      value: !state.waterIncluded,
+                    })
+                  }
                   className={`flex items-center justify-between p-2.5 rounded-xl border transition ${
-                    waterIncluded
+                    state.waterIncluded
                       ? 'border-primary/40 bg-primary/5 text-foreground font-semibold'
                       : 'border-border bg-muted/20 text-muted-foreground'
                   }`}
@@ -269,7 +235,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                   <span>Agua Potable</span>
                   <input
                     type="checkbox"
-                    checked={waterIncluded}
+                    checked={state.waterIncluded}
                     readOnly
                     className="accent-primary"
                   />
@@ -277,9 +243,15 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
 
                 <button
                   type="button"
-                  onClick={() => setElectricityIncluded(!electricityIncluded)}
+                  onClick={() =>
+                    dispatch({
+                      type: 'SET_FIELD',
+                      field: 'electricityIncluded',
+                      value: !state.electricityIncluded,
+                    })
+                  }
                   className={`flex items-center justify-between p-2.5 rounded-xl border transition ${
-                    electricityIncluded
+                    state.electricityIncluded
                       ? 'border-primary/40 bg-primary/5 text-foreground font-semibold'
                       : 'border-border bg-muted/20 text-muted-foreground'
                   }`}
@@ -287,7 +259,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                   <span>Electricidad</span>
                   <input
                     type="checkbox"
-                    checked={electricityIncluded}
+                    checked={state.electricityIncluded}
                     readOnly
                     className="accent-primary"
                   />
@@ -295,9 +267,15 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
 
                 <button
                   type="button"
-                  onClick={() => setGasIncluded(!gasIncluded)}
+                  onClick={() =>
+                    dispatch({
+                      type: 'SET_FIELD',
+                      field: 'gasIncluded',
+                      value: !state.gasIncluded,
+                    })
+                  }
                   className={`flex items-center justify-between p-2.5 rounded-xl border transition ${
-                    gasIncluded
+                    state.gasIncluded
                       ? 'border-primary/40 bg-primary/5 text-foreground font-semibold'
                       : 'border-border bg-muted/20 text-muted-foreground'
                   }`}
@@ -305,7 +283,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                   <span>Gas Calefont</span>
                   <input
                     type="checkbox"
-                    checked={gasIncluded}
+                    checked={state.gasIncluded}
                     readOnly
                     className="accent-primary"
                   />
@@ -313,9 +291,15 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
 
                 <button
                   type="button"
-                  onClick={() => setInternetIncluded(!internetIncluded)}
+                  onClick={() =>
+                    dispatch({
+                      type: 'SET_FIELD',
+                      field: 'internetIncluded',
+                      value: !state.internetIncluded,
+                    })
+                  }
                   className={`flex items-center justify-between p-2.5 rounded-xl border transition ${
-                    internetIncluded
+                    state.internetIncluded
                       ? 'border-primary/40 bg-primary/5 text-foreground font-semibold'
                       : 'border-border bg-muted/20 text-muted-foreground'
                   }`}
@@ -323,7 +307,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                   <span>Internet / Wi-Fi</span>
                   <input
                     type="checkbox"
-                    checked={internetIncluded}
+                    checked={state.internetIncluded}
                     readOnly
                     className="accent-primary"
                   />
@@ -340,9 +324,15 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
             <div className="grid grid-cols-2 gap-2 text-xs">
               <button
                 type="button"
-                onClick={() => setGuestsAllowed(!guestsAllowed)}
+                onClick={() =>
+                  dispatch({
+                    type: 'SET_FIELD',
+                    field: 'guestsAllowed',
+                    value: !state.guestsAllowed,
+                  })
+                }
                 className={`flex items-center justify-between p-2.5 rounded-xl border transition ${
-                  guestsAllowed
+                  state.guestsAllowed
                     ? 'border-primary/40 bg-primary/5 text-foreground font-semibold'
                     : 'border-border bg-muted/20 text-muted-foreground'
                 }`}
@@ -350,7 +340,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <span>Visitas permitidas</span>
                 <input
                   type="checkbox"
-                  checked={guestsAllowed}
+                  checked={state.guestsAllowed}
                   readOnly
                   className="accent-primary"
                 />
@@ -358,22 +348,34 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
 
               <button
                 type="button"
-                onClick={() => setPetsAllowed(!petsAllowed)}
+                onClick={() =>
+                  dispatch({
+                    type: 'SET_FIELD',
+                    field: 'petsAllowed',
+                    value: !state.petsAllowed,
+                  })
+                }
                 className={`flex items-center justify-between p-2.5 rounded-xl border transition ${
-                  petsAllowed
+                  state.petsAllowed
                     ? 'border-primary/40 bg-primary/5 text-foreground font-semibold'
                     : 'border-border bg-muted/20 text-muted-foreground'
                 }`}
               >
                 <span>Mascotas permitidas</span>
-                <input type="checkbox" checked={petsAllowed} readOnly className="accent-primary" />
+                <input type="checkbox" checked={state.petsAllowed} readOnly className="accent-primary" />
               </button>
 
               <button
                 type="button"
-                onClick={() => setSmokingAllowed(!smokingAllowed)}
+                onClick={() =>
+                  dispatch({
+                    type: 'SET_FIELD',
+                    field: 'smokingAllowed',
+                    value: !state.smokingAllowed,
+                  })
+                }
                 className={`flex items-center justify-between p-2.5 rounded-xl border transition ${
-                  smokingAllowed
+                  state.smokingAllowed
                     ? 'border-primary/40 bg-primary/5 text-foreground font-semibold'
                     : 'border-border bg-muted/20 text-muted-foreground'
                 }`}
@@ -381,7 +383,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <span>Permite fumar</span>
                 <input
                   type="checkbox"
-                  checked={smokingAllowed}
+                  checked={state.smokingAllowed}
                   readOnly
                   className="accent-primary"
                 />
@@ -391,8 +393,14 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <input
                   type="text"
                   placeholder="Horario llegada (ej: 23:00)"
-                  value={curfewText}
-                  onChange={(e) => setCurfewText(e.target.value)}
+                  value={state.curfewText}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'SET_FIELD',
+                      field: 'curfewText',
+                      value: e.target.value,
+                    })
+                  }
                   className="w-full rounded-xl border border-border bg-background px-2.5 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                 />
               </div>
@@ -416,8 +424,14 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <input
                   id="suggest-title-input"
                   type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={state.title}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'SET_FIELD',
+                      field: 'title',
+                      value: e.target.value,
+                    })
+                  }
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                 />
               </div>
@@ -432,8 +446,14 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <textarea
                   id="suggest-description-textarea"
                   rows={3}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={state.description}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'SET_FIELD',
+                      field: 'description',
+                      value: e.target.value,
+                    })
+                  }
                   className="w-full rounded-xl border border-border bg-background p-2.5 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40 resize-none leading-relaxed"
                 />
               </div>
@@ -448,8 +468,14 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <input
                   id="suggest-address-input"
                   type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  value={state.address}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'SET_FIELD',
+                      field: 'address',
+                      value: e.target.value,
+                    })
+                  }
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                 />
               </div>
@@ -464,8 +490,14 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <input
                   id="suggest-neighborhood-input"
                   type="text"
-                  value={neighborhood}
-                  onChange={(e) => setNeighborhood(e.target.value)}
+                  value={state.neighborhood}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'SET_FIELD',
+                      field: 'neighborhood',
+                      value: e.target.value,
+                    })
+                  }
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                 />
               </div>
@@ -480,8 +512,14 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <input
                   id="suggest-city-input"
                   type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  value={state.city}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'SET_FIELD',
+                      field: 'city',
+                      value: e.target.value,
+                    })
+                  }
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                 />
               </div>
@@ -497,8 +535,13 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
             </label>
             <textarea
               id="suggest-submission-notes"
-              value={submissionNotes}
-              onChange={(e) => setSubmissionNotes(e.target.value)}
+              value={state.submissionNotes}
+              onChange={(e) =>
+                dispatch({
+                  type: 'SET_SUBMISSION_NOTES',
+                  notes: e.target.value,
+                })
+              }
               placeholder="Ej. Viví aquí el último semestre: ahora cuentan con lavandería en el primer piso y el valor del arriendo subió a $250.000 con luz incluida..."
               rows={3}
               className="w-full rounded-xl border border-border bg-card p-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-hidden focus:ring-2 focus:ring-primary/40 leading-relaxed resize-none"
@@ -510,7 +553,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
           <Button
             id="btn-submit-proposal"
             onClick={handleSubmit}
-            disabled={submissionNotes.trim().length < 5 || isSubmitting}
+            disabled={state.submissionNotes.trim().length < 5 || isSubmitting}
             className="w-full h-12 bg-primary hover:opacity-90 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition disabled:opacity-50"
           >
             {isSubmitting ? (
