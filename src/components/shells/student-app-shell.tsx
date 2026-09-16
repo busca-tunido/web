@@ -13,42 +13,42 @@ import { FilterDrawer } from '@/components/layout/filter-drawer';
 import { TopSearchBar } from '@/components/layout/top-search-bar';
 import { MapScreen } from '@/components/map/map-screen';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
+import { NavigationProvider, useNavigation } from '@/contexts/navigation-context';
+import { SearchFiltersProvider, useSearchFilters } from '@/contexts/search-filters-context';
 import { useStudentPensionsFeed } from '@/hooks/use-student-pensions-feed';
-import { useUrlNavigationState } from '@/hooks/use-url-navigation-state';
-import type { CityInfo, NavTab, PensionItem, SearchFilters, UniversityInfo } from '@/lib/types';
+import type { CityInfo, NavTab, UniversityInfo } from '@/lib/types';
 import { useUserLocation } from '@/lib/use-user-location';
 
 export type StudentAppShellProps = {
   initialTab?: NavTab;
 };
 
-export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps) {
+function StudentAppShellContent() {
   const {
-    tab: activeTab,
+    activeTab,
     navigateTab,
-    city: urlCity,
-    uni: urlUni,
-    setCityAndUni,
-    pensionId: urlPensionId,
+    selectedPension,
+    setSelectedPension,
+    selectPension,
+    mapTargetCity,
+    setMapTargetCity,
+    selectedUniversity,
+    setSelectedUniversity,
+    isPensionDetailOpen,
     openPensionDetail,
     closePensionDetail,
-    isPensionDetailOpen,
     isFiltersOpen,
     openFilters,
     closeFilters,
-  } = useUrlNavigationState({ defaultTab: initialTab });
+    urlPensionId,
+    setCityAndUni,
+    handleSelectCity,
+  } = useNavigation();
 
-  const [filters, setFilters] = useState<SearchFilters>(() => ({
-    query: urlUni || '',
-    city: urlCity || undefined,
-  }));
-  const [mapTargetCity, setMapTargetCity] = useState<string | null>(urlCity);
-  const [selectedUniversity, setSelectedUniversity] = useState<UniversityInfo | null>(null);
+  const { filters, setFilters, resetFilters, clearCity } = useSearchFilters();
 
   const [tentativeCities, setTentativeCities] = useState<CityInfo[]>([]);
   const { userLocation, currentCity, requestLocation } = useUserLocation(tentativeCities);
-
-  const [selectedPension, setSelectedPension] = useState<PensionItem | null>(null);
 
   const effectiveFilters = useMemo(
     () => ({
@@ -91,15 +91,7 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
         setSelectedPension(found);
       }
     }
-  }, [urlPensionId, pensions, selectedPension?.id]);
-
-  const handleSelectCity = (cityName: string) => {
-    setSelectedPension(null);
-    setMapTargetCity(cityName);
-    setSelectedUniversity(null);
-    setCityAndUni({ city: cityName, uni: null });
-    navigateTab('map');
-  };
+  }, [urlPensionId, pensions, selectedPension?.id, setSelectedPension]);
 
   const handleSelectUniversity = (uni: UniversityInfo) => {
     setSelectedPension(null);
@@ -110,21 +102,11 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
     navigateTab('map');
   };
 
-  const handleOpenDetail = (pension: PensionItem) => {
-    setSelectedPension(pension);
-    openPensionDetail(pension.id);
-  };
-
-  const handleCloseDetail = () => {
-    closePensionDetail();
-    setSelectedPension(null);
-  };
-
-  const handleResetFilters = () => {
+  const handleResetAll = () => {
     setSelectedPension(null);
     setMapTargetCity(null);
     setSelectedUniversity(null);
-    setFilters({ query: '' });
+    resetFilters();
     setCityAndUni({ city: null, uni: null });
   };
 
@@ -141,10 +123,8 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
         onFilterChange={setFilters}
         onOpenFilterModal={openFilters}
         selectedCityName={filters.city}
-        onClearCity={() => {
-          setFilters((prev) => ({ ...prev, city: undefined }));
-        }}
-        onResetFilters={handleResetFilters}
+        onClearCity={clearCity}
+        onResetFilters={handleResetAll}
       />
 
       <div
@@ -159,9 +139,7 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
           onFilterChange={setFilters}
           onOpenFilterDrawer={openFilters}
           selectedCityName={filters.city}
-          onClearCity={() => {
-            setFilters((prev) => ({ ...prev, city: undefined }));
-          }}
+          onClearCity={clearCity}
         />
 
         {pensionsError && (
@@ -196,7 +174,7 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
                     }
                   }}
                   onSelectUniversity={handleSelectUniversity}
-                  onSelectPension={handleOpenDetail}
+                  onSelectPension={openPensionDetail}
                   onNavigateToMap={() => navigateTab('map')}
                   hasMore={hasMore}
                   isLoadingMore={isLoadingMore}
@@ -204,7 +182,7 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
                   onLoadMorePensions={loadMorePensions}
                   nearbyCityCounts={nearbyCityCounts}
                   totalPensions={totalPensions}
-                  onResetFilters={handleResetFilters}
+                  onResetFilters={handleResetAll}
                 />
               )}
 
@@ -217,15 +195,15 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
                   selectedUniversity={selectedUniversity}
                   userLocation={userLocation}
                   onRequestLocation={requestLocation}
-                  onSelectPension={setSelectedPension}
-                  onOpenPensionDetail={handleOpenDetail}
+                  onSelectPension={selectPension}
+                  onOpenPensionDetail={openPensionDetail}
                 />
               )}
 
               {activeTab === 'favorites' && (
                 <FavoritesScreen
                   allPensions={pensions}
-                  onSelectPension={handleOpenDetail}
+                  onSelectPension={openPensionDetail}
                   onExplore={() => navigateTab('explore')}
                 />
               )}
@@ -245,7 +223,7 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
       <PensionDetailModal
         pension={selectedPension}
         isOpen={isPensionDetailOpen}
-        onClose={handleCloseDetail}
+        onClose={closePensionDetail}
       />
 
       <FilterDrawer
@@ -255,5 +233,30 @@ export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps
         onApply={setFilters}
       />
     </main>
+  );
+}
+
+function StudentAppShellWithProviders() {
+  const { urlCity, urlUni } = useNavigation();
+  const initialFilters = useMemo(
+    () => ({
+      query: urlUni || '',
+      city: urlCity || undefined,
+    }),
+    [urlCity, urlUni],
+  );
+
+  return (
+    <SearchFiltersProvider initialFilters={initialFilters}>
+      <StudentAppShellContent />
+    </SearchFiltersProvider>
+  );
+}
+
+export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps) {
+  return (
+    <NavigationProvider initialTab={initialTab}>
+      <StudentAppShellWithProviders />
+    </NavigationProvider>
   );
 }
