@@ -11,13 +11,11 @@ import {
 import Image from 'next/image';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
-import { mapRawPensionToItem } from '@/lib/api-client';
-import { isApiSuccess } from '@/lib/api-response';
+import { useMapViewportPensions } from '@/hooks/use-map-viewport-pensions';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
 import type { UserCoordinates } from '@/lib/use-user-location';
-import { pensionsService } from '@/services/pensions.service';
 
 type MapScreenProps = {
   pensions: PensionItem[];
@@ -59,25 +57,13 @@ export function MapScreen({
   const [containerHeight, setContainerHeight] = useState(800);
   const dragControls = useDragControls();
 
-  const [mapPensions, setMapPensions] = useState<PensionItem[]>(pensions);
-  const [isAreaLoading, setIsAreaLoading] = useState(false);
-
-  useEffect(() => {
-    setMapPensions((prev) => {
-      const currentActiveId = activePinIdRef.current;
-      const activePension = currentActiveId ? prev.find((p) => p.id === currentActiveId) : null;
-      if (activePension && !pensions.some((p) => p.id === activePension.id)) {
-        return [activePension, ...pensions];
-      }
-      return pensions;
-    });
-  }, [pensions]);
+  const { mapPensions, isAreaLoading, handleMapMoveEnd } = useMapViewportPensions({
+    initialPensions: pensions,
+    activePensionId: selectedPension?.id ?? null,
+  });
 
   const mapPensionsRef = useRef(mapPensions);
   mapPensionsRef.current = mapPensions;
-
-  const moveEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const activeRequestIdRef = useRef(0);
 
   const [activePinId, setActivePinId] = useState<string | null>(selectedPension?.id ?? null);
   const activePinIdRef = useRef<string | null>(activePinId);
@@ -299,64 +285,14 @@ export function MapScreen({
   const panToPensionRef = useRef(panToPension);
   panToPensionRef.current = panToPension;
 
-  const handleMapMoveEnd = useCallback(() => {
+  const onMapMoveEnd = useCallback(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
+    handleMapMoveEnd(map.getBounds());
+  }, [handleMapMoveEnd]);
 
-    if (moveEndTimeoutRef.current) {
-      clearTimeout(moveEndTimeoutRef.current);
-    }
-
-    moveEndTimeoutRef.current = setTimeout(async () => {
-      const currentMap = mapInstanceRef.current;
-      if (!currentMap) return;
-
-      const bounds = currentMap.getBounds();
-      const currentList = mapPensionsRef.current;
-
-      const hasAnyVisible = currentList.some((p) => bounds.contains([p.latitude, p.longitude]));
-
-      if (!hasAnyVisible) {
-        setIsAreaLoading(true);
-      }
-
-      const requestId = ++activeRequestIdRef.current;
-
-      try {
-        const res = await pensionsService.fetchPaginatedPensions({
-          minLat: bounds.getSouth(),
-          maxLat: bounds.getNorth(),
-          minLng: bounds.getWest(),
-          maxLng: bounds.getEast(),
-          limit: 50,
-        });
-
-        if (requestId === activeRequestIdRef.current && isApiSuccess(res)) {
-          const mappedItems = res.data.items.map((dto) =>
-            mapRawPensionToItem(dto as unknown as Record<string, unknown>),
-          );
-          const currentActiveId = activePinIdRef.current;
-          const activePension = currentActiveId
-            ? mapPensionsRef.current.find((p) => p.id === currentActiveId)
-            : null;
-
-          let updatedList = mappedItems;
-          if (activePension && !mappedItems.some((p) => p.id === activePension.id)) {
-            updatedList = [activePension, ...mappedItems];
-          }
-          setMapPensions(updatedList);
-        }
-      } catch {
-      } finally {
-        if (requestId === activeRequestIdRef.current) {
-          setIsAreaLoading(false);
-        }
-      }
-    }, 400);
-  }, []);
-
-  const handleMapMoveEndRef = useRef(handleMapMoveEnd);
-  handleMapMoveEndRef.current = handleMapMoveEnd;
+  const handleMapMoveEndRef = useRef(onMapMoveEnd);
+  handleMapMoveEndRef.current = onMapMoveEnd;
 
   useEffect(() => {
     let isMounted = true;
@@ -443,9 +379,6 @@ export function MapScreen({
 
     return () => {
       isMounted = false;
-      if (moveEndTimeoutRef.current) {
-        clearTimeout(moveEndTimeoutRef.current);
-      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
