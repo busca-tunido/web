@@ -17,7 +17,7 @@ import {
   Zap,
 } from 'lucide-react';
 import Image from 'next/image';
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, useEffect, useReducer } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -31,6 +31,11 @@ import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
 import { prepareImageForUpload, validateImageFile } from '@/lib/image-utils';
 import type { PensionItem, PensionReview, StayDurationCategory } from '@/lib/types';
+import {
+  initialPublishReviewState,
+  publishReviewReducer,
+  type ReviewPhotoItem,
+} from '@/reducers/publish-review-reducer';
 import { uploadSingleImage } from '@/services/uploads.service';
 
 type PublishReviewModalProps = {
@@ -64,36 +69,29 @@ export function PublishReviewModal({
 }: PublishReviewModalProps) {
   const { user } = useAuth();
   const { publishReview } = usePensionReviews(isOpen ? pension.id : null);
+  const [state, dispatch] = useReducer(publishReviewReducer, initialPublishReviewState);
 
-  const [overallRating, setOverallRating] = useState<number>(5);
-  const [hoverRating, setHoverRating] = useState<number>(0);
-  const [showSubRatings, setShowSubRatings] = useState(false);
-
-  const [cleanlinessRating, setCleanlinessRating] = useState<number | null>(null);
-  const [landlordRating, setLandlordRating] = useState<number | null>(null);
-  const [quietnessRating, setQuietnessRating] = useState<number | null>(null);
-  const [wifiRating, setWifiRating] = useState<number | null>(null);
-
-  const [stayDuration, setStayDuration] = useState<StayDurationCategory>('ONE_SEMESTER');
-  const [comment, setComment] = useState('');
-
-  const [selectedFiles, setSelectedFiles] = useState<Array<{ file: File; previewUrl: string }>>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successBanner, setSuccessBanner] = useState(false);
+  useEffect(() => {
+    if (!isOpen) {
+      dispatch({ type: 'RESET' });
+    }
+  }, [isOpen]);
 
   const handlePhotoSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    const availableSlots = 3 - selectedFiles.length;
+    const availableSlots = 3 - state.selectedFiles.length;
     const filesToAdd = Array.from(files).slice(0, availableSlots);
 
-    const newEntries: Array<{ file: File; previewUrl: string }> = [];
+    const newEntries: ReviewPhotoItem[] = [];
     for (const file of filesToAdd) {
       const validation = validateImageFile(file);
       if (!validation.valid) {
-        setErrorMessage(validation.error || 'Formato de imagen no compatible');
+        dispatch({
+          type: 'SET_ERROR',
+          error: validation.error || 'Formato de imagen no compatible',
+        });
         continue;
       }
       try {
@@ -103,53 +101,53 @@ export function PublishReviewModal({
           previewUrl: URL.createObjectURL(prepared),
         });
       } catch (err) {
-        setErrorMessage(
-          err instanceof Error
-            ? err.message
-            : 'No se pudo procesar la imagen seleccionada. Por favor, intenta con otra.',
-        );
+        dispatch({
+          type: 'SET_ERROR',
+          error:
+            err instanceof Error
+              ? err.message
+              : 'No se pudo procesar la imagen seleccionada. Por favor, intenta con otra.',
+        });
       }
     }
 
     if (newEntries.length > 0) {
-      setSelectedFiles((prev) => [...prev, ...newEntries]);
+      dispatch({ type: 'ADD_PHOTO', photos: newEntries });
     }
     e.target.value = '';
   };
 
   const removePhoto = (index: number) => {
-    setSelectedFiles((prev) => {
-      const target = prev[index];
-      if (target) {
-        URL.revokeObjectURL(target.previewUrl);
-      }
-      return prev.filter((_, i) => i !== index);
-    });
+    const target = state.selectedFiles[index];
+    if (target) {
+      URL.revokeObjectURL(target.previewUrl);
+    }
+    dispatch({ type: 'REMOVE_PHOTO', index });
   };
 
   const handleSubmit = async () => {
     const validation = createReviewSchema.safeParse({
-      rating: overallRating,
-      comment: comment.trim(),
-      cleanlinessRating: cleanlinessRating ?? undefined,
-      landlordRating: landlordRating ?? undefined,
-      locationRating: quietnessRating ?? undefined,
-      stayDuration,
-      images: selectedFiles.map((f) => f.previewUrl),
+      rating: state.overallRating,
+      comment: state.comment.trim(),
+      cleanlinessRating: state.cleanlinessRating ?? undefined,
+      landlordRating: state.landlordRating ?? undefined,
+      locationRating: state.quietnessRating ?? undefined,
+      stayDuration: state.stayDuration,
+      images: state.selectedFiles.map((f) => f.previewUrl),
     });
 
     if (!validation.success) {
       const firstError = validation.error.issues[0]?.message || 'Verifica los campos ingresados.';
-      setErrorMessage(firstError);
+      dispatch({ type: 'SET_ERROR', error: firstError });
       return;
     }
 
-    setIsSubmitting(true);
-    setErrorMessage(null);
+    dispatch({ type: 'SET_SUBMITTING', isSubmitting: true });
+    dispatch({ type: 'SET_ERROR', error: null });
 
     try {
       const uploadedUrls: string[] = [];
-      for (const item of selectedFiles) {
+      for (const item of state.selectedFiles) {
         const res = await uploadSingleImage(item.file);
         if (isApiSuccess(res) && res.data.url) {
           uploadedUrls.push(res.data.url);
@@ -157,29 +155,32 @@ export function PublishReviewModal({
           const failMsg = !isApiSuccess(res)
             ? res.message
             : 'No fue posible subir la imagen. Verifica tu conexión e intenta de nuevo.';
-          setErrorMessage(failMsg);
-          setIsSubmitting(false);
+          dispatch({ type: 'SET_ERROR', error: failMsg });
+          dispatch({ type: 'SET_SUBMITTING', isSubmitting: false });
           return;
         }
       }
 
       const result = await publishReview({
-        overallRating,
-        rating: overallRating,
-        comment: comment.trim(),
-        cleanlinessRating: cleanlinessRating ?? undefined,
-        landlordRating: landlordRating ?? undefined,
-        quietnessRating: quietnessRating ?? undefined,
-        locationRating: quietnessRating ?? undefined,
-        wifiRating: wifiRating ?? undefined,
-        stayDurationCategory: stayDuration,
-        stayDuration: stayDuration,
+        overallRating: state.overallRating,
+        rating: state.overallRating,
+        comment: state.comment.trim(),
+        cleanlinessRating: state.cleanlinessRating ?? undefined,
+        landlordRating: state.landlordRating ?? undefined,
+        quietnessRating: state.quietnessRating ?? undefined,
+        locationRating: state.quietnessRating ?? undefined,
+        wifiRating: state.wifiRating ?? undefined,
+        stayDurationCategory: state.stayDuration,
+        stayDuration: state.stayDuration,
         images: uploadedUrls,
       });
 
       if (!result.success || !result.review) {
-        setErrorMessage(result.error || 'Ocurrió un error al enviar tu reseña.');
-        setIsSubmitting(false);
+        dispatch({
+          type: 'SET_ERROR',
+          error: result.error || 'Ocurrió un error al enviar tu reseña.',
+        });
+        dispatch({ type: 'SET_SUBMITTING', isSubmitting: false });
         return;
       }
 
@@ -187,13 +188,13 @@ export function PublishReviewModal({
       const createdReview: PensionReview = {
         id: serverReview.id || `rev-${Date.now()}`,
         pensionId: pension.id,
-        overallRating: serverReview.rating ?? overallRating,
-        cleanlinessRating: serverReview.cleanlinessRating ?? cleanlinessRating ?? undefined,
-        landlordRating: serverReview.landlordRating ?? landlordRating ?? undefined,
-        quietnessRating: serverReview.locationRating ?? quietnessRating ?? undefined,
-        wifiRating: wifiRating ?? undefined,
-        comment: serverReview.comment ?? comment.trim(),
-        stayDurationCategory: stayDuration,
+        overallRating: serverReview.rating ?? state.overallRating,
+        cleanlinessRating: serverReview.cleanlinessRating ?? state.cleanlinessRating ?? undefined,
+        landlordRating: serverReview.landlordRating ?? state.landlordRating ?? undefined,
+        quietnessRating: serverReview.locationRating ?? state.quietnessRating ?? undefined,
+        wifiRating: state.wifiRating ?? undefined,
+        comment: serverReview.comment ?? state.comment.trim(),
+        stayDurationCategory: state.stayDuration,
         isResidentVerified: true,
         createdAt: serverReview.createdAt ?? new Date().toISOString(),
         images: uploadedUrls.map((url, i) => ({ id: `img-${i}`, url })),
@@ -209,14 +210,14 @@ export function PublishReviewModal({
         },
       };
 
-      setSuccessBanner(true);
+      dispatch({ type: 'SET_SUCCESS', success: true });
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('tunido_review_published'));
       }
       onReviewPublished(createdReview);
 
       setTimeout(() => {
-        setSuccessBanner(false);
+        dispatch({ type: 'SET_SUCCESS', success: false });
         onClose();
       }, 1500);
     } catch (err: unknown) {
@@ -226,19 +227,24 @@ export function PublishReviewModal({
         errStr.toLowerCase().includes('already reviewed') ||
         errStr.toLowerCase().includes('ya has publicado')
       ) {
-        setErrorMessage(
-          'Ya has publicado una reseña para esta pensión. Puedes editar tu opinión existente desde tu perfil.',
-        );
+        dispatch({
+          type: 'SET_ERROR',
+          error:
+            'Ya has publicado una reseña para esta pensión. Puedes editar tu opinión existente desde tu perfil.',
+        });
       } else {
-        setErrorMessage(errStr || 'Hubo un error al enviar tu reseña. Inténtalo nuevamente.');
+        dispatch({
+          type: 'SET_ERROR',
+          error: errStr || 'Hubo un error al enviar tu reseña. Inténtalo nuevamente.',
+        });
       }
     } finally {
-      setIsSubmitting(false);
+      dispatch({ type: 'SET_SUBMITTING', isSubmitting: false });
     }
   };
 
-  const isMinLength = comment.trim().length >= 15;
-  const currentRatingValue = hoverRating || overallRating;
+  const isMinLength = state.comment.trim().length >= 15;
+  const currentRatingValue = state.hoverRating || state.overallRating;
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -283,10 +289,10 @@ export function PublishReviewModal({
             </div>
           )}
 
-          {errorMessage && (
+          {state.errorMessage && (
             <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 flex items-start gap-2.5 text-rose-600 animate-in fade-in">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-              <p className="text-xs">{errorMessage}</p>
+              <p className="text-xs">{state.errorMessage}</p>
             </div>
           )}
 
@@ -299,9 +305,9 @@ export function PublishReviewModal({
                 <button
                   key={`star-${starVal}`}
                   type="button"
-                  onClick={() => setOverallRating(starVal)}
-                  onMouseEnter={() => setHoverRating(starVal)}
-                  onMouseLeave={() => setHoverRating(0)}
+                  onClick={() => dispatch({ type: 'SET_OVERALL_RATING', rating: starVal })}
+                  onMouseEnter={() => dispatch({ type: 'SET_HOVER_RATING', rating: starVal })}
+                  onMouseLeave={() => dispatch({ type: 'SET_HOVER_RATING', rating: 0 })}
                   className="p-1 transition-transform active:scale-90 hover:scale-110 cursor-pointer"
                   aria-label={`${starVal} estrellas`}
                 >
@@ -323,18 +329,18 @@ export function PublishReviewModal({
           <section className="rounded-2xl border border-border bg-card p-3.5">
             <button
               type="button"
-              onClick={() => setShowSubRatings(!showSubRatings)}
+              onClick={() => dispatch({ type: 'TOGGLE_SUB_RATINGS' })}
               className="flex items-center justify-between w-full text-xs font-bold text-foreground cursor-pointer"
             >
               <span>Calificaciones por aspectos específicos (Opcional)</span>
-              {showSubRatings ? (
+              {state.showSubRatings ? (
                 <ChevronUp className="h-4 w-4 text-muted-foreground" />
               ) : (
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               )}
             </button>
 
-            {showSubRatings && (
+            {state.showSubRatings && (
               <div className="mt-4 space-y-3.5 border-t border-border/60 pt-3 text-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -348,14 +354,19 @@ export function PublishReviewModal({
                           key={`clean-${starVal}`}
                           type="button"
                           onClick={() =>
-                            setCleanlinessRating(cleanlinessRating === starVal ? null : starVal)
+                            dispatch({
+                              type: 'SET_SUB_RATING',
+                              category: 'cleanliness',
+                              rating: starVal,
+                            })
                           }
                           className="p-0.5 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
                           aria-label={`Limpieza ${starVal} estrellas`}
                         >
                           <Star
                             className={`h-4 w-4 ${
-                              cleanlinessRating !== null && starVal <= cleanlinessRating
+                              state.cleanlinessRating !== null &&
+                              starVal <= state.cleanlinessRating
                                 ? 'fill-amber-500 text-amber-500'
                                 : 'fill-muted text-muted-foreground/30'
                             }`}
@@ -364,8 +375,8 @@ export function PublishReviewModal({
                       ))}
                     </div>
                     <span className="w-16 text-[10px] text-right font-medium text-muted-foreground">
-                      {cleanlinessRating !== null ? (
-                        `${cleanlinessRating}/5`
+                      {state.cleanlinessRating !== null ? (
+                        `${state.cleanlinessRating}/5`
                       ) : (
                         <span className="text-muted-foreground/50">Opcional</span>
                       )}
@@ -385,14 +396,18 @@ export function PublishReviewModal({
                           key={`landlord-${starVal}`}
                           type="button"
                           onClick={() =>
-                            setLandlordRating(landlordRating === starVal ? null : starVal)
+                            dispatch({
+                              type: 'SET_SUB_RATING',
+                              category: 'landlord',
+                              rating: starVal,
+                            })
                           }
                           className="p-0.5 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
                           aria-label={`Trato del dueño ${starVal} estrellas`}
                         >
                           <Star
                             className={`h-4 w-4 ${
-                              landlordRating !== null && starVal <= landlordRating
+                              state.landlordRating !== null && starVal <= state.landlordRating
                                 ? 'fill-amber-500 text-amber-500'
                                 : 'fill-muted text-muted-foreground/30'
                             }`}
@@ -401,8 +416,8 @@ export function PublishReviewModal({
                       ))}
                     </div>
                     <span className="w-16 text-[10px] text-right font-medium text-muted-foreground">
-                      {landlordRating !== null ? (
-                        `${landlordRating}/5`
+                      {state.landlordRating !== null ? (
+                        `${state.landlordRating}/5`
                       ) : (
                         <span className="text-muted-foreground/50">Opcional</span>
                       )}
@@ -422,14 +437,18 @@ export function PublishReviewModal({
                           key={`quiet-${starVal}`}
                           type="button"
                           onClick={() =>
-                            setQuietnessRating(quietnessRating === starVal ? null : starVal)
+                            dispatch({
+                              type: 'SET_SUB_RATING',
+                              category: 'quietness',
+                              rating: starVal,
+                            })
                           }
                           className="p-0.5 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
                           aria-label={`Tranquilidad ${starVal} estrellas`}
                         >
                           <Star
                             className={`h-4 w-4 ${
-                              quietnessRating !== null && starVal <= quietnessRating
+                              state.quietnessRating !== null && starVal <= state.quietnessRating
                                 ? 'fill-amber-500 text-amber-500'
                                 : 'fill-muted text-muted-foreground/30'
                             }`}
@@ -438,8 +457,8 @@ export function PublishReviewModal({
                       ))}
                     </div>
                     <span className="w-16 text-[10px] text-right font-medium text-muted-foreground">
-                      {quietnessRating !== null ? (
-                        `${quietnessRating}/5`
+                      {state.quietnessRating !== null ? (
+                        `${state.quietnessRating}/5`
                       ) : (
                         <span className="text-muted-foreground/50">Opcional</span>
                       )}
@@ -458,13 +477,19 @@ export function PublishReviewModal({
                         <button
                           key={`wifi-${starVal}`}
                           type="button"
-                          onClick={() => setWifiRating(wifiRating === starVal ? null : starVal)}
+                          onClick={() =>
+                            dispatch({
+                              type: 'SET_SUB_RATING',
+                              category: 'wifi',
+                              rating: starVal,
+                            })
+                          }
                           className="p-0.5 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
                           aria-label={`Internet ${starVal} estrellas`}
                         >
                           <Star
                             className={`h-4 w-4 ${
-                              wifiRating !== null && starVal <= wifiRating
+                              state.wifiRating !== null && starVal <= state.wifiRating
                                 ? 'fill-amber-500 text-amber-500'
                                 : 'fill-muted text-muted-foreground/30'
                             }`}
@@ -473,8 +498,8 @@ export function PublishReviewModal({
                       ))}
                     </div>
                     <span className="w-16 text-[10px] text-right font-medium text-muted-foreground">
-                      {wifiRating !== null ? (
-                        `${wifiRating}/5`
+                      {state.wifiRating !== null ? (
+                        `${state.wifiRating}/5`
                       ) : (
                         <span className="text-muted-foreground/50">Opcional</span>
                       )}
@@ -494,9 +519,9 @@ export function PublishReviewModal({
                 <button
                   key={dur.id}
                   type="button"
-                  onClick={() => setStayDuration(dur.id)}
+                  onClick={() => dispatch({ type: 'SET_DURATION', duration: dur.id })}
                   className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition cursor-pointer ${
-                    stayDuration === dur.id
+                    state.stayDuration === dur.id
                       ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs'
                       : 'border-border bg-card text-muted-foreground hover:bg-muted/60'
                   }`}
@@ -514,16 +539,16 @@ export function PublishReviewModal({
               </h4>
               <span
                 className={`text-[11px] ${
-                  comment.length < 15 ? 'text-amber-500' : 'text-muted-foreground'
+                  state.comment.length < 15 ? 'text-amber-500' : 'text-muted-foreground'
                 }`}
               >
-                {comment.length} / 1000 (mín. 15 caracteres)
+                {state.comment.length} / 1000 (mín. 15 caracteres)
               </span>
             </div>
             <textarea
               id="review-comment-textarea"
-              value={comment}
-              onChange={(e) => setComment(e.target.value.slice(0, 1000))}
+              value={state.comment}
+              onChange={(e) => dispatch({ type: 'SET_COMMENT', comment: e.target.value })}
               placeholder="Ej. Viví aquí durante mi primer año de universidad. Las piezas son amplias, la cocina siempre limpia y el ambiente es silencioso para estudiar. El internet funciona muy bien en épocas de certámenes..."
               rows={4}
               className="w-full rounded-xl border border-border bg-card p-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-hidden focus:ring-2 focus:ring-primary/40 leading-relaxed resize-none"
@@ -536,12 +561,12 @@ export function PublishReviewModal({
                 Fotos reales del lugar (Máx. 3)
               </h4>
               <span className="text-[11px] text-muted-foreground">
-                {selectedFiles.length} de 3 seleccionadas
+                {state.selectedFiles.length} de 3 seleccionadas
               </span>
             </div>
 
             <div className="flex items-center gap-2">
-              {selectedFiles.map((photo, idx) => (
+              {state.selectedFiles.map((photo, idx) => (
                 <div
                   key={`upload-thumb-${photo.previewUrl}`}
                   className="relative h-20 w-20 rounded-xl overflow-hidden border border-border bg-muted shrink-0"
@@ -564,7 +589,7 @@ export function PublishReviewModal({
                 </div>
               ))}
 
-              {selectedFiles.length < 3 && (
+              {state.selectedFiles.length < 3 && (
                 <label className="flex flex-col items-center justify-center h-20 w-20 rounded-xl border-2 border-dashed border-border hover:border-primary/50 bg-muted/20 text-muted-foreground hover:text-primary transition cursor-pointer">
                   <Camera className="h-5 w-5 mb-1" />
                   <span className="text-[10px] font-medium">Subir foto</span>
@@ -585,10 +610,10 @@ export function PublishReviewModal({
           <Button
             id="btn-submit-review"
             onClick={handleSubmit}
-            disabled={!isMinLength || isSubmitting}
+            disabled={!isMinLength || state.isSubmitting}
             className="w-full h-12 bg-primary hover:opacity-90 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition disabled:opacity-50"
           >
-            {isSubmitting ? (
+            {state.isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Publicando reseña...
               </>
