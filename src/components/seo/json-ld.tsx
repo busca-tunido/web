@@ -1,18 +1,20 @@
 import type { Organization, WebSite, WithContext } from 'schema-dts';
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://buscatunido.vercel.app';
+
 export function RootJsonLd() {
   const websiteSchema: WithContext<WebSite> = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'BuscaTuNido',
     alternateName: ['TuNido', 'Busca Tu Nido', 'BuscaTuNido Chile'],
-    url: 'https://buscatunido.vercel.app',
+    url: APP_URL,
     description:
       'Plataforma comunitaria para buscar, comparar y validar pensiones universitarias en Chile con verificación estudiantil.',
     inLanguage: 'es-CL',
     potentialAction: {
       '@type': 'SearchAction',
-      target: 'https://buscatunido.vercel.app/?search={search_term_string}',
+      target: `${APP_URL}/?search={search_term_string}`,
       query: 'required name=search_term_string',
     },
   };
@@ -21,8 +23,8 @@ export function RootJsonLd() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'BuscaTuNido',
-    url: 'https://buscatunido.vercel.app',
-    logo: 'https://buscatunido.vercel.app/icon.png',
+    url: APP_URL,
+    logo: `${APP_URL}/icon.png`,
     sameAs: ['https://github.com/busca-tunido'],
   };
 
