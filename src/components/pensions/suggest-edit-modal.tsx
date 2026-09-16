@@ -51,11 +51,7 @@ const AMENITY_CATALOG: AmenityCatalogItem[] = [
 ];
 
 export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalProps) {
-  const [state, dispatch] = useReducer(
-    suggestEditReducer,
-    pension,
-    createInitialSuggestEditState,
-  );
+  const [state, dispatch] = useReducer(suggestEditReducer, pension, createInitialSuggestEditState);
   const { isSubmitting, errorMessage, successBanner, submitProposal } = useSuggestEdit(pension.id);
 
   useEffect(() => {
@@ -362,7 +358,12 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 }`}
               >
                 <span>Mascotas permitidas</span>
-                <input type="checkbox" checked={state.petsAllowed} readOnly className="accent-primary" />
+                <input
+                  type="checkbox"
+                  checked={state.petsAllowed}
+                  readOnly
+                  className="accent-primary"
+                />
               </button>
 
               <button

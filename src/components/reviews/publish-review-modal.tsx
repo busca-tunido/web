@@ -280,7 +280,7 @@ export function PublishReviewModal({
             </DrawerDescription>
           </DrawerHeader>
 
-          {successBanner && (
+          {state.successBanner && (
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center gap-3 text-emerald-600 animate-in fade-in">
               <CheckCircle2 className="h-5 w-5 shrink-0" />
               <p className="text-xs font-semibold">
@@ -365,8 +365,7 @@ export function PublishReviewModal({
                         >
                           <Star
                             className={`h-4 w-4 ${
-                              state.cleanlinessRating !== null &&
-                              starVal <= state.cleanlinessRating
+                              state.cleanlinessRating !== null && starVal <= state.cleanlinessRating
                                 ? 'fill-amber-500 text-amber-500'
                                 : 'fill-muted text-muted-foreground/30'
                             }`}
