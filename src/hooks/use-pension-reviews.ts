@@ -93,6 +93,8 @@ export function usePensionReviews(
         stayDurationCategory: r.stayDuration,
         stayDuration: r.stayDuration,
         isResidentVerified: true,
+        helpfulCount: r.helpfulCount ?? 0,
+        userVoted: Boolean(r.userVoted ?? userVotes[r.id]),
         images: r.images ?? [],
         createdAt: r.createdAt,
         user: {
@@ -109,7 +111,7 @@ export function usePensionReviews(
         },
       };
     });
-  }, [rawItems]);
+  }, [rawItems, userVotes]);
 
   const ratingStats = useMemo(() => {
     if (rawItems.length === 0) {

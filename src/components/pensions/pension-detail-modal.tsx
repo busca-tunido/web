@@ -32,7 +32,7 @@ import {
 import { usePensionDetail } from '@/hooks/use-pension-detail';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { useAuth } from '@/lib/auth-context';
-import type { PensionItem } from '@/lib/types';
+import type { PensionItem, PensionReview } from '@/lib/types';
 import { PensionReviewsModal } from '../reviews/pension-reviews-modal';
 import { PensionReviewsPreview } from '../reviews/pension-reviews-preview';
 import { PublishReviewModal } from '../reviews/publish-review-modal';

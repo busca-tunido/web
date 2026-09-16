@@ -63,6 +63,7 @@ export type ApiPensionPayload = {
   quietHoursEnd?: string | null;
   verificationStatus?: string;
   ratingAverage?: number | string;
+  averageRating?: number | string;
   ratingCount?: number;
   reviewsCount?: number;
   distanceKm?: number;
