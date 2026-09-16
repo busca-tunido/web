@@ -16,8 +16,8 @@ import {
 import { FormField } from '@/components/ui/form-field';
 import { useFormValidation } from '@/hooks/use-form-validation';
 import { useUniversities } from '@/hooks/use-universities';
-import { useAuth } from '@/lib/auth-context';
 import { isApiSuccess } from '@/lib/api-response';
+import { useAuth } from '@/lib/auth-context';
 import { type StudentRegisterInput, studentRegisterSchema } from '@/lib/validations/auth.schema';
 import { authService } from '@/services/auth.service';
 
