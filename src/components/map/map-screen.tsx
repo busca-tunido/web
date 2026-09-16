@@ -31,6 +31,178 @@ type MapScreenProps = {
 
 type DrawerState = 'minimized' | 'half' | 'maximized';
 
+type ClusterPoint = {
+  id: string;
+  latitude: number;
+  longitude: number;
+  pensions: PensionItem[];
+  isSelected: boolean;
+  isSingle: boolean;
+  minPrice: number;
+  maxPrice: number;
+};
+
+function computeClusters(
+  pensions: PensionItem[],
+  map: import('leaflet').Map,
+  zoom: number,
+  activePinId: string | null,
+): ClusterPoint[] {
+  if (pensions.length === 0) return [];
+
+  if (zoom >= 15) {
+    return pensions.map((p) => ({
+      id: `pension-${p.id}`,
+      latitude: p.latitude,
+      longitude: p.longitude,
+      pensions: [p],
+      isSelected: p.id === activePinId,
+      isSingle: true,
+      minPrice: p.priceMonthlyClp,
+      maxPrice: p.priceMonthlyClp,
+    }));
+  }
+
+  const radius = zoom < 14 ? 65 : 45;
+  const groups: Array<{
+    items: PensionItem[];
+    x: number;
+    y: number;
+  }> = [];
+
+  for (const pension of pensions) {
+    const point = map.project([pension.latitude, pension.longitude], zoom);
+    let matchedGroup: { items: PensionItem[]; x: number; y: number } | null = null;
+
+    for (const g of groups) {
+      const dx = g.x - point.x;
+      const dy = g.y - point.y;
+      if (Math.hypot(dx, dy) <= radius) {
+        matchedGroup = g;
+        break;
+      }
+    }
+
+    if (matchedGroup) {
+      matchedGroup.items.push(pension);
+      matchedGroup.x =
+        (matchedGroup.x * (matchedGroup.items.length - 1) + point.x) / matchedGroup.items.length;
+      matchedGroup.y =
+        (matchedGroup.y * (matchedGroup.items.length - 1) + point.y) / matchedGroup.items.length;
+    } else {
+      groups.push({
+        items: [pension],
+        x: point.x,
+        y: point.y,
+      });
+    }
+  }
+
+  return groups.map((g) => {
+    const isSingle = g.items.length === 1;
+    const isSelected = g.items.some((p) => p.id === activePinId);
+    let totalLat = 0;
+    let totalLng = 0;
+    let minPrice = Infinity;
+    let maxPrice = -Infinity;
+
+    for (const p of g.items) {
+      totalLat += p.latitude;
+      totalLng += p.longitude;
+      if (p.priceMonthlyClp < minPrice) minPrice = p.priceMonthlyClp;
+      if (p.priceMonthlyClp > maxPrice) maxPrice = p.priceMonthlyClp;
+    }
+
+    const count = g.items.length;
+    const centerLat = isSingle ? g.items[0].latitude : totalLat / count;
+    const centerLng = isSingle ? g.items[0].longitude : totalLng / count;
+    const id = isSingle
+      ? `pension-${g.items[0].id}`
+      : `cluster-${g.items.map((p) => p.id).sort().slice(0, 3).join('-')}-${count}`;
+
+    return {
+      id,
+      latitude: centerLat,
+      longitude: centerLng,
+      pensions: g.items,
+      isSelected,
+      isSingle,
+      minPrice,
+      maxPrice,
+    };
+  });
+}
+
+function createMarkerIcon(
+  L: typeof import('leaflet'),
+  cluster: ClusterPoint,
+  zoom: number,
+): import('leaflet').DivIcon {
+  if (cluster.isSingle) {
+    const pension = cluster.pensions[0];
+    if (zoom < 14) {
+      const html = cluster.isSelected
+        ? `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
+             <div class="h-6 w-6 rounded-full bg-primary text-primary-foreground border-2 border-white shadow-xl ring-4 ring-primary/30 flex items-center justify-center scale-110 transition-transform">
+               <div class="h-2.5 w-2.5 rounded-full bg-white"></div>
+             </div>
+           </div>`
+        : `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
+             <div class="h-4 w-4 rounded-full bg-primary text-white border-2 border-white shadow-md hover:scale-125 transition-transform flex items-center justify-center">
+               <div class="h-1.5 w-1.5 rounded-full bg-white"></div>
+             </div>
+           </div>`;
+
+      return L.divIcon({
+        className: 'custom-div-icon',
+        html,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+      });
+    }
+
+    const formattedPrice = `$${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP`;
+    const html = cluster.isSelected
+      ? `<div style="width: 100px; transform: translate(-50%, -50%); cursor: pointer;">
+           <div class="px-3 py-1 rounded-full text-xs font-bold shadow-lg transition-transform scale-110 bg-primary text-primary-foreground border border-primary ring-4 ring-primary/25 flex items-center justify-center whitespace-nowrap">
+             ${formattedPrice}
+           </div>
+         </div>`
+      : `<div style="width: 100px; transform: translate(-50%, -50%); cursor: pointer;">
+           <div class="px-2.5 py-1 rounded-full text-xs font-bold shadow-md bg-card text-foreground border border-border hover:border-primary/60 hover:bg-secondary flex items-center justify-center whitespace-nowrap">
+             ${formattedPrice}
+           </div>
+         </div>`;
+
+    return L.divIcon({
+      className: 'custom-div-icon',
+      html,
+      iconSize: [0, 0],
+      iconAnchor: [0, 0],
+    });
+  }
+
+  const count = cluster.pensions.length;
+  const html = cluster.isSelected
+    ? `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="group flex items-center justify-center">
+         <div class="flex items-center justify-center min-w-[38px] h-9 px-2.5 rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-xl border-2 border-primary-foreground ring-4 ring-primary/40 scale-110 transition-transform whitespace-nowrap">
+           ${count}
+         </div>
+       </div>`
+    : `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="group flex items-center justify-center">
+         <div class="flex items-center justify-center min-w-[34px] h-8 px-2.5 rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-lg border-2 border-white ring-2 ring-primary/20 hover:scale-110 hover:ring-4 transition-transform whitespace-nowrap">
+           ${count}
+         </div>
+       </div>`;
+
+  return L.divIcon({
+    className: 'custom-div-icon',
+    html,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
+  });
+}
+
 function getTileUrl(theme: 'light' | 'dark') {
   const apiKey = process.env.NEXT_PUBLIC_CARTO_API_KEY;
   const keyParam = apiKey ? `?key=${apiKey}` : '';
@@ -103,6 +275,8 @@ export function MapScreen({
   const mapInstanceRef = useRef<import('leaflet').Map | null>(null);
   const tileLayerRef = useRef<import('leaflet').TileLayer | null>(null);
   const markersLayerRef = useRef<import('leaflet').LayerGroup | null>(null);
+  const activeMarkersMapRef = useRef<Map<string, import('leaflet').Marker>>(new Map());
+  const renderTimerRef = useRef<number | null>(null);
   const userMarkerRef = useRef<import('leaflet').Marker | null>(null);
   const universityMarkerRef = useRef<import('leaflet').Marker | null>(null);
   const leafletModuleRef = useRef<typeof import('leaflet') | null>(null);
@@ -138,53 +312,78 @@ export function MapScreen({
     const markersGroup = markersLayerRef.current;
     if (!L || !map || !markersGroup) return;
 
-    markersGroup.clearLayers();
+    const zoom = map.getZoom();
+    const clusters = computeClusters(mapPensions, map, zoom, activePinId);
+    const nextMarkersMap = new Map<string, import('leaflet').Marker>();
+    const currentMarkersMap = activeMarkersMapRef.current;
 
-    for (const pension of mapPensions) {
-      const isSelected = pension.id === activePinId;
-      const formattedPrice = `$${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP`;
+    for (const cluster of clusters) {
+      const modeKey =
+        zoom >= 15
+          ? 'badge'
+          : zoom < 14
+            ? cluster.isSingle
+              ? 'dot'
+              : 'cluster'
+            : cluster.isSingle
+              ? 'badge'
+              : 'cluster';
+      const cacheKey = `${cluster.id}:${cluster.isSelected ? '1' : '0'}:${modeKey}`;
 
-      const iconHtml = isSelected
-        ? `<div style="width: 100px; transform: translate(-50%, -50%); cursor: pointer;">
-             <div class="px-3 py-1 rounded-full text-xs font-bold shadow-lg transition-transform scale-110 bg-primary text-primary-foreground border border-primary ring-4 ring-primary/25 flex items-center justify-center whitespace-nowrap">
-               ${formattedPrice}
-             </div>
-           </div>`
-        : `<div style="width: 100px; transform: translate(-50%, -50%); cursor: pointer;">
-             <div class="px-2.5 py-1 rounded-full text-xs font-bold shadow-md bg-card text-foreground border border-border hover:border-primary/60 hover:bg-secondary flex items-center justify-center whitespace-nowrap">
-               ${formattedPrice}
-             </div>
-           </div>`;
+      const existingMarker = currentMarkersMap.get(cacheKey);
+      if (existingMarker) {
+        nextMarkersMap.set(cacheKey, existingMarker);
+        currentMarkersMap.delete(cacheKey);
+      } else {
+        const icon = createMarkerIcon(L, cluster, zoom);
+        const marker = L.marker([cluster.latitude, cluster.longitude], {
+          icon,
+          zIndexOffset: cluster.isSelected ? 1000 : cluster.isSingle ? 100 : 200,
+        });
 
-      const customIcon = L.divIcon({
-        className: 'custom-div-icon',
-        html: iconHtml,
-        iconSize: [0, 0],
-        iconAnchor: [0, 0],
-      });
-
-      const marker = L.marker([pension.latitude, pension.longitude], {
-        icon: customIcon,
-        zIndexOffset: isSelected ? 1000 : 100,
-      });
-
-      marker.on('click', () => {
-        lastPannedPensionIdRef.current = pension.id;
-        setActivePinId(pension.id);
-        onSelectPension(pension);
-        setDrawerState('half');
-        if (cardListRef.current) {
-          cardListRef.current.scrollTop = 0;
+        if (cluster.isSingle) {
+          const pension = cluster.pensions[0];
+          marker.on('click', () => {
+            lastPannedPensionIdRef.current = pension.id;
+            setActivePinId(pension.id);
+            onSelectPension(pension);
+            setDrawerState('half');
+            if (cardListRef.current) {
+              cardListRef.current.scrollTop = 0;
+            }
+            if (desktopListRef.current) {
+              desktopListRef.current.scrollTop = 0;
+            }
+            panToPension(pension.latitude, pension.longitude);
+          });
+        } else {
+          marker.on('click', () => {
+            const nextZoom = Math.min(map.getZoom() + 2, 17);
+            map.flyTo([cluster.latitude, cluster.longitude], nextZoom, { duration: 0.5 });
+          });
         }
-        if (desktopListRef.current) {
-          desktopListRef.current.scrollTop = 0;
-        }
-        panToPension(pension.latitude, pension.longitude);
-      });
 
-      marker.addTo(markersGroup);
+        marker.addTo(markersGroup);
+        nextMarkersMap.set(cacheKey, marker);
+      }
     }
+
+    for (const oldMarker of currentMarkersMap.values()) {
+      markersGroup.removeLayer(oldMarker);
+    }
+
+    activeMarkersMapRef.current = nextMarkersMap;
   }, [mapPensions, activePinId, onSelectPension, panToPension]);
+
+  const debouncedRenderMarkers = useCallback(() => {
+    if (renderTimerRef.current !== null) {
+      cancelAnimationFrame(renderTimerRef.current);
+    }
+    renderTimerRef.current = requestAnimationFrame(() => {
+      renderTimerRef.current = null;
+      renderMarkers();
+    });
+  }, [renderMarkers]);
 
   const renderUserMarker = useCallback(() => {
     const L = leafletModuleRef.current;
@@ -276,6 +475,9 @@ export function MapScreen({
   const renderMarkersRef = useRef(renderMarkers);
   renderMarkersRef.current = renderMarkers;
 
+  const debouncedRenderMarkersRef = useRef(debouncedRenderMarkers);
+  debouncedRenderMarkersRef.current = debouncedRenderMarkers;
+
   const renderUserMarkerRef = useRef(renderUserMarker);
   renderUserMarkerRef.current = renderUserMarker;
 
@@ -350,6 +552,11 @@ export function MapScreen({
 
       map.on('moveend', () => {
         handleMapMoveEndRef.current();
+        debouncedRenderMarkersRef.current();
+      });
+
+      map.on('zoomend', () => {
+        debouncedRenderMarkersRef.current();
       });
 
       const markersGroup = L.layerGroup().addTo(map);
@@ -379,10 +586,15 @@ export function MapScreen({
 
     return () => {
       isMounted = false;
+      if (renderTimerRef.current !== null) {
+        cancelAnimationFrame(renderTimerRef.current);
+        renderTimerRef.current = null;
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
+      activeMarkersMapRef.current.clear();
       tileLayerRef.current = null;
       markersLayerRef.current = null;
       userMarkerRef.current = null;
@@ -397,8 +609,8 @@ export function MapScreen({
   }, [resolvedTheme]);
 
   useEffect(() => {
-    renderMarkers();
-  }, [renderMarkers]);
+    debouncedRenderMarkers();
+  }, [debouncedRenderMarkers]);
 
   useEffect(() => {
     renderUserMarker();
