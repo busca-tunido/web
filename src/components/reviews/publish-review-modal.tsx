@@ -26,12 +26,10 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { createReviewSchema } from '@/hooks/use-pension-reviews';
-import { isApiSuccess } from '@/lib/api-response';
+import { createReviewSchema, usePensionReviews } from '@/hooks/use-pension-reviews';
 import { useAuth } from '@/lib/auth-context';
 import { prepareImageForUpload, validateImageFile } from '@/lib/image-utils';
 import type { PensionItem, PensionReview, StayDurationCategory } from '@/lib/types';
-import { reviewsService } from '@/services/reviews.service';
 import { uploadSingleImage } from '@/services/uploads.service';
 
 type PublishReviewModalProps = {
@@ -64,6 +62,7 @@ export function PublishReviewModal({
   onReviewPublished,
 }: PublishReviewModalProps) {
   const { user } = useAuth();
+  const { publishReview } = usePensionReviews(isOpen ? pension.id : null);
 
   const [overallRating, setOverallRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -163,26 +162,27 @@ export function PublishReviewModal({
         }
       }
 
-      const reviewPayload = {
+      const result = await publishReview({
         overallRating,
+        rating: overallRating,
         comment: comment.trim(),
         cleanlinessRating: cleanlinessRating ?? undefined,
         landlordRating: landlordRating ?? undefined,
         quietnessRating: quietnessRating ?? undefined,
+        locationRating: quietnessRating ?? undefined,
         wifiRating: wifiRating ?? undefined,
         stayDurationCategory: stayDuration,
+        stayDuration: stayDuration,
         images: uploadedUrls,
-      };
+      });
 
-      const result = await reviewsService.createReview(pension.id, reviewPayload);
-
-      if (!isApiSuccess(result)) {
-        setErrorMessage(result.message || 'Ocurrió un error al enviar tu reseña.');
+      if (!result.success || !result.review) {
+        setErrorMessage(result.error || 'Ocurrió un error al enviar tu reseña.');
         setIsSubmitting(false);
         return;
       }
 
-      const serverReview = result.data;
+      const serverReview = result.review;
       const createdReview: PensionReview = {
         id: serverReview.id || `rev-${Date.now()}`,
         pensionId: pension.id,

@@ -11,8 +11,8 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { ReviewsSkeleton } from '@/components/ui/skeletons/reviews-skeleton';
+import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import type { PensionItem, PensionReview } from '@/lib/types';
-import { reviewsService } from '@/services/reviews.service';
 import { ReviewCard } from './review-card';
 
 type PensionReviewsModalProps = {
@@ -100,13 +100,15 @@ export function PensionReviewsModal({
     });
   }, [reviews, activeFilter]);
 
+  const { voteHelpful } = usePensionReviews(isOpen ? pension.id : null);
+
   const toggleHelpful = async (reviewId: string) => {
     setUserLiked((prev) => ({
       ...prev,
       [reviewId]: !prev[reviewId],
     }));
     try {
-      await reviewsService.voteReviewHelpful(reviewId);
+      await voteHelpful(reviewId);
     } catch {
       setUserLiked((prev) => ({
         ...prev,

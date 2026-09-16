@@ -130,23 +130,30 @@ export function ReviewCard({
 
       {photos.length > 0 && (
         <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar shrink-0">
-          {photos.map((img, photoIdx) => (
-            <button
-              key={`review-photo-${review.id}-${photoIdx}`}
-              type="button"
-              onClick={() => onEnlargePhoto?.(img.url)}
-              className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-muted hover:opacity-90 transition cursor-pointer"
-            >
-              <Image
-                src={img.url}
-                alt={img.caption || 'Foto de la pensión'}
-                fill
-                unoptimized
-                sizes="80px"
-                className="object-cover"
-              />
-            </button>
-          ))}
+          {photos.map((img, photoIdx) => {
+            const photoUrl = typeof img === 'string' ? img : img?.url || '';
+            const caption =
+              typeof img === 'string' ? 'Foto de la pensión' : img?.caption || 'Foto de la pensión';
+            if (!photoUrl) return null;
+
+            return (
+              <button
+                key={`review-photo-${review.id}-${photoIdx}`}
+                type="button"
+                onClick={() => onEnlargePhoto?.(photoUrl)}
+                className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-muted hover:opacity-90 transition cursor-pointer"
+              >
+                <Image
+                  src={photoUrl}
+                  alt={caption}
+                  fill
+                  unoptimized
+                  sizes="80px"
+                  className="object-cover"
+                />
+              </button>
+            );
+          })}
         </div>
       )}
 
