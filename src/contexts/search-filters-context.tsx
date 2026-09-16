@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { SearchFilters } from '@/lib/types';
 
 export type SearchFiltersContextType = {
@@ -28,10 +22,7 @@ const DEFAULT_FILTERS: SearchFilters = {
 
 const SearchFiltersContext = createContext<SearchFiltersContextType | null>(null);
 
-export function SearchFiltersProvider({
-  children,
-  initialFilters,
-}: SearchFiltersProviderProps) {
+export function SearchFiltersProvider({ children, initialFilters }: SearchFiltersProviderProps) {
   const [filters, setFilters] = useState<SearchFilters>(() => {
     if (initialFilters) {
       return initialFilters;
@@ -78,11 +69,7 @@ export function SearchFiltersProvider({
     [filters, resetFilters, activeFilterCount, clearCity],
   );
 
-  return (
-    <SearchFiltersContext.Provider value={value}>
-      {children}
-    </SearchFiltersContext.Provider>
-  );
+  return <SearchFiltersContext.Provider value={value}>{children}</SearchFiltersContext.Provider>;
 }
 
 export function useSearchFilters(): SearchFiltersContextType {

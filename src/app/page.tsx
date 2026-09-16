@@ -1,11 +1,5 @@
-import {
-  RoleRouter,
-  type InitialPrefetchData,
-} from '@/components/shells/role-router';
-import {
-  type ApiPensionPayload,
-  mapRawPensionToPensionItem,
-} from '@/lib/api-client';
+import { type InitialPrefetchData, RoleRouter } from '@/components/shells/role-router';
+import { type ApiPensionPayload, mapRawPensionToPensionItem } from '@/lib/api-client';
 import { getCityImageUrl, getUniversityImageUrl } from '@/lib/location-images';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
 
@@ -31,9 +25,11 @@ async function fetchInitialPensions(baseUrl: string): Promise<PensionItem[]> {
       return [];
     }
     const json = (await res.json()) as {
-      data?: {
-        items?: ApiPensionPayload[];
-      } | ApiPensionPayload[];
+      data?:
+        | {
+            items?: ApiPensionPayload[];
+          }
+        | ApiPensionPayload[];
       items?: ApiPensionPayload[];
     };
     let rawItems: ApiPensionPayload[] = [];
@@ -189,14 +185,10 @@ export default async function HomePage() {
     ]);
 
   const initialData: InitialPrefetchData = {
-    pensions:
-      initialPensionsResult.status === 'fulfilled' ? initialPensionsResult.value : [],
-    cities:
-      initialCitiesResult.status === 'fulfilled' ? initialCitiesResult.value : [],
+    pensions: initialPensionsResult.status === 'fulfilled' ? initialPensionsResult.value : [],
+    cities: initialCitiesResult.status === 'fulfilled' ? initialCitiesResult.value : [],
     universities:
-      initialUniversitiesResult.status === 'fulfilled'
-        ? initialUniversitiesResult.value
-        : [],
+      initialUniversitiesResult.status === 'fulfilled' ? initialUniversitiesResult.value : [],
   };
 
   return <RoleRouter initialData={initialData} />;

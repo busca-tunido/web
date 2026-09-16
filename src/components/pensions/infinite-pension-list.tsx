@@ -95,10 +95,7 @@ function VirtualizedPensionCardComponent({
   );
 }
 
-const VirtualizedPensionCard = memo(
-  VirtualizedPensionCardComponent,
-  areVirtualPropsEqual,
-);
+const VirtualizedPensionCard = memo(VirtualizedPensionCardComponent, areVirtualPropsEqual);
 
 export function InfinitePensionList({
   items,

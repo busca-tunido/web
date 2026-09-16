@@ -5,10 +5,7 @@ import { AuthScreen } from '@/components/auth/auth-screen';
 import { UnimplementedRoleBanner } from '@/components/common/unimplemented-role-banner';
 import { SplashScreen } from '@/components/layout/splash-screen';
 import { LandlordAppShell } from '@/components/shells/landlord-app-shell';
-import {
-  StudentAppShell,
-  type StudentAppShellProps,
-} from '@/components/shells/student-app-shell';
+import { StudentAppShell, type StudentAppShellProps } from '@/components/shells/student-app-shell';
 import { useUserRole } from '@/hooks/use-user-role';
 import { useAuth } from '@/lib/auth-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';

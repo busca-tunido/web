@@ -118,7 +118,11 @@ function computeClusters(
     const centerLng = isSingle ? g.items[0].longitude : totalLng / count;
     const id = isSingle
       ? `pension-${g.items[0].id}`
-      : `cluster-${g.items.map((p) => p.id).sort().slice(0, 3).join('-')}-${count}`;
+      : `cluster-${g.items
+          .map((p) => p.id)
+          .sort()
+          .slice(0, 3)
+          .join('-')}-${count}`;
 
     return {
       id,

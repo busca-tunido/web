@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { useUrlNavigationState } from '@/hooks/use-url-navigation-state';
 import type { NavTab, PensionItem, UniversityInfo } from '@/lib/types';
 
@@ -43,10 +37,7 @@ export type NavigationProviderProps = {
 
 const NavigationContext = createContext<NavigationContextType | null>(null);
 
-export function NavigationProvider({
-  children,
-  initialTab = 'explore',
-}: NavigationProviderProps) {
+export function NavigationProvider({ children, initialTab = 'explore' }: NavigationProviderProps) {
   const {
     tab: activeTab,
     navigateTab,
@@ -138,11 +129,7 @@ export function NavigationProvider({
     ],
   );
 
-  return (
-    <NavigationContext.Provider value={value}>
-      {children}
-    </NavigationContext.Provider>
-  );
+  return <NavigationContext.Provider value={value}>{children}</NavigationContext.Provider>;
 }
 
 export function useNavigation(): NavigationContextType {
