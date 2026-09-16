@@ -103,7 +103,9 @@ export type PensionItemDto = {
   rooms?: RoomDto[];
   reviews?: ReviewItemDto[];
   averageRating?: number;
+  ratingAverage?: number;
   reviewsCount?: number;
+  ratingCount?: number;
 };
 
 export type PensionDetailDto = PensionItemDto;

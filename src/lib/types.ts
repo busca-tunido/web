@@ -152,7 +152,7 @@ export type PensionReview = {
   stayDuration?: StayDurationCategory | string;
   isResidentVerified?: boolean;
   isVerifiedStudent?: boolean;
-  images?: Array<{ id?: string; url: string; caption?: string }>;
+  images?: Array<string | { id?: string; url: string; caption?: string }>;
   createdAt: string;
   user: {
     id: string;

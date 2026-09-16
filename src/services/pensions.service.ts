@@ -173,11 +173,23 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
         : raw.ratingAverage !== undefined && raw.ratingAverage !== null
           ? Number(raw.ratingAverage)
           : undefined,
+    ratingAverage:
+      raw.ratingAverage !== undefined && raw.ratingAverage !== null
+        ? Number(raw.ratingAverage)
+        : raw.averageRating !== undefined && raw.averageRating !== null
+          ? Number(raw.averageRating)
+          : undefined,
     reviewsCount:
       raw.reviewsCount !== undefined && raw.reviewsCount !== null
         ? Number(raw.reviewsCount)
         : raw.ratingCount !== undefined && raw.ratingCount !== null
           ? Number(raw.ratingCount)
+          : undefined,
+    ratingCount:
+      raw.ratingCount !== undefined && raw.ratingCount !== null
+        ? Number(raw.ratingCount)
+        : raw.reviewsCount !== undefined && raw.reviewsCount !== null
+          ? Number(raw.reviewsCount)
           : undefined,
   };
 }

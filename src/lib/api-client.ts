@@ -146,8 +146,19 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
     longitude: Number(raw.longitude) || -70.6693,
     priceMonthlyClp: Number(raw.baseMonthlyPrice) || 280000,
     depositClp: Number(raw.deposit) || 0,
-    ratingAverage: Number(raw.ratingAverage) || 0,
-    reviewsCount: Number(raw.ratingCount ?? raw.reviewsCount ?? raw._count?.reviews ?? 0),
+    ratingAverage: (() => {
+      const avg = raw.ratingAverage ?? raw.averageRating;
+      const num = avg !== undefined && avg !== null ? Number(avg) : 0;
+      return Number.isFinite(num) ? num : 0;
+    })(),
+    reviewsCount: (() => {
+      const cnt =
+        raw.reviewsCount ??
+        raw.ratingCount ??
+        (raw._count as { reviews?: number } | undefined)?.reviews;
+      const num = cnt !== undefined && cnt !== null ? Number(cnt) : 0;
+      return Number.isFinite(num) ? num : 0;
+    })(),
     isVerified:
       raw.verificationStatus === 'OFFICIALLY_VERIFIED' ||
       raw.verificationStatus === 'COMMUNITY_VERIFIED',
@@ -339,16 +350,19 @@ export async function fetchUniversities(city?: string): Promise<UniversityInfo[]
 
 export async function fetchPensionReviews(pensionId: string): Promise<PensionReview[]> {
   try {
-    const { response } = await apiClient.GET('/pensions/{pensionId}/reviews', {
+    const { data, response } = await apiClient.GET('/pensions/{pensionId}/reviews', {
       params: {
         path: { pensionId },
       },
     });
 
-    if (response.ok) {
-      const json = (await response.json()) as ApiResponseEnvelope<PensionReview[]>;
-      if (json?.data && Array.isArray(json.data)) {
-        return json.data;
+    if (response.ok && data) {
+      const envelope = data as ApiResponseEnvelope<PensionReview[]>;
+      if (envelope?.data && Array.isArray(envelope.data)) {
+        return envelope.data;
+      }
+      if (Array.isArray(data)) {
+        return data as unknown as PensionReview[];
       }
     }
   } catch {}
