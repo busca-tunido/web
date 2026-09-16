@@ -19,10 +19,8 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { isApiSuccess } from '@/lib/api-response';
+import { useSuggestEdit } from '@/hooks/use-suggest-edit';
 import type { PensionItem } from '@/lib/types';
-import { submitPensionProposal } from '@/services/proposals.service';
-import type { CreateProposalDto } from '@/types/api-contracts';
 
 type SuggestEditModalProps = {
   isOpen: boolean;
@@ -79,9 +77,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
   const [city, setCity] = useState(pension.city);
 
   const [submissionNotes, setSubmissionNotes] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successBanner, setSuccessBanner] = useState(false);
+  const { isSubmitting, errorMessage, successBanner, submitProposal } = useSuggestEdit(pension.id);
 
   const toggleAmenity = (slug: string) => {
     setActiveAmenities((prev) =>
@@ -125,36 +121,12 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
   };
 
   const handleSubmit = async () => {
-    if (submissionNotes.trim().length < 5) {
-      setErrorMessage('Por favor incluye una breve explicación para el equipo de moderación.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setErrorMessage(null);
-
-    try {
-      const proposedChanges = calculateProposedChanges();
-      const res = await submitPensionProposal(pension.id, {
-        type: 'FULL_UPDATE',
-        proposedChanges: proposedChanges as CreateProposalDto['proposedChanges'],
-        submissionNotes: submissionNotes.trim(),
-      });
-
-      if (!isApiSuccess(res)) {
-        throw new Error(res.message);
-      }
-
-      setSuccessBanner(true);
+    const proposedChanges = calculateProposedChanges();
+    const ok = await submitProposal(submissionNotes, proposedChanges);
+    if (ok) {
       setTimeout(() => {
-        setSuccessBanner(false);
         onClose();
       }, 1800);
-    } catch (err: unknown) {
-      const errStr = (err as Error)?.message || '';
-      setErrorMessage(errStr || 'No se pudo enviar la propuesta. Inténtalo más tarde.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

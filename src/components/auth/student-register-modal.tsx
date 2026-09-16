@@ -15,55 +15,10 @@ import {
 } from '@/components/ui/drawer';
 import { FormField } from '@/components/ui/form-field';
 import { useFormValidation } from '@/hooks/use-form-validation';
-import { isApiSuccess } from '@/lib/api-response';
+import { useUniversities } from '@/hooks/use-universities';
 import { useAuth } from '@/lib/auth-context';
 import { type StudentRegisterInput, studentRegisterSchema } from '@/lib/validations/auth.schema';
 import { authService } from '@/services/auth.service';
-import { fetchUniversities } from '@/services/universities.service';
-import type { UniversityDto } from '@/types/api-contracts';
-
-const FALLBACK_UNIVERSITIES: UniversityDto[] = [
-  {
-    id: '00000000-0000-4000-8000-000000000001',
-    name: 'Universidad de Chile',
-    acronym: 'UCHILE',
-    city: 'Santiago',
-    latitude: -33.4442,
-    longitude: -70.6517,
-  },
-  {
-    id: '00000000-0000-4000-8000-000000000002',
-    name: 'Pontificia Universidad Católica de Chile',
-    acronym: 'UC',
-    city: 'Santiago',
-    latitude: -33.4975,
-    longitude: -70.6128,
-  },
-  {
-    id: '00000000-0000-4000-8000-000000000003',
-    name: 'Universidad de Concepción',
-    acronym: 'UdeC',
-    city: 'Concepción',
-    latitude: -36.8299,
-    longitude: -73.0371,
-  },
-  {
-    id: '00000000-0000-4000-8000-000000000004',
-    name: 'Universidad de Santiago de Chile',
-    acronym: 'USACH',
-    city: 'Santiago',
-    latitude: -33.4503,
-    longitude: -70.6865,
-  },
-  {
-    id: '00000000-0000-4000-8000-000000000005',
-    name: 'Universidad Técnica Federico Santa María',
-    acronym: 'USM',
-    city: 'Valparaíso',
-    latitude: -33.0355,
-    longitude: -71.5954,
-  },
-];
 
 export type StudentRegisterModalProps = {
   isOpen: boolean;
@@ -79,26 +34,12 @@ export function StudentRegisterModal({
   onSuccess,
 }: StudentRegisterModalProps) {
   const { login } = useAuth();
-  const [universities, setUniversities] = useState<UniversityDto[]>(FALLBACK_UNIVERSITIES);
+  const { universities } = useUniversities();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmittingManual, setIsSubmittingManual] = useState(false);
 
-  useEffect(() => {
-    async function loadUniversities() {
-      try {
-        const response = await fetchUniversities();
-        if (isApiSuccess(response) && response.data.length > 0) {
-          setUniversities(response.data);
-        }
-      } catch {}
-    }
-    if (isOpen) {
-      loadUniversities();
-    }
-  }, [isOpen]);
-
-  const defaultUniversityId = universities[0]?.id ?? FALLBACK_UNIVERSITIES[0].id;
+  const defaultUniversityId = universities[0]?.id ?? '';
 
   const {
     values,
