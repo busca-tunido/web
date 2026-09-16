@@ -97,10 +97,10 @@ export function PensionReviewsPreview({
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-muted border border-border">
-                        {review.user.avatarUrl ? (
+                        {review.user?.avatarUrl ? (
                           <Image
                             src={review.user.avatarUrl}
-                            alt={review.user.firstName}
+                            alt={review.user?.firstName || 'Estudiante'}
                             fill
                             sizes="32px"
                             unoptimized
@@ -108,14 +108,15 @@ export function PensionReviewsPreview({
                           />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center font-bold text-xs text-muted-foreground">
-                            {review.user.firstName.charAt(0)}
+                            {review.user?.firstName ? review.user.firstName.charAt(0) : 'E'}
                           </div>
                         )}
                       </div>
                       <div className="truncate">
                         <div className="flex items-center gap-1">
                           <span className="text-xs font-bold text-foreground truncate">
-                            {review.user.firstName} {review.user.lastName?.charAt(0)}.
+                            {review.user?.firstName || 'Estudiante'}{' '}
+                            {review.user?.lastName ? `${review.user.lastName.charAt(0)}.` : ''}
                           </span>
                           {(review.isResidentVerified || review.isVerifiedStudent) && (
                             <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />

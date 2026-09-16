@@ -17,7 +17,7 @@ import {
   Wind,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { NetworkErrorBanner, NetworkErrorState } from '@/components/common/network-error-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,11 +29,10 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { fetchPensionReviews, mapRawPensionToItem } from '@/lib/api-client';
-import { isApiSuccess } from '@/lib/api-response';
+import { usePensionDetail } from '@/hooks/use-pension-detail';
+import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { useAuth } from '@/lib/auth-context';
-import type { PensionItem, PensionReview } from '@/lib/types';
-import { pensionsService } from '@/services/pensions.service';
+import type { PensionItem } from '@/lib/types';
 import { PensionReviewsModal } from '../reviews/pension-reviews-modal';
 import { PensionReviewsPreview } from '../reviews/pension-reviews-preview';
 import { PublishReviewModal } from '../reviews/publish-review-modal';
@@ -55,102 +54,28 @@ export function PensionDetailModal({
 }: PensionDetailModalProps) {
   const { user, isFavorite, toggleFavorite } = useAuth();
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
-  const [reviews, setReviews] = useState<PensionReview[]>([]);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
   const [isAmenitiesModalOpen, setIsAmenitiesModalOpen] = useState(false);
   const [isPublishReviewOpen, setIsPublishReviewOpen] = useState(false);
   const [isSuggestEditOpen, setIsSuggestEditOpen] = useState(false);
 
-  const [livePension, setLivePension] = useState<PensionItem | null>(initialPension);
-  const [isLoadingDetail, setIsLoadingDetail] = useState<boolean>(false);
-  const [detailError, setDetailError] = useState<string | null>(null);
+  const targetId = isOpen ? (initialPension?.id ?? pensionId ?? null) : null;
 
-  const activePension = livePension ?? initialPension;
-  const targetId = activePension?.id ?? pensionId ?? null;
+  const {
+    activePension,
+    isLoading: isLoadingDetail,
+    error: detailError,
+    refetch: loadLivePension,
+  } = usePensionDetail(targetId, initialPension);
 
-  const [ratingStats, setRatingStats] = useState({
+  const {
+    reviews,
+    ratingStats,
+    refetch: reloadReviews,
+  } = usePensionReviews(targetId, {
     average: activePension?.ratingAverage ?? 0,
     count: activePension?.reviewsCount ?? 0,
   });
-
-  useEffect(() => {
-    if (activePension) {
-      setRatingStats({
-        average: activePension.ratingAverage ?? 0,
-        count: activePension.reviewsCount ?? 0,
-      });
-    }
-  }, [activePension]);
-
-  useEffect(() => {
-    setLivePension(initialPension);
-  }, [initialPension]);
-
-  const loadLivePension = useCallback(async (): Promise<void> => {
-    if (!targetId) return;
-    setIsLoadingDetail(true);
-    setDetailError(null);
-    try {
-      const res = await pensionsService.fetchPensionById(targetId);
-      if (isApiSuccess(res)) {
-        const mapped = mapRawPensionToItem(res.data as unknown as Record<string, unknown>);
-        setLivePension(mapped);
-      } else {
-        setDetailError(res.message);
-      }
-    } catch (err) {
-      setDetailError(err instanceof Error ? err.message : 'Error al cargar detalle');
-    } finally {
-      setIsLoadingDetail(false);
-    }
-  }, [targetId]);
-
-  useEffect(() => {
-    if (isOpen && targetId) {
-      loadLivePension();
-    }
-  }, [isOpen, targetId, loadLivePension]);
-
-  useEffect(() => {
-    if (!activePension?.id) return;
-    let isCancelled = false;
-
-    async function loadReviews() {
-      if (!activePension) return;
-      try {
-        const res = await fetchPensionReviews(activePension.id);
-        if (isCancelled) return;
-        if (Array.isArray(res) && res.length > 0) {
-          setReviews(res);
-          const sum = res.reduce((acc, r) => acc + (r.overallRating ?? r.rating ?? 0), 0);
-          setRatingStats({
-            average: Math.round((sum / res.length) * 10) / 10,
-            count: res.length,
-          });
-        } else {
-          setReviews([]);
-          setRatingStats({
-            average: activePension.ratingAverage ?? 0,
-            count: activePension.reviewsCount ?? 0,
-          });
-        }
-      } catch {
-        if (!isCancelled) {
-          setReviews([]);
-          setRatingStats({
-            average: activePension.ratingAverage ?? 0,
-            count: activePension.reviewsCount ?? 0,
-          });
-        }
-      }
-    }
-
-    loadReviews();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [activePension]);
 
   const pension = useMemo(() => {
     if (!activePension) return null;
