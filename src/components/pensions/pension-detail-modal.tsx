@@ -89,17 +89,8 @@ export function PensionDetailModal({
   const isFav = isFavorite(pension?.id ?? '');
   const hasAlreadyReviewed = Boolean(user && reviews.some((r) => r.user?.id === user.id));
 
-  const handleReviewPublished = (newReview: PensionReview) => {
-    setReviews((prev) => [newReview, ...prev]);
-    setRatingStats((prev) => {
-      const newCount = prev.count + 1;
-      const reviewScore = newReview.overallRating ?? newReview.rating ?? 5;
-      const newAvg = (prev.average * prev.count + reviewScore) / newCount;
-      return {
-        average: Math.round(newAvg * 10) / 10,
-        count: newCount,
-      };
-    });
+  const handleReviewPublished = (_newReview: PensionReview) => {
+    reloadReviews();
   };
 
   if (!isOpen) return null;

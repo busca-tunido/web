@@ -27,6 +27,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { createReviewSchema, usePensionReviews } from '@/hooks/use-pension-reviews';
+import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
 import { prepareImageForUpload, validateImageFile } from '@/lib/image-utils';
 import type { PensionItem, PensionReview, StayDurationCategory } from '@/lib/types';

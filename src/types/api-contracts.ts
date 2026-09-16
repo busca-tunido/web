@@ -71,6 +71,16 @@ export type ReviewItemDto = {
   helpfulCount: number;
   userVoted?: boolean;
   createdAt: string;
+  user?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string | null;
+    university?: {
+      shortName?: string | null;
+      name?: string;
+    } | null;
+  };
 };
 
 export type PensionItemDto = {

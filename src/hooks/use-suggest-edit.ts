@@ -11,10 +11,7 @@ export function useSuggestEdit(pensionId: string) {
   const [successBanner, setSuccessBanner] = useState<boolean>(false);
 
   const submitProposal = useCallback(
-    async (
-      submissionNotes: string,
-      proposedChanges: Record<string, unknown>,
-    ): Promise<boolean> => {
+    async (submissionNotes: string, proposedChanges: Record<string, unknown>): Promise<boolean> => {
       if (submissionNotes.trim().length < 5) {
         setErrorMessage('Por favor incluye una breve explicación para el equipo de moderación.');
         return false;

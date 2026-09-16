@@ -57,6 +57,7 @@ function mapRawReviewToItem(raw: RawReviewResponse): ReviewItemDto {
     images: Array.isArray(raw.images) ? raw.images : [],
     helpfulCount: 0,
     createdAt: raw.createdAt,
+    user: raw.user ?? undefined,
   };
 }
 
