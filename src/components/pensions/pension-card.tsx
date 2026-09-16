@@ -3,6 +3,7 @@
 import { Heart, MapPin, Sparkles, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
+import { memo } from 'react';
 import type { PensionItem } from '@/lib/types';
 
 type PensionCardProps = {
@@ -12,7 +13,16 @@ type PensionCardProps = {
   onSelectPension: (pension: PensionItem) => void;
 };
 
-export function PensionCard({
+function areEqual(prev: PensionCardProps, next: PensionCardProps): boolean {
+  return (
+    prev.pension.id === next.pension.id &&
+    prev.isFavorite === next.isFavorite &&
+    prev.pension.ratingAverage === next.pension.ratingAverage &&
+    prev.pension.priceMonthlyClp === next.pension.priceMonthlyClp
+  );
+}
+
+function PensionCardComponent({
   pension,
   isFavorite,
   onToggleFavorite,
@@ -105,3 +115,5 @@ export function PensionCard({
     </motion.div>
   );
 }
+
+export const PensionCard = memo(PensionCardComponent, areEqual);

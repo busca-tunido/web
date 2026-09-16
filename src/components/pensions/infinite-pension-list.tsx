@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckCircle2, Loader2, SearchX } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
 import type { PensionItem } from '@/lib/types';
@@ -16,6 +16,89 @@ type InfinitePensionListProps = {
   onSelectPension: (pension: PensionItem) => void;
   onResetFilters?: () => void;
 };
+
+type VirtualizedPensionCardProps = {
+  pension: PensionItem;
+  isFavorite: boolean;
+  onToggleFavorite: (id: string) => void;
+  onSelectPension: (pension: PensionItem) => void;
+  initialVisible?: boolean;
+};
+
+function areVirtualPropsEqual(
+  prev: VirtualizedPensionCardProps,
+  next: VirtualizedPensionCardProps,
+): boolean {
+  return (
+    prev.pension.id === next.pension.id &&
+    prev.isFavorite === next.isFavorite &&
+    prev.pension.ratingAverage === next.pension.ratingAverage &&
+    prev.pension.priceMonthlyClp === next.pension.priceMonthlyClp
+  );
+}
+
+function VirtualizedPensionCardComponent({
+  pension,
+  isFavorite,
+  onToggleFavorite,
+  onSelectPension,
+  initialVisible = false,
+}: VirtualizedPensionCardProps) {
+  const [isVisible, setIsVisible] = useState(initialVisible);
+  const [height, setHeight] = useState<number | undefined>(undefined);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      {
+        rootMargin: '600px 0px 600px 0px',
+        threshold: 0,
+      },
+    );
+
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isVisible && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      if (rect.height > 0) {
+        setHeight(rect.height);
+      }
+    }
+  }, [isVisible]);
+
+  return (
+    <div
+      ref={containerRef}
+      style={height ? { minHeight: `${height}px` } : { minHeight: '300px' }}
+      className="w-full"
+    >
+      {isVisible ? (
+        <PensionCard
+          pension={pension}
+          isFavorite={isFavorite}
+          onToggleFavorite={onToggleFavorite}
+          onSelectPension={onSelectPension}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+const VirtualizedPensionCard = memo(
+  VirtualizedPensionCardComponent,
+  areVirtualPropsEqual,
+);
 
 export function InfinitePensionList({
   items,
@@ -41,7 +124,7 @@ export function InfinitePensionList({
         }
       },
       {
-        rootMargin: '200px',
+        rootMargin: '400px',
         threshold: 0.1,
       },
     );
@@ -93,27 +176,28 @@ export function InfinitePensionList({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-5 md:px-0">
-      {items.map((pension) => (
-        <PensionCard
+      {items.map((pension, index) => (
+        <VirtualizedPensionCard
           key={pension.id}
           pension={pension}
           isFavorite={isFavorite(pension.id)}
           onToggleFavorite={toggleFavorite}
           onSelectPension={onSelectPension}
+          initialVisible={index < 8}
         />
       ))}
 
-      <div ref={sentinelRef} className="h-4 w-full" />
+      <div ref={sentinelRef} className="col-span-full h-4 w-full" />
 
       {isLoadingMore && (
-        <div className="flex items-center justify-center py-4 gap-2 text-xs font-medium text-muted-foreground">
+        <div className="col-span-full flex items-center justify-center py-4 gap-2 text-xs font-medium text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin text-primary" />
           <span>Cargando más alojamientos...</span>
         </div>
       )}
 
       {!hasMore && items.length > 0 && (
-        <div className="flex items-center justify-center gap-1.5 py-6 text-xs text-muted-foreground">
+        <div className="col-span-full flex items-center justify-center gap-1.5 py-6 text-xs text-muted-foreground">
           <CheckCircle2 className="h-4 w-4 text-primary/70" />
           <span>Has explorado todas las pensiones disponibles</span>
         </div>
