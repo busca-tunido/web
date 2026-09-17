@@ -37,6 +37,7 @@ import { PensionReviewsModal } from '../reviews/pension-reviews-modal';
 import { PensionReviewsPreview } from '../reviews/pension-reviews-preview';
 import { PublishReviewModal } from '../reviews/publish-review-modal';
 import { AmenitiesBreakdownModal } from './amenities-breakdown-modal';
+import { PensionLocationMap } from './pension-location-map';
 import { SuggestEditModal } from './suggest-edit-modal';
 
 type PensionDetailModalProps = {
@@ -375,20 +376,29 @@ export function PensionDetailModal({
                   </div>
                 ))}
               </div>
+            </div>
 
-              <div className="mt-4 mb-2 p-3 rounded-xl bg-muted/30 border border-border/80 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  ¿Conoces este lugar o viste algo incorrecto?
-                </span>
-                <button
-                  type="button"
-                  id="btn-suggest-edit"
-                  onClick={() => setIsSuggestEditOpen(true)}
-                  className="text-xs font-semibold text-primary hover:underline transition cursor-pointer"
-                >
-                  Sugerir una corrección
-                </button>
-              </div>
+            <PensionLocationMap
+              latitude={pension.latitude}
+              longitude={pension.longitude}
+              title={pension.title}
+              city={pension.city}
+              neighborhood={pension.neighborhood}
+              address={pension.address}
+            />
+
+            <div className="mt-4 mb-2 p-3 rounded-xl bg-muted/30 border border-border/80 flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">
+                ¿Conoces este lugar o viste algo incorrecto?
+              </span>
+              <button
+                type="button"
+                id="btn-suggest-edit"
+                onClick={() => setIsSuggestEditOpen(true)}
+                className="text-xs font-semibold text-primary hover:underline transition cursor-pointer"
+              >
+                Sugerir una corrección
+              </button>
             </div>
           </div>
 
