@@ -138,7 +138,6 @@ export function ReviewCard({
 
             return (
               <button
-                // biome-ignore lint/suspicious/noArrayIndexKey: we are using the same image multiple times
                 key={`review-photo-${review.id}-${photoIdx}`}
                 type="button"
                 onClick={() => onEnlargePhoto?.(photoUrl)}

@@ -234,7 +234,13 @@ export function MapScreen({
   const [containerHeight, setContainerHeight] = useState(800);
   const dragControls = useDragControls();
 
-  const { mapPensions, isAreaLoading, handleMapMoveEnd } = useMapViewportPensions({
+  const {
+    mapPensions,
+    isAreaLoading,
+    handleMapMoveEnd,
+    fetchPensionsAroundLocation,
+    fetchPensionsForCity,
+  } = useMapViewportPensions({
     initialPensions: pensions,
     activePensionId: selectedPension?.id ?? null,
   });
@@ -492,11 +498,20 @@ export function MapScreen({
   const panToPensionRef = useRef(panToPension);
   panToPensionRef.current = panToPension;
 
-  const onMapMoveEnd = useCallback(() => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
-    handleMapMoveEnd(map.getBounds());
-  }, [handleMapMoveEnd]);
+  const fetchPensionsAroundLocationRef = useRef(fetchPensionsAroundLocation);
+  fetchPensionsAroundLocationRef.current = fetchPensionsAroundLocation;
+
+  const fetchPensionsForCityRef = useRef(fetchPensionsForCity);
+  fetchPensionsForCityRef.current = fetchPensionsForCity;
+
+  const onMapMoveEnd = useCallback(
+    (moveOptions?: { immediate?: boolean }) => {
+      const map = mapInstanceRef.current;
+      if (!map) return;
+      handleMapMoveEnd(map.getBounds(), moveOptions);
+    },
+    [handleMapMoveEnd],
+  );
 
   const handleMapMoveEndRef = useRef(onMapMoveEnd);
   handleMapMoveEndRef.current = onMapMoveEnd;
@@ -513,12 +528,16 @@ export function MapScreen({
       let initialLat = -33.4489;
       let initialLng = -70.6693;
       let initialZoom = 13;
+      let shouldFetchInitLocation = false;
+      let initTargetRadius = 25;
 
       const initProps = initPropsRef.current;
       if (initProps.selectedUniversity) {
         initialLat = initProps.selectedUniversity.latitude;
         initialLng = initProps.selectedUniversity.longitude;
         initialZoom = 15;
+        shouldFetchInitLocation = true;
+        initTargetRadius = 15;
       } else if (initProps.selectedCity) {
         const cityMatch = initProps.cities.find(
           (c) => c.name.toLowerCase() === initProps.selectedCity?.toLowerCase(),
@@ -527,6 +546,10 @@ export function MapScreen({
           initialLat = cityMatch.latitude;
           initialLng = cityMatch.longitude;
           initialZoom = 13;
+          shouldFetchInitLocation = true;
+          initTargetRadius = 25;
+        } else {
+          fetchPensionsForCityRef.current(initProps.selectedCity);
         }
       } else if (initProps.selectedPension) {
         initialLat = initProps.selectedPension.latitude;
@@ -536,6 +559,10 @@ export function MapScreen({
         initialLat = initProps.userLocation.latitude;
         initialLng = initProps.userLocation.longitude;
         initialZoom = 14;
+      }
+
+      if (shouldFetchInitLocation) {
+        fetchPensionsAroundLocationRef.current(initialLat, initialLng, initTargetRadius);
       }
 
       const map = L.map(mapContainerRef.current, {
@@ -570,6 +597,7 @@ export function MapScreen({
       setTimeout(() => {
         if (isMounted && mapInstanceRef.current) {
           mapInstanceRef.current.invalidateSize();
+          handleMapMoveEndRef.current({ immediate: true });
         }
       }, 150);
 
@@ -648,7 +676,8 @@ export function MapScreen({
     map.flyTo([selectedUniversity.latitude, selectedUniversity.longitude], 15, {
       duration: 1.2,
     });
-  }, [selectedUniversity]);
+    fetchPensionsAroundLocation(selectedUniversity.latitude, selectedUniversity.longitude, 15);
+  }, [selectedUniversity, fetchPensionsAroundLocation]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -659,8 +688,11 @@ export function MapScreen({
       map.flyTo([cityMatch.latitude, cityMatch.longitude], 13, {
         duration: 1.2,
       });
+      fetchPensionsAroundLocation(cityMatch.latitude, cityMatch.longitude, 25);
+    } else {
+      fetchPensionsForCity(selectedCity);
     }
-  }, [selectedCity, cities, selectedUniversity]);
+  }, [selectedCity, cities, selectedUniversity, fetchPensionsAroundLocation, fetchPensionsForCity]);
 
   const handleCenterOnUser = () => {
     if (userLocation && mapInstanceRef.current) {
