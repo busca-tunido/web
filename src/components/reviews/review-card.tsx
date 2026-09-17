@@ -41,6 +41,7 @@ export type ReviewCardProps = {
   onEnlargePhoto?: (url: string) => void;
   className?: string;
   showHelpfulButton?: boolean;
+  isVoting?: boolean;
 };
 
 export function ReviewCard({
@@ -51,6 +52,7 @@ export function ReviewCard({
   onEnlargePhoto,
   className = '',
   showHelpfulButton = true,
+  isVoting = false,
 }: ReviewCardProps) {
   const rating = review.overallRating ?? review.rating ?? 5;
   const photos = review.images?.slice(0, 3) || [];
@@ -165,14 +167,17 @@ export function ReviewCard({
         {showHelpfulButton ? (
           <button
             type="button"
+            disabled={isVoting}
             onClick={() => onToggleHelpful?.(review.id)}
-            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer ${
+            aria-pressed={isLiked}
+            aria-label={`Marcar como útil (${calculatedLikes} votos)`}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
               isLiked
                 ? 'bg-primary/10 text-primary'
                 : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
             }`}
           >
-            <ThumbsUp className="h-3 w-3" />
+            <ThumbsUp className={`h-3 w-3 ${isLiked ? 'fill-primary' : ''}`} />
             <span>Útil ({calculatedLikes})</span>
           </button>
         ) : (

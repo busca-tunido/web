@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 import { isApiSuccess } from '@/lib/api-response';
+import { useAuth } from '@/lib/auth-context';
 import type { PensionReview } from '@/lib/types';
 import { reviewsService } from '@/services/reviews.service';
 import type { ReviewItemDto } from '@/types/api-contracts';
@@ -41,14 +42,58 @@ export const createReviewSchema = z
 
 export type CreateReviewInput = z.infer<typeof createReviewSchema>;
 
+function useOptionalAuthUser() {
+  try {
+    const auth = useAuth();
+    return auth.user;
+  } catch {
+    if (typeof window === 'undefined') return null;
+    try {
+      const savedUser = localStorage.getItem('tunido_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  }
+}
+
 export function usePensionReviews(
   pensionId: string | null,
   fallbackRating?: { average?: number; count?: number },
 ) {
+  const user = useOptionalAuthUser();
   const [rawItems, setRawItems] = useState<ReviewItemDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userVotes, setUserVotes] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!user) {
+      setUserVotes({});
+      return;
+    }
+
+    async function loadUserVotes() {
+      try {
+        const res = await reviewsService.fetchUserHelpfulVotes();
+        if (isMounted && isApiSuccess(res)) {
+          const voteMap: Record<string, boolean> = {};
+          for (const id of res.data.reviewIds) {
+            voteMap[id] = true;
+          }
+          setUserVotes(voteMap);
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    loadUserVotes();
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
   const loadReviews = useCallback(async () => {
     if (!pensionId) {
@@ -88,6 +133,8 @@ export function usePensionReviews(
             ? rawOverall
             : 5;
 
+      const isVoted = userVotes[r.id] !== undefined ? userVotes[r.id] : Boolean(r.userVoted);
+
       return {
         id: r.id,
         pensionId: r.pensionId,
@@ -102,7 +149,7 @@ export function usePensionReviews(
         stayDuration: r.stayDuration,
         isResidentVerified: true,
         helpfulCount: r.helpfulCount ?? 0,
-        userVoted: Boolean(r.userVoted ?? userVotes[r.id]),
+        userVoted: isVoted,
         images: r.images ?? [],
         createdAt: r.createdAt,
         user: {
@@ -198,8 +245,12 @@ export function usePensionReviews(
 
   const voteReviewHelpful = useCallback(
     async (reviewId: string): Promise<boolean> => {
-      const alreadyVoted = Boolean(userVotes[reviewId]);
-      const nextVoted = !alreadyVoted;
+      const currentItem = rawItems.find((r) => r.id === reviewId);
+      const previousVoted =
+        userVotes[reviewId] !== undefined ? userVotes[reviewId] : Boolean(currentItem?.userVoted);
+      const nextVoted = !previousVoted;
+      const previousCount = currentItem?.helpfulCount ?? 0;
+      const optimisticCount = Math.max(0, previousCount + (nextVoted ? 1 : -1));
 
       setUserVotes((prev) => ({ ...prev, [reviewId]: nextVoted }));
       setRawItems((prev) =>
@@ -207,7 +258,7 @@ export function usePensionReviews(
           r.id === reviewId
             ? {
                 ...r,
-                helpfulCount: Math.max(0, (r.helpfulCount ?? 0) + (nextVoted ? 1 : -1)),
+                helpfulCount: optimisticCount,
                 userVoted: nextVoted,
               }
             : r,
@@ -217,30 +268,45 @@ export function usePensionReviews(
       try {
         const res = await reviewsService.voteReviewHelpful(reviewId);
         if (!isApiSuccess(res)) {
-          setUserVotes((prev) => ({ ...prev, [reviewId]: alreadyVoted }));
+          setUserVotes((prev) => ({ ...prev, [reviewId]: previousVoted }));
           setRawItems((prev) =>
             prev.map((r) =>
               r.id === reviewId
                 ? {
                     ...r,
-                    helpfulCount: Math.max(0, (r.helpfulCount ?? 0) + (alreadyVoted ? 1 : -1)),
-                    userVoted: alreadyVoted,
+                    helpfulCount: previousCount,
+                    userVoted: previousVoted,
                   }
                 : r,
             ),
           );
           return false;
         }
-        return true;
-      } catch {
-        setUserVotes((prev) => ({ ...prev, [reviewId]: alreadyVoted }));
+
+        const serverCount = res.data.helpfulCount;
+        const serverVoted = res.data.voted;
+        setUserVotes((prev) => ({ ...prev, [reviewId]: serverVoted }));
         setRawItems((prev) =>
           prev.map((r) =>
             r.id === reviewId
               ? {
                   ...r,
-                  helpfulCount: Math.max(0, (r.helpfulCount ?? 0) + (alreadyVoted ? 1 : -1)),
-                  userVoted: alreadyVoted,
+                  helpfulCount: serverCount,
+                  userVoted: serverVoted,
+                }
+              : r,
+          ),
+        );
+        return true;
+      } catch {
+        setUserVotes((prev) => ({ ...prev, [reviewId]: previousVoted }));
+        setRawItems((prev) =>
+          prev.map((r) =>
+            r.id === reviewId
+              ? {
+                  ...r,
+                  helpfulCount: previousCount,
+                  userVoted: previousVoted,
                 }
               : r,
           ),
@@ -248,7 +314,7 @@ export function usePensionReviews(
         return false;
       }
     },
-    [userVotes],
+    [userVotes, rawItems],
   );
 
   return {

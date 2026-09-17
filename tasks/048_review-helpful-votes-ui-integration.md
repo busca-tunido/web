@@ -43,7 +43,7 @@ Integrate real persistent helpful votes into the review hooks and user interface
 
 ## Checklist
 
-- [ ] Connect `fetchUserHelpfulVotes` and authenticated status in `src/hooks/use-pension-reviews.ts`.
-- [ ] Connect vote toggle and authentication prompt in `src/components/reviews/pension-reviews-modal.tsx`.
-- [ ] Verify `ReviewCard` renders real counts and active states.
-- [ ] Stage exclusively target files and commit with `feat(reviews): integrate persistent review helpful votes UI and hooks`.
+- [x] Connect `fetchUserHelpfulVotes` and authenticated status in `src/hooks/use-pension-reviews.ts`.
+- [x] Connect vote toggle and authentication prompt in `src/components/reviews/pension-reviews-modal.tsx`.
+- [x] Verify `ReviewCard` renders real counts and active states.
+- [x] Stage exclusively target files and commit with `feat(reviews): integrate persistent review helpful votes UI and hooks`.
