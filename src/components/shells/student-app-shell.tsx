@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AccountScreen } from '@/components/account/account-screen';
 import { NetworkErrorBanner } from '@/components/common/network-error-state';
 import { ExploreScreen } from '@/components/explore/explore-screen';
@@ -42,6 +42,7 @@ function StudentAppShellContent() {
     closeFilters,
     urlPensionId,
     setCityAndUni,
+    handleSelectCity,
   } = useNavigation();
 
   const { filters, setFilters, resetFilters, clearCity } = useSearchFilters();
@@ -92,59 +93,21 @@ function StudentAppShellContent() {
     }
   }, [urlPensionId, pensions, selectedPension?.id, setSelectedPension]);
 
-  const handleSelectCity = useCallback(
-    (cityName: string) => {
-      setSelectedPension(null);
-      setMapTargetCity(cityName);
-      setSelectedUniversity(null);
-      setFilters((prev) => ({ ...prev, city: cityName, query: '' }));
-      setCityAndUni({ city: cityName, uni: null });
-      navigateTab('map');
-    },
-    [
-      navigateTab,
-      setCityAndUni,
-      setFilters,
-      setMapTargetCity,
-      setSelectedPension,
-      setSelectedUniversity,
-    ],
-  );
-
-  const handleSelectUniversity = useCallback(
-    (uni: UniversityInfo) => {
-      setSelectedPension(null);
-      setMapTargetCity(uni.city);
-      setSelectedUniversity(uni);
-      setFilters((prev) => ({ ...prev, city: uni.city, query: uni.acronym }));
-      setCityAndUni({ city: uni.city, uni: uni.acronym });
-      navigateTab('map');
-    },
-    [
-      navigateTab,
-      setCityAndUni,
-      setFilters,
-      setMapTargetCity,
-      setSelectedPension,
-      setSelectedUniversity,
-    ],
-  );
-
-  const handleClearCity = useCallback(() => {
+  const handleSelectUniversity = (uni: UniversityInfo) => {
     setSelectedPension(null);
-    setMapTargetCity(null);
-    setSelectedUniversity(null);
-    clearCity();
-    setCityAndUni({ city: null });
-  }, [clearCity, setCityAndUni, setMapTargetCity, setSelectedPension, setSelectedUniversity]);
+    setMapTargetCity(uni.city);
+    setSelectedUniversity(uni);
+    setCityAndUni({ city: uni.city, uni: uni.acronym });
+    navigateTab('map');
+  };
 
-  const handleResetAll = useCallback(() => {
+  const handleResetAll = () => {
     setSelectedPension(null);
     setMapTargetCity(null);
     setSelectedUniversity(null);
     resetFilters();
     setCityAndUni({ city: null, uni: null });
-  }, [resetFilters, setCityAndUni, setMapTargetCity, setSelectedPension, setSelectedUniversity]);
+  };
 
   return (
     <main
@@ -158,8 +121,8 @@ function StudentAppShellContent() {
         filters={filters}
         onFilterChange={setFilters}
         onOpenFilterModal={openFilters}
-        selectedCityName={filters.city ?? mapTargetCity ?? undefined}
-        onClearCity={handleClearCity}
+        selectedCityName={filters.city}
+        onClearCity={clearCity}
         onResetFilters={handleResetAll}
       />
 
@@ -174,8 +137,8 @@ function StudentAppShellContent() {
           filters={filters}
           onFilterChange={setFilters}
           onOpenFilterDrawer={openFilters}
-          selectedCityName={filters.city ?? mapTargetCity ?? undefined}
-          onClearCity={handleClearCity}
+          selectedCityName={filters.city}
+          onClearCity={clearCity}
         />
 
         {pensionsError && (
@@ -199,10 +162,12 @@ function StudentAppShellContent() {
                   cities={cities}
                   universities={universities}
                   featuredPensions={pensions}
-                  selectedCity={filters.city ?? mapTargetCity ?? null}
+                  selectedCity={null}
                   onSelectCity={(city) => {
                     if (city === null) {
-                      handleClearCity();
+                      setSelectedPension(null);
+                      setMapTargetCity(null);
+                      setSelectedUniversity(null);
                     } else {
                       handleSelectCity(city);
                     }
@@ -225,7 +190,7 @@ function StudentAppShellContent() {
                   pensions={pensions}
                   cities={cities}
                   selectedPension={selectedPension}
-                  selectedCity={mapTargetCity ?? filters.city ?? null}
+                  selectedCity={mapTargetCity}
                   selectedUniversity={selectedUniversity}
                   userLocation={userLocation}
                   onRequestLocation={requestLocation}

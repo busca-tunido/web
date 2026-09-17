@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { SearchFilters } from '@/lib/types';
 
 export type SearchFiltersContextType = {
@@ -38,24 +38,6 @@ export function SearchFiltersProvider({ children, initialFilters }: SearchFilter
     }
     return DEFAULT_FILTERS;
   });
-
-  const initialCity = initialFilters?.city;
-  const initialQuery = initialFilters?.query;
-
-  useEffect(() => {
-    if (initialCity !== undefined || initialQuery !== undefined) {
-      setFilters((prev) => {
-        if (prev.city === initialCity && prev.query === (initialQuery ?? '')) {
-          return prev;
-        }
-        return {
-          ...prev,
-          city: initialCity,
-          query: initialQuery ?? prev.query,
-        };
-      });
-    }
-  }, [initialCity, initialQuery]);
 
   const resetFilters = useCallback(() => {
     setFilters(DEFAULT_FILTERS);
