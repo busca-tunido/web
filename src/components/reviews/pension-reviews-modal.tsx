@@ -402,9 +402,14 @@ function ReviewFeedList({
   return (
     <div className="flex flex-col gap-4">
       {filteredReviews.map((review) => {
-        const isLiked = Boolean(userLiked[review.id]);
-        const baseLikes = (review.comment.length % 4) + 1;
-        const likesCount = baseLikes + (isLiked ? 1 : 0);
+        const isLiked =
+          userLiked[review.id] !== undefined ? userLiked[review.id] : Boolean(review.userVoted);
+        const baseHelpful = review.helpfulCount ?? 0;
+        const initialUserVoted = Boolean(review.userVoted);
+        const likesCount =
+          userLiked[review.id] !== undefined
+            ? Math.max(0, baseHelpful + (userLiked[review.id] ? 1 : 0) - (initialUserVoted ? 1 : 0))
+            : baseHelpful;
 
         return (
           <ReviewCard

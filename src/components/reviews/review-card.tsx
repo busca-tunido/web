@@ -55,7 +55,9 @@ export function ReviewCard({
   const rating = review.overallRating ?? review.rating ?? 5;
   const photos = review.images?.slice(0, 3) || [];
   const calculatedLikes =
-    likesCount !== undefined ? likesCount : (review.comment.length % 4) + 1 + (isLiked ? 1 : 0);
+    likesCount !== undefined
+      ? likesCount
+      : Math.max(0, (review.helpfulCount ?? 0) + (isLiked && !review.userVoted ? 1 : 0));
 
   return (
     <div
