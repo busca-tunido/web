@@ -102,6 +102,8 @@ export function PensionReviewsModal({
 
   const { voteHelpful } = usePensionReviews(isOpen ? pension.id : null);
 
+  if (!isOpen) return null;
+
   const toggleHelpful = async (reviewId: string) => {
     setUserLiked((prev) => ({
       ...prev,

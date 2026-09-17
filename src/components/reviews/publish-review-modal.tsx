@@ -70,12 +70,16 @@ export function PublishReviewModal({
   const { user } = useAuth();
   const { publishReview } = usePensionReviews(isOpen ? pension.id : null);
   const [state, dispatch] = useReducer(publishReviewReducer, initialPublishReviewState);
+  const successBanner = state.successBanner;
+  const errorMessage = state.errorMessage;
 
   useEffect(() => {
     if (!isOpen) {
       dispatch({ type: 'RESET' });
     }
   }, [isOpen]);
+
+  if (!isOpen) return null;
 
   const handlePhotoSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -280,7 +284,7 @@ export function PublishReviewModal({
             </DrawerDescription>
           </DrawerHeader>
 
-          {state.successBanner && (
+          {successBanner && (
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center gap-3 text-emerald-600 animate-in fade-in">
               <CheckCircle2 className="h-5 w-5 shrink-0" />
               <p className="text-xs font-semibold">
@@ -289,10 +293,10 @@ export function PublishReviewModal({
             </div>
           )}
 
-          {state.errorMessage && (
+          {errorMessage && (
             <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 flex items-start gap-2.5 text-rose-600 animate-in fade-in">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-              <p className="text-xs">{state.errorMessage}</p>
+              <p className="text-xs">{errorMessage}</p>
             </div>
           )}
 

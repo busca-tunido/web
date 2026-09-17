@@ -60,6 +60,8 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
     }
   }, [isOpen, pension]);
 
+  if (!isOpen) return null;
+
   const toggleAmenity = (slug: string) => {
     dispatch({ type: 'TOGGLE_AMENITY', slug });
   };

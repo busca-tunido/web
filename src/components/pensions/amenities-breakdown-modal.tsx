@@ -39,6 +39,8 @@ export function AmenitiesBreakdownModal({
   onClose,
   pension,
 }: AmenitiesBreakdownModalProps) {
+  if (!isOpen) return null;
+
   const genderPreferenceLabel =
     pension.genderPreference === 'FEMALE_ONLY'
       ? 'Alojamiento Exclusivo Mujeres'
