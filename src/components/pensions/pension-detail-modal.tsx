@@ -182,7 +182,6 @@ export function PensionDetailModal({
                 <div className="flex gap-1.5">
                   {pension.photos.map((photoUrl, i) => (
                     <button
-                      // biome-ignore lint/suspicious/noArrayIndexKey: we are using the same image multiple times
                       key={`photo-dot-${pension.id}-${i}-${photoUrl}`}
                       type="button"
                       onClick={() => setActivePhotoIdx(i)}
