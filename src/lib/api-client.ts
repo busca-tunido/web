@@ -14,6 +14,7 @@ import type {
   UniversityInfo,
   UserProfile,
 } from './types';
+import { normalizeImageUrl } from './utils';
 
 const API_BASE = env.NEXT_PUBLIC_API_URL;
 
@@ -93,7 +94,9 @@ export type ApiPensionPayload = {
 
 export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem {
   const images = Array.isArray(raw.images)
-    ? raw.images.map((img) => (typeof img === 'string' ? img : img.url))
+    ? raw.images
+        .map((img) => normalizeImageUrl(typeof img === 'string' ? img : img.url))
+        .filter(Boolean)
     : [];
   const photos =
     images.length > 0
@@ -118,7 +121,10 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
           priceMonthlyClp: Number(r.priceMonthly) || Number(raw.baseMonthlyPrice) || 280000,
           hasPrivateBathroom: Boolean(r.hasPrivateBathroom),
           isAvailable: r.isAvailable ?? true,
-          photos: Array.isArray(r.photos) && r.photos.length > 0 ? r.photos : photos,
+          photos:
+            Array.isArray(r.photos) && r.photos.length > 0
+              ? r.photos.map(normalizeImageUrl).filter(Boolean)
+              : photos,
         }))
       : [
           {

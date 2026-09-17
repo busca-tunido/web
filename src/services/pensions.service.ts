@@ -1,6 +1,7 @@
 import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
 import type { operations } from '@/lib/api-schema';
+import { normalizeImageUrl } from '@/lib/utils';
 import type {
   CreatePensionDto,
   PaginatedPensionsResponse,
@@ -96,7 +97,9 @@ export function mapReviewItemDto(raw: Record<string, unknown>): ReviewItemDto {
     roomType: typeof raw.roomType === 'string' ? raw.roomType : undefined,
     comment: String(raw.comment ?? ''),
     stayDuration: typeof raw.stayDuration === 'string' ? raw.stayDuration : undefined,
-    images: Array.isArray(raw.images) ? (raw.images as string[]) : undefined,
+    images: Array.isArray(raw.images)
+      ? (raw.images as string[]).map(normalizeImageUrl).filter(Boolean)
+      : undefined,
     helpfulCount: Number(raw.helpfulCount ?? 0),
     userVoted: typeof raw.userVoted === 'boolean' ? raw.userVoted : undefined,
     createdAt: String(raw.createdAt ?? new Date().toISOString()),
@@ -109,7 +112,7 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
     if (typeof img === 'string') {
       return {
         id: `img-${index}`,
-        url: img,
+        url: normalizeImageUrl(img),
         order: index,
         isMain: index === 0,
       };
@@ -117,7 +120,7 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
     const imgObj = img as Record<string, unknown>;
     return {
       id: String(imgObj.id ?? `img-${index}`),
-      url: String(imgObj.url ?? ''),
+      url: normalizeImageUrl(String(imgObj.url ?? '')),
       order: Number(imgObj.order ?? imgObj.sortOrder ?? index),
       isMain: Boolean(imgObj.isMain ?? imgObj.isFeatured ?? index === 0),
     };

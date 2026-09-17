@@ -4,6 +4,7 @@ import { CheckCircle2, Star, ThumbsUp } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import type { PensionReview } from '@/lib/types';
+import { normalizeImageUrl } from '@/lib/utils';
 
 export function formatStayDuration(cat?: string): string {
   switch (cat) {
@@ -65,7 +66,7 @@ export function ReviewCard({
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted border border-border">
             {review.user.avatarUrl ? (
               <Image
-                src={review.user.avatarUrl}
+                src={normalizeImageUrl(review.user.avatarUrl)}
                 alt={review.user.firstName}
                 fill
                 sizes="40px"
@@ -84,24 +85,24 @@ export function ReviewCard({
               <h5 className="text-xs font-bold text-foreground">
                 {review.user.firstName} {review.user.lastName}
               </h5>
-              {(review.isResidentVerified || review.isVerifiedStudent) && (
+              {review.isResidentVerified && (
                 <Badge
                   variant="outline"
-                  className="border-primary/40 bg-primary/10 text-primary text-[9px] px-1.5 py-0 h-4 gap-0.5"
+                  className="gap-1 border-primary/40 bg-primary/5 text-primary text-[10px] py-0 px-1.5"
                 >
-                  <CheckCircle2 className="h-2.5 w-2.5" />
-                  Estudiante verificado
+                  <CheckCircle2 className="h-3 w-3" />
+                  <span>Estudiante verificado</span>
                 </Badge>
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
+            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
               <span>{formatStayDuration(review.stayDurationCategory || review.stayDuration)}</span>
-              {review.user.university?.shortName && (
+              {review.user.university?.name && (
                 <>
                   <span>•</span>
-                  <span className="text-foreground/80 font-medium">
-                    {review.user.university.shortName}
+                  <span className="font-medium text-foreground/80">
+                    {review.user.university.shortName || review.user.university.name}
                   </span>
                 </>
               )}
@@ -131,7 +132,8 @@ export function ReviewCard({
       {photos.length > 0 && (
         <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar shrink-0">
           {photos.map((img, photoIdx) => {
-            const photoUrl = typeof img === 'string' ? img : img?.url || '';
+            const rawUrl = typeof img === 'string' ? img : img?.url || '';
+            const photoUrl = normalizeImageUrl(rawUrl);
             const caption =
               typeof img === 'string' ? 'Foto de la pensión' : img?.caption || 'Foto de la pensión';
             if (!photoUrl) return null;

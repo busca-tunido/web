@@ -3,6 +3,7 @@
 import { ArrowRight, Camera, CheckCircle2, ChevronRight, GraduationCap, Star } from 'lucide-react';
 import Image from 'next/image';
 import type { PensionItem, PensionReview } from '@/lib/types';
+import { normalizeImageUrl } from '@/lib/utils';
 
 type PensionReviewsPreviewProps = {
   pension: PensionItem;
@@ -99,7 +100,7 @@ export function PensionReviewsPreview({
                       <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-muted border border-border">
                         {review.user?.avatarUrl ? (
                           <Image
-                            src={review.user.avatarUrl}
+                            src={normalizeImageUrl(review.user.avatarUrl)}
                             alt={review.user?.firstName || 'Estudiante'}
                             fill
                             sizes="32px"
