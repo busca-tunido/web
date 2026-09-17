@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { Providers } from '@/components/providers';
 import { RootJsonLd } from '@/components/seo/json-ld';
+import { env } from '@/env';
 import './globals.css';
 
 const inter = Inter({
@@ -11,10 +12,7 @@ const inter = Inter({
   preload: false,
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL;
-if (!APP_URL) {
-  throw new Error('Missing env var: NEXT_PUBLIC_APP_URL must be defined in environment (.env).');
-}
+const APP_URL = env.NEXT_PUBLIC_APP_URL;
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),

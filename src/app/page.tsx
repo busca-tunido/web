@@ -1,18 +1,11 @@
 import { type InitialPrefetchData, RoleRouter } from '@/components/shells/role-router';
+import { env } from '@/env';
 import { type ApiPensionPayload, mapRawPensionToPensionItem } from '@/lib/api-client';
 import { getCityImageUrl, getUniversityImageUrl } from '@/lib/location-images';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
 
 function getApiBaseUrl(): string {
-  const envInternal = process.env.API_INTERNAL_URL;
-  if (envInternal && envInternal.trim().length > 0) {
-    return envInternal.replace(/\/+$/, '');
-  }
-  const envPublic = process.env.NEXT_PUBLIC_API_URL;
-  if (envPublic && !envPublic.startsWith('/')) {
-    return envPublic.replace(/\/+$/, '');
-  }
-  return 'http://localhost:4000';
+  return env.API_INTERNAL_URL.replace(/\/+$/, '');
 }
 
 async function fetchInitialPensions(baseUrl: string): Promise<PensionItem[]> {

@@ -1,4 +1,5 @@
 import createClient from 'openapi-fetch';
+import { env } from '@/env';
 import type { components, paths } from './api-schema';
 import { getCityImageUrl, getUniversityImageUrl } from './location-images';
 import type {
@@ -14,10 +15,7 @@ import type {
   UserProfile,
 } from './types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
-if (!API_BASE) {
-  throw new Error('Missing env var: NEXT_PUBLIC_API_URL must be defined in environment (.env).');
-}
+const API_BASE = env.NEXT_PUBLIC_API_URL;
 
 export const apiClient = createClient<paths>({
   baseUrl: API_BASE,

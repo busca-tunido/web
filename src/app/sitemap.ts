@@ -1,13 +1,10 @@
 import type { MetadataRoute } from 'next';
+import { env } from '@/env';
 
 const LAST_MODIFIED_DATE = '2026-09-14T00:00:00.000Z';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (!baseUrl) {
-    throw new Error('Missing env var: NEXT_PUBLIC_APP_URL must be defined in environment (.env).');
-  }
-
+  const baseUrl = env.NEXT_PUBLIC_APP_URL;
   const cleanBaseUrl = baseUrl.replace(/\/$/, '');
 
   return [

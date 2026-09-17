@@ -11,6 +11,7 @@ import {
 import Image from 'next/image';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
+import { env } from '@/env';
 import { useMapViewportPensions } from '@/hooks/use-map-viewport-pensions';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
@@ -208,7 +209,7 @@ function createMarkerIcon(
 }
 
 function getTileUrl(theme: 'light' | 'dark') {
-  const apiKey = process.env.NEXT_PUBLIC_CARTO_API_KEY;
+  const apiKey = env.NEXT_PUBLIC_CARTO_API_KEY;
   const keyParam = apiKey ? `?key=${apiKey}` : '';
   return theme === 'dark'
     ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${keyParam}`

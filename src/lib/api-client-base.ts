@@ -1,3 +1,4 @@
+import { env } from '@/env';
 import {
   type ApiError,
   type ApiResponse,
@@ -6,11 +7,7 @@ import {
   isApiSuccess,
 } from './api-response';
 
-const envApiBase = process.env.NEXT_PUBLIC_API_URL;
-if (!envApiBase) {
-  throw new Error('Missing env var: NEXT_PUBLIC_API_URL must be defined in environment (.env).');
-}
-export const API_BASE_URL: string = envApiBase;
+export const API_BASE_URL: string = env.NEXT_PUBLIC_API_URL;
 
 export type RequestConfig = RequestInit & {
   timeoutMs?: number;

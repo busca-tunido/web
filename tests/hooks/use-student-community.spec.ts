@@ -1,7 +1,3 @@
-if (!process.env.NEXT_PUBLIC_API_URL) {
-  process.env.NEXT_PUBLIC_API_URL = '/api';
-}
-
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createReviewSchema, usePensionReviews } from '@/hooks/use-pension-reviews';

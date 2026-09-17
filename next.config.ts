@@ -1,8 +1,9 @@
 import type { NextConfig } from 'next';
+import { env } from './src/env';
 
 const nextConfig: NextConfig = {
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+    removeConsole: env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
   experimental: {
     optimizePackageImports: ['lucide-react', 'motion', '@base-ui/react'],
@@ -49,12 +50,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const apiTarget = process.env.API_INTERNAL_URL;
-    if (!apiTarget) {
-      throw new Error(
-        'Missing required environment variable: API_INTERNAL_URL must be defined in environment (.env).',
-      );
-    }
+    const apiTarget = env.API_INTERNAL_URL;
     return [
       {
         source: '/api/:path*',

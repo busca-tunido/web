@@ -1,6 +1,7 @@
 import type { Organization, WebSite, WithContext } from 'schema-dts';
+import { env } from '@/env';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://buscatunido.vercel.app';
+const APP_URL = env.NEXT_PUBLIC_APP_URL;
 
 export function RootJsonLd() {
   const websiteSchema: WithContext<WebSite> = {
