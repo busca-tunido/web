@@ -76,6 +76,9 @@ export function mapReviewItemDto(raw: Record<string, unknown>): ReviewItemDto {
         ? `${user.firstName} ${user.lastName ?? ''}`.trim()
         : undefined;
 
+  const rawCount = (raw._count as { helpfulVotes?: number } | undefined)?.helpfulVotes;
+  const helpfulCount = typeof rawCount === 'number' ? rawCount : Number(raw.helpfulCount ?? 0);
+
   return {
     id: String(raw.id ?? ''),
     pensionId: String(raw.pensionId ?? ''),
@@ -100,7 +103,7 @@ export function mapReviewItemDto(raw: Record<string, unknown>): ReviewItemDto {
     images: Array.isArray(raw.images)
       ? (raw.images as string[]).map(normalizeImageUrl).filter(Boolean)
       : undefined,
-    helpfulCount: Number(raw.helpfulCount ?? 0),
+    helpfulCount,
     userVoted: typeof raw.userVoted === 'boolean' ? raw.userVoted : undefined,
     createdAt: String(raw.createdAt ?? new Date().toISOString()),
   };

@@ -5,6 +5,7 @@ import type {
   PaginatedReviewsResponse,
   ReviewItemDto,
   UpdateReviewDto,
+  UserHelpfulVotesResponse,
 } from '@/types/api-contracts';
 
 export type PaginationQuery = {
@@ -26,6 +27,11 @@ type RawReviewResponse = {
   stayDurationCategory?: string | null;
   isResidentVerified?: boolean;
   isHidden?: boolean;
+  helpfulCount?: number | null;
+  userVoted?: boolean | null;
+  _count?: {
+    helpfulVotes?: number;
+  } | null;
   createdAt: string;
   updatedAt?: string;
   user?: {
@@ -42,6 +48,8 @@ type RawReviewResponse = {
 
 function mapRawReviewToItem(raw: RawReviewResponse): ReviewItemDto {
   const userName = raw.user ? `${raw.user.firstName} ${raw.user.lastName}`.trim() : undefined;
+  const rawCount = raw._count?.helpfulVotes;
+  const helpfulCount = typeof rawCount === 'number' ? rawCount : Number(raw.helpfulCount ?? 0);
 
   return {
     id: raw.id,
@@ -55,7 +63,8 @@ function mapRawReviewToItem(raw: RawReviewResponse): ReviewItemDto {
     comment: raw.comment,
     stayDuration: raw.stayDurationCategory ?? undefined,
     images: Array.isArray(raw.images) ? raw.images : [],
-    helpfulCount: 0,
+    helpfulCount,
+    userVoted: typeof raw.userVoted === 'boolean' ? raw.userVoted : undefined,
     createdAt: raw.createdAt,
     user: raw.user ?? undefined,
   };
@@ -192,14 +201,20 @@ export async function voteReviewHelpful(
   if (isApiSuccess(response)) {
     return createSuccess(
       {
-        helpfulCount: response.data.helpfulCount ?? 1,
-        voted: response.data.voted ?? true,
+        helpfulCount: response.data.helpfulCount ?? 0,
+        voted: Boolean(response.data.voted),
       },
       response.statusCode,
     );
   }
 
   return response;
+}
+
+export async function fetchUserHelpfulVotes(): Promise<ApiResponse<UserHelpfulVotesResponse>> {
+  return apiFetch<UserHelpfulVotesResponse>('/reviews/helpful/voted', {
+    method: 'GET',
+  });
 }
 
 export const reviewsService = {
@@ -209,4 +224,5 @@ export const reviewsService = {
   updateReview,
   deleteReview,
   voteReviewHelpful,
+  fetchUserHelpfulVotes,
 };

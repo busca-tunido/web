@@ -44,8 +44,8 @@ Update the web services and DTO mappers to consume the persistent helpful votes 
 
 ## Checklist
 
-- [ ] Update `ReviewItemDto` contract in `src/types/api-contracts.ts`.
-- [ ] Implement `fetchUserHelpfulVotes()` in `src/services/reviews.service.ts`.
-- [ ] Update `mapReviewItemDto` in `src/services/pensions.service.ts`.
-- [ ] Follow strict typing with no `any`.
-- [ ] Stage exclusively target files and commit with `feat(reviews): add helpful votes service contracts and mappers`.
+- [x] Update `ReviewItemDto` contract in `src/types/api-contracts.ts`.
+- [x] Implement `fetchUserHelpfulVotes()` in `src/services/reviews.service.ts`.
+- [x] Update `mapReviewItemDto` in `src/services/pensions.service.ts`.
+- [x] Follow strict typing with no `any`.
+- [x] Stage exclusively target files and commit with `feat(reviews): add helpful votes service contracts and mappers`.

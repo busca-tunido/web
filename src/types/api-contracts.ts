@@ -178,3 +178,7 @@ export type UploadImageResult = {
   format?: string;
   size?: number;
 };
+
+export type UserHelpfulVotesResponse = {
+  reviewIds: string[];
+};
