@@ -80,7 +80,7 @@ export function mapReviewItemDto(raw: Record<string, unknown>): ReviewItemDto {
     pensionId: String(raw.pensionId ?? ''),
     userId: String(raw.userId ?? user.id ?? ''),
     userName,
-    rating: Number(raw.rating ?? 5),
+    rating: Number(raw.rating ?? raw.overallRating ?? 5),
     cleanlinessRating:
       raw.cleanlinessRating !== undefined && raw.cleanlinessRating !== null
         ? Number(raw.cleanlinessRating)

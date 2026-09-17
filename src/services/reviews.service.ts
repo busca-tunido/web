@@ -61,6 +61,15 @@ function mapRawReviewToItem(raw: RawReviewResponse): ReviewItemDto {
   };
 }
 
+type RawPaginatedReviewsResponse = {
+  items?: RawReviewResponse[];
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+  hasMore?: boolean;
+};
+
 export async function fetchPensionReviews(
   pensionId: string,
   query?: PaginationQuery,
@@ -75,7 +84,7 @@ export async function fetchPensionReviews(
   const queryString = queryParams.toString();
   const endpoint = `/pensions/${encodeURIComponent(pensionId)}/reviews${queryString ? `?${queryString}` : ''}`;
 
-  const response = await apiFetch<RawReviewResponse[] | PaginatedReviewsResponse>(endpoint, {
+  const response = await apiFetch<RawReviewResponse[] | RawPaginatedReviewsResponse>(endpoint, {
     method: 'GET',
   });
 
@@ -99,7 +108,22 @@ export async function fetchPensionReviews(
       );
     }
 
-    return createSuccess<PaginatedReviewsResponse>(response.data, response.statusCode);
+    const rawData = response.data;
+    const rawItems = Array.isArray(rawData?.items) ? rawData.items : [];
+    const page = rawData?.page ?? query?.page ?? 1;
+    const limit = rawData?.limit ?? query?.limit ?? (rawItems.length || 10);
+    const total = rawData?.total ?? rawItems.length;
+
+    return createSuccess<PaginatedReviewsResponse>(
+      {
+        items: rawItems.map(mapRawReviewToItem),
+        total,
+        page,
+        limit,
+        hasMore: rawData?.hasMore ?? page * limit < total,
+      },
+      response.statusCode,
+    );
   }
 
   return response;

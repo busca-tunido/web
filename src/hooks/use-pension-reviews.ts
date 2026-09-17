@@ -80,11 +80,19 @@ export function usePensionReviews(
       const firstName = r.user?.firstName || r.userName?.split(' ')[0] || 'Estudiante';
       const lastName = r.user?.lastName || r.userName?.split(' ').slice(1).join(' ') || '';
 
+      const rawOverall = (r as unknown as { overallRating?: number }).overallRating;
+      const score =
+        typeof r.rating === 'number' && !Number.isNaN(r.rating)
+          ? r.rating
+          : typeof rawOverall === 'number' && !Number.isNaN(rawOverall)
+            ? rawOverall
+            : 5;
+
       return {
         id: r.id,
         pensionId: r.pensionId,
-        overallRating: r.rating,
-        rating: r.rating,
+        overallRating: score,
+        rating: score,
         cleanlinessRating: r.cleanlinessRating,
         landlordRating: r.landlordRating,
         quietnessRating: r.locationRating,
@@ -120,10 +128,20 @@ export function usePensionReviews(
         count: fallbackRating?.count ?? 0,
       };
     }
-    const sum = rawItems.reduce((acc, r) => acc + (r.rating || 0), 0);
+    const sum = rawItems.reduce((acc, r) => {
+      const rawOverall = (r as unknown as { overallRating?: number }).overallRating;
+      const score =
+        typeof r.rating === 'number' && !Number.isNaN(r.rating)
+          ? r.rating
+          : typeof rawOverall === 'number' && !Number.isNaN(rawOverall)
+            ? rawOverall
+            : 0;
+      return acc + score;
+    }, 0);
+    const calculatedAvg = Math.round((sum / rawItems.length) * 10) / 10;
     return {
-      average: Math.round((sum / rawItems.length) * 10) / 10,
-      count: rawItems.length,
+      average: calculatedAvg > 0 ? calculatedAvg : (fallbackRating?.average ?? 0),
+      count: rawItems.length > 0 ? rawItems.length : (fallbackRating?.count ?? 0),
     };
   }, [rawItems, fallbackRating]);
 
