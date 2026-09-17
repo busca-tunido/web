@@ -147,14 +147,14 @@ function createMarkerIcon(
     const pension = cluster.pensions[0];
     if (zoom < 14) {
       const html = cluster.isSelected
-        ? `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
-             <div class="h-6 w-6 rounded-full bg-primary text-primary-foreground border-2 border-white shadow-xl ring-4 ring-primary/30 flex items-center justify-center scale-110 transition-transform">
-               <div class="h-2.5 w-2.5 rounded-full bg-white"></div>
+        ? `<div style="width: 24px; height: 24px; transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
+             <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; aspect-ratio: 1 / 1;" class="w-6 h-6 shrink-0 aspect-square rounded-full bg-primary text-primary-foreground border-2 border-white shadow-xl ring-4 ring-primary/30 flex items-center justify-center scale-110 transition-transform">
+               <div style="width: 10px; height: 10px; min-width: 10px; min-height: 10px; aspect-ratio: 1 / 1;" class="w-2.5 h-2.5 shrink-0 aspect-square rounded-full bg-white"></div>
              </div>
            </div>`
-        : `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
-             <div class="h-4 w-4 rounded-full bg-primary text-white border-2 border-white shadow-md hover:scale-125 transition-transform flex items-center justify-center">
-               <div class="h-1.5 w-1.5 rounded-full bg-white"></div>
+        : `<div style="width: 16px; height: 16px; transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
+             <div style="width: 16px; height: 16px; min-width: 16px; min-height: 16px; aspect-ratio: 1 / 1;" class="w-4 h-4 shrink-0 aspect-square rounded-full bg-primary text-white border-2 border-white shadow-md hover:scale-125 transition-transform flex items-center justify-center">
+               <div style="width: 6px; height: 6px; min-width: 6px; min-height: 6px; aspect-ratio: 1 / 1;" class="w-1.5 h-1.5 shrink-0 aspect-square rounded-full bg-white"></div>
              </div>
            </div>`;
 
@@ -370,7 +370,9 @@ export function MapScreen({
         } else {
           marker.on('click', () => {
             const nextZoom = Math.min(map.getZoom() + 2, 17);
-            map.flyTo([cluster.latitude, cluster.longitude], nextZoom, { duration: 0.5 });
+            map.flyTo([cluster.latitude, cluster.longitude], nextZoom, {
+              duration: 0.5,
+            });
           });
         }
 
