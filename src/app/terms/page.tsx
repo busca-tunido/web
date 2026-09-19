@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: 'Términos de Servicio',
   description:
     'Términos y condiciones de uso de la plataforma BuscaTuNido para estudiantes y arrendadores.',
+  alternates: {
+    canonical: '/terms',
+  },
 };
 
 export default function TermsPage() {

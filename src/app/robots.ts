@@ -7,11 +7,18 @@ export default function robots(): MetadataRoute.Robots {
   const cleanBaseUrl = baseUrl.replace(/\/$/, '');
 
   return {
-    rules: {
-      userAgent: '*',
-      allow: ['/', '/terms', '/privacy', '/faq', '/contact'],
-      disallow: ['/api/', '/cuenta/', '/admin/'],
-    },
+    rules: [
+      {
+        userAgent: '*',
+        allow: ['/', '/terms', '/privacy', '/faq', '/contact', '/llms.txt', '/llms-full.txt'],
+        disallow: ['/api/', '/cuenta/', '/admin/'],
+      },
+      {
+        userAgent: ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended'],
+        allow: ['/', '/terms', '/privacy', '/faq', '/contact', '/llms.txt', '/llms-full.txt'],
+        disallow: ['/api/', '/cuenta/', '/admin/'],
+      },
+    ],
     sitemap: `${cleanBaseUrl}/sitemap.xml`,
   };
 }

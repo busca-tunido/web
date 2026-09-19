@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: 'Contacto',
   description:
     'Ponte en contacto con el creador y equipo de desarrollo de BuscaTuNido por correo, GitHub o LinkedIn.',
+  alternates: {
+    canonical: '/contact',
+  },
 };
 
 type SvgIconProps = {

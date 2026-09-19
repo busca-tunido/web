@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: 'Preguntas Frecuentes',
   description:
     'Respuestas a dudas comunes sobre el funcionamiento, autenticación, mapa y roles en BuscaTuNido.',
+  alternates: {
+    canonical: '/faq',
+  },
 };
 
 type FaqItem = {

@@ -1,0 +1,28 @@
+# BuscaTuNido - Plataforma de Pensiones y Residencias Universitarias en Chile
+
+> BuscaTuNido es una plataforma comunitaria y colaborativa diseñada para que estudiantes de educación superior en Chile encuentren, comparen y evalúen pensiones, residencias estudiantiles y arriendos universitarios con precios transparentes en pesos chilenos (CLP) y reseñas verificadas.
+
+## Secciones Principales
+
+- [/](/): Página de inicio con buscador geográfico por universidad y acceso a la plataforma.
+- [/faq](/faq): Preguntas frecuentes sobre requisitos, autenticación universitaria, mapa interactivo y roles.
+- [/terms](/terms): Términos de servicio y normas de convivencia comunitaria.
+- [/privacy](/privacy): Política de privacidad y tratamiento de datos personales de estudiantes y arrendadores.
+- [/contact](/contact): Canales oficiales de soporte, correo electrónico y redes de desarrollo.
+
+## Ciudades y Zonas Universitarias
+
+- [Santiago](/): Alojamientos universitarios en comunas centrales y campus de la Región Metropolitana.
+- [Valparaíso y Viña del Mar](/): Pensiones y residencias cercanas a campus costeros.
+- [Concepción](/): Residencias estudiantiles en el Gran Concepción y Barrio Universitario.
+- [Valdivia](/): Pensiones y arriendos en la Región de Los Ríos.
+
+## Tipos de Alojamiento Estudiantil
+
+- Habitación Individual: Habitación privada con áreas y servicios compartidos.
+- Habitación Compartida: Alternativa económica con dormitorio compartido entre estudiantes.
+- Departamento / Estudio: Vivienda independiente para universitarios.
+
+## Información Adicional
+
+- [llms-full.txt](/llms-full.txt): Información técnica completa, glosario detallado, modelo de verificación y arquitectura de la plataforma para asistentes de IA.
