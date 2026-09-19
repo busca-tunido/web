@@ -91,6 +91,31 @@ Every frontend UI enhancement, page, or bug fix must strictly adhere to the foll
        - `Wave 1 (Workers)`: Page implementations, isolated components, custom hooks in parallel branches/worktrees (Isolated).
        - `Wave 1 - Sync Gate`: Merge, resolve shared hubs (`src/app/layout.tsx`, navigation bars), run full repository checks (Sequential).
 
+> [!IMPORTANT]
+> **Task Naming & Lifecycle Convention (Strict Rule)**:
+> - **Active tasks MUST NOT use numeric prefixes**: When defining or working on tasks in `tasks/`, name them descriptively using kebab-case without any numbers (e.g., `tasks/some-feature.md`). Numbering tasks in advance is forbidden because execution order and wave completion can vary.
+> - **Sequential numbering is strictly reserved for `tasks/completed/`**: A three-digit sequential index (`001-`, `002-`, etc.) is assigned **only** when a task is fully implemented, verified, merged, and moved into `tasks/completed/` to preserve an immutable, chronological archive.
+
+**Lifecycle Example**:
+
+1. While the task is active / in progress:
+```text
+tasks/
+├── completed/
+│   ├── 001-some-old-task.md
+│   └── 002-implement-x-feature.md
+└── some-task.md                    # Active task (no numeric prefix)
+```
+
+2. Once `some-task.md` is fully implemented and verified:
+```text
+tasks/
+├── completed/
+│   ├── 001-some-old-task.md
+│   ├── 002-implement-x-feature.md
+│   └── 003-some-task.md             # Archived with next sequential index
+```
+
 4. **Agent Role Assignment: Worker Agent vs. Integrator Agent**:
 
 | Rol de Agente                      | Ámbito de Trabajo                                                      | Reglas de Asignación                                                                                                                                                                                                          |
