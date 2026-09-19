@@ -328,8 +328,8 @@ export function DesktopNavbar({
         </div>
       </div>
 
-      <div className="flex h-12 w-full items-center justify-center px-6 lg:px-8 xl:px-10">
-        <div className="flex items-center justify-center gap-3 overflow-x-auto no-scrollbar py-1 max-w-full">
+      <div className="flex h-12 w-full items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-10">
+        <div className="flex items-center justify-center gap-3 max-w-full min-w-0">
           <button
             id="desktop-filter-button"
             type="button"
@@ -346,7 +346,7 @@ export function DesktopNavbar({
 
           <div className="h-4 w-px bg-border/80 shrink-0" />
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 min-w-0">
             {sortedChips.map((chip) => {
               const active = chip.isActive(filters);
               return (
@@ -378,9 +378,9 @@ export function DesktopNavbar({
             <button
               type="button"
               onClick={onResetFilters}
-              className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer underline underline-offset-2 ml-1"
+              className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer underline underline-offset-2 ml-1 whitespace-nowrap"
             >
-              Restablecer
+              Limpiar
             </button>
           )}
         </div>
