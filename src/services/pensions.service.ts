@@ -1,6 +1,8 @@
+import { mapRawPensionToPensionItem } from '@/lib/api-client';
 import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
 import type { operations } from '@/lib/api-schema';
+import type { PensionItem, PriceBinItem, PriceHistogramResponse } from '@/lib/types';
 import { normalizeImageUrl } from '@/lib/utils';
 import type {
   CreatePensionDto,
@@ -22,7 +24,12 @@ export type PensionFilterParams = Omit<
   maxLat?: number;
   minLng?: number;
   maxLng?: number;
-  roomType?: 'SINGLE' | 'SHARED';
+  roomType?: 'SINGLE' | 'SHARED' | 'STUDIO';
+  minPriceClp?: number;
+  maxPriceClp?: number;
+  hasPrivateBathroom?: boolean;
+  includesMeals?: boolean;
+  minBeds?: number;
 };
 
 type RawPensionsResponse = {
@@ -315,12 +322,83 @@ export async function fetchNearbyPensions(
 
 export const fetchPensionById = fetchPensionDetail;
 
+export async function fetchPriceHistogram(
+  params?: PensionFilterParams,
+): Promise<ApiResponse<PriceHistogramResponse>> {
+  const query = buildQueryString(params);
+  const response = await apiFetch<PriceHistogramResponse | Record<string, unknown>>(
+    `/pensions/price-histogram${query}`,
+    {
+      method: 'GET',
+    },
+  );
+
+  if (!isApiSuccess(response)) {
+    return response;
+  }
+
+  const raw = response.data as Partial<PriceHistogramResponse> & Record<string, unknown>;
+  const rawBins = Array.isArray(raw.bins) ? raw.bins : [];
+  const bins: PriceBinItem[] = rawBins.map((b: Record<string, unknown>) => ({
+    min: Number(b.min ?? 0),
+    max: Number(b.max ?? 0),
+    count: Number(b.count ?? 0),
+  }));
+
+  const payload: PriceHistogramResponse = {
+    minPrice: Number(raw.minPrice ?? 0),
+    maxPrice: Number(raw.maxPrice ?? 0),
+    currency: String(raw.currency ?? 'CLP'),
+    totalListings: Number(raw.totalListings ?? 0),
+    bins,
+  };
+
+  return createSuccess(payload, response.statusCode);
+}
+
+export async function fetchMinePensions(): Promise<ApiResponse<PensionItem[]>> {
+  const response = await apiFetch<unknown>('/pensions/mine', {
+    method: 'GET',
+  });
+
+  if (!isApiSuccess(response)) {
+    return response;
+  }
+
+  const rawData = response.data;
+  let rawList: Record<string, unknown>[] = [];
+  if (Array.isArray(rawData)) {
+    rawList = rawData as Record<string, unknown>[];
+  } else if (rawData && typeof rawData === 'object') {
+    const obj = rawData as Record<string, unknown>;
+    if (Array.isArray(obj.items)) {
+      rawList = obj.items as Record<string, unknown>[];
+    } else if (Array.isArray(obj.data)) {
+      rawList = obj.data as Record<string, unknown>[];
+    }
+  }
+
+  const items: PensionItem[] = rawList.map((raw) => {
+    const item = mapRawPensionToPensionItem(raw);
+    if (typeof raw.isActive === 'boolean') {
+      item.isActive = raw.isActive;
+    }
+    return item;
+  });
+
+  return createSuccess(items, response.statusCode);
+}
+
 export const pensionsService = {
   fetchPaginatedPensions,
   fetchPensionDetail,
   fetchPensionById,
   fetchNearbyPensions,
+  fetchPriceHistogram,
+  fetchMinePensions,
   createPension,
   updatePension,
+  update: updatePension,
   deletePension,
+  delete: deletePension,
 };
