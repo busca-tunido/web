@@ -76,24 +76,14 @@ function LandlordAppShellContent() {
             />
           )}
           {activeTab === 'pension' && (
-            <LandlordPensionScreen
-              pension={selectedPension}
-              pensionId={selectedPension?.id}
-            />
+            <LandlordPensionScreen pension={selectedPension} pensionId={selectedPension?.id} />
           )}
           {activeTab === 'reviews' && (
-            <LandlordReviewsScreen
-              pension={selectedPension}
-              pensionId={selectedPension?.id}
-            />
+            <LandlordReviewsScreen pension={selectedPension} pensionId={selectedPension?.id} />
           )}
           {activeTab === 'account' && <LandlordAccountSection />}
         </main>
-        <LandlordBottomNav
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          className="md:hidden"
-        />
+        <LandlordBottomNav activeTab={activeTab} onTabChange={setActiveTab} className="md:hidden" />
       </div>
     </div>
   );

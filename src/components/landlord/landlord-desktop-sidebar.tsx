@@ -127,9 +127,9 @@ export function LandlordDesktopSidebar({
         </div>
 
         <div ref={propertyDropdownRef} className="relative px-4 pt-4 pb-2">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1.5 block">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1.5 block">
             Pensión Activa
-          </label>
+          </span>
           <button
             type="button"
             onClick={() => setIsPropertyMenuOpen((prev) => !prev)}
