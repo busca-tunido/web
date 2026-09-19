@@ -111,9 +111,7 @@ export function LandlordRoomsScreen({
   };
 
   const handleToggleAvailability = async (roomId: string, isAvailable: boolean) => {
-    setRooms((prev) =>
-      prev.map((room) => (room.id === roomId ? { ...room, isAvailable } : room)),
-    );
+    setRooms((prev) => prev.map((room) => (room.id === roomId ? { ...room, isAvailable } : room)));
 
     const response = await updateRoom(roomId, { isAvailable });
     if (!isApiSuccess(response)) {
@@ -153,9 +151,7 @@ export function LandlordRoomsScreen({
         <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-3">
           <Building2 className="h-6 w-6" />
         </div>
-        <h3 className="text-base font-bold text-foreground">
-          No hay ninguna pensión seleccionada
-        </h3>
+        <h3 className="text-base font-bold text-foreground">No hay ninguna pensión seleccionada</h3>
         <p className="text-xs text-muted-foreground mt-1 max-w-sm">
           Selecciona una de tus propiedades o registra una nueva pensión para administrar sus
           habitaciones.
@@ -167,8 +163,7 @@ export function LandlordRoomsScreen({
   const totalRooms = rooms.length;
   const occupiedRooms = rooms.filter((r) => !r.isAvailable).length;
   const availableRooms = rooms.filter((r) => r.isAvailable).length;
-  const occupancyPercentage =
-    totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
+  const occupancyPercentage = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
 
   const projectedRevenue = rooms
     .filter((r) => !r.isAvailable)

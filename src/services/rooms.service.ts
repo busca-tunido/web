@@ -66,7 +66,7 @@ export async function createPensionRoom(
 
 export async function updateRoom(
   roomId: string,
-  payload: UpdateRoomDto,
+  payload: Partial<UpdateRoomDto> & { isAvailable?: boolean },
 ): Promise<ApiResponse<RoomDto>> {
   const response = await apiFetch<Record<string, unknown>>(`/rooms/${encodeURIComponent(roomId)}`, {
     method: 'PATCH',

@@ -6,7 +6,9 @@ export type ApiOperations = operations;
 export type RegisterDto = components['schemas']['RegisterDto'];
 export type LoginDto = components['schemas']['LoginDto'];
 export type CreatePensionDto = components['schemas']['CreatePensionDto'];
-export type UpdatePensionDto = components['schemas']['UpdatePensionDto'];
+export type UpdatePensionDto = Partial<components['schemas']['UpdatePensionDto']> & {
+  isActive?: boolean;
+};
 export type CreateRoomDto = components['schemas']['CreateRoomDto'];
 export type UpdateRoomDto = components['schemas']['UpdateRoomDto'];
 export type CreateUniversityDto = components['schemas']['CreateUniversityDto'];

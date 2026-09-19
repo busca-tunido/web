@@ -1,30 +1,12 @@
 'use client';
 
-import {
-  Bath,
-  ChefHat,
-  Home,
-  Shirt,
-  User,
-  Users,
-  Utensils,
-  Wifi,
-  X,
-} from 'lucide-react';
+import { Bath, ChefHat, Home, Shirt, User, Users, Utensils, Wifi, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { PriceHistogramRangeSlider } from '@/components/search/price-histogram-range-slider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerTitle,
-} from '@/components/ui/drawer';
-import {
-  DEFAULT_PRICE_HISTOGRAM,
-  usePriceHistogram,
-} from '@/hooks/use-price-histogram';
+import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from '@/components/ui/drawer';
+import { DEFAULT_PRICE_HISTOGRAM, usePriceHistogram } from '@/hooks/use-price-histogram';
 import type { SearchFilters } from '@/lib/types';
 
 type FilterDrawerProps = {
@@ -34,12 +16,7 @@ type FilterDrawerProps = {
   onApply: (filters: SearchFilters) => void;
 };
 
-export function FilterDrawer({
-  isOpen,
-  onClose,
-  filters,
-  onApply,
-}: FilterDrawerProps) {
+export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawerProps) {
   const [localFilters, setLocalFilters] = useState<SearchFilters>(filters);
   const [extraAmenities, setExtraAmenities] = useState<{
     kitchen: boolean;
@@ -55,10 +32,9 @@ export function FilterDrawer({
     setLocalFilters(filters);
   }, [filters]);
 
-  const { data: histogramData, isLoading: isHistogramLoading } =
-    usePriceHistogram({
-      city: localFilters.city,
-    });
+  const { data: histogramData, isLoading: isHistogramLoading } = usePriceHistogram({
+    city: localFilters.city,
+  });
 
   const minBound = histogramData?.minPrice ?? DEFAULT_PRICE_HISTOGRAM.minPrice;
   const maxBound = histogramData?.maxPrice ?? DEFAULT_PRICE_HISTOGRAM.maxPrice;
@@ -84,20 +60,11 @@ export function FilterDrawer({
     return histogramData.bins
       .filter((bin) => bin.max >= min && bin.min <= max)
       .reduce((acc, bin) => acc + bin.count, 0);
-  }, [
-    histogramData,
-    localFilters.minPriceClp,
-    localFilters.maxPriceClp,
-    minBound,
-    maxBound,
-  ]);
+  }, [histogramData, localFilters.minPriceClp, localFilters.maxPriceClp, minBound, maxBound]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
-    if (
-      localFilters.minPriceClp !== undefined ||
-      localFilters.maxPriceClp !== undefined
-    ) {
+    if (localFilters.minPriceClp !== undefined || localFilters.maxPriceClp !== undefined) {
       count += 1;
     }
     if (localFilters.roomType) count += 1;
@@ -106,10 +73,7 @@ export function FilterDrawer({
     if (extraAmenities.kitchen) count += 1;
     if (extraAmenities.laundry) count += 1;
     if (extraAmenities.wifi) count += 1;
-    if (
-      localFilters.genderPreference &&
-      localFilters.genderPreference !== 'ALL'
-    ) {
+    if (localFilters.genderPreference && localFilters.genderPreference !== 'ALL') {
       count += 1;
     }
     return count;
@@ -160,9 +124,7 @@ export function FilterDrawer({
               <X className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2">
-              <DrawerTitle className="font-semibold text-base text-foreground">
-                Filtros
-              </DrawerTitle>
+              <DrawerTitle className="font-semibold text-base text-foreground">Filtros</DrawerTitle>
               {activeFilterCount > 0 && (
                 <Badge
                   variant="secondary"
@@ -189,9 +151,7 @@ export function FilterDrawer({
         <div className="flex-1 max-h-[82vh] overflow-y-auto pr-1 p-4 md:p-6 flex flex-col gap-6 divide-y divide-border">
           <div className="flex flex-col gap-4 pb-2">
             <div>
-              <h3 className="text-base font-semibold text-foreground">
-                Rango de Precios
-              </h3>
+              <h3 className="text-base font-semibold text-foreground">Rango de Precios</h3>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Precio mensual por pensión, incluye servicios
               </p>
@@ -208,9 +168,7 @@ export function FilterDrawer({
           </div>
 
           <div className="flex flex-col gap-3 pt-6 pb-2">
-            <h3 className="text-base font-semibold text-foreground">
-              Tipo de Alojamiento
-            </h3>
+            <h3 className="text-base font-semibold text-foreground">Tipo de Alojamiento</h3>
             <div className="flex flex-wrap gap-2.5">
               {[
                 { id: 'SINGLE' as const, label: 'Pieza Individual', icon: User },
@@ -230,8 +188,7 @@ export function FilterDrawer({
                     onClick={() =>
                       setLocalFilters((prev) => ({
                         ...prev,
-                        roomType:
-                          prev.roomType === item.id ? undefined : item.id,
+                        roomType: prev.roomType === item.id ? undefined : item.id,
                       }))
                     }
                     className={`flex items-center gap-2 px-4 py-3 min-h-[48px] rounded-full border text-xs font-semibold transition active:scale-95 ${
@@ -249,18 +206,14 @@ export function FilterDrawer({
           </div>
 
           <div className="flex flex-col gap-3 pt-6 pb-2">
-            <h3 className="text-base font-semibold text-foreground">
-              Comodidades Clave
-            </h3>
+            <h3 className="text-base font-semibold text-foreground">Comodidades Clave</h3>
             <div className="flex flex-wrap gap-2.5">
               <button
                 type="button"
                 onClick={() =>
                   setLocalFilters((prev) => ({
                     ...prev,
-                    hasPrivateBathroom: !prev.hasPrivateBathroom
-                      ? true
-                      : undefined,
+                    hasPrivateBathroom: !prev.hasPrivateBathroom ? true : undefined,
                   }))
                 }
                 className={`flex items-center gap-2 px-4 py-3 min-h-[48px] rounded-full border text-xs font-semibold transition active:scale-95 ${
@@ -365,8 +318,7 @@ export function FilterDrawer({
                     onClick={() =>
                       setLocalFilters((prev) => ({
                         ...prev,
-                        genderPreference:
-                          prev.genderPreference === opt.id ? 'ALL' : opt.id,
+                        genderPreference: prev.genderPreference === opt.id ? 'ALL' : opt.id,
                       }))
                     }
                     className={`flex items-center justify-center p-3 min-h-[48px] rounded-xl border text-xs font-semibold transition active:scale-95 ${

@@ -2,26 +2,19 @@
 
 import {
   AlertCircle,
-  Award,
   Camera,
   CheckCircle2,
   ChevronRight,
-  Clock,
   Droplets,
-  Eye,
   GraduationCap,
   HeartHandshake,
   Loader2,
   MessageSquare,
   Moon,
   RefreshCw,
-  Sparkles,
   Star,
   ThumbsUp,
-  User,
-  VolumeX,
   Wifi,
-  X,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -32,7 +25,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { isApiSuccess } from '@/lib/api-response';
-import type { PensionItem, PensionReview } from '@/lib/types';
+import type { PensionItem } from '@/lib/types';
 import { cn, normalizeImageUrl } from '@/lib/utils';
 import { pensionsService } from '@/services/pensions.service';
 import { proposalsService } from '@/services/proposals.service';
@@ -45,13 +38,7 @@ export type LandlordReviewsScreenProps = {
   onOpenProposals?: () => void;
 };
 
-type ReviewFilterType =
-  | 'ALL'
-  | 'WITH_PHOTOS'
-  | '5_STARS'
-  | '4_PLUS'
-  | 'LOW_RATING'
-  | 'LONG_STAY';
+type ReviewFilterType = 'ALL' | 'WITH_PHOTOS' | '5_STARS' | '4_PLUS' | 'LOW_RATING' | 'LONG_STAY';
 
 function formatStayDuration(cat?: string): string {
   switch (cat) {
@@ -84,7 +71,10 @@ function formatDate(isoString?: string): string {
   }
 }
 
-function getSatisfactionLabel(score: number, count: number): {
+function getSatisfactionLabel(
+  score: number,
+  count: number,
+): {
   label: string;
   variant: 'default' | 'secondary' | 'outline' | 'destructive';
   colorClass: string;
@@ -135,7 +125,7 @@ export function LandlordReviewsScreen({
   );
   const [isProposalsDrawerOpen, setIsProposalsDrawerOpen] = useState<boolean>(false);
   const [proposals, setProposals] = useState<ProposalDto[]>([]);
-  const [isLoadingProposals, setIsLoadingProposals] = useState<boolean>(false);
+  const [_isLoadingProposals, setIsLoadingProposals] = useState<boolean>(false);
   const [activeFilter, setActiveFilter] = useState<ReviewFilterType>('ALL');
   const [enlargedPhotoUrl, setEnlargedPhotoUrl] = useState<string | null>(null);
 
@@ -151,7 +141,8 @@ export function LandlordReviewsScreen({
     voteHelpful,
     refetch: reloadReviews,
   } = usePensionReviews(effectivePensionId || null, {
-    average: activePension?.ratingAverage ?? (activePension as PensionDetailDto)?.averageRating ?? 0,
+    average:
+      activePension?.ratingAverage ?? (activePension as PensionDetailDto)?.averageRating ?? 0,
     count: activePension?.reviewsCount ?? (activePension as PensionDetailDto)?.ratingCount ?? 0,
   });
 
@@ -339,9 +330,7 @@ export function LandlordReviewsScreen({
       <div
         className={cn(
           'rounded-2xl border p-4 sm:p-5 shadow-xs transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5',
-          pendingCount > 0
-            ? 'border-primary/40 bg-primary/5'
-            : 'border-border/80 bg-card',
+          pendingCount > 0 ? 'border-primary/40 bg-primary/5' : 'border-border/80 bg-card',
         )}
       >
         <div className="flex items-start gap-3 min-w-0">
@@ -447,7 +436,10 @@ export function LandlordReviewsScreen({
                     satisfactionMetrics.cleanlinessCount,
                   );
                   return (
-                    <Badge variant={info.variant} className={cn('text-[10px] font-semibold border', info.colorClass)}>
+                    <Badge
+                      variant={info.variant}
+                      className={cn('text-[10px] font-semibold border', info.colorClass)}
+                    >
                       {info.label}
                     </Badge>
                   );
@@ -478,7 +470,9 @@ export function LandlordReviewsScreen({
                     <HeartHandshake className="h-4 w-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-foreground block">Trato del Anfitrión</span>
+                    <span className="text-xs font-bold text-foreground block">
+                      Trato del Anfitrión
+                    </span>
                     <span className="text-[10px] text-muted-foreground">
                       Disposición, amabilidad y resolución
                     </span>
@@ -491,7 +485,10 @@ export function LandlordReviewsScreen({
                     satisfactionMetrics.landlordCount,
                   );
                   return (
-                    <Badge variant={info.variant} className={cn('text-[10px] font-semibold border', info.colorClass)}>
+                    <Badge
+                      variant={info.variant}
+                      className={cn('text-[10px] font-semibold border', info.colorClass)}
+                    >
                       {info.label}
                     </Badge>
                   );
@@ -535,7 +532,10 @@ export function LandlordReviewsScreen({
                     satisfactionMetrics.quietnessCount,
                   );
                   return (
-                    <Badge variant={info.variant} className={cn('text-[10px] font-semibold border', info.colorClass)}>
+                    <Badge
+                      variant={info.variant}
+                      className={cn('text-[10px] font-semibold border', info.colorClass)}
+                    >
                       {info.label}
                     </Badge>
                   );
@@ -566,7 +566,9 @@ export function LandlordReviewsScreen({
                     <Wifi className="h-4 w-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-foreground block">Conectividad Wi-Fi</span>
+                    <span className="text-xs font-bold text-foreground block">
+                      Conectividad Wi-Fi
+                    </span>
                     <span className="text-[10px] text-muted-foreground">
                       Estabilidad y cobertura para clases
                     </span>
@@ -579,7 +581,10 @@ export function LandlordReviewsScreen({
                     satisfactionMetrics.wifiCount,
                   );
                   return (
-                    <Badge variant={info.variant} className={cn('text-[10px] font-semibold border', info.colorClass)}>
+                    <Badge
+                      variant={info.variant}
+                      className={cn('text-[10px] font-semibold border', info.colorClass)}
+                    >
                       {info.label}
                     </Badge>
                   );
@@ -616,9 +621,7 @@ export function LandlordReviewsScreen({
 
                 return (
                   <div key={`star-bar-${stars}`} className="flex items-center gap-2 text-xs">
-                    <span className="w-4 text-right font-bold text-muted-foreground">
-                      {stars}
-                    </span>
+                    <span className="w-4 text-right font-bold text-muted-foreground">{stars}</span>
                     <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
                     <div className="relative flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
                       <div

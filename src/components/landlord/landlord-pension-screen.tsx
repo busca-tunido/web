@@ -9,7 +9,6 @@ import {
   Droplets,
   Eye,
   Flame,
-  HeartHandshake,
   Loader2,
   MessageCircle,
   Moon,
@@ -20,7 +19,6 @@ import {
   ShieldCheck,
   Sparkles,
   Users,
-  Volume2,
   Wifi,
   X,
   Zap,
@@ -77,7 +75,7 @@ function normalizePhoneToDisplay(rawPhone?: string | null): string {
   return rawPhone;
 }
 
-function normalizePhoneForSave(phoneInput: string): string {
+function _normalizePhoneForSave(phoneInput: string): string {
   const trimmed = phoneInput.trim();
   if (!trimmed) return '';
   const digits = trimmed.replace(/\D/g, '');
@@ -93,7 +91,7 @@ function normalizePhoneForSave(phoneInput: string): string {
   return trimmed.startsWith('+') ? trimmed : `+${digits}`;
 }
 
-const GENDER_OPTIONS: readonly Array<{
+const GENDER_OPTIONS: ReadonlyArray<{
   value: GenderPref;
   label: string;
   description: string;
@@ -166,9 +164,7 @@ export function LandlordPensionScreen({
         rawGender === 'FEMALE_ONLY' || rawGender === 'MALE_ONLY' ? rawGender : 'ANY';
 
       const phoneDefault =
-        (p as unknown as { contactPhone?: string })?.contactPhone ||
-        user?.phone ||
-        '+56 9 ';
+        (p as unknown as { contactPhone?: string })?.contactPhone || user?.phone || '+56 9 ';
       const nameDefault =
         (p as unknown as { contactName?: string })?.contactName ||
         (user ? `${user.firstName} ${user.lastName}`.trim() : '');
@@ -185,10 +181,8 @@ export function LandlordPensionScreen({
         petsAllowed: isPensionItemDto ? Boolean(p.petsAllowed) : false,
         curfewTime: curfewVal,
         hasCurfew: Boolean(curfewVal && curfewVal.trim().length > 0),
-        quietHoursStart:
-          (isPensionItemDto && p.quietHoursStart) || '22:00',
-        quietHoursEnd:
-          (isPensionItemDto && p.quietHoursEnd) || '08:00',
+        quietHoursStart: (isPensionItemDto && p.quietHoursStart) || '22:00',
+        quietHoursEnd: (isPensionItemDto && p.quietHoursEnd) || '08:00',
         genderPreference: normalizedGender,
         contactName: nameDefault,
         contactPhone: normalizePhoneToDisplay(phoneDefault),
@@ -255,7 +249,7 @@ export function LandlordPensionScreen({
     setForm((prev) => ({
       ...prev,
       hasCurfew: enabled,
-      curfewTime: enabled ? (prev.curfewTime || '23:00') : '',
+      curfewTime: enabled ? prev.curfewTime || '23:00' : '',
     }));
   };
 
@@ -324,12 +318,11 @@ export function LandlordPensionScreen({
       ...mapped,
       genderPreference: form.genderPreference === 'ANY' ? 'MIXED' : form.genderPreference,
       includesWifi: form.internetIncluded,
-      curfewDescription: form.hasCurfew && form.curfewTime
-        ? `Llegada hasta las ${form.curfewTime}`
-        : 'Sin horario límite de llegada',
-      visitsPolicy: form.guestsAllowed
-        ? 'Visitas permitidas'
-        : 'No se permiten visitas externas',
+      curfewDescription:
+        form.hasCurfew && form.curfewTime
+          ? `Llegada hasta las ${form.curfewTime}`
+          : 'Sin horario límite de llegada',
+      visitsPolicy: form.guestsAllowed ? 'Visitas permitidas' : 'No se permiten visitas externas',
     };
   }, [activePension, form]);
 
@@ -439,10 +432,7 @@ export function LandlordPensionScreen({
         </CardHeader>
 
         <CardContent className="p-4 sm:p-5 space-y-3">
-          <div
-            onClick={() => handleToggle('waterIncluded')}
-            className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 cursor-pointer select-none"
-          >
+          <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
             <div className="flex items-center gap-3 min-w-0">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-500">
                 <Droplets className="h-4 w-4" />
@@ -460,10 +450,7 @@ export function LandlordPensionScreen({
               role="switch"
               aria-checked={form.waterIncluded}
               aria-label="Incluir agua potable"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggle('waterIncluded');
-              }}
+              onClick={() => handleToggle('waterIncluded')}
               className={cn(
                 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 form.waterIncluded ? 'bg-primary' : 'bg-muted-foreground/30',
@@ -478,10 +465,7 @@ export function LandlordPensionScreen({
             </button>
           </div>
 
-          <div
-            onClick={() => handleToggle('electricityIncluded')}
-            className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 cursor-pointer select-none"
-          >
+          <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
             <div className="flex items-center gap-3 min-w-0">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
                 <Zap className="h-4 w-4" />
@@ -499,10 +483,7 @@ export function LandlordPensionScreen({
               role="switch"
               aria-checked={form.electricityIncluded}
               aria-label="Incluir electricidad"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggle('electricityIncluded');
-              }}
+              onClick={() => handleToggle('electricityIncluded')}
               className={cn(
                 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 form.electricityIncluded ? 'bg-primary' : 'bg-muted-foreground/30',
@@ -517,10 +498,7 @@ export function LandlordPensionScreen({
             </button>
           </div>
 
-          <div
-            onClick={() => handleToggle('gasIncluded')}
-            className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 cursor-pointer select-none"
-          >
+          <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
             <div className="flex items-center gap-3 min-w-0">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500">
                 <Flame className="h-4 w-4" />
@@ -538,10 +516,7 @@ export function LandlordPensionScreen({
               role="switch"
               aria-checked={form.gasIncluded}
               aria-label="Incluir gas"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggle('gasIncluded');
-              }}
+              onClick={() => handleToggle('gasIncluded')}
               className={cn(
                 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 form.gasIncluded ? 'bg-primary' : 'bg-muted-foreground/30',
@@ -556,10 +531,7 @@ export function LandlordPensionScreen({
             </button>
           </div>
 
-          <div
-            onClick={() => handleToggle('internetIncluded')}
-            className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 cursor-pointer select-none"
-          >
+          <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
             <div className="flex items-center gap-3 min-w-0">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
                 <Wifi className="h-4 w-4" />
@@ -577,10 +549,7 @@ export function LandlordPensionScreen({
               role="switch"
               aria-checked={form.internetIncluded}
               aria-label="Incluir internet WiFi"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggle('internetIncluded');
-              }}
+              onClick={() => handleToggle('internetIncluded')}
               className={cn(
                 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 form.internetIncluded ? 'bg-primary' : 'bg-muted-foreground/30',
@@ -616,10 +585,7 @@ export function LandlordPensionScreen({
 
         <CardContent className="p-4 sm:p-5 space-y-4">
           <div className="space-y-3">
-            <div
-              onClick={() => handleToggle('guestsAllowed')}
-              className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 cursor-pointer select-none"
-            >
+            <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500">
                   <Users className="h-4 w-4" />
@@ -637,10 +603,7 @@ export function LandlordPensionScreen({
                 role="switch"
                 aria-checked={form.guestsAllowed}
                 aria-label="Permitir visitas"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleToggle('guestsAllowed');
-                }}
+                onClick={() => handleToggle('guestsAllowed')}
                 className={cn(
                   'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   form.guestsAllowed ? 'bg-primary' : 'bg-muted-foreground/30',
@@ -655,10 +618,7 @@ export function LandlordPensionScreen({
               </button>
             </div>
 
-            <div
-              onClick={() => handleToggle('smokingAllowed')}
-              className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 cursor-pointer select-none"
-            >
+            <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 text-rose-500">
                   <Ban className="h-4 w-4" />
@@ -676,10 +636,7 @@ export function LandlordPensionScreen({
                 role="switch"
                 aria-checked={form.smokingAllowed}
                 aria-label="Permitir fumar"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleToggle('smokingAllowed');
-                }}
+                onClick={() => handleToggle('smokingAllowed')}
                 className={cn(
                   'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   form.smokingAllowed ? 'bg-primary' : 'bg-muted-foreground/30',
@@ -694,10 +651,7 @@ export function LandlordPensionScreen({
               </button>
             </div>
 
-            <div
-              onClick={() => handleToggle('petsAllowed')}
-              className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 cursor-pointer select-none"
-            >
+            <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-500/10 text-teal-500">
                   <PawPrint className="h-4 w-4" />
@@ -715,10 +669,7 @@ export function LandlordPensionScreen({
                 role="switch"
                 aria-checked={form.petsAllowed}
                 aria-label="Permitir mascotas"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleToggle('petsAllowed');
-                }}
+                onClick={() => handleToggle('petsAllowed')}
                 className={cn(
                   'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   form.petsAllowed ? 'bg-primary' : 'bg-muted-foreground/30',
@@ -775,9 +726,7 @@ export function LandlordPensionScreen({
                   id="curfew-time-input"
                   type="time"
                   value={form.curfewTime}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, curfewTime: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, curfewTime: e.target.value }))}
                   className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3.5 text-sm font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
@@ -829,9 +778,7 @@ export function LandlordPensionScreen({
                   id="quiet-end-input"
                   type="time"
                   value={form.quietHoursEnd}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, quietHoursEnd: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, quietHoursEnd: e.target.value }))}
                   className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
@@ -926,9 +873,7 @@ export function LandlordPensionScreen({
               id="landlord-contact-name"
               type="text"
               value={form.contactName}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, contactName: e.target.value }))
-              }
+              onChange={(e) => setForm((prev) => ({ ...prev, contactName: e.target.value }))}
               placeholder="Ej: Sra. Carmen Gloria"
               className="min-h-[48px] w-full rounded-xl border border-border bg-background px-4 text-xs font-medium text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
