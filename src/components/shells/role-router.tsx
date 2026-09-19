@@ -1,7 +1,6 @@
 'use client';
 
 import type { ComponentType } from 'react';
-import { AuthScreen } from '@/components/auth/auth-screen';
 import { UnimplementedRoleBanner } from '@/components/common/unimplemented-role-banner';
 import { SplashScreen } from '@/components/layout/splash-screen';
 import { LandlordAppShell } from '@/components/shells/landlord-app-shell';
@@ -29,14 +28,10 @@ const ForwardedStudentShell = StudentAppShell as ComponentType<ForwardedStudentS
 
 export function RoleRouter({ initialData }: RoleRouterProps) {
   const { isLoading } = useAuth();
-  const { role, isAuthenticated } = useUserRole();
+  const { role } = useUserRole();
 
-  if (isLoading) {
+  if (isLoading && !initialData) {
     return <SplashScreen />;
-  }
-
-  if (!isAuthenticated || role === 'unauthenticated') {
-    return <AuthScreen />;
   }
 
   if (role === 'landlord') {
