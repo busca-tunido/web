@@ -68,10 +68,18 @@ export function ExploreScreen({
 
   return (
     <div id="explore-screen-view" className="flex flex-col gap-8 pb-20 md:pb-12 pt-2">
+      <div className="px-5 md:px-0">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+          Pensiones y Residencias Universitarias en Chile
+        </h1>
+      </div>
+
       <section>
         <div className="flex items-center justify-between px-5 md:px-0 mb-3">
           <div>
-            <h3 className="text-lg font-bold text-foreground tracking-tight">Ciudades</h3>
+            <h2 className="text-lg font-bold text-foreground tracking-tight">
+              Ciudades Universitarias
+            </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               Principales destinos universitarios de Chile
             </p>
@@ -127,7 +135,7 @@ export function ExploreScreen({
                 )}
 
                 <div className="absolute bottom-3 left-3 right-3">
-                  <h4 className="text-sm font-bold text-white leading-tight">{city.name}</h4>
+                  <h3 className="text-sm font-bold text-white leading-tight">{city.name}</h3>
                   <span className="block text-[11px] text-zinc-200 mt-1">
                     {city.pensionsCount} pensiones
                   </span>
@@ -141,7 +149,9 @@ export function ExploreScreen({
       <section>
         <div className="flex items-center justify-between px-5 md:px-0 mb-3">
           <div>
-            <h3 className="text-lg font-bold text-foreground tracking-tight">Universidades</h3>
+            <h2 className="text-lg font-bold text-foreground tracking-tight">
+              Universidades Destacadas
+            </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               Encuentra alojamiento cerca de tu campus
             </p>
@@ -197,9 +207,9 @@ export function ExploreScreen({
                 </div>
 
                 <div className="absolute bottom-3 left-3 right-3">
-                  <h4 className="text-sm font-bold text-white leading-tight line-clamp-2">
+                  <h3 className="text-sm font-bold text-white leading-tight line-clamp-2">
                     {uni.name}
-                  </h4>
+                  </h3>
                   <div className="flex items-center gap-1 text-[11px] text-zinc-300 mt-1">
                     <MapPin className="h-3 w-3" />
                     <span>{uni.city}</span>
@@ -297,9 +307,9 @@ function PensionListSection({
   return (
     <section>
       <div className="flex items-center justify-between px-5 md:px-0 mb-4">
-        <h3 className="text-lg font-bold text-foreground tracking-tight">
-          Alojamientos Destacados
-        </h3>
+        <h2 className="text-lg font-bold text-foreground tracking-tight">
+          Alojamientos Disponibles
+        </h2>
         <span className="text-xs text-muted-foreground">
           {totalPensions !== undefined
             ? `${totalPensions} alojamientos`

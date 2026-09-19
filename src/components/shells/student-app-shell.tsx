@@ -79,6 +79,23 @@ function StudentAppShellContent() {
   });
 
   useEffect(() => {
+    if (isPensionDetailOpen && selectedPension) {
+      document.title = `${selectedPension.title} | BuscaTuNido`;
+      return;
+    }
+
+    const tabTitleMap: Record<NavTab, string> = {
+      explore: 'Explorar | BuscaTuNido',
+      map: 'Mapa | BuscaTuNido',
+      favorites: 'Favoritos | BuscaTuNido',
+      history: 'Estadías | BuscaTuNido',
+      account: 'Cuenta | BuscaTuNido',
+    };
+
+    document.title = tabTitleMap[activeTab] ?? 'BuscaTuNido';
+  }, [activeTab, isPensionDetailOpen, selectedPension]);
+
+  useEffect(() => {
     if (cities.length > 0) {
       setTentativeCities(cities);
     }

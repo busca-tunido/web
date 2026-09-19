@@ -29,9 +29,11 @@ function PensionCardComponent({
   onSelectPension,
 }: PensionCardProps) {
   const isHighRelevance = (pension.relevanceScore ?? 0) >= 75;
+  const titleId = `pension-title-${pension.id}`;
 
   return (
-    <motion.div
+    <motion.article
+      aria-labelledby={titleId}
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
       className="group relative flex flex-col text-left"
@@ -40,6 +42,7 @@ function PensionCardComponent({
         type="button"
         onClick={() => onSelectPension(pension)}
         className="w-full flex flex-col text-left cursor-pointer focus:outline-none"
+        aria-label={`Ver detalles de ${pension.title}`}
       >
         <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm">
           <Image
@@ -66,18 +69,33 @@ function PensionCardComponent({
             )}
           </div>
         </div>
+      </button>
 
-        <div className="mt-2.5 flex flex-col gap-1 w-full">
-          <div className="flex items-start justify-between gap-2">
-            <h4 className="text-base font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition">
+      <div className="mt-2.5 flex flex-col gap-1 w-full">
+        <div className="flex items-start justify-between gap-2">
+          <h3
+            id={titleId}
+            className="text-base font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition"
+          >
+            <button
+              type="button"
+              onClick={() => onSelectPension(pension)}
+              className="text-left font-semibold text-foreground group-hover:text-primary transition cursor-pointer focus:outline-none"
+            >
               {pension.title}
-            </h4>
-            <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-              <span>{pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}</span>
-            </div>
+            </button>
+          </h3>
+          <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
+            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+            <span>{pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}</span>
           </div>
+        </div>
 
+        <button
+          type="button"
+          onClick={() => onSelectPension(pension)}
+          className="flex flex-col gap-1 text-left cursor-pointer focus:outline-none"
+        >
           <div className="flex items-center gap-1 text-xs text-muted-foreground line-clamp-1">
             <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
             <span>
@@ -96,8 +114,8 @@ function PensionCardComponent({
             </span>
             <span className="text-xs text-muted-foreground">/ mes</span>
           </div>
-        </div>
-      </button>
+        </button>
+      </div>
 
       <motion.button
         type="button"
@@ -112,7 +130,7 @@ function PensionCardComponent({
       >
         <Heart className={`h-5 w-5 ${isFavorite ? 'fill-primary text-primary' : 'stroke-[2]'}`} />
       </motion.button>
-    </motion.div>
+    </motion.article>
   );
 }
 
