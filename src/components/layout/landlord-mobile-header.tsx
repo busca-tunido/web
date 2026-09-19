@@ -37,20 +37,15 @@ export function LandlordMobileHeader({
   const containerRef = useRef<HTMLDivElement>(null);
   const listboxId = useId();
 
-  const currentProperty =
-    properties.find((p) => p.id === selectedPropertyId) ?? properties[0];
+  const currentProperty = properties.find((p) => p.id === selectedPropertyId) ?? properties[0];
 
-  const displayTitle =
-    currentProperty?.title ?? selectedPropertyName ?? 'Mi Pensión';
+  const displayTitle = currentProperty?.title ?? selectedPropertyName ?? 'Mi Pensión';
 
   const totalCount = properties.length > 0 ? properties.length : 1;
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
     }
@@ -139,8 +134,7 @@ export function LandlordMobileHeader({
                   <div className="max-h-64 overflow-y-auto space-y-1">
                     {properties.length > 0 ? (
                       properties.map((prop) => {
-                        const isSelected =
-                          prop.id === (currentProperty?.id ?? selectedPropertyId);
+                        const isSelected = prop.id === (currentProperty?.id ?? selectedPropertyId);
 
                         return (
                           <button
@@ -179,9 +173,7 @@ export function LandlordMobileHeader({
                                   )}
                                 />
                               )}
-                              {isSelected && (
-                                <Check className="h-4 w-4 text-primary shrink-0" />
-                              )}
+                              {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
                             </div>
                           </button>
                         );
