@@ -77,6 +77,7 @@ export type PensionItem = {
   rooms: RoomInfo[];
   curfewDescription?: string;
   visitsPolicy?: string;
+  isActive?: boolean;
 };
 
 export type NearbyCityCount = {
@@ -99,16 +100,31 @@ export type PaginatedPensionsResponse = {
   nearbyCityCounts: NearbyCityCount[];
 };
 
+export type PriceBinItem = {
+  min: number;
+  max: number;
+  count: number;
+};
+
+export type PriceHistogramResponse = {
+  minPrice: number;
+  maxPrice: number;
+  currency: string;
+  totalListings: number;
+  bins: PriceBinItem[];
+};
+
 export type SearchFilters = {
   query: string;
   city?: string;
   universityId?: string;
   minPriceClp?: number;
   maxPriceClp?: number;
+  roomType?: 'SINGLE' | 'SHARED' | 'STUDIO';
   hasPrivateBathroom?: boolean;
   includesMeals?: boolean;
+  minBeds?: number;
   genderPreference?: 'MIXED' | 'FEMALE_ONLY' | 'MALE_ONLY' | 'ALL';
-  roomType?: 'SINGLE' | 'SHARED';
   sortBy?: 'relevance' | 'distance' | 'price_asc' | 'price_desc' | 'rating';
 };
 
