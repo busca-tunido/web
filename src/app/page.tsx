@@ -1,5 +1,6 @@
 import { type InitialPrefetchData, RoleRouter } from '@/components/shells/role-router';
 import { env } from '@/env';
+import { parseSearchParams } from '@/hooks/use-url-navigation-state';
 import { type ApiPensionPayload, mapRawPensionToPensionItem } from '@/lib/api-client';
 import { getCityImageUrl, getUniversityImageUrl } from '@/lib/location-images';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
@@ -180,7 +181,13 @@ async function fetchInitialUniversities(baseUrl: string): Promise<UniversityInfo
   }
 }
 
-export default async function HomePage() {
+type HomePageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function HomePage(props: HomePageProps) {
+  const resolvedSearchParams = props.searchParams ? await props.searchParams : {};
+  const initialNavState = parseSearchParams(resolvedSearchParams, 'explore');
   const baseUrl = getApiBaseUrl();
 
   const [initialPensionsResult, initialCitiesResult, initialUniversitiesResult] =
@@ -203,5 +210,11 @@ export default async function HomePage() {
       initialUniversitiesResult.status === 'fulfilled' ? initialUniversitiesResult.value : [],
   };
 
-  return <RoleRouter initialData={initialData} />;
+  return (
+    <RoleRouter
+      initialData={initialData}
+      initialNavigationState={initialNavState}
+      initialTab={initialNavState.tab}
+    />
+  );
 }

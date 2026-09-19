@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { useUrlNavigationState } from '@/hooks/use-url-navigation-state';
+import { type UrlNavigationState, useUrlNavigationState } from '@/hooks/use-url-navigation-state';
 import type { NavTab, PensionItem, UniversityInfo } from '@/lib/types';
 
 export type NavigationContextType = {
@@ -33,11 +33,16 @@ export type NavigationContextType = {
 export type NavigationProviderProps = {
   children: React.ReactNode;
   initialTab?: NavTab;
+  initialNavigationState?: Partial<UrlNavigationState>;
 };
 
 const NavigationContext = createContext<NavigationContextType | null>(null);
 
-export function NavigationProvider({ children, initialTab = 'explore' }: NavigationProviderProps) {
+export function NavigationProvider({
+  children,
+  initialTab = 'explore',
+  initialNavigationState,
+}: NavigationProviderProps) {
   const {
     tab: activeTab,
     navigateTab,
@@ -51,7 +56,10 @@ export function NavigationProvider({ children, initialTab = 'explore' }: Navigat
     isFiltersOpen,
     openFilters,
     closeFilters,
-  } = useUrlNavigationState({ defaultTab: initialTab });
+  } = useUrlNavigationState({
+    defaultTab: initialTab,
+    initialState: initialNavigationState,
+  });
 
   const [mapTargetCity, setMapTargetCity] = useState<string | null>(urlCity);
   const [selectedUniversity, setSelectedUniversity] = useState<UniversityInfo | null>(null);

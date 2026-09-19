@@ -16,11 +16,13 @@ import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import { NavigationProvider, useNavigation } from '@/contexts/navigation-context';
 import { SearchFiltersProvider, useSearchFilters } from '@/contexts/search-filters-context';
 import { useStudentPensionsFeed } from '@/hooks/use-student-pensions-feed';
+import type { UrlNavigationState } from '@/hooks/use-url-navigation-state';
 import type { CityInfo, NavTab, UniversityInfo } from '@/lib/types';
 import { useUserLocation } from '@/lib/use-user-location';
 
 export type StudentAppShellProps = {
   initialTab?: NavTab;
+  initialNavigationState?: Partial<UrlNavigationState>;
 };
 
 function StudentAppShellContent() {
@@ -269,9 +271,12 @@ function StudentAppShellWithProviders() {
   );
 }
 
-export function StudentAppShell({ initialTab = 'explore' }: StudentAppShellProps) {
+export function StudentAppShell({
+  initialTab = 'explore',
+  initialNavigationState,
+}: StudentAppShellProps) {
   return (
-    <NavigationProvider initialTab={initialTab}>
+    <NavigationProvider initialTab={initialTab} initialNavigationState={initialNavigationState}>
       <StudentAppShellWithProviders />
     </NavigationProvider>
   );

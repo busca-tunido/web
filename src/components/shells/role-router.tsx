@@ -5,9 +5,10 @@ import { UnimplementedRoleBanner } from '@/components/common/unimplemented-role-
 import { SplashScreen } from '@/components/layout/splash-screen';
 import { LandlordAppShell } from '@/components/shells/landlord-app-shell';
 import { StudentAppShell, type StudentAppShellProps } from '@/components/shells/student-app-shell';
+import type { UrlNavigationState } from '@/hooks/use-url-navigation-state';
 import { useUserRole } from '@/hooks/use-user-role';
 import { useAuth } from '@/lib/auth-context';
-import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
+import type { CityInfo, NavTab, PensionItem, UniversityInfo } from '@/lib/types';
 
 export type InitialPrefetchData = {
   pensions?: PensionItem[];
@@ -18,15 +19,18 @@ export type InitialPrefetchData = {
 
 export type RoleRouterProps = {
   initialData?: InitialPrefetchData;
+  initialTab?: NavTab;
+  initialNavigationState?: Partial<UrlNavigationState>;
 };
 
 type ForwardedStudentShellProps = StudentAppShellProps & {
   initialData?: InitialPrefetchData;
+  initialNavigationState?: Partial<UrlNavigationState>;
 };
 
 const ForwardedStudentShell = StudentAppShell as ComponentType<ForwardedStudentShellProps>;
 
-export function RoleRouter({ initialData }: RoleRouterProps) {
+export function RoleRouter({ initialData, initialTab, initialNavigationState }: RoleRouterProps) {
   const { isLoading } = useAuth();
   const { role } = useUserRole();
 
@@ -42,5 +46,11 @@ export function RoleRouter({ initialData }: RoleRouterProps) {
     return <UnimplementedRoleBanner role={role} />;
   }
 
-  return <ForwardedStudentShell initialData={initialData} />;
+  return (
+    <ForwardedStudentShell
+      initialData={initialData}
+      initialTab={initialTab ?? initialNavigationState?.tab}
+      initialNavigationState={initialNavigationState}
+    />
+  );
 }

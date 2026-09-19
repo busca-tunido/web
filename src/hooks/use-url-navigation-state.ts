@@ -16,6 +16,7 @@ export type UrlNavigationState = {
 export type UseUrlNavigationOptions = {
   defaultTab?: NavTab;
   syncInitialUrl?: boolean;
+  initialState?: Partial<UrlNavigationState>;
 };
 
 export type UseUrlNavigationReturn = {
@@ -87,6 +88,36 @@ export function parseNavigationParams(
   };
 }
 
+export function parseSearchParams(
+  params: Record<string, string | string[] | undefined>,
+  defaultTab: NavTab = 'explore',
+): UrlNavigationState {
+  const getSingle = (val: string | string[] | undefined): string | null => {
+    if (typeof val === 'string') return val;
+    if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'string') return val[0];
+    return null;
+  };
+
+  const rawTab = getSingle(params.tab);
+  const tab: NavTab = isValidTab(rawTab) ? rawTab : defaultTab;
+  const city = getSingle(params.city);
+  const uni = getSingle(params.uni);
+  const pensionId = getSingle(params.pension);
+  const isFiltersOpen = getSingle(params.filters) === 'true';
+  const reviewsPensionId = getSingle(params.reviews);
+  const publishReviewPensionId = getSingle(params.publish_review);
+
+  return {
+    tab,
+    city,
+    uni,
+    pensionId,
+    isFiltersOpen,
+    reviewsPensionId,
+    publishReviewPensionId,
+  };
+}
+
 export function serializeNavigationParams(state: UrlNavigationState): string {
   const params = new URLSearchParams();
   if (state.tab) {
@@ -128,9 +159,20 @@ export function buildNavigationUrl(
 export function useUrlNavigationState(
   options: UseUrlNavigationOptions = {},
 ): UseUrlNavigationReturn {
-  const { defaultTab = 'explore', syncInitialUrl = false } = options;
+  const { defaultTab = 'explore', syncInitialUrl = false, initialState } = options;
 
   const [state, setState] = useState<UrlNavigationState>(() => {
+    if (initialState) {
+      return {
+        tab: initialState.tab && isValidTab(initialState.tab) ? initialState.tab : defaultTab,
+        city: initialState.city ?? null,
+        uni: initialState.uni ?? null,
+        pensionId: initialState.pensionId ?? null,
+        isFiltersOpen: initialState.isFiltersOpen ?? false,
+        reviewsPensionId: initialState.reviewsPensionId ?? null,
+        publishReviewPensionId: initialState.publishReviewPensionId ?? null,
+      };
+    }
     if (typeof window === 'undefined') {
       return {
         tab: defaultTab,
@@ -387,6 +429,26 @@ export function useUrlNavigationState(
     updateHistory(nextState, 'replace', false);
     setState(nextState);
   }, [updateHistory]);
+
+  useEffect(() => {
+    if (!initialState) return;
+    setState((prev) => ({
+      tab: initialState.tab && isValidTab(initialState.tab) ? initialState.tab : prev.tab,
+      city: initialState.city !== undefined ? initialState.city : prev.city,
+      uni: initialState.uni !== undefined ? initialState.uni : prev.uni,
+      pensionId: initialState.pensionId !== undefined ? initialState.pensionId : prev.pensionId,
+      isFiltersOpen:
+        initialState.isFiltersOpen !== undefined ? initialState.isFiltersOpen : prev.isFiltersOpen,
+      reviewsPensionId:
+        initialState.reviewsPensionId !== undefined
+          ? initialState.reviewsPensionId
+          : prev.reviewsPensionId,
+      publishReviewPensionId:
+        initialState.publishReviewPensionId !== undefined
+          ? initialState.publishReviewPensionId
+          : prev.publishReviewPensionId,
+    }));
+  }, [initialState]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
