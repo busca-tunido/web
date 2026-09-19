@@ -56,7 +56,8 @@ export default function NotFound() {
         </h1>
 
         <p className="mt-3 max-w-lg text-sm text-muted-foreground sm:text-base">
-          La dirección a la que intentas acceder no existe, fue cambiada de ubicación o ya no está disponible para estudiantes.
+          La dirección a la que intentas acceder no existe, fue cambiada de ubicación o ya no está
+          disponible para estudiantes.
         </p>
 
         <div className="mt-8 grid w-full gap-4 text-left sm:grid-cols-3">
@@ -71,12 +72,8 @@ export default function NotFound() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h2 className="mt-3 text-base font-bold text-foreground">
-                    {item.title}
-                  </h2>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {item.description}
-                  </p>
+                  <h2 className="mt-3 text-base font-bold text-foreground">{item.title}</h2>
+                  <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
                   <Link
                     href={item.href}
                     className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-secondary px-4 text-xs font-semibold text-secondary-foreground transition hover:bg-secondary/80 active:scale-[0.98]"
