@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: 'Política de Privacidad',
   description:
     'Políticas de privacidad y protección de datos personales de los usuarios en BuscaTuNido.',
+  alternates: {
+    canonical: '/privacy',
+  },
 };
 
 export default function PrivacyPage() {

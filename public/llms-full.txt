@@ -1,0 +1,68 @@
+# BuscaTuNido - Plataforma de Pensiones y Residencias Universitarias en Chile (Información Completa)
+
+> BuscaTuNido es una plataforma web colaborativa y mobile-first pensada para el ecosistema universitario chileno. Permite a los estudiantes de pregrado y posgrado localizar pensiones y residencias estudiantiles verificadas, calcular tiempos y distancias a sus campus de estudio, comparar amenidades y precios en pesos chilenos (CLP), y compartir valoraciones transparentes.
+
+## Misión y Propósito
+
+En Chile, la búsqueda de alojamiento universitario tradicionalmente ha dependido de avisos informales en papel o publicaciones no verificadas en redes sociales, exponiendo a los estudiantes a sobreprecios, condiciones habitacionales deficientes o estafas. BuscaTuNido proporciona un directorio georreferenciado, transparente y validado por la comunidad académica.
+
+## Ciudades y Cobertura Universitaria
+
+### 1. Región Metropolitana (Santiago)
+- Principales zonas: Santiago Centro, Providencia, San Joaquín, Macul, Recoleta.
+- Universidades cercanas: Universidad de Chile, Pontificia Universidad Católica de Chile, Universidad de Santiago de Chile, Universidad Diego Portales, Universidad Mayor.
+
+### 2. Región de Valparaíso (Valparaíso y Viña del Mar)
+- Principales zonas: Cerro Alegre, Cerro Placeres, Plan de Viña, Recreo, Miraflores.
+- Universidades cercanas: Pontificia Universidad Católica de Valparaíso, Universidad Técnica Federico Santa María, Universidad de Valparaíso, Universidad de Playa Ancha.
+
+### 3. Región del Biobío (Gran Concepción)
+- Principales zonas: Barrio Universitario, Concepción Centro, San Pedro de la Paz, Talcahuano.
+- Universidades cercanas: Universidad de Concepción, Universidad del Bío-Bío, Universidad Católica de la Santísima Concepción, Universidad San Sebastián.
+
+### 4. Región de Los Ríos (Valdivia)
+- Principales zonas: Isla Teja, Valdivia Centro, Regional.
+- Universidades cercanas: Universidad Austral de Chile, Universidad San Sebastián Valdivia.
+
+## Tipos de Alojamiento
+
+1. **Habitación Individual**: Dormitorio de uso exclusivo para el estudiante. Incluye cama, escritorio de estudio y closet. Baño y cocina pueden ser privados o compartidos.
+2. **Habitación Compartida**: Dormitorio compartido entre 2 o más estudiantes universitarios, optimizando el costo mensual del arriendo.
+3. **Departamento / Estudio**: Unidad habitacional independiente completa para estudiantes que buscan mayor autonomía.
+
+## Servicios y Amenidades Habituales
+
+- Conexión a Internet de alta velocidad (WiFi) para estudio y videollamadas.
+- Suministros básicos incluidos en el canon mensual (agua potable, electricidad, gas, calefacción).
+- Servicio de alimentación (pensión completa o media pensión: desayuno, almuerzo, once/cena).
+- Servicio de lavandería o acceso libre a lavadora.
+- Espacios de estudio compartidos y áreas comunes de convivencia.
+- Baño privado o baño compartido por piso/sección.
+- Reglas de convivencia específicas (horarios de visitas, políticas sobre fumar y mascotas).
+
+## Roles en la Plataforma
+
+- **Estudiante**: Usuario universitario autenticado con correo institucional o personal verificado. Puede buscar en el mapa, filtrar por cercanía y presupuesto en CLP, guardar favoritos, registrar historial de visitas, sugerir correcciones y emitir evaluaciones detalladas.
+- **Dueño / Arrendador**: Propietario o administrador de una pensión o residencia estudiantil. Posee un panel de gestión para publicar alojamientos, actualizar disponibilidad, gestionar fotografías y atender solicitudes comunitarias.
+
+## Glosario y Preguntas Frecuentes (FAQ)
+
+### ¿BuscaTuNido cobra comisión por arriendo?
+No. BuscaTuNido es una herramienta comunitaria gratuita y libre de comisiones de corretaje. Los contratos, depósitos de garantía y pagos mensuales se convienen y liquidan directamente entre el estudiante y el arrendador.
+
+### ¿Por qué se requiere inicio de sesión obligatorio?
+Para proteger a la comunidad universitaria, evitar fraudes y asegurar que solo miembros verificados emitan evaluaciones del servicio recibido.
+
+### ¿Cómo se calculan las distancias?
+La plataforma utiliza coordenadas georreferenciadas de los campus universitarios chilenos y las residencias para estimar tiempos de traslado a pie, en transporte público o bicicleta.
+
+### ¿Cómo se expresan los precios?
+Todos los valores se expresan en pesos chilenos (CLP) mensuales, indicando explícitamente si los gastos comunes o servicios básicos están incluidos en la mensualidad.
+
+## Directorio de Enlaces y Navegación
+
+- Inicio y Búsqueda: https://buscatunido.cl/
+- Preguntas Frecuentes: https://buscatunido.cl/faq
+- Términos del Servicio: https://buscatunido.cl/terms
+- Política de Privacidad: https://buscatunido.cl/privacy
+- Contacto y Soporte: https://buscatunido.cl/contact

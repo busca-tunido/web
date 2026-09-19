@@ -46,21 +46,12 @@ export const metadata: Metadata = {
     title: 'BuscaTuNido - Pensiones y Residencias Universitarias en Chile',
     description:
       'Plataforma comunitaria para buscar, comparar y validar pensiones universitarias con precios transparentes y verificación estudiantil.',
-    images: [
-      {
-        url: '/assets/map-dark.png',
-        width: 1200,
-        height: 630,
-        alt: 'BuscaTuNido - Plataforma de Pensiones Universitarias',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'BuscaTuNido - Pensiones Universitarias en Chile',
     description:
       'Plataforma comunitaria de arriendo y verificación para estudiantes universitarios en Chile.',
-    images: ['/assets/map-dark.png'],
   },
   icons: {
     icon: [
@@ -102,7 +93,7 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="es" suppressHydrationWarning className={`${inter.variable} ${inter.className}`}>
+    <html lang="es-CL" suppressHydrationWarning className={`${inter.variable} ${inter.className}`}>
       <head>
         <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
         <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
