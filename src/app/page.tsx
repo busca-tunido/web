@@ -8,36 +8,49 @@ function getApiBaseUrl(): string {
   return env.API_INTERNAL_URL.replace(/\/+$/, '');
 }
 
-async function fetchInitialPensions(baseUrl: string): Promise<PensionItem[]> {
+type InitialPensionsFetchResult = {
+  items: PensionItem[];
+  total?: number;
+};
+
+async function fetchInitialPensions(baseUrl: string): Promise<InitialPensionsFetchResult> {
   try {
     const res = await fetch(`${baseUrl}/pensions?limit=12&page=1&sortBy=relevance`, {
       next: { revalidate: 60 },
       signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) {
-      return [];
+      return { items: [] };
     }
     const json = (await res.json()) as {
       data?:
         | {
             items?: ApiPensionPayload[];
+            total?: number;
           }
         | ApiPensionPayload[];
       items?: ApiPensionPayload[];
+      total?: number;
     };
     let rawItems: ApiPensionPayload[] = [];
+    let total: number | undefined;
     if (json.data) {
       if (Array.isArray(json.data)) {
         rawItems = json.data;
       } else if (Array.isArray(json.data.items)) {
         rawItems = json.data.items;
+        total = typeof json.data.total === 'number' ? json.data.total : undefined;
       }
     } else if (Array.isArray(json.items)) {
       rawItems = json.items;
+      total = typeof json.total === 'number' ? json.total : undefined;
     }
-    return rawItems.map(mapRawPensionToPensionItem);
+    return {
+      items: rawItems.map(mapRawPensionToPensionItem),
+      total,
+    };
   } catch {
-    return [];
+    return { items: [] };
   }
 }
 
@@ -177,8 +190,14 @@ export default async function HomePage() {
       fetchInitialUniversities(baseUrl),
     ]);
 
+  const pensionsData =
+    initialPensionsResult.status === 'fulfilled'
+      ? initialPensionsResult.value
+      : { items: [], total: undefined };
+
   const initialData: InitialPrefetchData = {
-    pensions: initialPensionsResult.status === 'fulfilled' ? initialPensionsResult.value : [],
+    pensions: pensionsData.items,
+    totalPensions: pensionsData.total,
     cities: initialCitiesResult.status === 'fulfilled' ? initialCitiesResult.value : [],
     universities:
       initialUniversitiesResult.status === 'fulfilled' ? initialUniversitiesResult.value : [],
