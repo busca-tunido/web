@@ -71,7 +71,7 @@ export function PriceHistogramRangeSlider({
         onChange({ min: minValue, max: nextMax });
       }
     },
-    [minBound, maxBound, minValue, maxValue, totalSpan, step, onChange]
+    [minBound, maxBound, minValue, maxValue, totalSpan, step, onChange],
   );
 
   const handlePointerDown = (thumb: 'min' | 'max', e: React.PointerEvent<HTMLDivElement>) => {
@@ -172,7 +172,7 @@ export function PriceHistogramRangeSlider({
                   className={cn(
                     'w-full rounded-t-xs transition-colors duration-150',
                     isLoading && 'animate-pulse',
-                    isActive ? 'bg-primary' : 'bg-muted/30 dark:bg-muted/40'
+                    isActive ? 'bg-primary' : 'bg-muted/30 dark:bg-muted/40',
                   )}
                 />
               </div>
