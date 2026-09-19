@@ -1,58 +1,108 @@
 'use client';
 
-import { Building2, LogOut } from 'lucide-react';
+import { useMemo } from 'react';
 import { AccountScreen } from '@/components/account/account-screen';
-import { Badge } from '@/components/ui/badge';
-import { BrandLogo } from '@/components/ui/brand-logo';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/lib/auth-context';
+import { LandlordDesktopHeader } from '@/components/landlord/landlord-desktop-header';
+import { LandlordDesktopSidebar } from '@/components/landlord/landlord-desktop-sidebar';
+import { LandlordPensionScreen } from '@/components/landlord/landlord-pension-screen';
+import { LandlordReviewsScreen } from '@/components/landlord/landlord-reviews-screen';
+import { LandlordRoomsScreen } from '@/components/landlord/landlord-rooms-screen';
+import { LandlordBottomNav } from '@/components/layout/landlord-bottom-nav';
+import {
+  LandlordMobileHeader,
+  type LandlordPropertySummary,
+} from '@/components/layout/landlord-mobile-header';
+import { LandlordProvider, type LandlordTab, useLandlord } from '@/contexts/landlord-context';
 
-export function LandlordAppShell() {
-  const { logout } = useAuth();
+export type LandlordAppShellProps = {
+  initialTab?: LandlordTab;
+};
+
+const LandlordAccountSection = AccountScreen;
+
+function LandlordAppShellContent() {
+  const {
+    pensions,
+    selectedPension,
+    setSelectedPension,
+    activeTab,
+    setActiveTab,
+    togglePensionActive,
+  } = useLandlord();
+
+  const propertySummaries = useMemo<LandlordPropertySummary[]>(() => {
+    return pensions.map((p) => ({
+      id: p.id,
+      title: p.title,
+      address: p.address,
+      city: p.city,
+      isActive: p.isActive,
+      totalRooms: p.rooms?.length ?? 0,
+    }));
+  }, [pensions]);
+
+  const handleSelectProperty = (propertyId: string) => {
+    const found = pensions.find((p) => p.id === propertyId);
+    if (found) {
+      setSelectedPension(found);
+    }
+  };
+
+  const handleToggleActive = (active: boolean) => {
+    if (selectedPension) {
+      togglePensionActive(selectedPension.id, active);
+    }
+  };
 
   return (
-    <main className="min-h-screen bg-background text-foreground flex flex-col justify-between transition-colors">
-      <div className="mx-auto w-full max-w-lg md:max-w-4xl flex-1 flex flex-col pb-12">
-        <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur px-4 md:px-8 py-3.5 flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-2">
-            <BrandLogo size="sm" priority={false} />
-            <Badge
-              variant="outline"
-              className="border-primary/40 bg-primary/10 text-primary text-[10px] font-semibold"
-            >
-              Dueño / Propietario
-            </Badge>
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={logout}
-            className="min-h-12 px-3 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-          >
-            <LogOut className="h-4 w-4 mr-1.5" />
-            Salir
-          </Button>
-        </header>
-
-        <div className="px-4 pt-4">
-          <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 flex items-start gap-3 shadow-2xs">
-            <Building2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-            <div className="flex flex-col gap-0.5 text-left">
-              <p className="text-xs font-semibold text-foreground">
-                Panel de gestión de alojamientos en preparación
-              </p>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Por ahora puedes gestionar tu perfil y credenciales.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-1 pt-2">
-          <AccountScreen />
-        </div>
+    <div className="min-h-screen bg-background flex flex-col md:flex-row text-foreground">
+      <LandlordDesktopSidebar className="hidden md:flex" />
+      <div className="flex-1 flex flex-col min-w-0">
+        <LandlordMobileHeader
+          className="md:hidden"
+          properties={propertySummaries}
+          selectedPropertyId={selectedPension?.id}
+          selectedPropertyName={selectedPension?.title}
+          onSelectProperty={handleSelectProperty}
+          isActive={selectedPension?.isActive ?? true}
+          onToggleActive={handleToggleActive}
+        />
+        <LandlordDesktopHeader className="hidden md:flex" />
+        <main className="flex-1 p-4 md:p-8 max-w-6xl w-full mx-auto pb-24 md:pb-12">
+          {activeTab === 'rooms' && (
+            <LandlordRoomsScreen
+              selectedPension={selectedPension}
+              pensionId={selectedPension?.id}
+            />
+          )}
+          {activeTab === 'pension' && (
+            <LandlordPensionScreen
+              pension={selectedPension}
+              pensionId={selectedPension?.id}
+            />
+          )}
+          {activeTab === 'reviews' && (
+            <LandlordReviewsScreen
+              pension={selectedPension}
+              pensionId={selectedPension?.id}
+            />
+          )}
+          {activeTab === 'account' && <LandlordAccountSection />}
+        </main>
+        <LandlordBottomNav
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          className="md:hidden"
+        />
       </div>
-    </main>
+    </div>
+  );
+}
+
+export function LandlordAppShell({ initialTab = 'rooms' }: LandlordAppShellProps) {
+  return (
+    <LandlordProvider initialTab={initialTab}>
+      <LandlordAppShellContent />
+    </LandlordProvider>
   );
 }
