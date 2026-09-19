@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { mapRawPensionToItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
-import type { PensionItem } from '@/lib/types';
+import type { PensionItem, SearchFilters } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 
 export type MapBoundsLike = {
@@ -17,6 +17,7 @@ export type MapBoundsLike = {
 export function useMapViewportPensions(options: {
   initialPensions: PensionItem[];
   activePensionId: string | null;
+  filters?: SearchFilters;
 }): {
   mapPensions: PensionItem[];
   setMapPensions: React.Dispatch<React.SetStateAction<PensionItem[]>>;
@@ -24,8 +25,9 @@ export function useMapViewportPensions(options: {
   handleMapMoveEnd: (bounds: MapBoundsLike, moveOptions?: { immediate?: boolean }) => void;
   fetchPensionsAroundLocation: (lat: number, lng: number, radiusKm?: number) => Promise<void>;
   fetchPensionsForCity: (cityName: string) => Promise<void>;
+  fetchViewportPensions: (bounds: MapBoundsLike) => Promise<void>;
 } {
-  const { initialPensions, activePensionId } = options;
+  const { initialPensions, activePensionId, filters } = options;
   const [mapPensions, setMapPensions] = useState<PensionItem[]>(initialPensions);
   const [isAreaLoading, setIsAreaLoading] = useState<boolean>(false);
 
@@ -38,6 +40,7 @@ export function useMapViewportPensions(options: {
   const moveEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const activeRequestIdRef = useRef<number>(0);
   const isMountedRef = useRef<boolean>(true);
+  const lastBoundsRef = useRef<MapBoundsLike | null>(null);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -73,6 +76,54 @@ export function useMapViewportPensions(options: {
     setMapPensions(updatedList);
   }, []);
 
+  const fetchViewportPensions = useCallback(
+    async (bounds: MapBoundsLike): Promise<void> => {
+      if (!isMountedRef.current) return;
+
+      const currentList = mapPensionsRef.current;
+      const hasAnyVisible = currentList.some((p) => bounds.contains([p.latitude, p.longitude]));
+
+      if (!hasAnyVisible) {
+        setIsAreaLoading(true);
+      }
+
+      const requestId = ++activeRequestIdRef.current;
+
+      try {
+        const res = await pensionsService.fetchPaginatedPensions({
+          minLat: bounds.getSouth(),
+          maxLat: bounds.getNorth(),
+          minLng: bounds.getWest(),
+          maxLng: bounds.getEast(),
+          search: filters?.query || undefined,
+          minPrice: filters?.minPriceClp,
+          maxPrice: filters?.maxPriceClp,
+          roomType: filters?.roomType,
+          limit: 50,
+        });
+
+        if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
+          const mappedItems = res.data.items.map((dto) =>
+            mapRawPensionToItem(dto as unknown as Record<string, unknown>),
+          );
+          updatePensionList(mappedItems);
+        }
+      } catch {
+      } finally {
+        if (requestId === activeRequestIdRef.current && isMountedRef.current) {
+          setIsAreaLoading(false);
+        }
+      }
+    },
+    [
+      updatePensionList,
+      filters?.query,
+      filters?.minPriceClp,
+      filters?.maxPriceClp,
+      filters?.roomType,
+    ],
+  );
+
   const fetchPensionsAroundLocation = useCallback(
     async (lat: number, lng: number, radiusKm = 25): Promise<void> => {
       if (moveEndTimeoutRef.current) {
@@ -87,6 +138,10 @@ export function useMapViewportPensions(options: {
           latitude: lat,
           longitude: lng,
           radiusKm,
+          search: filters?.query || undefined,
+          minPrice: filters?.minPriceClp,
+          maxPrice: filters?.maxPriceClp,
+          roomType: filters?.roomType,
           limit: 50,
         });
 
@@ -103,7 +158,13 @@ export function useMapViewportPensions(options: {
         }
       }
     },
-    [updatePensionList],
+    [
+      updatePensionList,
+      filters?.query,
+      filters?.minPriceClp,
+      filters?.maxPriceClp,
+      filters?.roomType,
+    ],
   );
 
   const fetchPensionsForCity = useCallback(
@@ -118,6 +179,10 @@ export function useMapViewportPensions(options: {
       try {
         const res = await pensionsService.fetchPaginatedPensions({
           city: cityName,
+          search: filters?.query || undefined,
+          minPrice: filters?.minPriceClp,
+          maxPrice: filters?.maxPriceClp,
+          roomType: filters?.roomType,
           limit: 50,
         });
 
@@ -134,63 +199,39 @@ export function useMapViewportPensions(options: {
         }
       }
     },
-    [updatePensionList],
+    [
+      updatePensionList,
+      filters?.query,
+      filters?.minPriceClp,
+      filters?.maxPriceClp,
+      filters?.roomType,
+    ],
   );
 
   const handleMapMoveEnd = useCallback(
     (bounds: MapBoundsLike, moveOptions?: { immediate?: boolean }): void => {
+      lastBoundsRef.current = bounds;
       if (moveEndTimeoutRef.current) {
         clearTimeout(moveEndTimeoutRef.current);
         moveEndTimeoutRef.current = null;
       }
 
-      const executeFetch = async () => {
-        if (!isMountedRef.current) return;
-
-        const currentList = mapPensionsRef.current;
-        const hasAnyVisible = currentList.some((p) => bounds.contains([p.latitude, p.longitude]));
-
-        if (!hasAnyVisible) {
-          setIsAreaLoading(true);
-        }
-
-        const requestId = ++activeRequestIdRef.current;
-
-        try {
-          const res = await pensionsService.fetchPaginatedPensions({
-            minLat: bounds.getSouth(),
-            maxLat: bounds.getNorth(),
-            minLng: bounds.getWest(),
-            maxLng: bounds.getEast(),
-            limit: 50,
-          });
-
-          if (
-            requestId === activeRequestIdRef.current &&
-            isMountedRef.current &&
-            isApiSuccess(res)
-          ) {
-            const mappedItems = res.data.items.map((dto) =>
-              mapRawPensionToItem(dto as unknown as Record<string, unknown>),
-            );
-            updatePensionList(mappedItems);
-          }
-        } catch {
-        } finally {
-          if (requestId === activeRequestIdRef.current && isMountedRef.current) {
-            setIsAreaLoading(false);
-          }
-        }
-      };
-
       if (moveOptions?.immediate) {
-        executeFetch();
+        void fetchViewportPensions(bounds);
       } else {
-        moveEndTimeoutRef.current = setTimeout(executeFetch, 400);
+        moveEndTimeoutRef.current = setTimeout(() => {
+          void fetchViewportPensions(bounds);
+        }, 400);
       }
     },
-    [updatePensionList],
+    [fetchViewportPensions],
   );
+
+  useEffect(() => {
+    if (lastBoundsRef.current) {
+      void fetchViewportPensions(lastBoundsRef.current);
+    }
+  }, [fetchViewportPensions]);
 
   return {
     mapPensions,
@@ -199,5 +240,6 @@ export function useMapViewportPensions(options: {
     handleMapMoveEnd,
     fetchPensionsAroundLocation,
     fetchPensionsForCity,
+    fetchViewportPensions,
   };
 }

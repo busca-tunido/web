@@ -152,6 +152,12 @@ export function DesktopNavbar({
     { id: 'history', label: 'Mis Estadías', icon: History },
   ];
 
+  const handleExecuteSearch = () => {
+    if (activeTab !== 'explore') {
+      onTabChange('explore');
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 hidden w-full border-b border-border/70 bg-background/95 backdrop-blur-xl transition-colors md:block">
       <div className="flex h-16 w-full items-center justify-between gap-4 px-6 lg:px-8 xl:px-10">
@@ -216,7 +222,7 @@ export function DesktopNavbar({
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
-                  onTabChange('map');
+                  handleExecuteSearch();
                 }
               }}
               placeholder="Buscar pensión, ciudad, U..."
@@ -235,10 +241,10 @@ export function DesktopNavbar({
               )}
               <button
                 type="button"
-                onClick={() => onTabChange('map')}
+                onClick={handleExecuteSearch}
                 className="flex h-7 w-7 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:border-primary/50 transition-colors cursor-pointer shadow-xs"
-                title="Buscar en ubicación"
-                aria-label="Buscar en ubicación"
+                title="Buscar"
+                aria-label="Buscar"
               >
                 <Search className="h-3.5 w-3.5" />
               </button>
