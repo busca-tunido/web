@@ -3,16 +3,13 @@
 import {
   AlertCircle,
   Bath,
-  Check,
   ChevronLeft,
   DollarSign,
-  Image as ImageIcon,
   Loader2,
   Minus,
   Plus,
   Save,
   Sparkles,
-  Trash2,
   Upload,
   User,
   Users,
@@ -22,7 +19,6 @@ import Image from 'next/image';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import type { RoomItem, RoomType } from '@/components/landlord/room-item-card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -222,7 +218,7 @@ export function RoomEditorDrawer({
       return;
     }
 
-    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+    if (Number.isNaN(parsedPrice) || parsedPrice <= 0) {
       setErrorMessage('Ingresa un valor mensual de arriendo válido en CLP.');
       return;
     }
@@ -240,7 +236,7 @@ export function RoomEditorDrawer({
         }
       }
 
-      const allImages = [...form.images, ...uploadedUrls];
+      const _allImages = [...form.images, ...uploadedUrls];
       const parsedDeposit = form.deposit.trim() ? Number(form.deposit) : undefined;
       const roomNumberVal = form.roomNumber.trim() || trimmedTitle;
 
@@ -297,7 +293,7 @@ export function RoomEditorDrawer({
 
   const previewPrice = Number(form.monthlyPrice);
   const formattedClpPreview =
-    !isNaN(previewPrice) && previewPrice > 0
+    !Number.isNaN(previewPrice) && previewPrice > 0
       ? `$${previewPrice.toLocaleString('es-CL')} CLP / mes`
       : null;
 
@@ -334,7 +330,8 @@ export function RoomEditorDrawer({
                 {isEditing ? 'Detalles de la Habitación' : 'Configura tu nueva habitación'}
               </DrawerTitle>
               <DrawerDescription className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                Define el tipo de estancia, valor mensual en pesos chilenos y condiciones de arriendo.
+                Define el tipo de estancia, valor mensual en pesos chilenos y condiciones de
+                arriendo.
               </DrawerDescription>
             </DrawerHeader>
 
@@ -364,9 +361,9 @@ export function RoomEditorDrawer({
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Tipo de Habitación
-              </label>
+              </span>
               <div className="grid grid-cols-3 gap-2">
                 {ROOM_TYPE_OPTIONS.map((opt) => {
                   const isSelected = form.type === opt.type;
@@ -415,9 +412,7 @@ export function RoomEditorDrawer({
                     required
                     placeholder="260000"
                     value={form.monthlyPrice}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, monthlyPrice: e.target.value }))
-                    }
+                    onChange={(e) => setForm((prev) => ({ ...prev, monthlyPrice: e.target.value }))}
                     className="w-full min-h-12 pl-9 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                   />
                 </div>
@@ -433,7 +428,8 @@ export function RoomEditorDrawer({
                   htmlFor="room-deposit-input"
                   className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
                 >
-                  Garantía (CLP) <span className="text-[10px] lowercase font-normal">(opcional)</span>
+                  Garantía (CLP){' '}
+                  <span className="text-[10px] lowercase font-normal">(opcional)</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
@@ -539,9 +535,9 @@ export function RoomEditorDrawer({
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Fotos de la Habitación
-                </label>
+                </span>
                 <span className="text-[11px] text-muted-foreground">
                   {form.images.length + newImagePreviews.length} seleccionadas
                 </span>
@@ -624,7 +620,8 @@ export function RoomEditorDrawer({
                 htmlFor="room-desc-textarea"
                 className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
               >
-                Descripción y Equipamiento <span className="text-[10px] lowercase font-normal">(opcional)</span>
+                Descripción y Equipamiento{' '}
+                <span className="text-[10px] lowercase font-normal">(opcional)</span>
               </label>
               <textarea
                 id="room-desc-textarea"

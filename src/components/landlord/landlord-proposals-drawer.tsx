@@ -183,14 +183,10 @@ export function LandlordProposalsDrawer({
     ]);
 
     if (isApiSuccess(proposalsRes)) {
-      const pendingItems = proposalsRes.data.filter(
-        (p) => !p.status || p.status === 'PENDING',
-      );
+      const pendingItems = proposalsRes.data.filter((p) => !p.status || p.status === 'PENDING');
       setProposals(pendingItems);
     } else {
-      setFetchError(
-        proposalsRes.error?.message ?? 'Error al cargar las sugerencias de la pensión.',
-      );
+      setFetchError(proposalsRes.message ?? 'Error al cargar las sugerencias de la pensión.');
     }
 
     if (isApiSuccess(pensionRes)) {
@@ -210,7 +206,9 @@ export function LandlordProposalsDrawer({
     setProcessingIds((prev) => new Set(prev).add(proposalId));
     setActionError(null);
 
-    const response = await proposalsService.reviewProposal(proposalId, { status });
+    const response = await proposalsService.reviewProposal(proposalId, {
+      action: status === 'APPROVED' ? 'APPROVE' : 'REJECT',
+    });
 
     setProcessingIds((prev) => {
       const updated = new Set(prev);
@@ -221,15 +219,12 @@ export function LandlordProposalsDrawer({
     if (isApiSuccess(response)) {
       setProposals((prev) => prev.filter((item) => item.id !== proposalId));
       setFeedbackMessage(
-        status === 'APPROVED'
-          ? 'Sugerencia aprobada exitosamente.'
-          : 'Sugerencia descartada.',
+        status === 'APPROVED' ? 'Sugerencia aprobada exitosamente.' : 'Sugerencia descartada.',
       );
       onProposalReviewed?.();
     } else {
       setActionError(
-        response.error?.message ??
-          'No se pudo completar la acción. Por favor intenta nuevamente.',
+        response.message ?? 'No se pudo completar la acción. Por favor intenta nuevamente.',
       );
     }
   };

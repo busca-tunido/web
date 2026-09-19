@@ -79,9 +79,7 @@ function getHistogramCacheKey(options?: UsePriceHistogramOptions): string {
   return 'price-histogram:default';
 }
 
-export function usePriceHistogram(
-  options?: UsePriceHistogramOptions,
-): UsePriceHistogramResult {
+export function usePriceHistogram(options?: UsePriceHistogramOptions): UsePriceHistogramResult {
   const enabled = options?.enabled ?? true;
   const ttlMs = options?.ttlMs ?? 5 * 60 * 1000;
 
@@ -94,6 +92,7 @@ export function usePriceHistogram(
       options?.userLocation?.latitude,
       options?.userLocation?.longitude,
       options?.radiusKm,
+      options,
     ],
   );
 
@@ -124,14 +123,10 @@ export function usePriceHistogram(
     options?.radiusKm,
   ]);
 
-  const queryResult = useCachedQuery<PriceHistogramResponse>(
-    enabled ? cacheKey : null,
-    fetcher,
-    {
-      ttlMs,
-      enabled,
-    },
-  );
+  const queryResult = useCachedQuery<PriceHistogramResponse>(enabled ? cacheKey : null, fetcher, {
+    ttlMs,
+    enabled,
+  });
 
   return {
     data: queryResult.data ?? (queryResult.error ? DEFAULT_PRICE_HISTOGRAM : undefined),

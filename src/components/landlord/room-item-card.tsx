@@ -1,6 +1,6 @@
 'use client';
 
-import { Bath, Bed, BedDouble, Check, Edit3, Loader2, Sparkles, User, Users } from 'lucide-react';
+import { Bath, Edit3, Loader2, Sparkles, User, Users } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -47,12 +47,7 @@ export type RoomItemCardProps = {
 const FALLBACK_ROOM_IMAGE =
   'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80';
 
-export function RoomItemCard({
-  room,
-  onEdit,
-  onToggleAvailability,
-  className,
-}: RoomItemCardProps) {
+export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: RoomItemCardProps) {
   const [isAvailable, setIsAvailable] = useState<boolean>(room.isAvailable);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
@@ -62,8 +57,7 @@ export function RoomItemCard({
   }, [room.isAvailable]);
 
   const rawTitle = room.title || room.name || room.roomNumber || 'Habitación';
-  const resolvedType: RoomType =
-    room.type ?? (room.roomType === 'SHARED' ? 'SHARED' : 'SINGLE');
+  const resolvedType: RoomType = room.type ?? (room.roomType === 'SHARED' ? 'SHARED' : 'SINGLE');
   const price = room.monthlyPrice ?? room.priceMonthlyClp ?? 0;
   const isPrivateBath = Boolean(room.hasPrivateBathroom ?? room.bathType === 'PRIVATE');
   const beds = room.totalBeds ?? room.bedCount ?? 1;
@@ -119,9 +113,7 @@ export function RoomItemCard({
             <div
               className={cn(
                 'absolute top-1.5 left-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold shadow-xs backdrop-blur-md',
-                isAvailable
-                  ? 'bg-emerald-500/90 text-white'
-                  : 'bg-zinc-900/80 text-zinc-300',
+                isAvailable ? 'bg-emerald-500/90 text-white' : 'bg-zinc-900/80 text-zinc-300',
               )}
             >
               {isAvailable ? 'Disponible' : 'Ocupada'}
@@ -217,9 +209,7 @@ export function RoomItemCard({
               <span
                 className={cn(
                   'text-xs font-bold leading-tight',
-                  isAvailable
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-muted-foreground',
+                  isAvailable ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground',
                 )}
               >
                 {isAvailable ? 'Disponible' : 'Ocupada'}

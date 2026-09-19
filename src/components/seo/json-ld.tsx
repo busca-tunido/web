@@ -1,8 +1,18 @@
-import type { Accommodation, ItemList, Organization, WebSite, WithContext } from 'schema-dts';
+import type { ItemList, LodgingBusiness, Organization, WebSite, WithContext } from 'schema-dts';
 import { env } from '@/env';
 import type { PensionItem } from '@/lib/types';
 
 const APP_URL = env.NEXT_PUBLIC_APP_URL;
+
+export type AccommodationWithOffers = WithContext<LodgingBusiness> & {
+  offers?: {
+    '@type': 'Offer';
+    price: number;
+    priceCurrency: string;
+    availability: string;
+    unitText?: string;
+  };
+};
 
 type RootJsonLdProps = {
   pensions?: PensionItem[];
@@ -11,10 +21,10 @@ type RootJsonLdProps = {
 export function generateAccommodationSchema(
   pension: PensionItem,
   appUrl: string = APP_URL,
-): WithContext<Accommodation> {
+): AccommodationWithOffers {
   return {
     '@context': 'https://schema.org',
-    '@type': 'Accommodation',
+    '@type': 'LodgingBusiness',
     name: pension.title,
     description:
       pension.description || `Pensión universitaria en ${pension.city}, ${pension.neighborhood}.`,
@@ -139,12 +149,12 @@ export function RootJsonLd({ pensions = [] }: RootJsonLdProps = {}) {
 
   const itemListSchema: WithContext<ItemList> = generateItemListSchema(pensions, APP_URL);
 
-  const accommodationSchema: WithContext<Accommodation> =
+  const accommodationSchema: AccommodationWithOffers =
     pensions.length > 0
       ? generateAccommodationSchema(pensions[0], APP_URL)
       : {
           '@context': 'https://schema.org',
-          '@type': 'Accommodation',
+          '@type': 'LodgingBusiness',
           name: 'Pensiones y Residencias Universitarias en Chile',
           description:
             'Alojamientos y pensiones universitarias con habitaciones amobladas, wifi, servicios incluidos y verificación estudiantil.',
