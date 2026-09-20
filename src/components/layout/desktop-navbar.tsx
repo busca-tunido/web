@@ -187,7 +187,12 @@ export function DesktopNavbar({
                   key={item.id}
                   id={`desktop-nav-${item.id}`}
                   type="button"
-                  onClick={() => onTabChange(item.id)}
+                  onClick={() => {
+                    onTabChange(item.id);
+                    if (!user && (item.id === 'favorites' || item.id === 'history')) {
+                      onOpenAuthModal?.();
+                    }
+                  }}
                   title={item.label}
                   aria-label={item.label}
                   className={`relative flex items-center gap-2 rounded-xl px-2.5 xl:px-3 py-2 text-xs font-semibold transition-colors cursor-pointer ${

@@ -4,10 +4,13 @@ import { Heart, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { Suspense, useMemo } from 'react';
+import { FavoritesGuestIncentive } from '@/components/favorites/favorites-guest-incentive';
 import { Button } from '@/components/ui/button';
 import { FavoritesSkeleton } from '@/components/ui/skeletons/favorites-skeleton';
+import { useNavigation } from '@/contexts/navigation-context';
 import { useStudentFavorites } from '@/hooks/use-student-favorites';
 import { mapRawPensionToItem } from '@/lib/api-client';
+import { useAuth } from '@/lib/auth-context';
 import type { PensionItem } from '@/lib/types';
 
 type FavoritesScreenProps = {
@@ -16,7 +19,18 @@ type FavoritesScreenProps = {
   onExplore: () => void;
 };
 
-export function FavoritesScreen({ allPensions, onSelectPension, onExplore }: FavoritesScreenProps) {
+export function FavoritesScreen(props: FavoritesScreenProps) {
+  const { isAuthenticated } = useAuth();
+  const { openAuthModal } = useNavigation();
+
+  if (!isAuthenticated) {
+    return <FavoritesGuestIncentive onOpenAuth={openAuthModal} onExplore={props.onExplore} />;
+  }
+
+  return <FavoritesContent {...props} />;
+}
+
+function FavoritesContent({ allPensions, onSelectPension, onExplore }: FavoritesScreenProps) {
   const { favorites, isFavorite, toggleFavorite, errorMessage, clearError, favoritePensions } =
     useStudentFavorites();
 

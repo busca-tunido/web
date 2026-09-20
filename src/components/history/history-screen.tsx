@@ -3,10 +3,13 @@
 import { Calendar, CheckCircle2, History, MessageSquare, Star } from 'lucide-react';
 import Image from 'next/image';
 import { Suspense, useState } from 'react';
+import { HistoryGuestIncentive } from '@/components/history/history-guest-incentive';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { HistorySkeleton } from '@/components/ui/skeletons/history-skeleton';
+import { useNavigation } from '@/contexts/navigation-context';
 import { useStayHistory } from '@/hooks/use-stay-history';
+import { useAuth } from '@/lib/auth-context';
 import type { StayHistoryItem } from '@/lib/types';
 import { UserReviewModal } from './user-review-modal';
 
@@ -14,7 +17,18 @@ type HistoryScreenProps = {
   onExplore?: () => void;
 };
 
-export function HistoryScreen({ onExplore }: HistoryScreenProps) {
+export function HistoryScreen(props: HistoryScreenProps) {
+  const { isAuthenticated } = useAuth();
+  const { openAuthModal } = useNavigation();
+
+  if (!isAuthenticated) {
+    return <HistoryGuestIncentive onOpenAuth={openAuthModal} onExplore={props.onExplore} />;
+  }
+
+  return <HistoryContent {...props} />;
+}
+
+function HistoryContent({ onExplore }: HistoryScreenProps) {
   const { stays, formatDateRange } = useStayHistory();
   const [selectedReviewStay, setSelectedReviewStay] = useState<StayHistoryItem | null>(null);
 

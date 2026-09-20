@@ -243,7 +243,7 @@ function StudentAppShellContent() {
         </div>
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={navigateTab} />
+      <BottomNav activeTab={activeTab} onTabChange={navigateTab} onOpenAuthModal={openAuthModal} />
 
       <PensionDetailModal
         pension={selectedPension}

@@ -8,10 +8,11 @@ import type { NavTab } from '@/lib/types';
 type BottomNavProps = {
   activeTab: NavTab;
   onTabChange: (tab: NavTab) => void;
+  onOpenAuthModal?: () => void;
 };
 
-export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
-  const { favorites } = useAuth();
+export function BottomNav({ activeTab, onTabChange, onOpenAuthModal }: BottomNavProps) {
+  const { user, favorites } = useAuth();
 
   const navItems: Array<{
     id: NavTab;
@@ -42,7 +43,16 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
               id={`nav-tab-${item.id}`}
               type="button"
               whileTap={{ scale: 0.9 }}
-              onClick={() => onTabChange(item.id)}
+              onClick={() => {
+                if (item.id === 'account' && !user) {
+                  onOpenAuthModal?.();
+                  return;
+                }
+                onTabChange(item.id);
+                if (!user && (item.id === 'favorites' || item.id === 'history')) {
+                  onOpenAuthModal?.();
+                }
+              }}
               className={`group relative flex min-h-[48px] min-w-[56px] flex-1 flex-col items-center justify-center rounded-xl py-1 text-xs font-medium transition-colors ${
                 isActive
                   ? 'text-primary font-semibold'
