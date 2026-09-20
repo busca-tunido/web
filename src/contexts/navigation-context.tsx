@@ -153,6 +153,10 @@ export function NavigationProvider({
   return <NavigationContext.Provider value={value}>{children}</NavigationContext.Provider>;
 }
 
+export function useOptionalNavigation(): NavigationContextType | null {
+  return useContext(NavigationContext);
+}
+
 export function useNavigation(): NavigationContextType {
   const context = useContext(NavigationContext);
   if (!context) {

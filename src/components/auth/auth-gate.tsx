@@ -3,7 +3,7 @@
 import { Lock } from 'lucide-react';
 import type React from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigation } from '@/contexts/navigation-context';
+import { useOptionalNavigation } from '@/contexts/navigation-context';
 import { useAuth } from '@/lib/auth-context';
 
 export type AuthGateProps = {
@@ -12,6 +12,7 @@ export type AuthGateProps = {
   description?: string;
   buttonText?: string;
   previewHeight?: string;
+  onOpenAuthModal?: () => void;
 };
 
 export function AuthGate({
@@ -20,13 +21,16 @@ export function AuthGate({
   description = 'Accede con tu correo institucional universitario para conocer las experiencias de otros estudiantes, reglas de convivencia y contacto directo.',
   buttonText = 'Iniciar sesión o regístrate',
   previewHeight = '200px',
+  onOpenAuthModal,
 }: AuthGateProps) {
   const { isAuthenticated } = useAuth();
-  const { openAuthModal } = useNavigation();
+  const navigation = useOptionalNavigation();
 
   if (isAuthenticated) {
     return <>{children}</>;
   }
+
+  const handleOpenAuth = onOpenAuthModal ?? navigation?.openAuthModal;
 
   return (
     <div className="relative w-full overflow-hidden rounded-2xl border border-border/80 bg-card/40 my-2">
@@ -52,7 +56,7 @@ export function AuthGate({
         <Button
           id="btn-auth-gate-login"
           type="button"
-          onClick={openAuthModal}
+          onClick={handleOpenAuth}
           className="h-10 px-5 text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 shadow-md active:scale-95 transition cursor-pointer"
         >
           {buttonText}

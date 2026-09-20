@@ -30,7 +30,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { useNavigation } from '@/contexts/navigation-context';
+import { useOptionalNavigation } from '@/contexts/navigation-context';
 import { usePensionDetail } from '@/hooks/use-pension-detail';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { useAuth } from '@/lib/auth-context';
@@ -56,7 +56,8 @@ export function PensionDetailModal({
   onClose,
 }: PensionDetailModalProps) {
   const { user, isFavorite, toggleFavorite } = useAuth();
-  const { openAuthModal } = useNavigation();
+  const navigation = useOptionalNavigation();
+  const openAuthModal = navigation?.openAuthModal;
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
   const [isAmenitiesModalOpen, setIsAmenitiesModalOpen] = useState(false);
@@ -176,7 +177,7 @@ export function PensionDetailModal({
                   type="button"
                   onClick={() => {
                     if (!user) {
-                      openAuthModal();
+                      openAuthModal?.();
                       return;
                     }
                     toggleFavorite(pension.id);
@@ -222,7 +223,7 @@ export function PensionDetailModal({
                   type="button"
                   onClick={() => {
                     if (!user) {
-                      openAuthModal();
+                      openAuthModal?.();
                       return;
                     }
                     setIsReviewsModalOpen(true);
