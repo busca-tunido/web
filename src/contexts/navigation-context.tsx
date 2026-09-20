@@ -20,6 +20,9 @@ export type NavigationContextType = {
   isFiltersOpen: boolean;
   openFilters: () => void;
   closeFilters: () => void;
+  isAuthModalOpen: boolean;
+  openAuthModal: () => void;
+  closeAuthModal: () => void;
   urlCity: string | null;
   urlUni: string | null;
   urlPensionId: string | null;
@@ -60,6 +63,10 @@ export function NavigationProvider({
     defaultTab: initialTab,
     initialState: initialNavigationState,
   });
+
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const openAuthModal = useCallback(() => setIsAuthModalOpen(true), []);
+  const closeAuthModal = useCallback(() => setIsAuthModalOpen(false), []);
 
   const [mapTargetCity, setMapTargetCity] = useState<string | null>(urlCity);
   const [selectedUniversity, setSelectedUniversity] = useState<UniversityInfo | null>(null);
@@ -110,6 +117,9 @@ export function NavigationProvider({
       isFiltersOpen,
       openFilters,
       closeFilters,
+      isAuthModalOpen,
+      openAuthModal,
+      closeAuthModal,
       urlCity,
       urlUni,
       urlPensionId,
@@ -129,6 +139,9 @@ export function NavigationProvider({
       isFiltersOpen,
       openFilters,
       closeFilters,
+      isAuthModalOpen,
+      openAuthModal,
+      closeAuthModal,
       urlCity,
       urlUni,
       urlPensionId,

@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Home, Lock, Mail } from 'lucide-react';
+import { ArrowRight, Home, Lock, Mail, X } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { EmailCheckStep } from '@/components/auth/email-check-step';
@@ -19,7 +19,13 @@ import {
 } from '@/components/ui/drawer';
 import { useAuth } from '@/lib/auth-context';
 
-export function AuthScreen() {
+export type AuthScreenProps = {
+  onSuccess?: () => void;
+  onClose?: () => void;
+  isModal?: boolean;
+};
+
+export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenProps = {}) {
   const { login } = useAuth();
   const [landlordEmail, setLandlordEmail] = useState('propietario.demo@buscatunido.cl');
   const [landlordPassword, setLandlordPassword] = useState('Password123!');
@@ -40,6 +46,7 @@ export function AuthScreen() {
     try {
       await login(landlordEmail, landlordPassword);
       setIsDrawerOpen(false);
+      onSuccess?.();
     } catch {
       setLandlordError('Error al autenticar. Verifica las credenciales.');
     } finally {
@@ -50,9 +57,21 @@ export function AuthScreen() {
   return (
     <div
       id="auth-screen-container"
-      className="flex min-h-screen flex-col justify-between bg-background px-4 py-8 text-foreground transition-colors"
+      className="flex min-h-full w-full flex-col justify-between py-6 px-4 text-foreground transition-colors"
     >
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
+      {isModal && onClose && (
+        <button
+          id="btn-close-auth-screen"
+          type="button"
+          onClick={onClose}
+          aria-label="Cerrar ventana de autenticación"
+          className="fixed top-5 right-5 sm:top-6 sm:right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground hover:bg-secondary transition cursor-pointer"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      )}
+
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center my-auto py-4">
         <div className="mb-6 flex items-center justify-center">
           <BrandLogo size="md" priority={false} />
         </div>
@@ -68,7 +87,7 @@ export function AuthScreen() {
 
         <Card className="border-border bg-card shadow-lg">
           <CardContent className="p-6 flex flex-col gap-6">
-            <EmailCheckStep />
+            <EmailCheckStep onSuccess={onSuccess} />
 
             <div className="relative flex items-center justify-center">
               <div className="w-full border-t border-border" />

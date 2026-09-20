@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 import { AccountScreen } from '@/components/account/account-screen';
+import { AuthModal } from '@/components/auth/auth-modal';
 import { NetworkErrorBanner } from '@/components/common/network-error-state';
 import { ExploreScreen } from '@/components/explore/explore-screen';
 import { FavoritesScreen } from '@/components/favorites/favorites-screen';
@@ -42,6 +43,9 @@ function StudentAppShellContent() {
     isFiltersOpen,
     openFilters,
     closeFilters,
+    isAuthModalOpen,
+    openAuthModal,
+    closeAuthModal,
     urlPensionId,
     setCityAndUni,
     handleSelectCity,
@@ -143,6 +147,7 @@ function StudentAppShellContent() {
         selectedCityName={filters.city}
         onClearCity={clearCity}
         onResetFilters={handleResetAll}
+        onOpenAuthModal={openAuthModal}
       />
 
       <div
@@ -152,13 +157,15 @@ function StudentAppShellContent() {
             : 'mx-auto max-w-lg md:max-w-7xl md:px-6 lg:px-8 pb-20 md:pb-12'
         }`}
       >
-        <TopSearchBar
-          filters={filters}
-          onFilterChange={setFilters}
-          onOpenFilterDrawer={openFilters}
-          selectedCityName={filters.city}
-          onClearCity={clearCity}
-        />
+        {activeTab !== 'account' && (
+          <TopSearchBar
+            filters={filters}
+            onFilterChange={setFilters}
+            onOpenFilterDrawer={openFilters}
+            selectedCityName={filters.city}
+            onClearCity={clearCity}
+          />
+        )}
 
         {pensionsError && (
           <div className="px-4 pt-2">
@@ -250,6 +257,8 @@ function StudentAppShellContent() {
         filters={filters}
         onApply={setFilters}
       />
+
+      <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />
     </main>
   );
 }

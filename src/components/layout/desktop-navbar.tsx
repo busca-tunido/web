@@ -29,6 +29,7 @@ type DesktopNavbarProps = {
   selectedCityName?: string;
   onClearCity?: () => void;
   onResetFilters?: () => void;
+  onOpenAuthModal?: () => void;
 };
 
 type FilterChipItem = {
@@ -120,6 +121,7 @@ export function DesktopNavbar({
   selectedCityName,
   onClearCity,
   onResetFilters,
+  onOpenAuthModal,
 }: DesktopNavbarProps) {
   const { user, favorites, logout } = useAuth();
 
@@ -323,8 +325,9 @@ export function DesktopNavbar({
             </div>
           ) : (
             <button
+              id="desktop-navbar-btn-login"
               type="button"
-              onClick={() => onTabChange('account')}
+              onClick={onOpenAuthModal ?? (() => onTabChange('account'))}
               className="flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary transition cursor-pointer"
             >
               <UserIcon className="h-3.5 w-3.5" />
