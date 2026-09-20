@@ -1,8 +1,6 @@
-import { ArrowLeft, LogIn } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { BrandLogo } from '@/components/ui/brand-logo';
-import { buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 type PublicNavHeaderProps = {
   title?: string;
@@ -26,23 +24,10 @@ export function PublicNavHeader({ title }: PublicNavHeaderProps) {
         </div>
 
         {title && (
-          <span className="hidden text-sm font-semibold text-muted-foreground sm:inline-block">
+          <span className="text-sm font-semibold text-muted-foreground sm:inline-block">
             {title}
           </span>
         )}
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/"
-            className={cn(
-              buttonVariants({ variant: 'default' }),
-              'min-h-12 px-4 font-semibold text-primary-foreground shadow-sm flex items-center gap-2',
-            )}
-          >
-            <LogIn className="h-4 w-4" />
-            <span>Iniciar sesión</span>
-          </Link>
-        </div>
       </div>
     </header>
   );
