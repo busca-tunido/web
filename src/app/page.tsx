@@ -1,7 +1,9 @@
+import { headers } from 'next/headers';
 import { type InitialPrefetchData, RoleRouter } from '@/components/shells/role-router';
 import { env } from '@/env';
 import { type ApiPensionPayload, mapRawPensionToPensionItem } from '@/lib/api-client';
 import { getCityImageUrl, getUniversityImageUrl } from '@/lib/location-images';
+import { extractServerGeoLocation } from '@/lib/server-geo';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
 import { parseSearchParams } from '@/lib/url-navigation';
 
@@ -190,24 +192,22 @@ export default async function HomePage(props: HomePageProps) {
   const initialNavState = parseSearchParams(resolvedSearchParams, 'explore');
   const baseUrl = getApiBaseUrl();
 
-  const [initialPensionsResult, initialCitiesResult, initialUniversitiesResult] =
-    await Promise.allSettled([
-      fetchInitialPensions(baseUrl),
-      fetchInitialCities(baseUrl),
-      fetchInitialUniversities(baseUrl),
+  const [requestHeaders, initialPensionsResult, initialCitiesResult, initialUniversitiesResult] =
+    await Promise.all([
+      headers(),
+      Promise.resolve().then(() => fetchInitialPensions(baseUrl)),
+      Promise.resolve().then(() => fetchInitialCities(baseUrl)),
+      Promise.resolve().then(() => fetchInitialUniversities(baseUrl)),
     ]);
 
-  const pensionsData =
-    initialPensionsResult.status === 'fulfilled'
-      ? initialPensionsResult.value
-      : { items: [], total: undefined };
+  const serverGeo = extractServerGeoLocation(requestHeaders);
 
   const initialData: InitialPrefetchData = {
-    pensions: pensionsData.items,
-    totalPensions: pensionsData.total,
-    cities: initialCitiesResult.status === 'fulfilled' ? initialCitiesResult.value : [],
-    universities:
-      initialUniversitiesResult.status === 'fulfilled' ? initialUniversitiesResult.value : [],
+    pensions: initialPensionsResult.items,
+    totalPensions: initialPensionsResult.total,
+    cities: initialCitiesResult,
+    universities: initialUniversitiesResult,
+    serverGeo,
   };
 
   return (

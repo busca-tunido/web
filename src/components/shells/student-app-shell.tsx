@@ -14,6 +14,7 @@ import { FilterDrawer } from '@/components/layout/filter-drawer';
 import { TopSearchBar } from '@/components/layout/top-search-bar';
 import { MapScreen } from '@/components/map/map-screen';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
+import type { InitialPrefetchData } from '@/components/shells/role-router';
 import { NavigationProvider, useNavigation } from '@/contexts/navigation-context';
 import { SearchFiltersProvider, useSearchFilters } from '@/contexts/search-filters-context';
 import { useStudentPensionsFeed } from '@/hooks/use-student-pensions-feed';
@@ -22,11 +23,12 @@ import type { CityInfo, NavTab, UniversityInfo } from '@/lib/types';
 import { useUserLocation } from '@/lib/use-user-location';
 
 export type StudentAppShellProps = {
+  initialData?: InitialPrefetchData;
   initialTab?: NavTab;
   initialNavigationState?: Partial<UrlNavigationState>;
 };
 
-function StudentAppShellContent() {
+function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetchData }) {
   const {
     activeTab,
     navigateTab,
@@ -53,8 +55,11 @@ function StudentAppShellContent() {
 
   const { filters, setFilters, resetFilters, clearCity } = useSearchFilters();
 
-  const [tentativeCities, setTentativeCities] = useState<CityInfo[]>([]);
-  const { userLocation, currentCity, requestLocation } = useUserLocation(tentativeCities);
+  const [tentativeCities, setTentativeCities] = useState<CityInfo[]>(initialData?.cities ?? []);
+  const { userLocation, currentCity, requestLocation } = useUserLocation(
+    tentativeCities,
+    initialData?.serverGeo,
+  );
 
   const effectiveFilters = useMemo(
     () => ({
@@ -263,7 +268,11 @@ function StudentAppShellContent() {
   );
 }
 
-function StudentAppShellWithProviders() {
+type StudentAppShellWithProvidersProps = {
+  initialData?: InitialPrefetchData;
+};
+
+function StudentAppShellWithProviders({ initialData }: StudentAppShellWithProvidersProps) {
   const { urlCity, urlUni } = useNavigation();
   const initialFilters = useMemo(
     () => ({
@@ -275,18 +284,19 @@ function StudentAppShellWithProviders() {
 
   return (
     <SearchFiltersProvider initialFilters={initialFilters}>
-      <StudentAppShellContent />
+      <StudentAppShellContent initialData={initialData} />
     </SearchFiltersProvider>
   );
 }
 
 export function StudentAppShell({
+  initialData,
   initialTab = 'explore',
   initialNavigationState,
 }: StudentAppShellProps) {
   return (
     <NavigationProvider initialTab={initialTab} initialNavigationState={initialNavigationState}>
-      <StudentAppShellWithProviders />
+      <StudentAppShellWithProviders initialData={initialData} />
     </NavigationProvider>
   );
 }

@@ -1,11 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { ServerGeoLocation } from './server-geo';
 import type { CityInfo } from './types';
 
 export type UserCoordinates = {
   latitude: number;
   longitude: number;
+};
+
+export const SANTIAGO_COORDINATES: UserCoordinates = {
+  latitude: -33.4489,
+  longitude: -70.6693,
 };
 
 export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -61,95 +67,83 @@ export function sortCitiesWithCurrentFirst(
   return target ? [target, ...others] : updated;
 }
 
-export function useUserLocation(cities: CityInfo[]) {
-  const [userLocation, setUserLocation] = useState<UserCoordinates | null>(null);
+export function useUserLocation(cities: CityInfo[], serverGeo?: ServerGeoLocation | null) {
+  const initialCoordinates = useMemo<UserCoordinates>(() => {
+    if (
+      typeof serverGeo?.latitude === 'number' &&
+      !Number.isNaN(serverGeo.latitude) &&
+      typeof serverGeo?.longitude === 'number' &&
+      !Number.isNaN(serverGeo.longitude)
+    ) {
+      return { latitude: serverGeo.latitude, longitude: serverGeo.longitude };
+    }
+    return SANTIAGO_COORDINATES;
+  }, [serverGeo]);
+
+  const [userLocation, setUserLocation] = useState<UserCoordinates>(initialCoordinates);
+  const [hasGpsCoordinates, setHasGpsCoordinates] = useState<boolean>(false);
   const [isDetecting, setIsDetecting] = useState<boolean>(true);
-  const [currentCity, setCurrentCity] = useState<CityInfo | null>(null);
 
-  const fetchPublicIpLocation = useCallback(async (): Promise<UserCoordinates | null> => {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
-      const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (res.ok) {
-        const data = await res.json();
-        if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
-          return { latitude: data.latitude, longitude: data.longitude };
-        }
-      }
-    } catch (_err) {}
-
-    try {
-      const controller2 = new AbortController();
-      const timeoutId2 = setTimeout(() => controller2.abort(), 4000);
-      const res2 = await fetch('https://ipwho.is/', { signal: controller2.signal });
-      clearTimeout(timeoutId2);
-      if (res2.ok) {
-        const data2 = await res2.json();
-        if (typeof data2.latitude === 'number' && typeof data2.longitude === 'number') {
-          return { latitude: data2.latitude, longitude: data2.longitude };
-        }
-      }
-    } catch (_err) {}
-
-    return null;
-  }, []);
-
-  const detectLocation = useCallback(async () => {
-    setIsDetecting(true);
-
+  const requestLocation = useCallback(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
-      const ipCoords = await fetchPublicIpLocation();
-      if (ipCoords) {
-        setUserLocation(ipCoords);
-        const closest = findClosestCity(cities, ipCoords);
-        setCurrentCity(closest);
-      }
       setIsDetecting(false);
       return;
     }
 
+    setIsDetecting(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const coords = {
+        setUserLocation({
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
-        };
-        setUserLocation(coords);
-        const closest = findClosestCity(cities, coords);
-        setCurrentCity(closest);
+        });
+        setHasGpsCoordinates(true);
         setIsDetecting(false);
       },
-      async (_err) => {
-        const ipCoords = await fetchPublicIpLocation();
-        if (ipCoords) {
-          setUserLocation(ipCoords);
-          const closest = findClosestCity(cities, ipCoords);
-          setCurrentCity(closest);
-        } else if (cities.length > 0) {
-          const santiago = cities.find((c) => c.name.toLowerCase() === 'santiago') ?? cities[0];
-          setUserLocation({ latitude: santiago.latitude, longitude: santiago.longitude });
-          setCurrentCity(santiago);
-        }
+      () => {
         setIsDetecting(false);
       },
       {
-        timeout: 6000,
+        timeout: 5000,
         enableHighAccuracy: true,
-        maximumAge: 120000,
+        maximumAge: 300000,
       },
     );
-  }, [cities, fetchPublicIpLocation]);
+  }, []);
 
   useEffect(() => {
-    detectLocation();
-  }, [detectLocation]);
+    requestLocation();
+  }, [requestLocation]);
+
+  const currentCity = useMemo(() => {
+    if (cities.length === 0) return null;
+
+    if (hasGpsCoordinates) {
+      const closest = findClosestCity(cities, userLocation);
+      if (closest) return closest;
+    }
+
+    if (serverGeo?.city) {
+      const serverCityMatch = cities.find(
+        (c) => c.name.toLowerCase() === serverGeo.city?.toLowerCase(),
+      );
+      if (serverCityMatch) {
+        return serverCityMatch;
+      }
+    }
+
+    if (userLocation) {
+      const closest = findClosestCity(cities, userLocation);
+      if (closest) return closest;
+    }
+
+    return cities.find((c) => c.name.toLowerCase() === 'santiago') ?? cities[0] ?? null;
+  }, [cities, userLocation, serverGeo, hasGpsCoordinates]);
 
   return {
     userLocation,
     currentCity,
     isDetecting,
-    requestLocation: detectLocation,
+    requestLocation,
   };
 }

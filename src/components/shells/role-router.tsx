@@ -8,6 +8,7 @@ import { StudentAppShell, type StudentAppShellProps } from '@/components/shells/
 import type { UrlNavigationState } from '@/hooks/use-url-navigation-state';
 import { useUserRole } from '@/hooks/use-user-role';
 import { useAuth } from '@/lib/auth-context';
+import type { ServerGeoLocation } from '@/lib/server-geo';
 import type { CityInfo, NavTab, PensionItem, UniversityInfo } from '@/lib/types';
 
 export type InitialPrefetchData = {
@@ -15,6 +16,7 @@ export type InitialPrefetchData = {
   cities?: CityInfo[];
   universities?: UniversityInfo[];
   totalPensions?: number;
+  serverGeo?: ServerGeoLocation;
 };
 
 export type RoleRouterProps = {
