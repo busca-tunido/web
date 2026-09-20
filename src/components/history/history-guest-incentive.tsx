@@ -1,15 +1,14 @@
 'use client';
 
-import { Building2, Compass, History, ShieldCheck } from 'lucide-react';
+import { Building2, History, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 export type HistoryGuestIncentiveProps = {
   onOpenAuth: () => void;
-  onExplore?: () => void;
 };
 
-export function HistoryGuestIncentive({ onOpenAuth, onExplore }: HistoryGuestIncentiveProps) {
+export function HistoryGuestIncentive({ onOpenAuth }: HistoryGuestIncentiveProps) {
   return (
     <div
       id="history-guest-incentive"
@@ -18,9 +17,6 @@ export function HistoryGuestIncentive({ onOpenAuth, onExplore }: HistoryGuestInc
       <div className="relative mb-6">
         <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary border border-primary/20 shadow-inner">
           <History className="h-8 w-8 text-primary" />
-        </div>
-        <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow">
-          <ShieldCheck className="h-3.5 w-3.5" />
         </div>
       </div>
 
@@ -65,18 +61,6 @@ export function HistoryGuestIncentive({ onOpenAuth, onExplore }: HistoryGuestInc
         >
           Iniciar sesión o registrarme
         </Button>
-        {onExplore && (
-          <Button
-            id="btn-history-guest-explore"
-            type="button"
-            variant="outline"
-            onClick={onExplore}
-            className="flex-1 h-11 text-xs font-semibold border-border hover:bg-secondary active:scale-95 transition cursor-pointer"
-          >
-            <Compass className="h-3.5 w-3.5 mr-1.5" />
-            Explorar alojamientos
-          </Button>
-        )}
       </div>
     </div>
   );

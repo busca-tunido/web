@@ -24,7 +24,7 @@ export function FavoritesScreen(props: FavoritesScreenProps) {
   const { openAuthModal } = useNavigation();
 
   if (!isAuthenticated) {
-    return <FavoritesGuestIncentive onOpenAuth={openAuthModal} onExplore={props.onExplore} />;
+    return <FavoritesGuestIncentive onOpenAuth={openAuthModal} />;
   }
 
   return <FavoritesContent {...props} />;

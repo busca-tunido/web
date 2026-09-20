@@ -41,6 +41,7 @@ export function BrandLogo({
           priority={priority}
           className="object-contain shrink-0"
           style={{ width: iconDimensions.width, height: iconDimensions.height }}
+          loading="eager"
           suppressHydrationWarning
         />
         <span className={cn('font-black tracking-tight text-foreground leading-none', textClasses)}>

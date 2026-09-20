@@ -1,15 +1,14 @@
 'use client';
 
-import { Compass, Heart, Sparkles } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 export type FavoritesGuestIncentiveProps = {
   onOpenAuth: () => void;
-  onExplore: () => void;
 };
 
-export function FavoritesGuestIncentive({ onOpenAuth, onExplore }: FavoritesGuestIncentiveProps) {
+export function FavoritesGuestIncentive({ onOpenAuth }: FavoritesGuestIncentiveProps) {
   return (
     <div
       id="favorites-guest-incentive"
@@ -18,9 +17,6 @@ export function FavoritesGuestIncentive({ onOpenAuth, onExplore }: FavoritesGues
       <div className="relative mb-6">
         <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary border border-primary/20 shadow-inner">
           <Heart className="h-8 w-8 fill-primary/20 text-primary" />
-        </div>
-        <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow">
-          <Sparkles className="h-3.5 w-3.5" />
         </div>
       </div>
 
@@ -58,16 +54,6 @@ export function FavoritesGuestIncentive({ onOpenAuth, onExplore }: FavoritesGues
           className="flex-1 h-11 text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 shadow active:scale-95 transition cursor-pointer"
         >
           Iniciar sesión o registrarme
-        </Button>
-        <Button
-          id="btn-favorites-guest-explore"
-          type="button"
-          variant="outline"
-          onClick={onExplore}
-          className="flex-1 h-11 text-xs font-semibold border-border hover:bg-secondary active:scale-95 transition cursor-pointer"
-        >
-          <Compass className="h-3.5 w-3.5 mr-1.5" />
-          Explorar alojamientos
         </Button>
       </div>
     </div>

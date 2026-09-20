@@ -22,7 +22,7 @@ export function HistoryScreen(props: HistoryScreenProps) {
   const { openAuthModal } = useNavigation();
 
   if (!isAuthenticated) {
-    return <HistoryGuestIncentive onOpenAuth={openAuthModal} onExplore={props.onExplore} />;
+    return <HistoryGuestIncentive onOpenAuth={openAuthModal} />;
   }
 
   return <HistoryContent {...props} />;

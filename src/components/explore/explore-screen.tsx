@@ -89,7 +89,7 @@ export function ExploreScreen({
             onClick={onNavigateToMap}
             className="text-xs font-semibold text-primary hover:opacity-80 transition"
           >
-            Ver más
+            Ver mapa
           </button>
         </div>
 

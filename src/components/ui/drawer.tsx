@@ -91,17 +91,36 @@ function DrawerSwipeHandle({ className, ...props }: React.ComponentProps<'div'>)
   );
 }
 
-function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.Props) {
+type DrawerContentProps = DrawerPrimitive.Popup.Props & {
+  overlayClassName?: string;
+  viewportClassName?: string;
+};
+
+function DrawerContent({
+  className,
+  overlayClassName,
+  viewportClassName,
+  children,
+  ...props
+}: DrawerContentProps) {
   const { hasSnapPoints, modal, showSwipeHandle, swipeDirection } = useDrawer();
   const swipeAxis = swipeDirection === 'down' || swipeDirection === 'up' ? 'y' : 'x';
 
   return (
     <DrawerPortal data-slot="drawer-portal">
-      {modal === true && <DrawerOverlay data-snap-points={hasSnapPoints ? '' : undefined} />}
+      {modal === true && (
+        <DrawerOverlay
+          className={overlayClassName}
+          data-snap-points={hasSnapPoints ? '' : undefined}
+        />
+      )}
       <DrawerPrimitive.Viewport
         data-slot="drawer-viewport"
         data-modal={modal}
-        className="pointer-events-none fixed inset-0 z-50 select-none data-[modal=true]:pointer-events-auto"
+        className={cn(
+          'pointer-events-none fixed inset-0 z-50 select-none data-[modal=true]:pointer-events-auto',
+          viewportClassName,
+        )}
       >
         <DrawerPrimitive.Popup
           data-slot="drawer-popup"

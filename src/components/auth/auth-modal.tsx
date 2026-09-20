@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AuthScreen } from '@/components/auth/auth-screen';
 
 export type AuthModalProps = {
@@ -29,7 +30,11 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     };
   }, [isOpen, onClose]);
 
-  return (
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -38,11 +43,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 overflow-y-auto bg-background/95 backdrop-blur-md flex flex-col justify-between"
+          className="fixed inset-0 z-[100] overflow-y-auto bg-background/95 backdrop-blur-md flex flex-col justify-between"
         >
           <AuthScreen isModal onClose={onClose} onSuccess={onClose} />
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

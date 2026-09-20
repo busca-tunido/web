@@ -65,7 +65,7 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
           type="button"
           onClick={onClose}
           aria-label="Cerrar ventana de autenticación"
-          className="fixed top-5 right-5 sm:top-6 sm:right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground hover:bg-secondary transition cursor-pointer"
+          className="fixed top-5 right-5 sm:top-6 sm:right-6 z-[110] flex h-10 w-10 items-center justify-center rounded-full border border-border/80 bg-card/80 text-muted-foreground backdrop-blur-sm hover:text-foreground hover:bg-secondary transition cursor-pointer"
         >
           <X className="h-5 w-5" />
         </button>
@@ -108,7 +108,11 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                   </Button>
                 }
               />
-              <DrawerContent className="bg-card border-border text-foreground max-w-lg mx-auto">
+              <DrawerContent
+                overlayClassName="z-[120]"
+                viewportClassName="z-[120]"
+                className="z-[120] bg-card border-border text-foreground max-w-lg mx-auto"
+              >
                 <DrawerHeader>
                   <div className="flex items-center gap-2 mb-1">
                     <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/30">
