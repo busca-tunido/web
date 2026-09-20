@@ -21,7 +21,7 @@ const mockPension: PensionItem = {
   reviewsCount: 12,
   nearestUniversityName: 'Universidad de Chile',
   distanceToUniversityMeters: 450,
-  photos: ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5'],
+  photos: ['https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/pensions/pension-mock-facade.webp'],
   includesWifi: true,
   includesMeals: false,
   includesStudyRoom: true,

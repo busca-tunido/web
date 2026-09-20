@@ -1,109 +1,89 @@
+const S3_BASE = 'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads';
+
 const CITY_IMAGE_MAP: Record<string, string> = {
-  santiago:
-    'https://images.unsplash.com/photo-1549880338-65ddcdfd017b?auto=format&fit=crop&w=800&q=80',
-  valparaiso:
-    'https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=800&q=80',
-  valparaíso:
-    'https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=800&q=80',
-  concepcion:
-    'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80',
-  concepción:
-    'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80',
-  valdivia:
-    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-  temuco:
-    'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
-  antofagasta:
-    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-  laserena:
-    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-  'la serena':
-    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-  coquimbo:
-    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-  'vina del mar':
-    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-  'viña del mar':
-    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-  talca:
-    'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&w=800&q=80',
-  chillan:
-    'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&w=800&q=80',
-  chillán:
-    'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&w=800&q=80',
-  iquique:
-    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-  arica:
-    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-  'puerto montt':
-    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-  'puerto varas':
-    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+  santiago: `${S3_BASE}/cities/santiago.webp`,
+  valparaiso: `${S3_BASE}/cities/valparaiso.webp`,
+  valparaíso: `${S3_BASE}/cities/valparaiso.webp`,
+  concepcion: `${S3_BASE}/cities/concepcion.webp`,
+  concepción: `${S3_BASE}/cities/concepcion.webp`,
+  valdivia: `${S3_BASE}/cities/valdivia.webp`,
+  temuco: `${S3_BASE}/cities/temuco.webp`,
+  antofagasta: `${S3_BASE}/cities/norte-costa.webp`,
+  laserena: `${S3_BASE}/cities/norte-costa.webp`,
+  'la serena': `${S3_BASE}/cities/norte-costa.webp`,
+  coquimbo: `${S3_BASE}/cities/norte-costa.webp`,
+  'vina del mar': `${S3_BASE}/cities/norte-costa.webp`,
+  'viña del mar': `${S3_BASE}/cities/norte-costa.webp`,
+  talca: `${S3_BASE}/cities/city-mock.webp`,
+  chillan: `${S3_BASE}/cities/city-mock.webp`,
+  chillán: `${S3_BASE}/cities/city-mock.webp`,
+  iquique: `${S3_BASE}/cities/norte-costa.webp`,
+  arica: `${S3_BASE}/cities/norte-costa.webp`,
+  'puerto montt': `${S3_BASE}/cities/valdivia.webp`,
+  'puerto varas': `${S3_BASE}/cities/valdivia.webp`,
 };
 
-const DEFAULT_CITY_IMAGE =
-  'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&w=800&q=80';
+const DEFAULT_CITY_IMAGE = `${S3_BASE}/cities/santiago.webp`;
 
 const UNIVERSITY_KEYWORD_IMAGES: Array<{ pattern: RegExp; url: string }> = [
   {
     pattern: /universidad de chile|uchile/i,
-    url: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=80',
+    url: `${S3_BASE}/universities/uchile-classic.webp`,
   },
   {
     pattern: /cat[oó]lica|puc|uc\b/i,
-    url: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80',
+    url: `${S3_BASE}/universities/puc-campus.webp`,
   },
   {
     pattern: /concepci[oó]n|udec/i,
-    url: 'https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?auto=format&fit=crop&w=800&q=80',
+    url: `${S3_BASE}/universities/udec-campanil.webp`,
   },
   {
     pattern: /valpara[ií]so|uv\b/i,
-    url: 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=800&q=80',
+    url: `${S3_BASE}/universities/uv-patio.webp`,
   },
   {
     pattern: /santa mar[ií]a|utfsm|usm\b/i,
-    url: 'https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=800&q=80',
+    url: `${S3_BASE}/universities/utfsm-library.webp`,
   },
   {
     pattern: /austral|uach/i,
-    url: 'https://images.unsplash.com/photo-1576495199011-eb94736d05d6?auto=format&fit=crop&w=800&q=80',
+    url: `${S3_BASE}/universities/uach-nature.webp`,
   },
   {
     pattern: /portales|udp/i,
-    url: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80',
+    url: `${S3_BASE}/universities/udp-students.webp`,
   },
   {
     pattern: /santiago|usach/i,
-    url: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80',
+    url: `${S3_BASE}/universities/puc-campus.webp`,
   },
   {
     pattern: /finis|terrae/i,
-    url: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
+    url: `${S3_BASE}/universities/uchile-classic.webp`,
   },
   {
     pattern: /mistral|ugm/i,
-    url: 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=800&q=80',
+    url: `${S3_BASE}/universities/uv-patio.webp`,
   },
   {
     pattern: /sek/i,
-    url: 'https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=800&q=80',
+    url: `${S3_BASE}/universities/utfsm-library.webp`,
   },
   {
     pattern: /cervantes/i,
-    url: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=80',
+    url: `${S3_BASE}/universities/uchile-classic.webp`,
   },
 ];
 
 const UNIVERSITY_FALLBACK_POOL = [
-  'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1576495199011-eb94736d05d6?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?auto=format&fit=crop&w=800&q=80',
+  `${S3_BASE}/universities/puc-campus.webp`,
+  `${S3_BASE}/universities/uchile-classic.webp`,
+  `${S3_BASE}/universities/utfsm-library.webp`,
+  `${S3_BASE}/universities/uv-patio.webp`,
+  `${S3_BASE}/universities/udp-students.webp`,
+  `${S3_BASE}/universities/uach-nature.webp`,
+  `${S3_BASE}/universities/udec-campanil.webp`,
 ];
 
 export function getCityImageUrl(cityName: string): string {

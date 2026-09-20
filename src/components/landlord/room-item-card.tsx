@@ -45,7 +45,7 @@ export type RoomItemCardProps = {
 };
 
 const FALLBACK_ROOM_IMAGE =
-  'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80';
+  'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/rooms/room-fallback.webp';
 
 export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: RoomItemCardProps) {
   const [isAvailable, setIsAvailable] = useState<boolean>(room.isAvailable);

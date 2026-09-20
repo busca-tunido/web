@@ -104,7 +104,7 @@ function HistoryList({ stays, onExplore, onSelectReviewStay, formatDateRange }: 
         const stayImg =
           stay.imageUrl && stay.imageUrl.trim().length > 0
             ? stay.imageUrl
-            : 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80';
+            : 'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/pensions/stay-history-fallback.webp';
 
         return (
           <div

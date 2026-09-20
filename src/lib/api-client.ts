@@ -102,7 +102,7 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
     images.length > 0
       ? images
       : [
-          'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
+          'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/rooms/room-fallback.webp',
         ];
 
   const firstNearby = raw.nearbyUniversities?.[0];

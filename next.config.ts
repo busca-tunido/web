@@ -13,11 +13,15 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
+        hostname: 'br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech',
       },
       {
         protocol: 'https',
-        hostname: 'plus.unsplash.com',
+        hostname: '*.storage.c-2.us-east-2.aws.neon.tech',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.neon.tech',
       },
       {
         protocol: 'https',
@@ -34,18 +38,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '*.onrender.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.neon.tech',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.cartocdn.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '**',
       },
     ],
   },
