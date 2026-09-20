@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export const alt = 'BuscaTuNido - Plataforma de Pensiones y Residencias Universitarias en Chile';
 export const size = {

@@ -1,9 +1,9 @@
 import { type InitialPrefetchData, RoleRouter } from '@/components/shells/role-router';
 import { env } from '@/env';
-import { parseSearchParams } from '@/hooks/use-url-navigation-state';
 import { type ApiPensionPayload, mapRawPensionToPensionItem } from '@/lib/api-client';
 import { getCityImageUrl, getUniversityImageUrl } from '@/lib/location-images';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
+import { parseSearchParams } from '@/lib/url-navigation';
 
 function getApiBaseUrl(): string {
   return env.API_INTERNAL_URL.replace(/\/+$/, '');
