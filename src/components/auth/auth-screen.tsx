@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Home, Lock, Mail, X } from 'lucide-react';
+import { ArrowRight, Home, Lock, Mail, Phone, User, X } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { EmailCheckStep } from '@/components/auth/email-check-step';
@@ -17,7 +17,9 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
+import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
+import { authService } from '@/services/auth.service';
 
 export type AuthScreenProps = {
   onSuccess?: () => void;
@@ -27,8 +29,12 @@ export type AuthScreenProps = {
 
 export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenProps = {}) {
   const { login } = useAuth();
+  const [landlordMode, setLandlordMode] = useState<'login' | 'register'>('login');
   const [landlordEmail, setLandlordEmail] = useState('propietario.demo@buscatunido.cl');
   const [landlordPassword, setLandlordPassword] = useState('Password123!');
+  const [landlordRegisterFirstName, setLandlordRegisterFirstName] = useState('');
+  const [landlordRegisterLastName, setLandlordRegisterLastName] = useState('');
+  const [landlordRegisterPhone, setLandlordRegisterPhone] = useState('');
   const [landlordLoading, setLandlordLoading] = useState(false);
   const [landlordError, setLandlordError] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -49,6 +55,56 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
       onSuccess?.();
     } catch {
       setLandlordError('Error al autenticar. Verifica las credenciales.');
+    } finally {
+      setLandlordLoading(false);
+    }
+  };
+
+  const handleLandlordRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLandlordError('');
+
+    if (!landlordRegisterFirstName.trim() || !landlordRegisterLastName.trim()) {
+      setLandlordError('Ingresa tu nombre y apellido');
+      return;
+    }
+
+    if (!landlordEmail.trim() || !landlordEmail.includes('@')) {
+      setLandlordError('Ingresa un correo válido');
+      return;
+    }
+
+    if (landlordPassword.length < 8) {
+      setLandlordError('La contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+
+    setLandlordLoading(true);
+    try {
+      const res = await authService.registerUser({
+        firstName: landlordRegisterFirstName.trim(),
+        lastName: landlordRegisterLastName.trim(),
+        email: landlordEmail.trim().toLowerCase(),
+        password: landlordPassword,
+        phone: landlordRegisterPhone.trim() || undefined,
+        role: 'LANDLORD',
+      });
+
+      if (isApiSuccess(res)) {
+        await login(landlordEmail.trim().toLowerCase(), landlordPassword);
+        setIsDrawerOpen(false);
+        onSuccess?.();
+        return;
+      }
+
+      if (res.statusCode === 409) {
+        setLandlordError('Este correo ya se encuentra registrado');
+        return;
+      }
+
+      setLandlordError(res.message || 'Error al registrar la cuenta de propietario');
+    } catch {
+      setLandlordError('Error de conexión con el servidor. Reintentar.');
     } finally {
       setLandlordLoading(false);
     }
@@ -96,7 +152,16 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
               </span>
             </div>
 
-            <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+            <Drawer
+              open={isDrawerOpen}
+              onOpenChange={(open) => {
+                setIsDrawerOpen(open);
+                if (!open) {
+                  setLandlordMode('login');
+                  setLandlordError('');
+                }
+              }}
+            >
               <DrawerTrigger
                 render={
                   <Button
@@ -104,14 +169,14 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                     variant="outline"
                     className="h-12 w-full border-border bg-background font-medium text-foreground hover:bg-secondary"
                   >
-                    Opciones de acceso
+                    Acceso para dueños
                   </Button>
                 }
               />
               <DrawerContent
                 overlayClassName="z-[120]"
                 viewportClassName="z-[120]"
-                className="z-[120] bg-card border-border text-foreground max-w-lg mx-auto"
+                className="z-[120] bg-card border-border text-foreground max-w-lg mx-auto max-h-[92dvh] flex flex-col"
               >
                 <DrawerHeader>
                   <div className="flex items-center gap-2 mb-1">
@@ -119,67 +184,222 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                       <Home className="h-4 w-4" />
                     </div>
                     <DrawerTitle className="text-foreground text-lg">
-                      Acceso para Dueños
+                      {landlordMode === 'login' ? 'Acceso para Dueños' : 'Registro de Dueño'}
                     </DrawerTitle>
                   </div>
                   <DrawerDescription className="text-muted-foreground text-xs">
-                    Ingresa con tu correo y contraseña registrados como propietario de pensión.
+                    {landlordMode === 'login'
+                      ? 'Ingresa con tu correo y contraseña registrados como propietario de pensión.'
+                      : 'Crea tu cuenta de propietario para publicar y administrar tus pensiones.'}
                   </DrawerDescription>
                 </DrawerHeader>
 
-                <form onSubmit={handleLandlordSubmit} className="p-4 flex flex-col gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label
-                      htmlFor="landlord-email"
-                      className="text-xs font-semibold text-foreground flex items-center gap-1.5"
+                {landlordMode === 'login' ? (
+                  <form onSubmit={handleLandlordSubmit} className="p-4 flex flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        htmlFor="landlord-email"
+                        className="text-xs font-semibold text-foreground flex items-center gap-1.5"
+                      >
+                        <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                        Correo del Propietario
+                      </label>
+                      <input
+                        id="landlord-email"
+                        type="email"
+                        required
+                        value={landlordEmail}
+                        onChange={(e) => setLandlordEmail(e.target.value)}
+                        placeholder="propietario@ejemplo.com"
+                        className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        htmlFor="landlord-password"
+                        className="text-xs font-semibold text-foreground flex items-center gap-1.5"
+                      >
+                        <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                        Contraseña
+                      </label>
+                      <input
+                        id="landlord-password"
+                        type="password"
+                        required
+                        value={landlordPassword}
+                        onChange={(e) => setLandlordPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                      />
+                    </div>
+
+                    {landlordError && (
+                      <p className="text-xs text-destructive font-medium">{landlordError}</p>
+                    )}
+
+                    <Button
+                      id="btn-landlord-submit"
+                      type="submit"
+                      disabled={landlordLoading}
+                      className="mt-2 h-12 w-full bg-primary font-bold text-primary-foreground hover:opacity-90 text-sm shadow-md active:scale-[0.98] transition cursor-pointer"
                     >
-                      <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                      Correo del Propietario
-                    </label>
-                    <input
-                      id="landlord-email"
-                      type="email"
-                      required
-                      value={landlordEmail}
-                      onChange={(e) => setLandlordEmail(e.target.value)}
-                      placeholder="propietario@ejemplo.com"
-                      className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
-                    />
-                  </div>
+                      {landlordLoading ? 'Validando...' : 'Acceder como Dueño'}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label
-                      htmlFor="landlord-password"
-                      className="text-xs font-semibold text-foreground flex items-center gap-1.5"
-                    >
-                      <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                      Contraseña
-                    </label>
-                    <input
-                      id="landlord-password"
-                      type="password"
-                      required
-                      value={landlordPassword}
-                      onChange={(e) => setLandlordPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
-                    />
-                  </div>
-
-                  {landlordError && (
-                    <p className="text-xs text-destructive font-medium">{landlordError}</p>
-                  )}
-
-                  <Button
-                    id="btn-landlord-submit"
-                    type="submit"
-                    disabled={landlordLoading}
-                    className="mt-2 h-12 w-full bg-primary font-bold text-primary-foreground hover:opacity-90 text-sm shadow-md active:scale-[0.98] transition"
+                    <div className="text-center pt-1">
+                      <p className="text-xs text-muted-foreground">
+                        ¿No estás registrado?{' '}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLandlordError('');
+                            setLandlordEmail('');
+                            setLandlordPassword('');
+                            setLandlordMode('register');
+                          }}
+                          className="font-semibold text-primary underline underline-offset-4 hover:opacity-80 transition cursor-pointer inline-flex items-center min-h-[44px]"
+                        >
+                          Regístrate como dueño
+                        </button>
+                      </p>
+                    </div>
+                  </form>
+                ) : (
+                  <form
+                    onSubmit={handleLandlordRegister}
+                    className="p-4 flex flex-col gap-3.5 overflow-y-auto"
                   >
-                    {landlordLoading ? 'Validando...' : 'Acceder como Dueño'}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </form>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label
+                          htmlFor="landlord-register-firstname"
+                          className="text-xs font-semibold text-foreground flex items-center gap-1.5"
+                        >
+                          <User className="h-3.5 w-3.5 text-muted-foreground" />
+                          Nombre
+                        </label>
+                        <input
+                          id="landlord-register-firstname"
+                          type="text"
+                          required
+                          value={landlordRegisterFirstName}
+                          onChange={(e) => setLandlordRegisterFirstName(e.target.value)}
+                          placeholder="Ej. Roberto"
+                          className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label
+                          htmlFor="landlord-register-lastname"
+                          className="text-xs font-semibold text-foreground flex items-center gap-1.5"
+                        >
+                          <User className="h-3.5 w-3.5 text-muted-foreground" />
+                          Apellido
+                        </label>
+                        <input
+                          id="landlord-register-lastname"
+                          type="text"
+                          required
+                          value={landlordRegisterLastName}
+                          onChange={(e) => setLandlordRegisterLastName(e.target.value)}
+                          placeholder="Ej. Gómez"
+                          className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        htmlFor="landlord-register-email"
+                        className="text-xs font-semibold text-foreground flex items-center gap-1.5"
+                      >
+                        <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                        Correo del Propietario
+                      </label>
+                      <input
+                        id="landlord-register-email"
+                        type="email"
+                        required
+                        value={landlordEmail}
+                        onChange={(e) => setLandlordEmail(e.target.value)}
+                        placeholder="propietario@ejemplo.com"
+                        className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        htmlFor="landlord-register-phone"
+                        className="text-xs font-semibold text-foreground flex items-center gap-1.5"
+                      >
+                        <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                        Teléfono (opcional)
+                      </label>
+                      <input
+                        id="landlord-register-phone"
+                        type="tel"
+                        value={landlordRegisterPhone}
+                        onChange={(e) => setLandlordRegisterPhone(e.target.value)}
+                        placeholder="+56 9 1234 5678"
+                        className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        htmlFor="landlord-register-password"
+                        className="text-xs font-semibold text-foreground flex items-center gap-1.5"
+                      >
+                        <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                        Contraseña
+                      </label>
+                      <input
+                        id="landlord-register-password"
+                        type="password"
+                        required
+                        minLength={8}
+                        value={landlordPassword}
+                        onChange={(e) => setLandlordPassword(e.target.value)}
+                        placeholder="Mínimo 8 caracteres"
+                        className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                      />
+                    </div>
+
+                    {landlordError && (
+                      <p className="text-xs text-destructive font-medium">{landlordError}</p>
+                    )}
+
+                    <Button
+                      id="btn-landlord-register-submit"
+                      type="submit"
+                      disabled={landlordLoading}
+                      className="mt-2 h-12 w-full bg-primary font-bold text-primary-foreground hover:opacity-90 text-sm shadow-md active:scale-[0.98] transition cursor-pointer"
+                    >
+                      {landlordLoading ? 'Creando cuenta...' : 'Crear cuenta de Dueño'}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+
+                    <div className="text-center pt-1">
+                      <p className="text-xs text-muted-foreground">
+                        ¿Ya tienes cuenta de dueño?{' '}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLandlordError('');
+                            setLandlordEmail('propietario.demo@buscatunido.cl');
+                            setLandlordPassword('Password123!');
+                            setLandlordMode('login');
+                          }}
+                          className="font-semibold text-primary underline underline-offset-4 hover:opacity-80 transition cursor-pointer inline-flex items-center min-h-[44px]"
+                        >
+                          Inicia sesión
+                        </button>
+                      </p>
+                    </div>
+                  </form>
+                )}
 
                 <DrawerFooter>
                   <DrawerClose
