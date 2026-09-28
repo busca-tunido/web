@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, ChevronDown, ChevronUp, Home } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Home, Plus } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -21,6 +21,7 @@ export type LandlordMobileHeaderProps = {
   onSelectProperty?: (propertyId: string) => void;
   isActive?: boolean;
   onToggleActive?: (active: boolean) => void;
+  onOpenCreatePension?: () => void;
   className?: string;
 };
 
@@ -31,6 +32,7 @@ export function LandlordMobileHeader({
   onSelectProperty,
   isActive = true,
   onToggleActive,
+  onOpenCreatePension,
   className,
 }: LandlordMobileHeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -184,6 +186,20 @@ export function LandlordMobileHeader({
                         <Check className="h-4 w-4 text-primary shrink-0" />
                       </div>
                     )}
+                  </div>
+
+                  <div className="pt-1.5 mt-1 border-t border-border/60">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        onOpenCreatePension?.();
+                      }}
+                      className="flex w-full min-h-[44px] items-center gap-2 rounded-xl px-2.5 py-2 text-left text-xs font-semibold text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                    >
+                      <Plus className="h-4 w-4 shrink-0" />
+                      <span>Registrar Nueva Pensión</span>
+                    </button>
                   </div>
                 </motion.div>
               </>

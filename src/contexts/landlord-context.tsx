@@ -16,7 +16,11 @@ export type LandlordContextValue = {
   isLoading: boolean;
   error: string | null;
   togglePensionActive: (pensionId: string, isActive: boolean) => Promise<void>;
-  refetchPensions: () => Promise<void>;
+  refetchPensions: (selectPensionId?: string) => Promise<void>;
+  isCreatePensionOpen: boolean;
+  setIsCreatePensionOpen: (open: boolean) => void;
+  openCreatePensionModal: () => void;
+  closeCreatePensionModal: () => void;
 };
 
 export type LandlordProviderProps = {
@@ -32,8 +36,17 @@ export function LandlordProvider({ children, initialTab = 'rooms' }: LandlordPro
   const [activeTab, setActiveTab] = useState<LandlordTab>(initialTab);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCreatePensionOpen, setIsCreatePensionOpen] = useState(false);
 
-  const refetchPensions = useCallback(async () => {
+  const openCreatePensionModal = useCallback(() => {
+    setIsCreatePensionOpen(true);
+  }, []);
+
+  const closeCreatePensionModal = useCallback(() => {
+    setIsCreatePensionOpen(false);
+  }, []);
+
+  const refetchPensions = useCallback(async (selectPensionId?: string) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -42,6 +55,10 @@ export function LandlordProvider({ children, initialTab = 'rooms' }: LandlordPro
         const items = response.data;
         setPensions(items);
         setSelectedPension((current) => {
+          if (selectPensionId) {
+            const target = items.find((p) => p.id === selectPensionId);
+            if (target) return target;
+          }
           if (!current) {
             return items[0] ?? null;
           }
@@ -129,8 +146,23 @@ export function LandlordProvider({ children, initialTab = 'rooms' }: LandlordPro
       error,
       togglePensionActive,
       refetchPensions,
+      isCreatePensionOpen,
+      setIsCreatePensionOpen,
+      openCreatePensionModal,
+      closeCreatePensionModal,
     }),
-    [pensions, selectedPension, activeTab, isLoading, error, togglePensionActive, refetchPensions],
+    [
+      pensions,
+      selectedPension,
+      activeTab,
+      isLoading,
+      error,
+      togglePensionActive,
+      refetchPensions,
+      isCreatePensionOpen,
+      openCreatePensionModal,
+      closeCreatePensionModal,
+    ],
   );
 
   return <LandlordContext.Provider value={value}>{children}</LandlordContext.Provider>;

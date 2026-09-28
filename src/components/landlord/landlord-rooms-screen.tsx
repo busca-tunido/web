@@ -156,6 +156,14 @@ export function LandlordRoomsScreen({
           Selecciona una de tus propiedades o registra una nueva pensión para administrar sus
           habitaciones.
         </p>
+        <Button
+          type="button"
+          onClick={landlordContext.openCreatePensionModal}
+          className="mt-4 min-h-12 rounded-xl bg-primary hover:opacity-90 text-primary-foreground font-bold px-6 gap-2 cursor-pointer shadow-sm active:scale-[0.98] transition"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Registrar Pensión</span>
+        </Button>
       </div>
     );
   }

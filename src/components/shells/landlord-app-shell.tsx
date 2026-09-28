@@ -7,6 +7,7 @@ import { LandlordDesktopSidebar } from '@/components/landlord/landlord-desktop-s
 import { LandlordPensionScreen } from '@/components/landlord/landlord-pension-screen';
 import { LandlordReviewsScreen } from '@/components/landlord/landlord-reviews-screen';
 import { LandlordRoomsScreen } from '@/components/landlord/landlord-rooms-screen';
+import { PensionEditorDrawer } from '@/components/landlord/pension-editor-drawer';
 import { LandlordBottomNav } from '@/components/layout/landlord-bottom-nav';
 import {
   LandlordMobileHeader,
@@ -28,6 +29,10 @@ function LandlordAppShellContent() {
     activeTab,
     setActiveTab,
     togglePensionActive,
+    refetchPensions,
+    isCreatePensionOpen,
+    openCreatePensionModal,
+    closeCreatePensionModal,
   } = useLandlord();
 
   const propertySummaries = useMemo<LandlordPropertySummary[]>(() => {
@@ -66,6 +71,7 @@ function LandlordAppShellContent() {
           onSelectProperty={handleSelectProperty}
           isActive={selectedPension?.isActive ?? true}
           onToggleActive={handleToggleActive}
+          onOpenCreatePension={openCreatePensionModal}
         />
         <LandlordDesktopHeader className="hidden md:flex" />
         <main className="flex-1 p-4 md:p-8 max-w-6xl w-full mx-auto pb-24 md:pb-12">
@@ -85,6 +91,14 @@ function LandlordAppShellContent() {
         </main>
         <LandlordBottomNav activeTab={activeTab} onTabChange={setActiveTab} className="md:hidden" />
       </div>
+      <PensionEditorDrawer
+        isOpen={isCreatePensionOpen}
+        onClose={closeCreatePensionModal}
+        onSuccess={async (created) => {
+          await refetchPensions(created.id);
+          setActiveTab('pension');
+        }}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import {
   AlertCircle,
   Ban,
+  Building2,
   Check,
   CheckCircle2,
   Clock,
@@ -14,6 +15,7 @@ import {
   Moon,
   PawPrint,
   Phone,
+  Plus,
   RefreshCw,
   Save,
   ShieldCheck,
@@ -28,6 +30,7 @@ import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLandlord } from '@/contexts/landlord-context';
 import { mapRawPensionToPensionItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
@@ -124,6 +127,7 @@ export function LandlordPensionScreen({
   className,
 }: LandlordPensionScreenProps) {
   const { user } = useAuth();
+  const { openCreatePensionModal } = useLandlord();
 
   const [activePension, setActivePension] = useState<PensionDetailDto | PensionItem | null>(
     initialPension,
@@ -336,6 +340,36 @@ export function LandlordPensionScreen({
   }
 
   if (fetchError && !activePension) {
+    const isNoPensionFound =
+      fetchError.includes('No se encontró ninguna pensión') ||
+      fetchError.toLowerCase().includes('ninguna pensión');
+
+    if (isNoPensionFound) {
+      return (
+        <div className="flex min-h-[55vh] flex-col items-center justify-center p-8 text-center rounded-3xl border border-dashed border-border/80 bg-card/60 my-4 max-w-md mx-auto">
+          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary mb-4 shadow-2xs">
+            <Building2 className="h-8 w-8" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground tracking-tight">
+            ¡Bienvenido a BuscaTuNido!
+          </h3>
+          <p className="text-xs text-muted-foreground mt-1.5 mb-6 max-w-sm leading-relaxed">
+            Aún no tienes ninguna pensión registrada. Crea tu primera publicación de alojamiento
+            para comenzar a registrar habitaciones y recibir postulaciones de estudiantes
+            universitarios.
+          </p>
+          <Button
+            type="button"
+            onClick={openCreatePensionModal}
+            className="min-h-12 px-6 rounded-xl bg-primary hover:opacity-90 text-primary-foreground font-bold text-xs gap-2 cursor-pointer shadow-sm active:scale-[0.98] transition"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Publicar mi primera pensión</span>
+          </Button>
+        </div>
+      );
+    }
+
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center p-6 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-3">
@@ -368,15 +402,26 @@ export function LandlordPensionScreen({
           </p>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setIsPreviewModalOpen(true)}
-          className="min-h-[48px] px-4 text-xs font-bold border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 shadow-2xs self-start sm:self-auto cursor-pointer"
-        >
-          <Eye className="h-4 w-4 mr-1.5" />
-          Vista Previa Estudiante
-        </Button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={openCreatePensionModal}
+            className="min-h-[48px] px-4 text-xs font-semibold border-border hover:bg-secondary shadow-2xs cursor-pointer gap-1.5"
+          >
+            <Plus className="h-4 w-4 text-primary" />
+            <span>Nueva Pensión</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsPreviewModalOpen(true)}
+            className="min-h-[48px] px-4 text-xs font-bold border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 shadow-2xs cursor-pointer"
+          >
+            <Eye className="h-4 w-4 mr-1.5" />
+            Vista Previa Estudiante
+          </Button>
+        </div>
       </div>
 
       {saveSuccessMessage && (

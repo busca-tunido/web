@@ -10,6 +10,7 @@ import {
   Eye,
   Home,
   LogOut,
+  Plus,
   Star,
   User,
 } from 'lucide-react';
@@ -53,6 +54,7 @@ export function LandlordDesktopSidebar({
   const pensions = landlordContext.pensions;
   const selectedPension = landlordContext.selectedPension;
   const setSelectedPension = landlordContext.setSelectedPension;
+  const openCreatePensionModal = landlordContext.openCreatePensionModal;
 
   const [isPropertyMenuOpen, setIsPropertyMenuOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -215,6 +217,19 @@ export function LandlordDesktopSidebar({
                         {selectedPension?.title ?? '1 pensión'}
                       </div>
                     )}
+                  </div>
+                  <div className="pt-1 mt-1 border-t border-border/60">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsPropertyMenuOpen(false);
+                        openCreatePensionModal();
+                      }}
+                      className="flex w-full min-h-[36px] items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-primary hover:bg-primary/10 transition cursor-pointer"
+                    >
+                      <Plus className="h-3.5 w-3.5 shrink-0" />
+                      <span>Registrar Nueva Pensión</span>
+                    </button>
                   </div>
                 </motion.div>
               </>
