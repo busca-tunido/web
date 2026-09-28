@@ -17,16 +17,6 @@
       "post": {
         "operationId": "AuthController_register",
         "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterDto"
-              }
-            }
-          }
-        },
         "responses": {
           "201": {
             "description": "User successfully created and token issued"
@@ -43,16 +33,6 @@
       "post": {
         "operationId": "AuthController_login",
         "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginDto"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Authentication successful"
@@ -68,17 +48,7 @@
     "/auth/check-email": {
       "get": {
         "operationId": "AuthController_checkEmail",
-        "parameters": [
-          {
-            "name": "email",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "example": "estudiante.demo@uchile.cl",
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Check email status returned"
@@ -112,183 +82,7 @@
     "/pensions": {
       "get": {
         "operationId": "PensionsController_findAll",
-        "parameters": [
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": "Santiago",
-              "type": "string"
-            }
-          },
-          {
-            "name": "neighborhood",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": "San Joaquín",
-              "type": "string"
-            }
-          },
-          {
-            "name": "minPrice",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": 150000,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxPrice",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": 400000,
-              "type": "number"
-            }
-          },
-          {
-            "name": "genderPreference",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": ["ANY", "FEMALE_ONLY", "MALE_ONLY"]
-            }
-          },
-          {
-            "name": "universityId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": "00000000-0000-0000-0000-000000000000",
-              "type": "string"
-            }
-          },
-          {
-            "name": "amenities",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": "República",
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 1,
-              "example": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 12,
-              "example": 12,
-              "type": "number"
-            }
-          },
-          {
-            "name": "latitude",
-            "required": false,
-            "in": "query",
-            "description": "Latitude coordinate of user location",
-            "schema": {
-              "example": -33.4489,
-              "type": "number"
-            }
-          },
-          {
-            "name": "longitude",
-            "required": false,
-            "in": "query",
-            "description": "Longitude coordinate of user location",
-            "schema": {
-              "example": -70.6693,
-              "type": "number"
-            }
-          },
-          {
-            "name": "radiusKm",
-            "required": false,
-            "in": "query",
-            "description": "Radius in km (1-100)",
-            "schema": {
-              "default": 30,
-              "example": 30,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minLat",
-            "required": false,
-            "in": "query",
-            "description": "Minimum latitude boundary (South)",
-            "schema": {
-              "example": -33.5,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxLat",
-            "required": false,
-            "in": "query",
-            "description": "Maximum latitude boundary (North)",
-            "schema": {
-              "example": -33.4,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minLng",
-            "required": false,
-            "in": "query",
-            "description": "Minimum longitude boundary (West)",
-            "schema": {
-              "example": -70.7,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxLng",
-            "required": false,
-            "in": "query",
-            "description": "Maximum longitude boundary (East)",
-            "schema": {
-              "example": -70.6,
-              "type": "number"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": "relevance",
-              "type": "string",
-              "enum": ["relevance", "distance", "rating", "price_asc", "price_desc"]
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Paginated list of pensions"
@@ -300,16 +94,6 @@
       "post": {
         "operationId": "PensionsController_create",
         "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePensionDto"
-              }
-            }
-          }
-        },
         "responses": {
           "201": {
             "description": "Pension created successfully"
@@ -330,19 +114,47 @@
         "tags": ["Pensions"]
       }
     },
+    "/pensions/price-histogram": {
+      "get": {
+        "operationId": "PensionsController_getPriceHistogram",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Price distribution histogram with 28 bins"
+          }
+        },
+        "summary": "Get price distribution histogram for pensions",
+        "tags": ["Pensions"]
+      }
+    },
+    "/pensions/mine": {
+      "get": {
+        "operationId": "PensionsController_getMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of pensions owned by landlord"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List pensions owned by authenticated landlord",
+        "tags": ["Pensions"]
+      }
+    },
     "/pensions/{idOrSlug}": {
       "get": {
         "operationId": "PensionsController_findOne",
-        "parameters": [
-          {
-            "name": "idOrSlug",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Pension detailed information"
@@ -358,26 +170,7 @@
     "/pensions/{id}": {
       "patch": {
         "operationId": "PensionsController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdatePensionDto"
-              }
-            }
-          }
-        },
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Pension updated successfully"
@@ -402,16 +195,7 @@
       },
       "delete": {
         "operationId": "PensionsController_delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Pension deleted successfully"
@@ -438,46 +222,26 @@
     "/pensions/{pensionId}/rooms": {
       "get": {
         "operationId": "RoomsController_findByPension",
-        "parameters": [
-          {
-            "name": "pensionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "List of rooms"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "List rooms for a specific pension",
         "tags": ["Rooms"]
       },
       "post": {
         "operationId": "RoomsController_create",
-        "parameters": [
-          {
-            "name": "pensionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateRoomDto"
-              }
-            }
-          }
-        },
+        "parameters": [],
         "responses": {
           "201": {
             "description": "Room created successfully"
@@ -501,49 +265,29 @@
     "/rooms/{id}": {
       "get": {
         "operationId": "RoomsController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Room details"
+          },
+          "401": {
+            "description": "Unauthorized"
           },
           "404": {
             "description": "Room not found"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Get room by ID",
         "tags": ["Rooms"]
       },
       "patch": {
         "operationId": "RoomsController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateRoomDto"
-              }
-            }
-          }
-        },
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Room updated successfully"
@@ -568,16 +312,7 @@
       },
       "delete": {
         "operationId": "RoomsController_delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Room deleted successfully"
@@ -625,16 +360,6 @@
       "post": {
         "operationId": "UniversitiesController_create",
         "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUniversityDto"
-              }
-            }
-          }
-        },
         "responses": {
           "201": {
             "description": "University created"
@@ -655,16 +380,7 @@
     "/universities/{id}": {
       "get": {
         "operationId": "UniversitiesController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "University details"
@@ -678,26 +394,7 @@
       },
       "patch": {
         "operationId": "UniversitiesController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUniversityDto"
-              }
-            }
-          }
-        },
+        "parameters": [],
         "responses": {
           "200": {
             "description": "University updated"
@@ -716,16 +413,7 @@
       },
       "delete": {
         "operationId": "UniversitiesController_delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "University deleted"
@@ -746,46 +434,26 @@
     "/pensions/{pensionId}/reviews": {
       "get": {
         "operationId": "ReviewsController_findByPension",
-        "parameters": [
-          {
-            "name": "pensionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "List of reviews"
+            "description": "Paginated reviews response"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         },
-        "summary": "Get all reviews for a pension",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get paginated reviews for a pension with optional rating filter and sorting",
         "tags": ["Reviews"]
       },
       "post": {
         "operationId": "ReviewsController_create",
-        "parameters": [
-          {
-            "name": "pensionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateReviewDto"
-              }
-            }
-          }
-        },
+        "parameters": [],
         "responses": {
           "201": {
             "description": "Review posted successfully"
@@ -824,26 +492,7 @@
     "/reviews/{id}": {
       "patch": {
         "operationId": "ReviewsController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateReviewDto"
-              }
-            }
-          }
-        },
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Review updated successfully"
@@ -862,16 +511,7 @@
       },
       "delete": {
         "operationId": "ReviewsController_delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Review deleted successfully"
@@ -889,6 +529,42 @@
         "tags": ["Reviews"]
       }
     },
+    "/reviews/helpful/voted": {
+      "get": {
+        "operationId": "ReviewsController_findUserHelpfulVotes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of review IDs voted helpful"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List review IDs the current user has voted as helpful",
+        "tags": ["Reviews"]
+      }
+    },
+    "/reviews/{id}/helpful": {
+      "post": {
+        "operationId": "ReviewsController_voteHelpful",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Review vote toggled successfully"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Vote a review as helpful (toggle)",
+        "tags": ["Reviews"]
+      }
+    },
     "/reports": {
       "get": {
         "operationId": "ReportsController_findAll",
@@ -898,8 +574,8 @@
             "required": false,
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": ["PENDING", "UNDER_REVIEW", "RESOLVED", "DISMISSED"]
+              "enum": ["PENDING", "UNDER_REVIEW", "RESOLVED", "DISMISSED"],
+              "type": "string"
             }
           }
         ],
@@ -922,16 +598,6 @@
       "post": {
         "operationId": "ReportsController_create",
         "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateReportDto"
-              }
-            }
-          }
-        },
         "responses": {
           "201": {
             "description": "Report submitted successfully"
@@ -952,26 +618,7 @@
     "/reports/{id}": {
       "patch": {
         "operationId": "ReportsController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateReportDto"
-              }
-            }
-          }
-        },
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Report status updated"
@@ -1010,16 +657,7 @@
     "/favorites/{pensionId}": {
       "post": {
         "operationId": "FavoritesController_add",
-        "parameters": [
-          {
-            "name": "pensionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "201": {
             "description": "Favorite added successfully"
@@ -1038,16 +676,7 @@
       },
       "delete": {
         "operationId": "FavoritesController_remove",
-        "parameters": [
-          {
-            "name": "pensionId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Favorite removed successfully"
@@ -1068,26 +697,7 @@
     "/pensions/{id}/proposals": {
       "post": {
         "operationId": "ProposalsController_create",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateProposalDto"
-              }
-            }
-          }
-        },
+        "parameters": [],
         "responses": {
           "201": {
             "description": "Proposal submitted successfully"
@@ -1109,21 +719,20 @@
       },
       "get": {
         "operationId": "ProposalsController_findByPension",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "List of proposals"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "summary": "Get proposal history for a specific pension",
         "tags": ["Proposals"]
       }
@@ -1133,12 +742,11 @@
         "operationId": "ProposalsController_findModerationProposals",
         "parameters": [
           {
-            "name": "status",
+            "name": "limit",
             "required": false,
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": ["PENDING", "APPROVED", "REJECTED", "MODIFIED_AND_APPROVED"]
+              "type": "number"
             }
           },
           {
@@ -1150,11 +758,12 @@
             }
           },
           {
-            "name": "limit",
+            "name": "status",
             "required": false,
             "in": "query",
             "schema": {
-              "type": "number"
+              "enum": ["PENDING", "APPROVED", "REJECTED", "MODIFIED_AND_APPROVED"],
+              "type": "string"
             }
           }
         ],
@@ -1178,16 +787,7 @@
     "/moderation/proposals/{id}": {
       "get": {
         "operationId": "ProposalsController_findProposalWithDiff",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Proposal and diff against active pension"
@@ -1208,32 +808,16 @@
     "/moderation/proposals/{id}/review": {
       "patch": {
         "operationId": "ProposalsController_review",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReviewProposalDto"
-              }
-            }
-          }
-        },
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Proposal reviewed and merged"
           },
           "400": {
             "description": "Invalid review action or notes missing"
+          },
+          "403": {
+            "description": "Forbidden"
           },
           "404": {
             "description": "Proposal not found"
@@ -1244,33 +828,14 @@
             "bearer": []
           }
         ],
-        "summary": "Approve, reject, or modify and merge proposal (Moderator or Admin only)",
+        "summary": "Approve, reject, or modify and merge proposal (Moderator, Admin, or Landlord)",
         "tags": ["Proposals"]
       }
     },
     "/moderation/reviews/{id}/visibility": {
       "patch": {
         "operationId": "ModerationController_updateReviewVisibility",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateReviewVisibilityDto"
-              }
-            }
-          }
-        },
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Review visibility updated"
@@ -1294,26 +859,7 @@
     "/moderation/pensions/{id}/status": {
       "patch": {
         "operationId": "ModerationController_updatePensionStatus",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdatePensionStatusDto"
-              }
-            }
-          }
-        },
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Pension status updated"
@@ -1429,702 +975,6 @@
         "type": "http"
       }
     },
-    "schemas": {
-      "RegisterDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "juan.perez@alumnos.uchile.cl"
-          },
-          "password": {
-            "type": "string",
-            "example": "ContrasenaSegura123!"
-          },
-          "firstName": {
-            "type": "string",
-            "example": "Juan"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Pérez"
-          },
-          "phone": {
-            "type": "string",
-            "example": "+56912345678"
-          },
-          "role": {
-            "type": "string",
-            "enum": ["STUDENT", "LANDLORD"],
-            "default": "STUDENT"
-          },
-          "universityId": {
-            "type": "string",
-            "example": "00000000-0000-0000-0000-000000000000"
-          }
-        },
-        "required": ["email", "password", "firstName", "lastName"]
-      },
-      "LoginDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "juan.perez@alumnos.uchile.cl"
-          },
-          "password": {
-            "type": "string",
-            "example": "ContrasenaSegura123!"
-          }
-        },
-        "required": ["email", "password"]
-      },
-      "CreatePensionDto": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "type": "string",
-            "example": "Residencia San Joaquín"
-          },
-          "description": {
-            "type": "string",
-            "example": "Excelente pensión cerca de campus San Joaquín"
-          },
-          "address": {
-            "type": "string",
-            "example": "Av. Vicuña Mackenna 4860"
-          },
-          "city": {
-            "type": "string",
-            "example": "Santiago"
-          },
-          "neighborhood": {
-            "type": "string",
-            "example": "San Joaquín"
-          },
-          "latitude": {
-            "type": "number",
-            "example": -33.4996
-          },
-          "longitude": {
-            "type": "number",
-            "example": -70.6145
-          },
-          "baseMonthlyPrice": {
-            "type": "number",
-            "example": 250000
-          },
-          "deposit": {
-            "type": "number",
-            "example": 250000
-          },
-          "currency": {
-            "type": "string",
-            "example": "CLP",
-            "default": "CLP"
-          },
-          "waterIncluded": {
-            "type": "boolean",
-            "example": true,
-            "default": true
-          },
-          "electricityIncluded": {
-            "type": "boolean",
-            "example": true,
-            "default": true
-          },
-          "gasIncluded": {
-            "type": "boolean",
-            "example": true,
-            "default": true
-          },
-          "internetIncluded": {
-            "type": "boolean",
-            "example": true,
-            "default": true
-          },
-          "curfewTime": {
-            "type": "string",
-            "example": "23:00"
-          },
-          "guestsAllowed": {
-            "type": "boolean",
-            "example": true,
-            "default": false
-          },
-          "smokingAllowed": {
-            "type": "boolean",
-            "example": false,
-            "default": false
-          },
-          "petsAllowed": {
-            "type": "boolean",
-            "example": false,
-            "default": false
-          },
-          "genderPreference": {
-            "type": "string",
-            "enum": ["ANY", "FEMALE_ONLY", "MALE_ONLY"],
-            "default": "ANY"
-          },
-          "quietHoursStart": {
-            "type": "string",
-            "example": "23:00"
-          },
-          "quietHoursEnd": {
-            "type": "string",
-            "example": "07:00"
-          },
-          "amenitySlugs": {
-            "example": ["wifi-alta-velocidad", "bano-privado"],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "nearbyUniversityId": {
-            "type": "string",
-            "example": "00000000-0000-0000-0000-000000000000"
-          },
-          "distanceMeters": {
-            "type": "number",
-            "example": 500
-          }
-        },
-        "required": [
-          "title",
-          "description",
-          "address",
-          "city",
-          "neighborhood",
-          "latitude",
-          "longitude",
-          "baseMonthlyPrice"
-        ]
-      },
-      "UpdatePensionDto": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "type": "string",
-            "example": "Residencia San Joaquín"
-          },
-          "description": {
-            "type": "string",
-            "example": "Excelente pensión cerca de campus San Joaquín"
-          },
-          "address": {
-            "type": "string",
-            "example": "Av. Vicuña Mackenna 4860"
-          },
-          "city": {
-            "type": "string",
-            "example": "Santiago"
-          },
-          "neighborhood": {
-            "type": "string",
-            "example": "San Joaquín"
-          },
-          "latitude": {
-            "type": "number",
-            "example": -33.4996
-          },
-          "longitude": {
-            "type": "number",
-            "example": -70.6145
-          },
-          "baseMonthlyPrice": {
-            "type": "number",
-            "example": 250000
-          },
-          "deposit": {
-            "type": "number",
-            "example": 250000
-          },
-          "currency": {
-            "type": "string",
-            "example": "CLP",
-            "default": "CLP"
-          },
-          "waterIncluded": {
-            "type": "boolean",
-            "example": true,
-            "default": true
-          },
-          "electricityIncluded": {
-            "type": "boolean",
-            "example": true,
-            "default": true
-          },
-          "gasIncluded": {
-            "type": "boolean",
-            "example": true,
-            "default": true
-          },
-          "internetIncluded": {
-            "type": "boolean",
-            "example": true,
-            "default": true
-          },
-          "curfewTime": {
-            "type": "string",
-            "example": "23:00"
-          },
-          "guestsAllowed": {
-            "type": "boolean",
-            "example": true,
-            "default": false
-          },
-          "smokingAllowed": {
-            "type": "boolean",
-            "example": false,
-            "default": false
-          },
-          "petsAllowed": {
-            "type": "boolean",
-            "example": false,
-            "default": false
-          },
-          "genderPreference": {
-            "type": "string",
-            "enum": ["ANY", "FEMALE_ONLY", "MALE_ONLY"],
-            "default": "ANY"
-          },
-          "quietHoursStart": {
-            "type": "string",
-            "example": "23:00"
-          },
-          "quietHoursEnd": {
-            "type": "string",
-            "example": "07:00"
-          },
-          "amenitySlugs": {
-            "example": ["wifi-alta-velocidad", "bano-privado"],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "nearbyUniversityId": {
-            "type": "string",
-            "example": "00000000-0000-0000-0000-000000000000"
-          },
-          "distanceMeters": {
-            "type": "number",
-            "example": 500
-          }
-        }
-      },
-      "CreateRoomDto": {
-        "type": "object",
-        "properties": {
-          "roomNumber": {
-            "type": "string",
-            "example": "Hab 101"
-          },
-          "title": {
-            "type": "string",
-            "example": "Habitación Individual Luminosa"
-          },
-          "description": {
-            "type": "string",
-            "example": "Pieza amoblada con clóset y escritorio."
-          },
-          "type": {
-            "type": "string",
-            "enum": ["SINGLE", "SHARED", "STUDIO"],
-            "default": "SINGLE"
-          },
-          "monthlyPrice": {
-            "type": "number",
-            "example": 250000
-          },
-          "deposit": {
-            "type": "number",
-            "example": 250000
-          },
-          "hasPrivateBathroom": {
-            "type": "boolean",
-            "example": false,
-            "default": false
-          },
-          "totalBeds": {
-            "type": "number",
-            "example": 1,
-            "default": 1
-          },
-          "availableBeds": {
-            "type": "number",
-            "example": 1,
-            "default": 1
-          },
-          "isAvailable": {
-            "type": "boolean",
-            "example": true,
-            "default": true
-          },
-          "images": {
-            "example": ["https://example.com/room1.jpg"],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": ["roomNumber", "title", "monthlyPrice"]
-      },
-      "UpdateRoomDto": {
-        "type": "object",
-        "properties": {
-          "roomNumber": {
-            "type": "string",
-            "example": "Hab 101"
-          },
-          "title": {
-            "type": "string",
-            "example": "Habitación Individual Luminosa"
-          },
-          "description": {
-            "type": "string",
-            "example": "Pieza amoblada con clóset y escritorio."
-          },
-          "type": {
-            "type": "string",
-            "enum": ["SINGLE", "SHARED", "STUDIO"],
-            "default": "SINGLE"
-          },
-          "monthlyPrice": {
-            "type": "number",
-            "example": 250000
-          },
-          "deposit": {
-            "type": "number",
-            "example": 250000
-          },
-          "hasPrivateBathroom": {
-            "type": "boolean",
-            "example": false,
-            "default": false
-          },
-          "totalBeds": {
-            "type": "number",
-            "example": 1,
-            "default": 1
-          },
-          "availableBeds": {
-            "type": "number",
-            "example": 1,
-            "default": 1
-          },
-          "isAvailable": {
-            "type": "boolean",
-            "example": true,
-            "default": true
-          },
-          "images": {
-            "example": ["https://example.com/room1.jpg"],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "CreateUniversityDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Universidad de Chile"
-          },
-          "shortName": {
-            "type": "string",
-            "example": "UCH"
-          },
-          "emailDomains": {
-            "example": ["uchile.cl", "alumnos.uchile.cl"],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "city": {
-            "type": "string",
-            "example": "Santiago"
-          },
-          "address": {
-            "type": "string",
-            "example": "Av. Libertador Bernardo O'Higgins 1058"
-          },
-          "latitude": {
-            "type": "number",
-            "example": -33.4442
-          },
-          "longitude": {
-            "type": "number",
-            "example": -70.6517
-          }
-        },
-        "required": ["name", "city", "address", "latitude", "longitude"]
-      },
-      "UpdateUniversityDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Universidad de Chile"
-          },
-          "shortName": {
-            "type": "string",
-            "example": "UCH"
-          },
-          "emailDomains": {
-            "example": ["uchile.cl", "alumnos.uchile.cl"],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "city": {
-            "type": "string",
-            "example": "Santiago"
-          },
-          "address": {
-            "type": "string",
-            "example": "Av. Libertador Bernardo O'Higgins 1058"
-          },
-          "latitude": {
-            "type": "number",
-            "example": -33.4442
-          },
-          "longitude": {
-            "type": "number",
-            "example": -70.6517
-          }
-        }
-      },
-      "CreateReviewDto": {
-        "type": "object",
-        "properties": {
-          "overallRating": {
-            "type": "number",
-            "example": 5,
-            "minimum": 1,
-            "maximum": 5
-          },
-          "cleanlinessRating": {
-            "type": "number",
-            "example": 5,
-            "minimum": 1,
-            "maximum": 5
-          },
-          "landlordRating": {
-            "type": "number",
-            "example": 4,
-            "minimum": 1,
-            "maximum": 5
-          },
-          "quietnessRating": {
-            "type": "number",
-            "example": 4,
-            "minimum": 1,
-            "maximum": 5
-          },
-          "wifiRating": {
-            "type": "number",
-            "example": 5,
-            "minimum": 1,
-            "maximum": 5
-          },
-          "comment": {
-            "type": "string",
-            "example": "Excelente pensión y ambiente de estudio."
-          },
-          "images": {
-            "example": ["https://example.com/review1.jpg"],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "stayDurationCategory": {
-            "type": "string",
-            "enum": ["FEW_DAYS", "FEW_WEEKS", "ONE_SEMESTER", "ONE_YEAR", "MORE_THAN_A_YEAR"]
-          }
-        },
-        "required": ["overallRating", "comment"]
-      },
-      "UpdateReviewDto": {
-        "type": "object",
-        "properties": {
-          "overallRating": {
-            "type": "number",
-            "example": 5,
-            "minimum": 1,
-            "maximum": 5
-          },
-          "cleanlinessRating": {
-            "type": "number",
-            "example": 5,
-            "minimum": 1,
-            "maximum": 5
-          },
-          "landlordRating": {
-            "type": "number",
-            "example": 4,
-            "minimum": 1,
-            "maximum": 5
-          },
-          "quietnessRating": {
-            "type": "number",
-            "example": 4,
-            "minimum": 1,
-            "maximum": 5
-          },
-          "wifiRating": {
-            "type": "number",
-            "example": 5,
-            "minimum": 1,
-            "maximum": 5
-          },
-          "comment": {
-            "type": "string",
-            "example": "Excelente pensión y ambiente de estudio."
-          },
-          "images": {
-            "example": ["https://example.com/review1.jpg"],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "stayDurationCategory": {
-            "type": "string",
-            "enum": ["FEW_DAYS", "FEW_WEEKS", "ONE_SEMESTER", "ONE_YEAR", "MORE_THAN_A_YEAR"]
-          }
-        }
-      },
-      "CreateReportDto": {
-        "type": "object",
-        "properties": {
-          "pensionId": {
-            "type": "string",
-            "example": "00000000-0000-0000-0000-000000000000"
-          },
-          "reason": {
-            "type": "string",
-            "enum": [
-              "FRAUD_OR_SCAM",
-              "INACCURATE_PRICE",
-              "MISLEADING_PHOTOS",
-              "HOUSE_RULES_VIOLATION",
-              "PROPERTY_UNAVAILABLE",
-              "INAPPROPRIATE_CONTENT"
-            ],
-            "example": "INACCURATE_PRICE"
-          },
-          "description": {
-            "type": "string",
-            "example": "El precio cobrado no coincide con el publicado en el sitio web."
-          }
-        },
-        "required": ["pensionId", "reason", "description"]
-      },
-      "UpdateReportDto": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": ["PENDING", "UNDER_REVIEW", "RESOLVED", "DISMISSED"],
-            "example": "RESOLVED"
-          },
-          "resolutionNotes": {
-            "type": "string",
-            "example": "Se contactó al arrendador y se corrigió el precio publicado."
-          }
-        }
-      },
-      "CreateProposalDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": ["AMENITIES_UPDATE", "BASIC_INFO", "LOCATION_UPDATE", "FULL_UPDATE"],
-            "default": "BASIC_INFO"
-          },
-          "proposedChanges": {
-            "type": "object",
-            "example": {
-              "curfewTime": "23:30",
-              "quietHoursStart": "22:00",
-              "amenitiesToAdd": ["sala-estudio"],
-              "amenitiesToRemove": []
-            },
-            "description": "Object with proposed field corrections or amenities diff"
-          },
-          "submissionNotes": {
-            "type": "string",
-            "example": "Actualización tras consulta presencial."
-          }
-        },
-        "required": ["type", "proposedChanges"]
-      },
-      "ReviewProposalDto": {
-        "type": "object",
-        "properties": {
-          "action": {
-            "type": "string",
-            "enum": ["APPROVE", "REJECT", "MODIFY_AND_APPROVE"],
-            "example": "APPROVE"
-          },
-          "reviewNotes": {
-            "type": "string",
-            "example": "Cambios validados telefónicamente."
-          },
-          "modifiedChanges": {
-            "type": "object",
-            "example": {
-              "curfewTime": "23:30"
-            },
-            "description": "Subset or override of changes to apply when action is MODIFY_AND_APPROVE"
-          }
-        },
-        "required": ["action"]
-      },
-      "UpdateReviewVisibilityDto": {
-        "type": "object",
-        "properties": {
-          "isHidden": {
-            "type": "boolean",
-            "example": true,
-            "description": "Whether the review is hidden from public display"
-          },
-          "reason": {
-            "type": "string",
-            "example": "Comentario con lenguaje inapropiado o difamatorio."
-          }
-        },
-        "required": ["isHidden"]
-      },
-      "UpdatePensionStatusDto": {
-        "type": "object",
-        "properties": {
-          "verificationStatus": {
-            "type": "string",
-            "enum": ["UNVERIFIED", "COMMUNITY_VERIFIED", "OFFICIALLY_VERIFIED", "REJECTED"],
-            "example": "COMMUNITY_VERIFIED"
-          },
-          "isActive": {
-            "type": "boolean",
-            "example": false,
-            "description": "Set false to suspend or delist the pension"
-          },
-          "reason": {
-            "type": "string",
-            "example": "Publicación suspendida por reporte fundado de fraude."
-          }
-        }
-      }
-    }
+    "schemas": {}
   }
 }
