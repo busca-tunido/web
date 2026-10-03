@@ -8,57 +8,44 @@ const serverSchema = z.object({
 const clientSchema = z.object({
   NEXT_PUBLIC_API_URL: z.string().min(1, 'NEXT_PUBLIC_API_URL is required'),
   NEXT_PUBLIC_APP_URL: z.string().url('NEXT_PUBLIC_APP_URL must be a valid URL'),
-  NEXT_PUBLIC_CARTO_API_KEY: z.string({
-    error: 'NEXT_PUBLIC_CARTO_API_KEY is required',
-  }),
+  NEXT_PUBLIC_CARTO_API_KEY: z.string().min(0),
 });
 
 const isServer = typeof window === 'undefined';
 
+const clientParsed = clientSchema.safeParse({
+  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  NEXT_PUBLIC_CARTO_API_KEY: process.env.NEXT_PUBLIC_CARTO_API_KEY ?? '',
+});
+
+if (!clientParsed.success) {
+  const errorMessages = clientParsed.error.issues
+    .map((issue) => `  - ${issue.path.join('.')}: ${issue.message}`)
+    .join('\n');
+  const message = `Invalid client environment variables:\n${errorMessages}`;
+  console.error(`[BuscaTuNido env error] ${message}`);
+  throw new Error(message);
+}
+
+let serverParsedData: z.infer<typeof serverSchema> | undefined;
+
 if (isServer) {
-  const serverResult = serverSchema.safeParse({
+  const serverParsed = serverSchema.safeParse({
     API_INTERNAL_URL: process.env.API_INTERNAL_URL,
     NODE_ENV: process.env.NODE_ENV,
   });
 
-  const clientResult = clientSchema.safeParse({
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    NEXT_PUBLIC_CARTO_API_KEY: process.env.NEXT_PUBLIC_CARTO_API_KEY,
-  });
-
-  const errors: string[] = [];
-  if (!serverResult.success) {
-    for (const issue of serverResult.error.issues) {
-      errors.push(`  - ${issue.path.join('.')}: ${issue.message}`);
-    }
-  }
-  if (!clientResult.success) {
-    for (const issue of clientResult.error.issues) {
-      errors.push(`  - ${issue.path.join('.')}: ${issue.message}`);
-    }
-  }
-
-  if (errors.length > 0) {
-    const message = `Invalid environment variables:\n${errors.join('\n')}`;
-    console.error(`[BuscaTuNido env error] ${message}`);
-    throw new Error(message);
-  }
-} else {
-  const clientResult = clientSchema.safeParse({
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    NEXT_PUBLIC_CARTO_API_KEY: process.env.NEXT_PUBLIC_CARTO_API_KEY,
-  });
-
-  if (!clientResult.success) {
-    const errorMessages = clientResult.error.issues
+  if (!serverParsed.success) {
+    const errorMessages = serverParsed.error.issues
       .map((issue) => `  - ${issue.path.join('.')}: ${issue.message}`)
       .join('\n');
-    const message = `Invalid client environment variables:\n${errorMessages}`;
+    const message = `Invalid server environment variables:\n${errorMessages}`;
     console.error(`[BuscaTuNido env error] ${message}`);
     throw new Error(message);
   }
+
+  serverParsedData = serverParsed.data;
 }
 
 export type Env = {
@@ -69,17 +56,19 @@ export type Env = {
   readonly NODE_ENV: 'development' | 'production' | 'test';
 };
 
-export const env: Env = {
+export const env: Env = Object.freeze({
   get API_INTERNAL_URL(): string {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' || !serverParsedData) {
       throw new Error(
         'API_INTERNAL_URL is a server-only environment variable and cannot be accessed on the client.',
       );
     }
-    return process.env.API_INTERNAL_URL as string;
+    return serverParsedData.API_INTERNAL_URL;
   },
-  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL as string,
-  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL as string,
-  NEXT_PUBLIC_CARTO_API_KEY: process.env.NEXT_PUBLIC_CARTO_API_KEY as string,
-  NODE_ENV: (process.env.NODE_ENV as 'development' | 'production' | 'test') ?? 'development',
-};
+  NEXT_PUBLIC_API_URL: clientParsed.data.NEXT_PUBLIC_API_URL,
+  NEXT_PUBLIC_APP_URL: clientParsed.data.NEXT_PUBLIC_APP_URL,
+  NEXT_PUBLIC_CARTO_API_KEY: clientParsed.data.NEXT_PUBLIC_CARTO_API_KEY,
+  get NODE_ENV(): 'development' | 'production' | 'test' {
+    return serverParsedData?.NODE_ENV ?? 'development';
+  },
+});
