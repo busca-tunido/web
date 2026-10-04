@@ -161,7 +161,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {pensions.map((prop) => {
               const isCurrent = prop.id === selectedPension?.id;
               const rooms = prop.rooms ?? [];
@@ -282,7 +282,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                         variant="outline"
                         size="sm"
                         onClick={() => setPreviewPension(prop)}
-                        className="flex-1 min-h-[40px] items-center justify-center gap-1.5 rounded-xl border-border bg-background hover:bg-secondary text-xs font-semibold cursor-pointer shadow-2xs transition"
+                        className="flex-1 sm:flex-none min-h-[40px] px-4 items-center justify-center gap-1.5 rounded-xl border-border bg-background hover:bg-secondary text-xs font-semibold cursor-pointer shadow-2xs transition"
                         title="Ver como estudiante"
                         aria-label={`Vista previa de ${prop.title}`}
                       >
@@ -296,7 +296,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                           variant="secondary"
                           size="sm"
                           onClick={() => setActiveTab('pension')}
-                          className="flex-1 min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 text-xs font-semibold cursor-pointer transition"
+                          className="flex-1 sm:flex-none min-h-[40px] px-4 items-center justify-center gap-1.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 text-xs font-semibold cursor-pointer transition"
                         >
                           <Home className="h-4 w-4 shrink-0" />
                           <span>Ficha Actual</span>
@@ -307,7 +307,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                           variant="default"
                           size="sm"
                           onClick={() => handleSelectToManage(prop, 'pension')}
-                          className="flex-1 min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground hover:opacity-90 text-xs font-semibold cursor-pointer shadow-2xs transition"
+                          className="flex-1 sm:flex-none min-h-[40px] px-4 items-center justify-center gap-1.5 rounded-xl bg-primary text-primary-foreground hover:opacity-90 text-xs font-semibold cursor-pointer shadow-2xs transition"
                         >
                           <span>Administrar</span>
                           <ChevronRight className="h-4 w-4 shrink-0" />
@@ -319,11 +319,11 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                         variant="ghost"
                         size="sm"
                         onClick={() => handleSelectToManage(prop, 'rooms')}
-                        className="min-h-[40px] px-3 items-center justify-center gap-1 rounded-xl text-muted-foreground hover:text-foreground text-xs font-medium cursor-pointer"
+                        className="flex-1 sm:flex-none min-h-[40px] px-3.5 items-center justify-center gap-1.5 rounded-xl text-muted-foreground hover:text-foreground text-xs font-medium cursor-pointer"
                         title="Ver habitaciones de esta pensión"
                       >
                         <BedDouble className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Habitaciones</span>
+                        <span>Habitaciones</span>
                       </Button>
                     </div>
                   </CardContent>

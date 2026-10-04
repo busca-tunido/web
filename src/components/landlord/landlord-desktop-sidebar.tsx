@@ -65,8 +65,8 @@ export function LandlordDesktopSidebar({
     () => [
       { id: 'pension', label: 'Mi Pensión', icon: Home },
       { id: 'rooms', label: 'Habitaciones', icon: BedDouble },
-      { id: 'pensions', label: 'Mis Pensiones', icon: Building2 },
       { id: 'reviews', label: 'Reseñas', icon: Star, badge: pendingProposalsCount },
+      { id: 'pensions', label: 'Mis Pensiones', icon: Building2 },
     ],
     [pendingProposalsCount],
   );
@@ -137,57 +137,57 @@ export function LandlordDesktopSidebar({
             Pensión Activa
           </span>
 
-          <div className="relative flex items-center w-full">
+          <div className="relative flex w-full min-h-[56px] items-center justify-between gap-1.5 rounded-xl border border-border/80 bg-background/80 p-2 transition hover:border-primary/40 focus-within:ring-2 focus-within:ring-ring shadow-2xs">
             <button
               type="button"
               onClick={() => setIsPropertyMenuOpen((prev) => !prev)}
               aria-expanded={isPropertyMenuOpen}
               aria-haspopup="listbox"
               aria-controls={propertyListboxId}
-              className="flex w-full min-h-[56px] items-center justify-between gap-2 rounded-xl border border-border/80 bg-background/80 p-3 text-left transition hover:border-primary/40 hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shadow-2xs"
+              className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer focus-visible:outline-none rounded-lg p-1 transition hover:bg-secondary/40"
             >
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Building2 className="h-5 w-5" />
-                  <span
-                    className={cn(
-                      'absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background',
-                      selectedPension?.isActive ? 'bg-emerald-500' : 'bg-muted-foreground/40',
-                    )}
-                  />
-                </div>
-                <div className="flex min-w-0 flex-col">
-                  <span className="truncate text-xs font-bold text-foreground">
-                    {selectedPension?.title ?? 'Mi Pensión'}
-                  </span>
-                  <span className="truncate text-[10px] text-muted-foreground">
-                    {selectedPension?.city ?? 'Alojamiento'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1 shrink-0 text-muted-foreground">
-                <button
-                  type="button"
-                  title="Ver vista previa de la pensión"
-                  aria-label="Ver vista previa de la pensión"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsPreviewOpen(true);
-                  }}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-primary/10 hover:text-primary transition cursor-pointer text-muted-foreground"
-                >
-                  <Eye className="h-4 w-4" />
-                </button>
-                <div className="flex h-8 w-6 items-center justify-center">
-                  {isPropertyMenuOpen ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
+              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Building2 className="h-4.5 w-4.5" />
+                <span
+                  className={cn(
+                    'absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background',
+                    selectedPension?.isActive ? 'bg-emerald-500' : 'bg-muted-foreground/40',
                   )}
-                </div>
+                />
+              </div>
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate text-xs font-bold text-foreground">
+                  {selectedPension?.title ?? 'Mi Pensión'}
+                </span>
+                <span className="truncate text-[10px] text-muted-foreground">
+                  {selectedPension?.city ?? 'Alojamiento'}
+                </span>
               </div>
             </button>
+
+            <div className="flex items-center gap-0.5 shrink-0 text-muted-foreground">
+              <button
+                type="button"
+                title="Ver vista previa de la pensión"
+                aria-label="Ver vista previa de la pensión"
+                onClick={() => setIsPreviewOpen(true)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-primary/10 hover:text-primary transition cursor-pointer text-muted-foreground"
+              >
+                <Eye className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsPropertyMenuOpen((prev) => !prev)}
+                aria-label={isPropertyMenuOpen ? 'Cerrar selector' : 'Abrir selector'}
+                className="flex h-8 w-6 items-center justify-center cursor-pointer hover:text-foreground text-muted-foreground transition"
+              >
+                {isPropertyMenuOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </div>
 
           <AnimatePresence>

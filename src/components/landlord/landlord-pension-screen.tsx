@@ -411,7 +411,7 @@ export function LandlordPensionScreen({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+        <div className="flex md:hidden flex-wrap items-center gap-2 self-start sm:self-auto">
           {activePension && (
             <button
               type="button"
