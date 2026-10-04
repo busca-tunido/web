@@ -89,15 +89,15 @@ function getSatisfactionLabel(
   if (score >= 4.5) {
     return {
       label: 'Excelente',
-      variant: 'default',
-      colorClass: 'text-primary bg-primary/15 border-primary/40',
+      variant: 'outline',
+      colorClass: 'text-foreground bg-muted/40 border-border',
     };
   }
   if (score >= 4.0) {
     return {
       label: 'Muy Bueno',
       variant: 'outline',
-      colorClass: 'text-primary bg-primary/10 border-primary/30',
+      colorClass: 'text-foreground bg-muted/40 border-border',
     };
   }
   if (score >= 3.0) {
@@ -316,7 +316,7 @@ export function LandlordReviewsScreen({
           {totalReviewsCount > 0 && (
             <Badge
               variant="outline"
-              className="border-primary/30 bg-primary/5 text-primary text-xs font-semibold px-2.5 py-0.5"
+              className="border-border/80 text-foreground text-xs font-normal px-2.5 py-0.5"
             >
               {totalReviewsCount} {totalReviewsCount === 1 ? 'reseña' : 'reseñas'}
             </Badge>
@@ -327,37 +327,28 @@ export function LandlordReviewsScreen({
         </p>
       </div>
 
-      <div
-        className={cn(
-          'rounded-2xl border p-4 sm:p-5 shadow-xs transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5',
-          pendingCount > 0 ? 'border-primary/40 bg-primary/5' : 'border-border/80 bg-card',
-        )}
-      >
+      <div className="rounded-xl border border-border/70 bg-card p-4 sm:p-5 shadow-none transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
         <div className="flex items-start gap-3 min-w-0">
-          <div
-            className={cn(
-              'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-              pendingCount > 0
-                ? 'bg-primary text-primary-foreground shadow-xs'
-                : 'bg-muted text-muted-foreground',
-            )}
-          >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
             <MessageSquare className="h-5 w-5" />
           </div>
 
           <div className="flex flex-col">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs sm:text-sm font-bold text-foreground">
+              <span className="text-xs sm:text-sm font-semibold text-foreground">
                 Sugerencias de la Comunidad
               </span>
               {pendingCount > 0 ? (
-                <Badge className="bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0">
+                <Badge
+                  variant="outline"
+                  className="border-border/80 text-foreground text-[10px] font-medium px-2 py-0"
+                >
                   {pendingCount} {pendingCount === 1 ? 'pendiente' : 'pendientes'}
                 </Badge>
               ) : (
                 <Badge
                   variant="outline"
-                  className="border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px]"
+                  className="border-border/80 text-muted-foreground text-[10px]"
                 >
                   Al día
                 </Badge>
@@ -374,28 +365,22 @@ export function LandlordReviewsScreen({
 
         <Button
           type="button"
+          variant="outline"
           onClick={handleOpenProposalsDrawer}
-          className={cn(
-            'w-full sm:w-auto min-h-[48px] px-5 text-xs font-bold shrink-0 cursor-pointer shadow-xs',
-            pendingCount > 0
-              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-              : 'border border-border bg-background text-foreground hover:bg-secondary',
-          )}
+          className="w-full sm:w-auto min-h-[40px] px-4 text-xs font-semibold shrink-0 cursor-pointer shadow-none border-border hover:bg-secondary"
         >
           <span>{pendingCount > 0 ? 'Revisar Sugerencias' : 'Ver Historial'}</span>
           <ChevronRight className="h-4 w-4 ml-1.5" />
         </Button>
       </div>
 
-      <Card className="border-border/80 bg-card shadow-xs rounded-2xl overflow-hidden">
+      <Card className="border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
         <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
-                <Star className="h-5 w-5 fill-amber-500" />
-              </div>
+              <Star className="h-5 w-5 fill-amber-400 text-amber-400 shrink-0" />
               <div>
-                <CardTitle className="text-sm sm:text-base font-bold text-foreground">
+                <CardTitle className="text-sm font-semibold text-foreground">
                   Satisfacción en 4 Dimensiones
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground mt-0.5">
@@ -404,9 +389,9 @@ export function LandlordReviewsScreen({
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 rounded-xl bg-muted/40 px-3 py-1.5 border border-border/60">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-              <span className="text-sm font-black text-foreground">
+            <div className="flex items-center gap-1.5 rounded-lg bg-muted/30 px-2.5 py-1 border border-border/60">
+              <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+              <span className="text-sm font-bold text-foreground">
                 {averageRatingValue > 0 ? averageRatingValue.toFixed(1) : 'Nuevo'}
               </span>
               <span className="text-[10px] text-muted-foreground">/ 5.0</span>
@@ -415,15 +400,13 @@ export function LandlordReviewsScreen({
         </CardHeader>
 
         <CardContent className="p-4 sm:p-5 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div className="rounded-xl border border-border/70 bg-muted/15 p-3.5 space-y-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="rounded-lg border border-border/60 bg-muted/10 p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Droplets className="h-4 w-4" />
-                  </div>
+                  <Droplets className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div>
-                    <span className="text-xs font-bold text-foreground block">Limpieza</span>
+                    <span className="text-xs font-semibold text-foreground block">Limpieza</span>
                     <span className="text-[10px] text-muted-foreground">
                       Higiene en baños y áreas comunes
                     </span>
@@ -438,7 +421,7 @@ export function LandlordReviewsScreen({
                   return (
                     <Badge
                       variant={info.variant}
-                      className={cn('text-[10px] font-semibold border', info.colorClass)}
+                      className={cn('text-[10px] font-medium border', info.colorClass)}
                     >
                       {info.label}
                     </Badge>
@@ -449,7 +432,7 @@ export function LandlordReviewsScreen({
               <div className="flex items-center gap-2.5 pt-1">
                 <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
                   <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
+                    className="h-full bg-zinc-700 dark:bg-zinc-300 rounded-full transition-all duration-500"
                     style={{
                       width: `${(satisfactionMetrics.cleanliness / 5) * 100}%`,
                     }}
@@ -463,14 +446,12 @@ export function LandlordReviewsScreen({
               </div>
             </div>
 
-            <div className="rounded-xl border border-border/70 bg-muted/15 p-3.5 space-y-2.5">
+            <div className="rounded-lg border border-border/60 bg-muted/10 p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <HeartHandshake className="h-4 w-4" />
-                  </div>
+                  <HeartHandshake className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div>
-                    <span className="text-xs font-bold text-foreground block">
+                    <span className="text-xs font-semibold text-foreground block">
                       Trato del Anfitrión
                     </span>
                     <span className="text-[10px] text-muted-foreground">
@@ -487,7 +468,7 @@ export function LandlordReviewsScreen({
                   return (
                     <Badge
                       variant={info.variant}
-                      className={cn('text-[10px] font-semibold border', info.colorClass)}
+                      className={cn('text-[10px] font-medium border', info.colorClass)}
                     >
                       {info.label}
                     </Badge>
@@ -498,7 +479,7 @@ export function LandlordReviewsScreen({
               <div className="flex items-center gap-2.5 pt-1">
                 <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
                   <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
+                    className="h-full bg-zinc-700 dark:bg-zinc-300 rounded-full transition-all duration-500"
                     style={{
                       width: `${(satisfactionMetrics.landlord / 5) * 100}%`,
                     }}
@@ -512,14 +493,14 @@ export function LandlordReviewsScreen({
               </div>
             </div>
 
-            <div className="rounded-xl border border-border/70 bg-muted/15 p-3.5 space-y-2.5">
+            <div className="rounded-lg border border-border/60 bg-muted/10 p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Moon className="h-4 w-4" />
-                  </div>
+                  <Moon className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div>
-                    <span className="text-xs font-bold text-foreground block">Tranquilidad</span>
+                    <span className="text-xs font-semibold text-foreground block">
+                      Tranquilidad
+                    </span>
                     <span className="text-[10px] text-muted-foreground">
                       Ambiente de silencio y estudio
                     </span>
@@ -534,7 +515,7 @@ export function LandlordReviewsScreen({
                   return (
                     <Badge
                       variant={info.variant}
-                      className={cn('text-[10px] font-semibold border', info.colorClass)}
+                      className={cn('text-[10px] font-medium border', info.colorClass)}
                     >
                       {info.label}
                     </Badge>
@@ -545,7 +526,7 @@ export function LandlordReviewsScreen({
               <div className="flex items-center gap-2.5 pt-1">
                 <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
                   <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
+                    className="h-full bg-zinc-700 dark:bg-zinc-300 rounded-full transition-all duration-500"
                     style={{
                       width: `${(satisfactionMetrics.quietness / 5) * 100}%`,
                     }}
@@ -559,14 +540,12 @@ export function LandlordReviewsScreen({
               </div>
             </div>
 
-            <div className="rounded-xl border border-border/70 bg-muted/15 p-3.5 space-y-2.5">
+            <div className="rounded-lg border border-border/60 bg-muted/10 p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Wifi className="h-4 w-4" />
-                  </div>
+                  <Wifi className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div>
-                    <span className="text-xs font-bold text-foreground block">
+                    <span className="text-xs font-semibold text-foreground block">
                       Conectividad Wi-Fi
                     </span>
                     <span className="text-[10px] text-muted-foreground">
@@ -583,7 +562,7 @@ export function LandlordReviewsScreen({
                   return (
                     <Badge
                       variant={info.variant}
-                      className={cn('text-[10px] font-semibold border', info.colorClass)}
+                      className={cn('text-[10px] font-medium border', info.colorClass)}
                     >
                       {info.label}
                     </Badge>
@@ -594,7 +573,7 @@ export function LandlordReviewsScreen({
               <div className="flex items-center gap-2.5 pt-1">
                 <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
                   <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
+                    className="h-full bg-zinc-700 dark:bg-zinc-300 rounded-full transition-all duration-500"
                     style={{
                       width: `${(satisfactionMetrics.wifi / 5) * 100}%`,
                     }}
@@ -780,7 +759,7 @@ export function LandlordReviewsScreen({
               return (
                 <Card
                   key={review.id}
-                  className="border-border/80 bg-card shadow-xs rounded-2xl overflow-hidden"
+                  className="border-border/70 bg-card shadow-none rounded-xl overflow-hidden"
                 >
                   <CardHeader className="p-4 pb-2">
                     <div className="flex items-start justify-between gap-3">
@@ -804,16 +783,16 @@ export function LandlordReviewsScreen({
 
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <h4 className="text-xs font-bold text-foreground">
+                            <h4 className="text-xs font-semibold text-foreground">
                               {review.user?.firstName || 'Estudiante'}{' '}
                               {review.user?.lastName ? `${review.user.lastName.charAt(0)}.` : ''}
                             </h4>
                             {(review.isResidentVerified || review.isVerifiedStudent) && (
                               <Badge
                                 variant="outline"
-                                className="gap-1 border-primary/40 bg-primary/5 text-primary text-[10px] py-0 px-1.5"
+                                className="gap-1 border-border/80 text-foreground text-[10px] py-0 px-1.5 font-normal"
                               >
-                                <CheckCircle2 className="h-3 w-3" />
+                                <CheckCircle2 className="h-3 w-3 text-muted-foreground" />
                                 <span>Verificado</span>
                               </Badge>
                             )}
@@ -829,7 +808,7 @@ export function LandlordReviewsScreen({
                               <>
                                 <span>•</span>
                                 <span className="font-medium text-foreground/80 flex items-center gap-1">
-                                  <GraduationCap className="h-3 w-3 text-primary" />
+                                  <GraduationCap className="h-3 w-3 text-muted-foreground" />
                                   {review.user.university.shortName || review.user.university.name}
                                 </span>
                               </>
@@ -899,11 +878,11 @@ export function LandlordReviewsScreen({
                         className={cn(
                           'flex min-h-[44px] items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer',
                           isLiked
-                            ? 'bg-primary/10 text-primary'
+                            ? 'bg-secondary text-foreground font-semibold'
                             : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                         )}
                       >
-                        <ThumbsUp className={cn('h-3.5 w-3.5', isLiked && 'fill-primary')} />
+                        <ThumbsUp className={cn('h-3.5 w-3.5', isLiked && 'fill-foreground')} />
                         <span>Útil ({calculatedLikes})</span>
                       </button>
 

@@ -64,7 +64,6 @@ export function LandlordDesktopSidebar({
       { id: 'pension', label: 'Mi Pensión', icon: Home },
       { id: 'rooms', label: 'Habitaciones', icon: BedDouble },
       { id: 'reviews', label: 'Reseñas', icon: Star, badge: pendingProposalsCount },
-      { id: 'pensions', label: 'Mis Pensiones', icon: Building2 },
     ],
     [pendingProposalsCount],
   );
@@ -115,20 +114,7 @@ export function LandlordDesktopSidebar({
           <BrandLogo size="sm" priority={false} />
         </div>
 
-        <div className="px-4 pt-3 pb-1">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={openCreatePensionModal}
-            className="flex w-full min-h-[40px] items-center justify-center gap-2 rounded-xl border border-dashed border-primary/40 bg-primary/5 text-primary hover:border-primary/70 hover:bg-primary/10 text-xs font-semibold shadow-2xs transition active:scale-[0.99] cursor-pointer"
-          >
-            <Plus className="h-4 w-4 shrink-0" />
-            <span>Registrar Nueva Pensión</span>
-          </Button>
-        </div>
-
-        <div ref={propertyDropdownRef} className="relative px-4 pt-2 pb-2 flex flex-col gap-2">
+        <div ref={propertyDropdownRef} className="relative px-4 pt-3 pb-2 flex flex-col gap-2">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 block">
             Pensión Activa
           </span>
@@ -290,6 +276,14 @@ export function LandlordDesktopSidebar({
             <Eye className="h-4 w-4 text-primary shrink-0" />
             <span className="truncate">Vista de Estudiante</span>
           </Button>
+
+          <RoomOccupancyBar
+            totalRooms={totalRooms}
+            occupiedRooms={occupiedRooms}
+            label="Ocupación"
+            showIcon
+            className="shadow-2xs mt-1"
+          />
         </div>
 
         <nav
@@ -341,14 +335,48 @@ export function LandlordDesktopSidebar({
           })}
         </nav>
 
-        <div className="mt-auto flex flex-col gap-2.5 p-3 border-t border-border/60">
-          <RoomOccupancyBar
-            totalRooms={totalRooms}
-            occupiedRooms={occupiedRooms}
-            label="Ocupación"
-            showIcon
-            className="shadow-2xs"
-          />
+        <div className="mt-auto flex flex-col gap-2 p-3 border-t border-border/60">
+          <button
+            type="button"
+            onClick={() => setActiveTab('pensions')}
+            className={cn(
+              'group relative flex min-h-[42px] w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition cursor-pointer',
+              activeTab === 'pensions'
+                ? 'bg-primary/10 text-primary font-semibold'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+            )}
+          >
+            <Building2
+              className={cn(
+                'h-4.5 w-4.5 shrink-0 transition-transform duration-200',
+                activeTab === 'pensions' ? 'text-primary stroke-[2.2]' : 'stroke-[1.75]',
+              )}
+            />
+            <span className="flex-1 text-left">Mis Pensiones</span>
+            {pensions.length > 0 && (
+              <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-[10px] font-bold text-muted-foreground">
+                {pensions.length}
+              </span>
+            )}
+            {activeTab === 'pensions' && (
+              <motion.div
+                layoutId="active-landlord-desktop-sidebar-indicator"
+                transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-primary"
+              />
+            )}
+          </button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={openCreatePensionModal}
+            className="flex w-full min-h-[38px] items-center justify-center gap-2 rounded-xl border border-dashed border-primary/40 bg-primary/5 text-primary hover:border-primary/70 hover:bg-primary/10 text-xs font-semibold shadow-2xs transition active:scale-[0.99] cursor-pointer"
+          >
+            <Plus className="h-4 w-4 shrink-0" />
+            <span>Registrar Nueva Pensión</span>
+          </Button>
 
           <div
             className={cn(

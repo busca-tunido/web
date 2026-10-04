@@ -369,8 +369,8 @@ export function LandlordPensionScreen({
 
     if (isNoPensionFound) {
       return (
-        <div className="flex min-h-[55vh] flex-col items-center justify-center p-8 text-center rounded-3xl border border-dashed border-border/80 bg-card/60 my-4 max-w-md mx-auto">
-          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary mb-4 shadow-2xs">
+        <div className="flex min-h-[55vh] flex-col items-center justify-center p-8 text-center rounded-2xl border border-dashed border-border/80 bg-card/60 my-4 max-w-md mx-auto">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-4">
             <Building2 className="h-8 w-8" />
           </div>
           <h3 className="text-lg font-bold text-foreground tracking-tight">
@@ -482,7 +482,7 @@ export function LandlordPensionScreen({
             onClick={openCreatePensionModal}
             className="min-h-[44px] px-3 text-xs font-semibold border-border hover:bg-secondary shadow-2xs cursor-pointer gap-1.5"
           >
-            <Plus className="h-4 w-4 text-primary" />
+            <Plus className="h-4 w-4 text-muted-foreground" />
             <span>Nueva Pensión</span>
           </Button>
 
@@ -490,9 +490,9 @@ export function LandlordPensionScreen({
             type="button"
             variant="outline"
             onClick={() => setIsPreviewModalOpen(true)}
-            className="min-h-[44px] px-3 text-xs font-bold border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 shadow-2xs cursor-pointer"
+            className="min-h-[44px] px-3 text-xs font-semibold border-border text-foreground hover:bg-secondary shadow-2xs cursor-pointer"
           >
-            <Eye className="h-4 w-4 mr-1.5" />
+            <Eye className="h-4 w-4 mr-1.5 text-muted-foreground" />
             Vista Previa
           </Button>
         </div>
@@ -534,14 +534,12 @@ export function LandlordPensionScreen({
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
-        <Card className="xl:col-span-6 flex flex-col border-border/80 bg-card shadow-xs rounded-2xl overflow-hidden">
+        <Card className="xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Zap className="h-5 w-5" />
-              </div>
+              <Zap className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
               <div>
-                <CardTitle className="text-sm sm:text-base font-bold text-foreground">
+                <CardTitle className="text-sm font-semibold text-foreground">
                   Servicios Básicos Incluidos
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground mt-0.5">
@@ -551,21 +549,12 @@ export function LandlordPensionScreen({
             </div>
           </CardHeader>
 
-          <CardContent className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
-            <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
+          <CardContent className="p-0 divide-y divide-border/40 flex-1 flex flex-col justify-between">
+            <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
               <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={cn(
-                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                    form.waterIncluded
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted/40 text-muted-foreground',
-                  )}
-                >
-                  <Droplets className="h-4 w-4" />
-                </div>
+                <Droplets className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-foreground">Agua Potable</span>
+                  <span className="text-xs font-semibold text-foreground">Agua Potable</span>
                   <span className="text-[11px] text-muted-foreground">
                     Consumo de agua fría y caliente incluido
                   </span>
@@ -579,33 +568,24 @@ export function LandlordPensionScreen({
                 aria-label="Incluir agua potable"
                 onClick={() => handleToggle('waterIncluded')}
                 className={cn(
-                  'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  form.waterIncluded ? 'bg-primary' : 'bg-muted-foreground/30',
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  form.waterIncluded ? 'bg-foreground' : 'bg-muted-foreground/30',
                 )}
               >
                 <span
                   className={cn(
-                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                    form.waterIncluded ? 'translate-x-5' : 'translate-x-0',
+                    'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                    form.waterIncluded ? 'translate-x-4' : 'translate-x-0',
                   )}
                 />
               </button>
             </div>
 
-            <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
+            <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
               <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={cn(
-                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                    form.electricityIncluded
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted/40 text-muted-foreground',
-                  )}
-                >
-                  <Zap className="h-4 w-4" />
-                </div>
+                <Zap className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-foreground">Electricidad / Luz</span>
+                  <span className="text-xs font-semibold text-foreground">Electricidad / Luz</span>
                   <span className="text-[11px] text-muted-foreground">
                     Gasto eléctrico general y en habitaciones
                   </span>
@@ -619,33 +599,24 @@ export function LandlordPensionScreen({
                 aria-label="Incluir electricidad"
                 onClick={() => handleToggle('electricityIncluded')}
                 className={cn(
-                  'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  form.electricityIncluded ? 'bg-primary' : 'bg-muted-foreground/30',
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  form.electricityIncluded ? 'bg-foreground' : 'bg-muted-foreground/30',
                 )}
               >
                 <span
                   className={cn(
-                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                    form.electricityIncluded ? 'translate-x-5' : 'translate-x-0',
+                    'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                    form.electricityIncluded ? 'translate-x-4' : 'translate-x-0',
                   )}
                 />
               </button>
             </div>
 
-            <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
+            <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
               <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={cn(
-                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                    form.gasIncluded
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted/40 text-muted-foreground',
-                  )}
-                >
-                  <Flame className="h-4 w-4" />
-                </div>
+                <Flame className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-foreground">Gas / Calefón</span>
+                  <span className="text-xs font-semibold text-foreground">Gas / Calefón</span>
                   <span className="text-[11px] text-muted-foreground">
                     Gas para cocina y agua caliente
                   </span>
@@ -659,33 +630,24 @@ export function LandlordPensionScreen({
                 aria-label="Incluir gas"
                 onClick={() => handleToggle('gasIncluded')}
                 className={cn(
-                  'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  form.gasIncluded ? 'bg-primary' : 'bg-muted-foreground/30',
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  form.gasIncluded ? 'bg-foreground' : 'bg-muted-foreground/30',
                 )}
               >
                 <span
                   className={cn(
-                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                    form.gasIncluded ? 'translate-x-5' : 'translate-x-0',
+                    'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                    form.gasIncluded ? 'translate-x-4' : 'translate-x-0',
                   )}
                 />
               </button>
             </div>
 
-            <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
+            <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
               <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={cn(
-                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                    form.internetIncluded
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-muted/40 text-muted-foreground',
-                  )}
-                >
-                  <Wifi className="h-4 w-4" />
-                </div>
+                <Wifi className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-foreground">Internet Wi-Fi</span>
+                  <span className="text-xs font-semibold text-foreground">Internet Wi-Fi</span>
                   <span className="text-[11px] text-muted-foreground">
                     Conexión de alta velocidad para estudio
                   </span>
@@ -699,14 +661,14 @@ export function LandlordPensionScreen({
                 aria-label="Incluir internet WiFi"
                 onClick={() => handleToggle('internetIncluded')}
                 className={cn(
-                  'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  form.internetIncluded ? 'bg-primary' : 'bg-muted-foreground/30',
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  form.internetIncluded ? 'bg-foreground' : 'bg-muted-foreground/30',
                 )}
               >
                 <span
                   className={cn(
-                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                    form.internetIncluded ? 'translate-x-5' : 'translate-x-0',
+                    'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                    form.internetIncluded ? 'translate-x-4' : 'translate-x-0',
                   )}
                 />
               </button>
@@ -714,14 +676,12 @@ export function LandlordPensionScreen({
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-6 flex flex-col border-border/80 bg-card shadow-xs rounded-2xl overflow-hidden">
+        <Card className="xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Users className="h-5 w-5" />
-              </div>
+              <Users className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
               <div>
-                <CardTitle className="text-sm sm:text-base font-bold text-foreground">
+                <CardTitle className="text-sm font-semibold text-foreground">
                   Preferencia de Género
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground mt-0.5">
@@ -732,7 +692,7 @@ export function LandlordPensionScreen({
           </CardHeader>
 
           <CardContent className="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-3">
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-2">
               {GENDER_OPTIONS.map((option) => {
                 const isSelected = form.genderPreference === option.value;
                 const Icon = option.icon;
@@ -743,61 +703,59 @@ export function LandlordPensionScreen({
                     type="button"
                     onClick={() => handleGenderSelect(option.value)}
                     className={cn(
-                      'flex min-h-[52px] items-center justify-between rounded-xl border px-3.5 py-2.5 text-left transition cursor-pointer select-none',
+                      'flex min-h-[48px] items-center justify-between rounded-lg border px-3.5 py-2.5 text-left transition cursor-pointer select-none',
                       isSelected
-                        ? 'border-primary bg-primary/10 ring-2 ring-primary/20'
-                        : 'border-border/70 bg-muted/20 hover:bg-muted/40 text-foreground',
+                        ? 'border-foreground/30 bg-muted/40 text-foreground font-medium'
+                        : 'border-border/60 bg-card hover:bg-muted/20 text-muted-foreground hover:text-foreground',
                     )}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div
+                      <Icon
                         className={cn(
-                          'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                          isSelected
-                            ? 'bg-primary/15 text-primary'
-                            : 'bg-muted/40 text-muted-foreground',
+                          'h-4 w-4 shrink-0 transition-colors',
+                          isSelected ? 'text-foreground' : 'text-muted-foreground',
                         )}
-                      >
-                        <Icon className="h-4 w-4" />
-                      </div>
+                      />
                       <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-bold text-foreground">{option.label}</span>
+                        <span className="text-xs font-medium text-foreground">{option.label}</span>
                         <span className="text-[11px] text-muted-foreground">
                           {option.description}
                         </span>
                       </div>
                     </div>
-                    {isSelected && <Check className="h-4 w-4 text-primary shrink-0 ml-2" />}
+                    {isSelected ? (
+                      <Check className="h-4 w-4 text-foreground shrink-0 ml-2" />
+                    ) : (
+                      <span className="h-4 w-4 shrink-0 ml-2" />
+                    )}
                   </button>
                 );
               })}
             </div>
 
-            <div className="rounded-xl border border-border/60 bg-muted/15 p-3 text-[11px] text-muted-foreground">
+            <div className="rounded-lg border border-border/50 bg-muted/15 p-2.5 text-[11px] text-muted-foreground">
               Define la convivencia en áreas compartidas para tranquilidad de los postulantes.
             </div>
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-5 flex flex-col border-border/80 bg-card shadow-xs rounded-2xl overflow-hidden">
+        <Card className="xl:col-span-5 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
-                  <MessageCircle className="h-5 w-5" />
-                </div>
+                <MessageCircle className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
                 <div>
-                  <CardTitle className="text-sm sm:text-base font-bold text-foreground">
+                  <CardTitle className="text-sm font-semibold text-foreground">
                     Contacto Directo y WhatsApp
                   </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                    Canal oficial para que estudiantes interesados consulten disponibilidad
+                    Canal oficial para consultas de disponibilidad
                   </CardDescription>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 bg-muted/40 px-3 py-1.5 rounded-xl border border-border/70">
-                <span className="text-xs font-semibold text-foreground">Personalizar</span>
+              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 bg-muted/30 px-2.5 py-1 rounded-lg border border-border/60">
+                <span className="text-xs font-medium text-foreground">Personalizar</span>
                 <button
                   type="button"
                   role="switch"
@@ -817,12 +775,12 @@ export function LandlordPensionScreen({
                   }
                   className={cn(
                     'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    form.useCustomContact ? 'bg-primary' : 'bg-muted-foreground/30',
+                    form.useCustomContact ? 'bg-foreground' : 'bg-muted-foreground/30',
                   )}
                 >
                   <span
                     className={cn(
-                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
+                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
                       form.useCustomContact ? 'translate-x-4' : 'translate-x-0',
                     )}
                   />
@@ -832,18 +790,11 @@ export function LandlordPensionScreen({
           </CardHeader>
 
           <CardContent className="p-4 sm:p-5 space-y-4 flex-1 flex flex-col justify-between">
-            <div className="space-y-4">
-              <div
-                className={cn(
-                  'rounded-xl border p-3 text-xs flex items-center justify-between gap-2 transition-colors',
-                  form.useCustomContact
-                    ? 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300'
-                    : 'border-primary/30 bg-primary/10 text-primary',
-                )}
-              >
+            <div className="space-y-3.5">
+              <div className="rounded-lg border border-border/60 bg-muted/20 p-2.5 text-xs flex items-center justify-between gap-2 text-muted-foreground">
                 <div className="flex items-center gap-2 min-w-0">
-                  <CheckCircle2 className="h-4 w-4 shrink-0" />
-                  <span className="text-[11px] font-medium leading-tight">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span className="text-[11px] leading-tight">
                     {form.useCustomContact
                       ? 'Contacto personalizado activo para esta pensión'
                       : 'Utilizando datos por defecto configurados en Mis Pensiones'}
@@ -851,12 +802,7 @@ export function LandlordPensionScreen({
                 </div>
                 <Badge
                   variant="outline"
-                  className={cn(
-                    'text-[10px] shrink-0 font-bold',
-                    form.useCustomContact
-                      ? 'border-amber-500/40 bg-amber-500/20 text-amber-700 dark:text-amber-300'
-                      : 'border-primary/40 bg-primary/20 text-primary',
-                  )}
+                  className="text-[10px] shrink-0 font-normal border-border/70 text-muted-foreground"
                 >
                   {form.useCustomContact ? 'Personalizado' : 'Por Defecto'}
                 </Badge>
@@ -865,7 +811,7 @@ export function LandlordPensionScreen({
               <div>
                 <label
                   htmlFor="landlord-contact-name"
-                  className="block text-xs font-bold text-foreground mb-1.5"
+                  className="block text-xs font-medium text-foreground mb-1"
                 >
                   Nombre del Anfitrión o Administrador
                 </label>
@@ -877,33 +823,28 @@ export function LandlordPensionScreen({
                   onChange={(e) => setForm((prev) => ({ ...prev, contactName: e.target.value }))}
                   placeholder={defaultContact.name || 'Ej: Sra. Carmen Gloria'}
                   className={cn(
-                    'min-h-[48px] w-full rounded-xl border border-border px-4 text-xs font-medium placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors',
+                    'min-h-[42px] w-full rounded-lg border border-border/70 px-3 text-xs placeholder:text-muted-foreground focus:border-foreground/40 focus:outline-none transition-colors',
                     form.useCustomContact
                       ? 'bg-background text-foreground'
-                      : 'bg-muted/40 text-muted-foreground cursor-not-allowed',
+                      : 'bg-muted/30 text-muted-foreground cursor-not-allowed',
                   )}
                 />
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center justify-between mb-1">
                   <label
                     htmlFor="landlord-contact-whatsapp"
-                    className="block text-xs font-bold text-foreground"
+                    className="block text-xs font-medium text-foreground"
                   >
                     WhatsApp de Contacto (Chile)
                   </label>
-                  <Badge
-                    variant="outline"
-                    className="border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px]"
-                  >
-                    🇨🇱 Formato +56 9
-                  </Badge>
+                  <span className="text-[10px] text-muted-foreground">+56 9</span>
                 </div>
 
                 <div className="relative flex items-center">
-                  <div className="absolute left-3 flex items-center gap-1 text-xs font-bold text-muted-foreground pointer-events-none">
-                    <Phone className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <div className="absolute left-3 flex items-center text-muted-foreground pointer-events-none">
+                    <Phone className="h-3.5 w-3.5" />
                   </div>
 
                   <input
@@ -918,35 +859,33 @@ export function LandlordPensionScreen({
                     onChange={(e) => handlePhoneChange(e.target.value)}
                     placeholder={normalizePhoneToDisplay(defaultContact.phone) || '+56 9 1234 5678'}
                     className={cn(
-                      'min-h-[48px] w-full rounded-xl border border-border pl-9 pr-4 text-xs font-semibold placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors',
+                      'min-h-[42px] w-full rounded-lg border border-border/70 pl-8.5 pr-3 text-xs placeholder:text-muted-foreground focus:border-foreground/40 focus:outline-none transition-colors',
                       form.useCustomContact
                         ? 'bg-background text-foreground'
-                        : 'bg-muted/40 text-muted-foreground cursor-not-allowed',
+                        : 'bg-muted/30 text-muted-foreground cursor-not-allowed',
                     )}
                   />
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-1.5">
+                <p className="text-[11px] text-muted-foreground mt-1">
                   {form.useCustomContact
                     ? 'Los estudiantes contactarán a este número exclusivo para esta pensión.'
-                    : 'Para cambiar el contacto predeterminado de todas tus pensiones, edítalo en Mis Pensiones.'}
+                    : 'Para cambiar el contacto general, edítalo en Mis Pensiones.'}
                 </p>
               </div>
             </div>
 
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-[11px] text-emerald-700 dark:text-emerald-300">
-              Canal verificado: consultas directas de estudiantes validados.
-            </div>
+            <p className="text-[11px] text-muted-foreground pt-1">
+              Canal verificado para consultas directas de estudiantes.
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-7 flex flex-col border-border/80 bg-card shadow-xs rounded-2xl overflow-hidden">
+        <Card className="xl:col-span-7 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
+              <ShieldCheck className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
               <div>
-                <CardTitle className="text-sm sm:text-base font-bold text-foreground">
+                <CardTitle className="text-sm font-semibold text-foreground">
                   Reglas y Convivencia
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground mt-0.5">
@@ -956,22 +895,15 @@ export function LandlordPensionScreen({
             </div>
           </CardHeader>
 
-          <CardContent className="p-4 sm:p-5 space-y-4">
-            <div className="space-y-2.5">
-              <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
+          <CardContent className="p-0 flex-1 flex flex-col justify-between">
+            <div className="divide-y divide-border/40">
+              <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                      form.guestsAllowed
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-muted/40 text-muted-foreground',
-                    )}
-                  >
-                    <Users className="h-4 w-4" />
-                  </div>
+                  <Users className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-foreground">Visitas Permitidas</span>
+                    <span className="text-xs font-semibold text-foreground">
+                      Visitas Permitidas
+                    </span>
                     <span className="text-[11px] text-muted-foreground">
                       Los residentes pueden recibir compañeros o familiares
                     </span>
@@ -985,33 +917,24 @@ export function LandlordPensionScreen({
                   aria-label="Permitir visitas"
                   onClick={() => handleToggle('guestsAllowed')}
                   className={cn(
-                    'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    form.guestsAllowed ? 'bg-primary' : 'bg-muted-foreground/30',
+                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    form.guestsAllowed ? 'bg-foreground' : 'bg-muted-foreground/30',
                   )}
                 >
                   <span
                     className={cn(
-                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                      form.guestsAllowed ? 'translate-x-5' : 'translate-x-0',
+                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                      form.guestsAllowed ? 'translate-x-4' : 'translate-x-0',
                     )}
                   />
                 </button>
               </div>
 
-              <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
+              <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                      form.smokingAllowed
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-muted/40 text-muted-foreground',
-                    )}
-                  >
-                    <Ban className="h-4 w-4" />
-                  </div>
+                  <Ban className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-foreground">Permitido Fumar</span>
+                    <span className="text-xs font-semibold text-foreground">Permitido Fumar</span>
                     <span className="text-[11px] text-muted-foreground">
                       En áreas designadas o patios abiertos
                     </span>
@@ -1025,33 +948,26 @@ export function LandlordPensionScreen({
                   aria-label="Permitir fumar"
                   onClick={() => handleToggle('smokingAllowed')}
                   className={cn(
-                    'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    form.smokingAllowed ? 'bg-primary' : 'bg-muted-foreground/30',
+                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    form.smokingAllowed ? 'bg-foreground' : 'bg-muted-foreground/30',
                   )}
                 >
                   <span
                     className={cn(
-                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                      form.smokingAllowed ? 'translate-x-5' : 'translate-x-0',
+                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                      form.smokingAllowed ? 'translate-x-4' : 'translate-x-0',
                     )}
                   />
                 </button>
               </div>
 
-              <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
+              <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                      form.petsAllowed
-                        ? 'bg-primary/10 text-primary'
-                        : 'bg-muted/40 text-muted-foreground',
-                    )}
-                  >
-                    <PawPrint className="h-4 w-4" />
-                  </div>
+                  <PawPrint className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-foreground">Mascotas Permitidas</span>
+                    <span className="text-xs font-semibold text-foreground">
+                      Mascotas Permitidas
+                    </span>
                     <span className="text-[11px] text-muted-foreground">
                       Acepta perros, gatos o mascotas pequeñas
                     </span>
@@ -1065,26 +981,26 @@ export function LandlordPensionScreen({
                   aria-label="Permitir mascotas"
                   onClick={() => handleToggle('petsAllowed')}
                   className={cn(
-                    'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    form.petsAllowed ? 'bg-primary' : 'bg-muted-foreground/30',
+                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    form.petsAllowed ? 'bg-foreground' : 'bg-muted-foreground/30',
                   )}
                 >
                   <span
                     className={cn(
-                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                      form.petsAllowed ? 'translate-x-5' : 'translate-x-0',
+                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                      form.petsAllowed ? 'translate-x-4' : 'translate-x-0',
                     )}
                   />
                 </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="rounded-xl border border-border/70 bg-muted/15 p-3.5 space-y-2.5">
+            <div className="p-4 sm:p-5 pt-3 border-t border-border/40 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="rounded-lg border border-border/60 bg-muted/10 p-3 space-y-2">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-primary" />
-                    <span className="text-xs font-bold text-foreground">Toque de Queda</span>
+                    <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs font-medium text-foreground">Toque de Queda</span>
                   </div>
 
                   <button
@@ -1095,12 +1011,12 @@ export function LandlordPensionScreen({
                     onClick={() => handleCurfewToggle(!form.hasCurfew)}
                     className={cn(
                       'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      form.hasCurfew ? 'bg-primary' : 'bg-muted-foreground/30',
+                      form.hasCurfew ? 'bg-foreground' : 'bg-muted-foreground/30',
                     )}
                   >
                     <span
                       className={cn(
-                        'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
+                        'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
                         form.hasCurfew ? 'translate-x-4' : 'translate-x-0',
                       )}
                     />
@@ -1108,44 +1024,44 @@ export function LandlordPensionScreen({
                 </div>
 
                 {form.hasCurfew ? (
-                  <div className="pt-1">
+                  <div className="pt-0.5">
                     <label
                       htmlFor="curfew-time-input"
-                      className="block text-[11px] font-semibold text-muted-foreground mb-1"
+                      className="block text-[11px] text-muted-foreground mb-1"
                     >
-                      Hora máxima de regreso nocturno:
+                      Hora máxima de regreso:
                     </label>
                     <input
                       id="curfew-time-input"
                       type="time"
                       value={form.curfewTime}
                       onChange={(e) => setForm((prev) => ({ ...prev, curfewTime: e.target.value }))}
-                      className="min-h-[44px] w-full rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="min-h-[38px] w-full rounded-lg border border-border/70 bg-background px-3 text-xs font-medium text-foreground focus:border-foreground/40 focus:outline-none transition-colors"
                     />
                   </div>
                 ) : (
-                  <p className="text-[11px] text-muted-foreground italic">
-                    Sin horario límite: llave y acceso independiente 24/7.
+                  <p className="text-[11px] text-muted-foreground">
+                    Acceso independiente 24/7 sin límite de horario.
                   </p>
                 )}
               </div>
 
-              <div className="rounded-xl border border-border/70 bg-muted/15 p-3.5 space-y-2.5">
+              <div className="rounded-lg border border-border/60 bg-muted/10 p-3 space-y-2">
                 <div className="flex items-center gap-2">
-                  <Moon className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-bold text-foreground">Horario de Silencio</span>
+                  <Moon className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-foreground">Horario de Silencio</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  Franja horaria para evitar ruidos fuertes y favorecer el descanso.
+                  Franja horaria para favorecer el descanso y estudio.
                 </p>
 
                 <div className="grid grid-cols-2 gap-2 pt-0.5">
                   <div>
                     <label
                       htmlFor="quiet-start-input"
-                      className="block text-[10px] font-semibold text-muted-foreground mb-1"
+                      className="block text-[10px] text-muted-foreground mb-1"
                     >
-                      Inicio silencio:
+                      Inicio:
                     </label>
                     <input
                       id="quiet-start-input"
@@ -1154,16 +1070,16 @@ export function LandlordPensionScreen({
                       onChange={(e) =>
                         setForm((prev) => ({ ...prev, quietHoursStart: e.target.value }))
                       }
-                      className="min-h-[44px] w-full rounded-xl border border-border bg-background px-2.5 text-xs font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="min-h-[38px] w-full rounded-lg border border-border/70 bg-background px-2.5 text-xs font-medium text-foreground focus:border-foreground/40 focus:outline-none transition-colors"
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="quiet-end-input"
-                      className="block text-[10px] font-semibold text-muted-foreground mb-1"
+                      className="block text-[10px] text-muted-foreground mb-1"
                     >
-                      Fin silencio:
+                      Fin:
                     </label>
                     <input
                       id="quiet-end-input"
@@ -1172,7 +1088,7 @@ export function LandlordPensionScreen({
                       onChange={(e) =>
                         setForm((prev) => ({ ...prev, quietHoursEnd: e.target.value }))
                       }
-                      className="min-h-[44px] w-full rounded-xl border border-border bg-background px-2.5 text-xs font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="min-h-[38px] w-full rounded-lg border border-border/70 bg-background px-2.5 text-xs font-medium text-foreground focus:border-foreground/40 focus:outline-none transition-colors"
                     />
                   </div>
                 </div>

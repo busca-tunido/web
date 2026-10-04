@@ -95,7 +95,7 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
   return (
     <Card
       className={cn(
-        'group relative overflow-hidden rounded-2xl border border-border/70 bg-card p-4 transition-all hover:border-border hover:shadow-md text-foreground',
+        'group relative overflow-hidden rounded-xl border border-border/70 bg-card p-4 transition-all hover:border-border hover:shadow-2xs text-foreground',
         className,
       )}
     >
@@ -131,9 +131,9 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
               {resolvedType === 'SINGLE' && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-primary/30 bg-primary/5 text-primary text-[11px] font-medium"
+                  className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
                 >
-                  <User className="h-3 w-3" />
+                  <User className="h-3 w-3 text-muted-foreground" />
                   Individual
                 </Badge>
               )}
@@ -141,9 +141,9 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
               {resolvedType === 'SHARED' && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-secondary-foreground/20 bg-secondary text-secondary-foreground text-[11px] font-medium"
+                  className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
                 >
-                  <Users className="h-3 w-3" />
+                  <Users className="h-3 w-3 text-muted-foreground" />
                   Compartida ({beds} {beds === 1 ? 'cama' : 'camas'})
                 </Badge>
               )}
@@ -151,27 +151,27 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
               {resolvedType === 'STUDIO' && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-primary/30 bg-primary/10 text-primary text-[11px] font-medium"
+                  className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
                 >
-                  <Sparkles className="h-3 w-3" />
+                  <Sparkles className="h-3 w-3 text-muted-foreground" />
                   Estudio
                 </Badge>
               )}
 
               {isPrivateBath ? (
                 <Badge
-                  variant="secondary"
-                  className="gap-1 text-[11px] font-medium text-foreground bg-secondary"
+                  variant="outline"
+                  className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
                 >
-                  <Bath className="h-3 w-3 text-primary" />
+                  <Bath className="h-3 w-3 text-muted-foreground" />
                   Baño privado
                 </Badge>
               ) : (
                 <Badge
                   variant="outline"
-                  className="gap-1 text-[11px] font-medium text-muted-foreground"
+                  className="gap-1 border-border/80 text-muted-foreground text-[11px] font-normal"
                 >
-                  <Bath className="h-3 w-3" />
+                  <Bath className="h-3 w-3 text-muted-foreground" />
                   Baño compartido
                 </Badge>
               )}
@@ -249,7 +249,7 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
             onClick={() => onEdit(room)}
             className="min-h-12 px-4 rounded-xl border-border/80 hover:bg-secondary font-semibold text-xs gap-1.5 shadow-2xs cursor-pointer"
           >
-            <Edit3 className="h-4 w-4 text-primary" />
+            <Edit3 className="h-4 w-4 text-muted-foreground" />
             <span>Editar</span>
           </Button>
         </div>
