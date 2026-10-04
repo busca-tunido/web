@@ -1,9 +1,8 @@
 'use client';
 
-import type { ComponentType } from 'react';
+import { type ComponentType, useEffect, useState } from 'react';
 import { UnimplementedRoleBanner } from '@/components/common/unimplemented-role-banner';
 import { SplashScreen } from '@/components/layout/splash-screen';
-import { LandlordAppShell } from '@/components/shells/landlord-app-shell';
 import { StudentAppShell, type StudentAppShellProps } from '@/components/shells/student-app-shell';
 import type { UrlNavigationState } from '@/hooks/use-url-navigation-state';
 import { useUserRole } from '@/hooks/use-user-role';
@@ -32,16 +31,43 @@ type ForwardedStudentShellProps = StudentAppShellProps & {
 
 const ForwardedStudentShell = StudentAppShell as ComponentType<ForwardedStudentShellProps>;
 
+function checkIsStoredLandlord(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const savedUser = localStorage.getItem('tunido_user');
+    if (savedUser) {
+      const parsed = JSON.parse(savedUser);
+      if (String(parsed?.role ?? '').toUpperCase() === 'LANDLORD') {
+        return true;
+      }
+    }
+  } catch {}
+  return typeof document !== 'undefined' && document.cookie.includes('tunido_role=LANDLORD');
+}
+
 export function RoleRouter({ initialData, initialTab, initialNavigationState }: RoleRouterProps) {
   const { isLoading } = useAuth();
   const { role } = useUserRole();
+  const [isClientLandlord, setIsClientLandlord] = useState(checkIsStoredLandlord);
 
-  if (isLoading && !initialData) {
+  useEffect(() => {
+    if (checkIsStoredLandlord()) {
+      setIsClientLandlord(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if ((role === 'landlord' || isClientLandlord) && typeof window !== 'undefined') {
+      window.location.replace('/landlord');
+    }
+  }, [role, isClientLandlord]);
+
+  if (role === 'landlord' || isClientLandlord) {
     return <SplashScreen />;
   }
 
-  if (role === 'landlord') {
-    return <LandlordAppShell />;
+  if (isLoading && !initialData) {
+    return <SplashScreen />;
   }
 
   if (role === 'moderator' || role === 'admin') {

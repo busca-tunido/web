@@ -81,7 +81,7 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
 
   const setActiveTab = useCallback((tab: LandlordTab) => {
     setActiveTabState(tab);
-    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/landlord')) {
+    if (typeof window !== 'undefined') {
       const targetPath = getPathnameForLandlordTab(tab);
       if (window.location.pathname !== targetPath) {
         window.history.pushState(null, '', targetPath);
