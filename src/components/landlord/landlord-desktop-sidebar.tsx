@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { RoomOccupancyBar } from '@/components/landlord/room-occupancy-bar';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import { BrandLogo } from '@/components/ui/brand-logo';
@@ -55,9 +56,11 @@ export function LandlordDesktopSidebar({
 
   const [isPropertyMenuOpen, setIsPropertyMenuOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const propertyDropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const propertyListboxId = useId();
+  const [dropdownCoords, setDropdownCoords] = useState<{ top: number; left: number } | null>(null);
 
   const rooms = selectedPension?.rooms ?? [];
   const totalRooms = rooms.length;
@@ -73,16 +76,31 @@ export function LandlordDesktopSidebar({
     [totalRooms, reviewsCount],
   );
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (
-        propertyDropdownRef.current &&
-        !propertyDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsPropertyMenuOpen(false);
-      }
-    }
+  const updateDropdownPosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    setDropdownCoords({
+      top: rect.bottom > 0 ? rect.bottom + 6 : 140,
+      left: rect.left > 0 ? rect.left : 16,
+    });
+  }, []);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isPropertyMenuOpen) return;
+    updateDropdownPosition();
+    window.addEventListener('resize', updateDropdownPosition);
+    window.addEventListener('scroll', updateDropdownPosition, true);
+    return () => {
+      window.removeEventListener('resize', updateDropdownPosition);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+    };
+  }, [isPropertyMenuOpen, updateDropdownPosition]);
+
+  useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsPropertyMenuOpen(false);
@@ -90,17 +108,20 @@ export function LandlordDesktopSidebar({
     }
 
     if (isPropertyMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
       document.addEventListener('keydown', handleKeyDown);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isPropertyMenuOpen]);
+
+  const togglePropertyMenu = () => {
+    if (!isPropertyMenuOpen) {
+      updateDropdownPosition();
+    }
+    setIsPropertyMenuOpen((prev) => !prev);
+  };
 
   return (
     <>
@@ -115,15 +136,18 @@ export function LandlordDesktopSidebar({
           <BrandLogo size="sm" priority={false} />
         </div>
 
-        <div ref={propertyDropdownRef} className="relative px-4 pt-3 pb-2 flex flex-col gap-2">
+        <div className="relative px-4 pt-3 pb-2 flex flex-col gap-2">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 block">
             Pensión Activa
           </span>
 
-          <div className="relative flex w-full min-h-[56px] items-center justify-between gap-1.5 rounded-xl border border-border/80 bg-background/80 p-2 transition hover:border-primary/40 focus-within:ring-2 focus-within:ring-ring shadow-2xs">
+          <div
+            ref={triggerRef}
+            className="relative flex w-full min-h-[56px] items-center justify-between gap-1.5 rounded-xl border border-border/80 bg-background/80 p-2 transition hover:border-primary/40 focus-within:ring-2 focus-within:ring-ring shadow-2xs"
+          >
             <button
               type="button"
-              onClick={() => setIsPropertyMenuOpen((prev) => !prev)}
+              onClick={togglePropertyMenu}
               aria-expanded={isPropertyMenuOpen}
               aria-haspopup="listbox"
               aria-controls={propertyListboxId}
@@ -148,123 +172,27 @@ export function LandlordDesktopSidebar({
               </div>
             </button>
 
-            <div className="flex items-center gap-0.5 shrink-0 text-muted-foreground">
-              <button
-                type="button"
-                title="Ver vista previa de la pensión"
-                aria-label="Ver vista previa de la pensión"
-                onClick={() => setIsPreviewOpen(true)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-primary/10 hover:text-primary transition cursor-pointer text-muted-foreground"
-              >
-                <Eye className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsPropertyMenuOpen((prev) => !prev)}
-                aria-label={isPropertyMenuOpen ? 'Cerrar selector' : 'Abrir selector'}
-                className="flex h-8 w-6 items-center justify-center cursor-pointer hover:text-foreground text-muted-foreground transition"
-              >
-                {isPropertyMenuOpen ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={togglePropertyMenu}
+              aria-label={isPropertyMenuOpen ? 'Cerrar selector' : 'Abrir selector'}
+              className="flex h-8 w-8 items-center justify-center cursor-pointer hover:text-foreground text-muted-foreground transition rounded-lg hover:bg-secondary/40"
+            >
+              {isPropertyMenuOpen ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
           </div>
 
-          <AnimatePresence>
-            {isPropertyMenuOpen && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-40"
-                  onClick={() => setIsPropertyMenuOpen(false)}
-                />
-                <motion.div
-                  id={propertyListboxId}
-                  role="listbox"
-                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute left-3 right-3 top-full z-50 mt-1.5 rounded-2xl border border-border bg-popover p-2 text-popover-foreground shadow-2xl"
-                >
-                  <div className="max-h-72 overflow-y-auto space-y-1.5">
-                    {pensions.length > 0 ? (
-                      pensions.map((prop) => {
-                        const isSelected = prop.id === selectedPension?.id;
-                        return (
-                          <div
-                            key={prop.id}
-                            className={cn(
-                              'group flex w-full items-center justify-between gap-2 rounded-xl p-1.5 transition border',
-                              isSelected
-                                ? 'bg-primary/10 border-primary/30'
-                                : 'border-transparent hover:bg-secondary/70 hover:border-border/60',
-                            )}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedPension(prop);
-                                setIsPropertyMenuOpen(false);
-                              }}
-                              className="flex items-center gap-2.5 min-w-0 flex-1 text-left p-1 rounded-lg cursor-pointer transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                            >
-                              <span
-                                className={cn(
-                                  'h-2.5 w-2.5 rounded-full shrink-0',
-                                  prop.isActive
-                                    ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]'
-                                    : 'bg-muted-foreground/30',
-                                )}
-                              />
-                              <div className="min-w-0 flex-1">
-                                <p
-                                  className={cn(
-                                    'truncate text-xs font-bold leading-tight',
-                                    isSelected ? 'text-primary' : 'text-foreground',
-                                  )}
-                                >
-                                  {prop.title}
-                                </p>
-                                <p className="truncate text-[10px] text-muted-foreground mt-0.5">
-                                  {prop.city} {prop.rooms ? `• ${prop.rooms.length} habs` : ''}
-                                </p>
-                              </div>
-                            </button>
-
-                            <div className="flex items-center shrink-0 pr-1">
-                              <button
-                                type="button"
-                                title="Vista previa de esta pensión"
-                                aria-label={`Vista previa de ${prop.title}`}
-                                onClick={() => {
-                                  setSelectedPension(prop);
-                                  setIsPreviewOpen(true);
-                                  setIsPropertyMenuOpen(false);
-                                }}
-                                className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary text-muted-foreground transition cursor-pointer"
-                              >
-                                <Eye className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="p-3 text-center text-xs text-muted-foreground">
-                        {selectedPension?.title ?? '1 pensión'}
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
+          <RoomOccupancyBar
+            totalRooms={totalRooms}
+            occupiedRooms={occupiedRooms}
+            label="Ocupación"
+            showIcon
+            className="shadow-2xs mt-1"
+          />
 
           <Button
             type="button"
@@ -277,14 +205,6 @@ export function LandlordDesktopSidebar({
             <Eye className="h-4 w-4 text-primary shrink-0" />
             <span className="truncate">Vista de Estudiante</span>
           </Button>
-
-          <RoomOccupancyBar
-            totalRooms={totalRooms}
-            occupiedRooms={occupiedRooms}
-            label="Ocupación"
-            showIcon
-            className="shadow-2xs mt-1"
-          />
         </div>
 
         <nav
@@ -437,6 +357,110 @@ export function LandlordDesktopSidebar({
           </div>
         </div>
       </aside>
+
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {isPropertyMenuOpen && dropdownCoords && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-40 bg-black/10 dark:bg-black/25"
+                  onClick={() => setIsPropertyMenuOpen(false)}
+                />
+                <motion.div
+                  id={propertyListboxId}
+                  role="listbox"
+                  style={{
+                    position: 'fixed',
+                    top: dropdownCoords.top,
+                    left: dropdownCoords.left,
+                  }}
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                  className="z-50 w-[360px] max-w-[calc(100vw-32px)] rounded-2xl border border-border bg-popover/95 backdrop-blur-md p-2 text-popover-foreground shadow-2xl"
+                >
+                  <div className="max-h-72 overflow-y-auto space-y-1.5">
+                    {pensions.length > 0 ? (
+                      pensions.map((prop) => {
+                        const isSelected = prop.id === selectedPension?.id;
+                        return (
+                          <div
+                            key={prop.id}
+                            className={cn(
+                              'group flex w-full items-center justify-between gap-2.5 rounded-xl p-1.5 transition border',
+                              isSelected
+                                ? 'bg-primary/10 border-primary/30'
+                                : 'border-transparent hover:bg-secondary/70 hover:border-border/60',
+                            )}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedPension(prop);
+                                setIsPropertyMenuOpen(false);
+                              }}
+                              className="flex items-center gap-2.5 min-w-0 flex-1 text-left p-1 rounded-lg cursor-pointer transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            >
+                              <span
+                                className={cn(
+                                  'h-2.5 w-2.5 rounded-full shrink-0',
+                                  prop.isActive
+                                    ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]'
+                                    : 'bg-muted-foreground/30',
+                                )}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p
+                                  className={cn(
+                                    'truncate text-xs font-bold leading-tight',
+                                    isSelected ? 'text-primary' : 'text-foreground',
+                                  )}
+                                >
+                                  {prop.title}
+                                </p>
+                                <p className="truncate text-[10px] text-muted-foreground mt-0.5">
+                                  {prop.city} {prop.rooms ? `• ${prop.rooms.length} habs` : ''}
+                                </p>
+                              </div>
+                            </button>
+
+                            {!isSelected && (
+                              <div className="flex items-center shrink-0 pr-1">
+                                <button
+                                  type="button"
+                                  title="Vista previa de esta pensión"
+                                  aria-label={`Vista previa de ${prop.title}`}
+                                  onClick={() => {
+                                    setSelectedPension(prop);
+                                    setIsPreviewOpen(true);
+                                    setIsPropertyMenuOpen(false);
+                                  }}
+                                  className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary text-muted-foreground transition cursor-pointer"
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="p-3 text-center text-xs text-muted-foreground">
+                        {selectedPension?.title ?? '1 pensión'}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>,
+          document.body,
+        )}
 
       {selectedPension && (
         <PensionDetailModal
