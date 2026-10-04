@@ -27,9 +27,6 @@ export function LandlordDesktopHeader({
 
   const activeTab = propActiveTab ?? landlordContext.activeTab;
   const selectedPension = landlordContext.selectedPension;
-  const togglePensionActive = landlordContext.togglePensionActive;
-
-  const isActive = selectedPension?.isActive ?? true;
 
   return (
     <header
@@ -60,58 +57,6 @@ export function LandlordDesktopHeader({
           {TAB_LABELS[activeTab] ?? 'Panel'}
         </span>
       </nav>
-
-      <div className="flex items-center gap-4 shrink-0 pr-2 lg:pr-4">
-        {selectedPension && (
-          <button
-            type="button"
-            role="switch"
-            aria-checked={isActive}
-            onClick={() => togglePensionActive(selectedPension.id, !isActive)}
-            className="flex min-h-[40px] items-center gap-2.5 rounded-full border border-border/70 bg-card px-4 py-1.5 text-xs font-medium transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shadow-2xs"
-            aria-label={
-              isActive
-                ? 'Pensión activa para estudiantes. Clic para pausar.'
-                : 'Pensión pausada. Clic para activar.'
-            }
-          >
-            <span className="flex items-center gap-1.5">
-              <span
-                className={cn(
-                  'h-2 w-2 rounded-full transition-colors',
-                  isActive
-                    ? 'bg-emerald-500 ring-2 ring-emerald-500/20 animate-pulse'
-                    : 'bg-amber-500',
-                )}
-              />
-              <span
-                className={cn(
-                  'text-[11px] font-semibold leading-none',
-                  isActive
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-amber-600 dark:text-amber-400',
-                )}
-              >
-                {isActive ? 'Publicación Activa' : 'Publicación Pausada'}
-              </span>
-            </span>
-
-            <span
-              className={cn(
-                'relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                isActive ? 'bg-emerald-500' : 'bg-muted-foreground/30',
-              )}
-            >
-              <span
-                className={cn(
-                  'pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                  isActive ? 'translate-x-3.5' : 'translate-x-0',
-                )}
-              />
-            </span>
-          </button>
-        )}
-      </div>
     </header>
   );
 }

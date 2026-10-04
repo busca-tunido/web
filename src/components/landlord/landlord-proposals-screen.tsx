@@ -6,12 +6,14 @@ import {
   Check,
   CheckCircle2,
   Clock,
+  Eye,
   Loader2,
   MessageSquare,
   RefreshCw,
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ProposalPreviewComparisonModal } from '@/components/landlord/proposal-preview-comparison-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -123,6 +125,7 @@ export function LandlordProposalsScreen({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<ProposalFilter>('ALL');
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [previewProposal, setPreviewProposal] = useState<ProposalDto | null>(null);
 
   const loadProposals = useCallback(async () => {
     if (!effectivePensionId) {
@@ -417,41 +420,66 @@ export function LandlordProposalsScreen({
                     </div>
                   </div>
 
-                  {isPending && (
-                    <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border/40">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={isProcessing}
-                        onClick={() => handleReview(proposal.id, 'REJECTED')}
-                        className="min-h-[38px] px-4 text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive border-border/80 cursor-pointer"
-                      >
-                        <X className="h-3.5 w-3.5 mr-1.5" />
-                        <span>Rechazar</span>
-                      </Button>
+                  <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-border/40">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPreviewProposal(proposal)}
+                      className="min-h-[38px] px-3.5 text-xs font-semibold text-foreground border-border/80 hover:bg-secondary cursor-pointer"
+                    >
+                      <Eye className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                      <span>Comparar Vistas Previas</span>
+                    </Button>
 
-                      <Button
-                        type="button"
-                        size="sm"
-                        disabled={isProcessing}
-                        onClick={() => handleReview(proposal.id, 'APPROVED')}
-                        className="min-h-[38px] px-4 text-xs font-semibold bg-foreground text-background hover:opacity-90 shadow-none cursor-pointer"
-                      >
-                        {isProcessing ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                        ) : (
-                          <Check className="h-3.5 w-3.5 mr-1.5" />
-                        )}
-                        <span>Aprobar Cambios</span>
-                      </Button>
-                    </div>
-                  )}
+                    {isPending && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={isProcessing}
+                          onClick={() => handleReview(proposal.id, 'REJECTED')}
+                          className="min-h-[38px] px-4 text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive border-border/80 cursor-pointer"
+                        >
+                          <X className="h-3.5 w-3.5 mr-1.5" />
+                          <span>Rechazar</span>
+                        </Button>
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={isProcessing}
+                          onClick={() => handleReview(proposal.id, 'APPROVED')}
+                          className="min-h-[38px] px-4 text-xs font-semibold bg-foreground text-background hover:opacity-90 shadow-none cursor-pointer"
+                        >
+                          {isProcessing ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                          ) : (
+                            <Check className="h-3.5 w-3.5 mr-1.5" />
+                          )}
+                          <span>Aprobar Cambios</span>
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
+      )}
+
+      {previewProposal && (
+        <ProposalPreviewComparisonModal
+          isOpen={Boolean(previewProposal)}
+          onClose={() => setPreviewProposal(null)}
+          pension={selectedPension}
+          proposal={previewProposal}
+          onApprove={async (id) => handleReview(id, 'APPROVED')}
+          onReject={async (id) => handleReview(id, 'REJECTED')}
+          isProcessing={Boolean(processingId)}
+        />
       )}
     </div>
   );
