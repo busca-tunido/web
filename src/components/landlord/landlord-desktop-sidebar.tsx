@@ -111,7 +111,7 @@ export function LandlordDesktopSidebar({
       <aside
         id="landlord-desktop-sidebar"
         className={cn(
-          'hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r border-border/60 bg-card/60 backdrop-blur min-h-screen sticky top-0 h-screen overflow-y-auto transition-colors z-30',
+          'hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r border-border/60 bg-card/60 backdrop-blur h-full md:h-screen overflow-y-auto overscroll-y-contain transition-colors z-30',
           className,
         )}
       >
