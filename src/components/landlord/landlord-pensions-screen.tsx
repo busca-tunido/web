@@ -84,55 +84,45 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
         </div>
 
         {pensions.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
             <Card className="border-border/70 bg-card/60 shadow-2xs">
-              <CardContent className="p-3.5 flex flex-col">
-                <span className="text-[11px] font-medium text-muted-foreground">Propiedades</span>
-                <span className="text-lg font-extrabold text-foreground mt-0.5">
+              <CardContent className="p-3 sm:p-3.5 flex flex-col">
+                <span className="text-[11px] font-medium text-muted-foreground truncate">
+                  Propiedades
+                </span>
+                <span className="text-base sm:text-lg font-extrabold text-foreground mt-0.5">
                   {stats.totalPensions}
                 </span>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
                   {stats.activePensions} activas
                 </span>
               </CardContent>
             </Card>
 
             <Card className="border-border/70 bg-card/60 shadow-2xs">
-              <CardContent className="p-3.5 flex flex-col">
-                <span className="text-[11px] font-medium text-muted-foreground">
+              <CardContent className="p-3 sm:p-3.5 flex flex-col">
+                <span className="text-[11px] font-medium text-muted-foreground truncate">
                   Ocupación Global
                 </span>
-                <span className="text-lg font-extrabold text-foreground mt-0.5">
+                <span className="text-base sm:text-lg font-extrabold text-foreground mt-0.5">
                   {stats.overallOccupancyRate}%
                 </span>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[10px] text-muted-foreground truncate">
                   {stats.totalOccupied} de {stats.totalRooms} habs
                 </span>
               </CardContent>
             </Card>
 
             <Card className="border-border/70 bg-card/60 shadow-2xs">
-              <CardContent className="p-3.5 flex flex-col">
-                <span className="text-[11px] font-medium text-muted-foreground">
+              <CardContent className="p-3 sm:p-3.5 flex flex-col">
+                <span className="text-[11px] font-medium text-muted-foreground truncate">
                   Habitaciones Libres
                 </span>
-                <span className="text-lg font-extrabold text-foreground mt-0.5">
+                <span className="text-base sm:text-lg font-extrabold text-foreground mt-0.5">
                   {stats.totalAvailable}
                 </span>
-                <span className="text-[10px] text-muted-foreground">Para nuevos residentes</span>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/70 bg-card/60 shadow-2xs">
-              <CardContent className="p-3.5 flex flex-col">
-                <span className="text-[11px] font-medium text-muted-foreground">
-                  En Administración
-                </span>
-                <span className="text-xs font-bold text-primary truncate mt-1">
-                  {selectedPension?.title ?? 'Ninguna'}
-                </span>
                 <span className="text-[10px] text-muted-foreground truncate">
-                  {selectedPension?.city ?? 'Sin ciudad'}
+                  Para nuevos residentes
                 </span>
               </CardContent>
             </Card>

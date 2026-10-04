@@ -34,11 +34,14 @@ export function LandlordDesktopHeader({
     <header
       id="landlord-desktop-header"
       className={cn(
-        'sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-border/60 bg-background/95 backdrop-blur-lg px-6 lg:px-8 transition-colors',
+        'sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-border/60 bg-background/95 backdrop-blur-lg px-6 lg:px-8 pr-8 lg:pr-12 transition-colors gap-4',
         className,
       )}
     >
-      <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-xs min-w-0">
+      <nav
+        aria-label="Ruta de navegación"
+        className="flex items-center gap-2 text-xs min-w-0 flex-1 mr-2"
+      >
         <div className="flex items-center gap-1.5 text-muted-foreground font-medium shrink-0">
           <Home className="h-3.5 w-3.5 text-primary" />
           <span>Panel</span>
@@ -46,7 +49,7 @@ export function LandlordDesktopHeader({
 
         <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
 
-        <span className="truncate font-medium text-muted-foreground max-w-[180px] lg:max-w-[260px]">
+        <span className="truncate font-medium text-muted-foreground max-w-[140px] lg:max-w-[220px]">
           {selectedPension?.title ?? 'Mi Pensión'}
         </span>
 
@@ -57,14 +60,14 @@ export function LandlordDesktopHeader({
         </span>
       </nav>
 
-      <div className="flex items-center gap-4 shrink-0">
+      <div className="flex items-center gap-4 shrink-0 pr-2 lg:pr-4">
         {selectedPension && (
           <button
             type="button"
             role="switch"
             aria-checked={isActive}
             onClick={() => togglePensionActive(selectedPension.id, !isActive)}
-            className="flex min-h-[40px] items-center gap-2.5 rounded-full border border-border/70 bg-card px-3.5 py-1.5 text-xs font-medium transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shadow-2xs"
+            className="flex min-h-[40px] items-center gap-2.5 rounded-full border border-border/70 bg-card px-4 py-1.5 text-xs font-medium transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shadow-2xs"
             aria-label={
               isActive
                 ? 'Pensión activa para estudiantes. Clic para pausar.'
