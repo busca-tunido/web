@@ -8,6 +8,7 @@ import {
   Eye,
   Home,
   LogOut,
+  MessageSquare,
   Plus,
   Star,
   User,
@@ -41,7 +42,7 @@ type NavItemConfig = {
 export function LandlordDesktopSidebar({
   activeTab: propActiveTab,
   onTabChange,
-  pendingProposalsCount: _pendingProposalsCount = 0,
+  pendingProposalsCount: propPendingProposalsCount,
   className,
 }: LandlordDesktopSidebarProps) {
   const landlordContext = useLandlord();
@@ -53,6 +54,7 @@ export function LandlordDesktopSidebar({
   const selectedPension = landlordContext.selectedPension;
   const setSelectedPension = landlordContext.setSelectedPension;
   const openCreatePensionModal = landlordContext.openCreatePensionModal;
+  const pendingProposalsCount = propPendingProposalsCount ?? landlordContext.pendingProposalsCount;
 
   const [isPropertyMenuOpen, setIsPropertyMenuOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -72,8 +74,14 @@ export function LandlordDesktopSidebar({
       { id: 'pension', label: 'Mi Pensión', icon: Home },
       { id: 'rooms', label: 'Habitaciones', icon: BedDouble, badge: totalRooms },
       { id: 'reviews', label: 'Reseñas', icon: Star, badge: reviewsCount },
+      {
+        id: 'proposals',
+        label: 'Sugerencias',
+        icon: MessageSquare,
+        badge: pendingProposalsCount > 0 ? pendingProposalsCount : undefined,
+      },
     ],
-    [totalRooms, reviewsCount],
+    [totalRooms, reviewsCount, pendingProposalsCount],
   );
 
   const updateDropdownPosition = useCallback(() => {
@@ -212,7 +220,7 @@ export function LandlordDesktopSidebar({
           className="flex flex-col gap-1 px-3 py-2"
         >
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 mb-1">
-            Menú Principal
+            Gestión de Pensión
           </span>
           {navItems.map((item) => {
             const Icon = item.icon;

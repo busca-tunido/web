@@ -13,7 +13,8 @@ export type LandlordDesktopHeaderProps = {
 const TAB_LABELS: Record<LandlordTab, string> = {
   pension: 'Ficha de Pensión',
   rooms: 'Gestión de Habitaciones',
-  reviews: 'Reseñas y Sugerencias',
+  reviews: 'Reseñas y Calificaciones',
+  proposals: 'Sugerencias de la Comunidad',
   pensions: 'Mis Pensiones',
   account: 'Mi Cuenta',
 };

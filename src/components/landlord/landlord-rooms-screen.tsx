@@ -257,9 +257,6 @@ export function LandlordRoomsScreen({
           <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
             Habitaciones Registradas
           </h1>
-          <p className="text-xs text-muted-foreground">
-            Configura precios, disponibilidad y características de cada pieza.
-          </p>
         </div>
 
         <Button

@@ -103,7 +103,7 @@ export function RoomOccupancyBar({
           <span>
             {isFullyOccupied
               ? 'Todas las habitaciones ocupadas'
-              : `${availableRooms} disponible${availableRooms === 1 ? '' : 's'} para postulantes`}
+              : `${availableRooms} disponible${availableRooms === 1 ? '' : 's'}`}
           </span>
           <span>{totalRooms} habitaciones en total</span>
         </div>

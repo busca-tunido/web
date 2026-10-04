@@ -6,6 +6,7 @@ import { LandlordDesktopHeader } from '@/components/landlord/landlord-desktop-he
 import { LandlordDesktopSidebar } from '@/components/landlord/landlord-desktop-sidebar';
 import { LandlordPensionScreen } from '@/components/landlord/landlord-pension-screen';
 import { LandlordPensionsScreen } from '@/components/landlord/landlord-pensions-screen';
+import { LandlordProposalsScreen } from '@/components/landlord/landlord-proposals-screen';
 import { LandlordReviewsScreen } from '@/components/landlord/landlord-reviews-screen';
 import { LandlordRoomsScreen } from '@/components/landlord/landlord-rooms-screen';
 import { PensionEditorDrawer } from '@/components/landlord/pension-editor-drawer';
@@ -85,6 +86,9 @@ function LandlordAppShellContent() {
           )}
           {activeTab === 'reviews' && (
             <LandlordReviewsScreen pension={selectedPension} pensionId={selectedPension?.id} />
+          )}
+          {activeTab === 'proposals' && (
+            <LandlordProposalsScreen pension={selectedPension} pensionId={selectedPension?.id} />
           )}
           {activeTab === 'pensions' && <LandlordPensionsScreen />}
           {activeTab === 'account' && <LandlordAccountScreen />}

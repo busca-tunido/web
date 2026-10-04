@@ -4,8 +4,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { isApiSuccess } from '@/lib/api-response';
 import type { PensionItem } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
+import { proposalsService } from '@/services/proposals.service';
 
-export type LandlordTab = 'pension' | 'rooms' | 'reviews' | 'pensions' | 'account';
+export type LandlordTab = 'pension' | 'rooms' | 'reviews' | 'proposals' | 'pensions' | 'account';
 
 export type LandlordDefaultContact = {
   name: string;
@@ -36,6 +37,8 @@ export type LandlordContextValue = {
   updateDefaultContact: (contact: Partial<LandlordDefaultContact>) => void;
   getPensionContact: (pensionId: string) => { isCustom: boolean; name: string; phone: string };
   updatePensionCustomContact: (pensionId: string, custom: PensionCustomContact) => void;
+  pendingProposalsCount: number;
+  refetchProposals: () => Promise<void>;
 };
 
 export type LandlordProviderProps = {
@@ -77,6 +80,28 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
     }
     return {};
   });
+
+  const [pendingProposalsCount, setPendingProposalsCount] = useState<number>(0);
+
+  const refetchProposals = useCallback(async () => {
+    if (!selectedPension?.id) {
+      setPendingProposalsCount(0);
+      return;
+    }
+    try {
+      const res = await proposalsService.fetchPensionProposals(selectedPension.id);
+      if (isApiSuccess(res)) {
+        const pending = (res.data ?? []).filter((p) => p.status === 'PENDING').length;
+        setPendingProposalsCount(pending);
+      }
+    } catch {
+      // ignore
+    }
+  }, [selectedPension?.id]);
+
+  useEffect(() => {
+    refetchProposals();
+  }, [refetchProposals]);
 
   const updateDefaultContact = useCallback((partial: Partial<LandlordDefaultContact>) => {
     setDefaultContactState((prev) => {
@@ -247,6 +272,8 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       updateDefaultContact,
       getPensionContact,
       updatePensionCustomContact,
+      pendingProposalsCount,
+      refetchProposals,
     }),
     [
       pensions,
@@ -263,6 +290,8 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       updateDefaultContact,
       getPensionContact,
       updatePensionCustomContact,
+      pendingProposalsCount,
+      refetchProposals,
     ],
   );
 

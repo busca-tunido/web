@@ -4,12 +4,10 @@ import {
   AlertCircle,
   Camera,
   CheckCircle2,
-  ChevronRight,
   Droplets,
   GraduationCap,
   HeartHandshake,
   Loader2,
-  MessageSquare,
   Moon,
   RefreshCw,
   Star,
@@ -18,7 +16,6 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { LandlordProposalsDrawer } from '@/components/landlord/landlord-proposals-drawer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,14 +25,12 @@ import { isApiSuccess } from '@/lib/api-response';
 import type { PensionItem } from '@/lib/types';
 import { cn, normalizeImageUrl } from '@/lib/utils';
 import { pensionsService } from '@/services/pensions.service';
-import { proposalsService } from '@/services/proposals.service';
-import type { PensionDetailDto, ProposalDto } from '@/types/api-contracts';
+import type { PensionDetailDto } from '@/types/api-contracts';
 
 export type LandlordReviewsScreenProps = {
   pensionId?: string;
   pension?: PensionItem | PensionDetailDto | null;
   className?: string;
-  onOpenProposals?: () => void;
 };
 
 type ReviewFilterType = 'ALL' | 'WITH_PHOTOS' | '5_STARS' | '4_PLUS' | 'LOW_RATING' | 'LONG_STAY';
@@ -118,14 +113,10 @@ export function LandlordReviewsScreen({
   pensionId: propPensionId,
   pension: initialPension = null,
   className,
-  onOpenProposals,
 }: LandlordReviewsScreenProps) {
   const [activePension, setActivePension] = useState<PensionDetailDto | PensionItem | null>(
     initialPension,
   );
-  const [isProposalsDrawerOpen, setIsProposalsDrawerOpen] = useState<boolean>(false);
-  const [proposals, setProposals] = useState<ProposalDto[]>([]);
-  const [_isLoadingProposals, setIsLoadingProposals] = useState<boolean>(false);
   const [activeFilter, setActiveFilter] = useState<ReviewFilterType>('ALL');
   const [enlargedPhotoUrl, setEnlargedPhotoUrl] = useState<string | null>(null);
 
@@ -146,16 +137,6 @@ export function LandlordReviewsScreen({
     count: activePension?.reviewsCount ?? (activePension as PensionDetailDto)?.ratingCount ?? 0,
   });
 
-  const loadProposals = useCallback(async () => {
-    if (!effectivePensionId) return;
-    setIsLoadingProposals(true);
-    const res = await proposalsService.fetchPensionProposals(effectivePensionId);
-    if (isApiSuccess(res)) {
-      setProposals(res.data);
-    }
-    setIsLoadingProposals(false);
-  }, [effectivePensionId]);
-
   const loadPensionIfMissing = useCallback(async () => {
     if (activePension || effectivePensionId) return;
     const mineRes = await pensionsService.fetchMinePensions();
@@ -167,18 +148,6 @@ export function LandlordReviewsScreen({
   useEffect(() => {
     loadPensionIfMissing();
   }, [loadPensionIfMissing]);
-
-  useEffect(() => {
-    if (effectivePensionId) {
-      loadProposals();
-    }
-  }, [effectivePensionId, loadProposals]);
-
-  const pendingProposals = useMemo(() => {
-    return proposals.filter((p) => !p.status || p.status === 'PENDING');
-  }, [proposals]);
-
-  const pendingCount = pendingProposals.length;
 
   const satisfactionMetrics = useMemo(() => {
     let cleanSum = 0;
@@ -290,19 +259,6 @@ export function LandlordReviewsScreen({
     };
   }, [reviews]);
 
-  const handleOpenProposalsDrawer = () => {
-    if (onOpenProposals) {
-      onOpenProposals();
-    } else {
-      setIsProposalsDrawerOpen(true);
-    }
-  };
-
-  const handleProposalReviewed = () => {
-    loadProposals();
-    reloadReviews();
-  };
-
   const averageRatingValue = ratingStats.average > 0 ? ratingStats.average : 0;
   const totalReviewsCount = ratingStats.count > 0 ? ratingStats.count : reviews.length;
 
@@ -322,56 +278,6 @@ export function LandlordReviewsScreen({
             </Badge>
           )}
         </div>
-        <p className="text-xs text-muted-foreground">
-          Calidad percibida por residentes, métricas de satisfacción y sugerencias de la comunidad
-        </p>
-      </div>
-
-      <div className="rounded-xl border border-border/70 bg-card p-4 sm:p-5 shadow-none transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
-        <div className="flex items-start gap-3 min-w-0">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-            <MessageSquare className="h-5 w-5" />
-          </div>
-
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs sm:text-sm font-semibold text-foreground">
-                Sugerencias de la Comunidad
-              </span>
-              {pendingCount > 0 ? (
-                <Badge
-                  variant="outline"
-                  className="border-border/80 text-foreground text-[10px] font-medium px-2 py-0"
-                >
-                  {pendingCount} {pendingCount === 1 ? 'pendiente' : 'pendientes'}
-                </Badge>
-              ) : (
-                <Badge
-                  variant="outline"
-                  className="border-border/80 text-muted-foreground text-[10px]"
-                >
-                  Al día
-                </Badge>
-              )}
-            </div>
-
-            <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-              {pendingCount > 0
-                ? 'Estudiantes que conocen tu alojamiento han sugerido actualizaciones de datos o servicios.'
-                : 'No hay sugerencias comunitarias pendientes de revisión en este momento.'}
-            </p>
-          </div>
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleOpenProposalsDrawer}
-          className="w-full sm:w-auto min-h-[40px] px-4 text-xs font-semibold shrink-0 cursor-pointer shadow-none border-border hover:bg-secondary"
-        >
-          <span>{pendingCount > 0 ? 'Revisar Sugerencias' : 'Ver Historial'}</span>
-          <ChevronRight className="h-4 w-4 ml-1.5" />
-        </Button>
       </div>
 
       <Card className="border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
@@ -897,13 +803,6 @@ export function LandlordReviewsScreen({
           </div>
         )}
       </div>
-
-      <LandlordProposalsDrawer
-        isOpen={isProposalsDrawerOpen}
-        onClose={() => setIsProposalsDrawerOpen(false)}
-        pensionId={effectivePensionId}
-        onProposalReviewed={handleProposalReviewed}
-      />
 
       <Dialog
         open={Boolean(enlargedPhotoUrl)}

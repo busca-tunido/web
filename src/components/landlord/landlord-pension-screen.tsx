@@ -6,12 +6,14 @@ import {
   Building2,
   Check,
   CheckCircle2,
+  ChevronRight,
   Clock,
   Droplets,
   Eye,
   Flame,
   Loader2,
   MessageCircle,
+  MessageSquare,
   Moon,
   PawPrint,
   Phone,
@@ -26,6 +28,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { LandlordProposalsDrawer } from '@/components/landlord/landlord-proposals-drawer';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -132,6 +135,8 @@ export function LandlordPensionScreen({
     defaultContact,
     getPensionContact,
     updatePensionCustomContact,
+    pendingProposalsCount,
+    refetchProposals,
   } = useLandlord();
 
   const [activePension, setActivePension] = useState<PensionDetailDto | PensionItem | null>(
@@ -143,6 +148,7 @@ export function LandlordPensionScreen({
   const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState<boolean>(false);
+  const [isProposalsDrawerOpen, setIsProposalsDrawerOpen] = useState<boolean>(false);
 
   const [form, setForm] = useState<FormState>({
     waterIncluded: true,
@@ -532,6 +538,44 @@ export function LandlordPensionScreen({
           </button>
         </div>
       )}
+
+      <div className="md:hidden rounded-xl border border-border/70 bg-card p-4 shadow-none flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+            <MessageSquare className="h-5 w-5" />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-semibold text-foreground">
+                Sugerencias de la Comunidad
+              </span>
+              {pendingProposalsCount > 0 && (
+                <Badge
+                  variant="outline"
+                  className="border-border/80 bg-secondary text-muted-foreground text-[10px] font-medium px-1.5 py-0"
+                >
+                  {pendingProposalsCount} {pendingProposalsCount === 1 ? 'pendiente' : 'pendientes'}
+                </Badge>
+              )}
+            </div>
+            <p className="text-[11px] text-muted-foreground truncate">
+              {pendingProposalsCount > 0
+                ? 'Estudiantes han sugerido cambios para tu pensión.'
+                : 'No hay cambios sugeridos pendientes.'}
+            </p>
+          </div>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setIsProposalsDrawerOpen(true)}
+          className="shrink-0 min-h-[38px] px-3 text-xs font-semibold cursor-pointer border-border hover:bg-secondary"
+        >
+          <span>{pendingProposalsCount > 0 ? 'Revisar' : 'Ver'}</span>
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+      </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
         <Card className="xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
@@ -1136,6 +1180,15 @@ export function LandlordPensionScreen({
           onClose={() => setIsPreviewModalOpen(false)}
           pension={previewPensionItem}
           pensionId={previewPensionItem.id}
+        />
+      )}
+
+      {effectivePensionId && (
+        <LandlordProposalsDrawer
+          isOpen={isProposalsDrawerOpen}
+          onClose={() => setIsProposalsDrawerOpen(false)}
+          pensionId={effectivePensionId}
+          onProposalReviewed={refetchProposals}
         />
       )}
     </div>

@@ -110,14 +110,6 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
               sizes="(max-width: 640px) 96px, 112px"
               className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
-            <div
-              className={cn(
-                'absolute top-1.5 left-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold shadow-xs backdrop-blur-md',
-                isAvailable ? 'bg-emerald-500/90 text-white' : 'bg-zinc-900/80 text-zinc-300',
-              )}
-            >
-              {isAvailable ? 'Disponible' : 'Ocupada'}
-            </div>
           </div>
 
           <div className="flex flex-col gap-1.5 min-w-0 flex-1 text-left">

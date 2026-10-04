@@ -2,19 +2,23 @@
 
 import { BedDouble, Building2, Home, Star, User } from 'lucide-react';
 import { motion } from 'motion/react';
+import { type LandlordTab, useLandlord } from '@/contexts/landlord-context';
 import { cn } from '@/lib/utils';
 
-export type LandlordNavTab = 'pension' | 'rooms' | 'reviews' | 'pensions' | 'account';
+export type LandlordNavTab = LandlordTab;
 
 export type LandlordBottomNavProps = {
-  activeTab: LandlordNavTab;
-  onTabChange: (tab: LandlordNavTab) => void;
+  activeTab: LandlordTab;
+  onTabChange: (tab: LandlordTab) => void;
   pendingProposalsCount?: number;
+  totalRooms?: number;
+  reviewsCount?: number;
+  pensionsCount?: number;
   className?: string;
 };
 
 type LandlordNavItem = {
-  id: LandlordNavTab;
+  id: LandlordTab;
   label: string;
   icon: typeof BedDouble;
   badge?: number;
@@ -23,15 +27,51 @@ type LandlordNavItem = {
 export function LandlordBottomNav({
   activeTab,
   onTabChange,
-  pendingProposalsCount = 0,
+  pendingProposalsCount: propPendingProposalsCount,
+  totalRooms: propTotalRooms,
+  reviewsCount: propReviewsCount,
+  pensionsCount: propPensionsCount,
   className,
 }: LandlordBottomNavProps) {
+  const landlordContext = useLandlord();
+  const selectedPension = landlordContext.selectedPension;
+  const pensions = landlordContext.pensions;
+
+  const totalRooms = propTotalRooms ?? selectedPension?.rooms?.length ?? 0;
+  const reviewsCount = propReviewsCount ?? selectedPension?.reviewsCount ?? 0;
+  const pensionsCount = propPensionsCount ?? pensions.length;
+  const pendingCount = propPendingProposalsCount ?? landlordContext.pendingProposalsCount;
+
   const navItems: readonly LandlordNavItem[] = [
-    { id: 'pension', label: 'Mi Pensión', icon: Home },
-    { id: 'rooms', label: 'Habitaciones', icon: BedDouble },
-    { id: 'pensions', label: 'Pensiones', icon: Building2 },
-    { id: 'reviews', label: 'Reseñas', icon: Star, badge: pendingProposalsCount },
-    { id: 'account', label: 'Cuenta', icon: User },
+    {
+      id: 'pension',
+      label: 'Mi Pensión',
+      icon: Home,
+      badge: pendingCount > 0 ? pendingCount : undefined,
+    },
+    {
+      id: 'rooms',
+      label: 'Habitaciones',
+      icon: BedDouble,
+      badge: totalRooms,
+    },
+    {
+      id: 'pensions',
+      label: 'Pensiones',
+      icon: Building2,
+      badge: pensionsCount,
+    },
+    {
+      id: 'reviews',
+      label: 'Reseñas',
+      icon: Star,
+      badge: reviewsCount,
+    },
+    {
+      id: 'account',
+      label: 'Cuenta',
+      icon: User,
+    },
   ];
 
   return (
@@ -69,14 +109,10 @@ export function LandlordBottomNav({
                     isActive ? 'scale-110 text-primary stroke-[2.2]' : 'stroke-[1.75]',
                   )}
                 />
-                {item.badge !== undefined && item.badge > 0 && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground"
-                  >
+                {item.badge !== undefined && (
+                  <span className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-secondary px-1 text-[9px] font-medium text-muted-foreground border border-border/60 tabular-nums shadow-2xs">
                     {item.badge > 99 ? '99+' : item.badge}
-                  </motion.span>
+                  </span>
                 )}
               </div>
               <span className="mt-1 text-[11px] tracking-tight">{item.label}</span>
