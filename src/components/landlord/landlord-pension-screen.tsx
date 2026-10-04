@@ -33,6 +33,14 @@ import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useLandlord } from '@/contexts/landlord-context';
 import { mapRawPensionToPensionItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
@@ -351,12 +359,20 @@ export function LandlordPensionScreen({
   }, [activePension, form]);
 
   const isPensionActive = activePension?.isActive ?? true;
+  const [showConfirmActiveModal, setShowConfirmActiveModal] = useState<boolean>(false);
+  const [isTogglingActive, setIsTogglingActive] = useState<boolean>(false);
 
-  const handleTogglePensionActive = async () => {
-    if (!activePension) return;
-    const nextState = !isPensionActive;
-    await togglePensionActive(activePension.id, nextState);
-    setActivePension((prev) => (prev ? { ...prev, isActive: nextState } : prev));
+  const handleConfirmToggleActive = async () => {
+    if (!activePension || isTogglingActive) return;
+    setIsTogglingActive(true);
+    try {
+      const nextState = !isPensionActive;
+      await togglePensionActive(activePension.id, nextState);
+      setActivePension((prev) => (prev ? { ...prev, isActive: nextState } : prev));
+      setShowConfirmActiveModal(false);
+    } finally {
+      setIsTogglingActive(false);
+    }
   };
 
   if (isLoading) {
@@ -431,14 +447,14 @@ export function LandlordPensionScreen({
           </p>
         </div>
 
-        <div className="flex md:hidden flex-wrap items-center gap-2 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
           {activePension && (
             <button
               type="button"
               role="switch"
               aria-checked={isPensionActive}
-              onClick={handleTogglePensionActive}
-              className="flex min-h-[44px] items-center gap-2.5 rounded-xl border border-border/80 bg-card px-3 py-1.5 text-xs font-medium transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shadow-2xs"
+              onClick={() => setShowConfirmActiveModal(true)}
+              className="flex min-h-[40px] items-center gap-2.5 rounded-full border border-border/80 bg-card px-3.5 py-1.5 text-xs font-medium transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shadow-2xs"
               aria-label={
                 isPensionActive
                   ? 'Pensión activa para estudiantes. Clic para pausar.'
@@ -450,13 +466,13 @@ export function LandlordPensionScreen({
                   className={cn(
                     'h-2 w-2 rounded-full transition-colors',
                     isPensionActive
-                      ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]'
+                      ? 'bg-emerald-500 ring-2 ring-emerald-500/20 animate-pulse'
                       : 'bg-muted-foreground/40',
                   )}
                 />
                 <span
                   className={cn(
-                    'text-xs font-semibold leading-none',
+                    'text-[11px] font-semibold leading-none',
                     isPensionActive
                       ? 'text-emerald-600 dark:text-emerald-400'
                       : 'text-muted-foreground',
@@ -485,21 +501,11 @@ export function LandlordPensionScreen({
           <Button
             type="button"
             variant="outline"
-            onClick={openCreatePensionModal}
-            className="min-h-[44px] px-3 text-xs font-semibold border-border hover:bg-secondary shadow-2xs cursor-pointer gap-1.5"
-          >
-            <Plus className="h-4 w-4 text-muted-foreground" />
-            <span>Nueva Pensión</span>
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
             onClick={() => setIsPreviewModalOpen(true)}
-            className="min-h-[44px] px-3 text-xs font-semibold border-border text-foreground hover:bg-secondary shadow-2xs cursor-pointer"
+            className="min-h-[40px] px-3.5 text-xs font-semibold border-border text-foreground hover:bg-secondary shadow-2xs cursor-pointer rounded-xl gap-1.5"
           >
-            <Eye className="h-4 w-4 mr-1.5 text-muted-foreground" />
-            Vista Previa
+            <Eye className="h-4 w-4 text-muted-foreground" />
+            <span>Vista de Estudiante</span>
           </Button>
         </div>
       </div>
@@ -1191,6 +1197,52 @@ export function LandlordPensionScreen({
           onProposalReviewed={refetchProposals}
         />
       )}
+
+      <Dialog
+        open={showConfirmActiveModal}
+        onOpenChange={(open) => !open && !isTogglingActive && setShowConfirmActiveModal(false)}
+      >
+        <DialogContent className="max-w-md p-5 sm:p-6 bg-background rounded-2xl">
+          <DialogHeader className="text-left space-y-1.5">
+            <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
+              {!isPensionActive
+                ? '¿Activar publicación de pensión?'
+                : '¿Pausar publicación de pensión?'}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              {!isPensionActive
+                ? `La pensión "${activePension?.title}" volverá a ser visible para todos los estudiantes universitarios en el mapa y búsquedas.`
+                : `La pensión "${activePension?.title}" quedará oculta temporalmente para los estudiantes. No recibirás nuevas solicitudes ni visitas mientras esté pausada.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex flex-col sm:flex-row items-center justify-end gap-2 pt-4 border-t border-border/50">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isTogglingActive}
+              onClick={() => setShowConfirmActiveModal(false)}
+              className="w-full sm:w-auto text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              disabled={isTogglingActive}
+              onClick={handleConfirmToggleActive}
+              className={cn(
+                'w-full sm:w-auto text-xs font-semibold text-white shadow-none cursor-pointer',
+                !isPensionActive
+                  ? 'bg-emerald-600 hover:bg-emerald-700'
+                  : 'bg-foreground text-background hover:opacity-90',
+              )}
+            >
+              {isTogglingActive && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
+              <span>{!isPensionActive ? 'Activar Publicación' : 'Pausar Publicación'}</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
