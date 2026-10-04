@@ -172,13 +172,6 @@ function createMarkerIcon(
     }
 
     const formattedPrice = `$${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP`;
-    const ratingTag =
-      classification.tier !== 'unreviewed'
-        ? `<span style="display: inline-flex; align-items: center; gap: 2px; font-weight: 700; margin-right: 5px; font-size: 11px; opacity: 0.95;">
-             <span style="font-size: 10px;">★</span>
-             <span>${classification.ratingAverage.toFixed(1)}</span>
-           </span>`
-        : `<span style="font-size: 10px; font-weight: 600; opacity: 0.75; margin-right: 4px;">S/R</span>`;
 
     const selectedRingStyle = cluster.isSelected
       ? `box-shadow: 0 0 0 4px ${styles.ringHex}, 0 10px 20px -3px rgba(0, 0, 0, 0.25); transform: scale(1.1);`
@@ -186,7 +179,6 @@ function createMarkerIcon(
 
     const html = `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="whitespace-nowrap flex items-center justify-center">
       <div style="background-color: ${styles.bgHex}; color: ${styles.textHex}; border: 1.5px solid ${styles.borderHex}; ${selectedRingStyle}" class="px-2.5 py-1 rounded-full text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap">
-        ${ratingTag}
         <span>${formattedPrice}</span>
       </div>
     </div>`;
