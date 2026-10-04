@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { RoleRouter } from '@/components/shells/role-router';
+import { UserAppShell } from '@/components/shells/student-app-shell';
 import { slugToCityName } from '@/lib/city-slugs';
 import { getStudentInitialData } from '@/lib/server-student-prefetch';
 
@@ -54,7 +54,7 @@ export default async function CityPage(props: CityPageProps) {
   };
 
   return (
-    <RoleRouter
+    <UserAppShell
       initialData={initialData}
       initialNavigationState={initialNavigationState}
       initialTab="explore"

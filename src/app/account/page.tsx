@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { RoleRouter } from '@/components/shells/role-router';
+import { UserAppShell } from '@/components/shells/student-app-shell';
 import { getStudentInitialData } from '@/lib/server-student-prefetch';
 import { parseSearchParams } from '@/lib/url-navigation';
 
@@ -22,7 +22,7 @@ export default async function AccountPage(props: AccountPageProps) {
   const initialData = await getStudentInitialData();
 
   return (
-    <RoleRouter
+    <UserAppShell
       initialData={initialData}
       initialNavigationState={initialNavState}
       initialTab="account"
