@@ -114,6 +114,8 @@ export type PriceHistogramResponse = {
   bins: PriceBinItem[];
 };
 
+export type RatingTier = 'high' | 'medium' | 'low';
+
 export type SearchFilters = {
   query: string;
   city?: string;
@@ -126,6 +128,7 @@ export type SearchFilters = {
   minBeds?: number;
   genderPreference?: 'MIXED' | 'FEMALE_ONLY' | 'MALE_ONLY' | 'ALL';
   sortBy?: 'relevance' | 'distance' | 'price_asc' | 'price_desc' | 'rating';
+  ratingTier?: RatingTier;
 };
 
 export type NavTab = 'explore' | 'favorites' | 'map' | 'history' | 'account';

@@ -36,11 +36,42 @@ type FilterChipItem = {
   id: string;
   label: string;
   priority: number;
+  dotColor?: string;
+  activeColorClass?: string;
   isActive: (filters: SearchFilters) => boolean;
   toggle: (filters: SearchFilters) => SearchFilters;
 };
 
 const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
+  {
+    id: 'rating_high',
+    label: 'Alta',
+    priority: 0,
+    dotColor: '#15803d',
+    activeColorClass:
+      'border-emerald-600 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 dark:border-emerald-400 font-semibold',
+    isActive: (f) => f.ratingTier === 'high',
+    toggle: (f) => ({ ...f, ratingTier: f.ratingTier === 'high' ? undefined : 'high' }),
+  },
+  {
+    id: 'rating_medium',
+    label: 'Media',
+    priority: 0,
+    dotColor: '#d37b5d',
+    activeColorClass: 'border-primary bg-primary/15 text-primary font-semibold',
+    isActive: (f) => f.ratingTier === 'medium',
+    toggle: (f) => ({ ...f, ratingTier: f.ratingTier === 'medium' ? undefined : 'medium' }),
+  },
+  {
+    id: 'rating_low',
+    label: 'Baja',
+    priority: 0,
+    dotColor: '#78716c',
+    activeColorClass:
+      'border-stone-500 bg-stone-500/15 text-stone-800 dark:text-stone-300 dark:border-stone-400 font-semibold',
+    isActive: (f) => f.ratingTier === 'low',
+    toggle: (f) => ({ ...f, ratingTier: f.ratingTier === 'low' ? undefined : 'low' }),
+  },
   {
     id: 'bathroom',
     label: 'Baño privado',
@@ -133,6 +164,7 @@ export function DesktopNavbar({
       (filters.roomType ? 1 : 0) +
       (filters.genderPreference && filters.genderPreference !== 'ALL' ? 1 : 0) +
       (filters.sortBy && filters.sortBy !== 'relevance' ? 1 : 0) +
+      (filters.ratingTier ? 1 : 0) +
       (selectedCityName ? 1 : 0)
     );
   }, [filters, selectedCityName]);
@@ -375,13 +407,20 @@ export function DesktopNavbar({
                     damping: 32,
                     mass: 0.8,
                   }}
-                  className={`flex h-7.5 items-center gap-1 rounded-full border px-3 text-xs font-medium shrink-0 cursor-pointer select-none transition-colors ${
+                  className={`flex h-7.5 items-center gap-1.5 rounded-full border px-3 text-xs font-medium shrink-0 cursor-pointer select-none transition-colors ${
                     active
-                      ? 'border-border/90 bg-secondary/80 text-foreground font-medium'
+                      ? (chip.activeColorClass ??
+                        'border-border/90 bg-secondary/80 text-foreground font-medium')
                       : 'border-border/60 bg-transparent text-muted-foreground hover:text-foreground hover:border-border hover:bg-card/50'
                   }`}
                   aria-pressed={active}
                 >
+                  {chip.dotColor && (
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: chip.dotColor }}
+                    />
+                  )}
                   <span>{chip.label}</span>
                 </motion.button>
               );

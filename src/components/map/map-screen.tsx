@@ -14,6 +14,7 @@ import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton
 import { env } from '@/env';
 import { useMapViewportPensions } from '@/hooks/use-map-viewport-pensions';
 import { useAuth } from '@/lib/auth-context';
+import { classifyPensionRating, getMarkerThemeStyles } from '@/lib/rating-tier';
 import { useTheme } from '@/lib/theme-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
 import type { UserCoordinates } from '@/lib/use-user-location';
@@ -142,19 +143,23 @@ function createMarkerIcon(
   L: typeof import('leaflet'),
   cluster: ClusterPoint,
   zoom: number,
+  theme: 'light' | 'dark' = 'light',
 ): import('leaflet').DivIcon {
   if (cluster.isSingle) {
     const pension = cluster.pensions[0];
+    const classification = classifyPensionRating(pension.ratingAverage, pension.reviewsCount);
+    const styles = getMarkerThemeStyles(classification, theme === 'dark', cluster.isSelected);
+
     if (zoom < 14) {
       const html = cluster.isSelected
         ? `<div style="width: 24px; height: 24px; transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
-             <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; aspect-ratio: 1 / 1;" class="w-6 h-6 shrink-0 aspect-square rounded-full bg-primary text-primary-foreground border-2 border-white shadow-xl ring-4 ring-primary/30 flex items-center justify-center scale-110 transition-transform">
-               <div style="width: 10px; height: 10px; min-width: 10px; min-height: 10px; aspect-ratio: 1 / 1;" class="w-2.5 h-2.5 shrink-0 aspect-square rounded-full bg-white"></div>
+             <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; aspect-ratio: 1 / 1; background-color: ${styles.bgHex}; border: 2px solid #ffffff; box-shadow: 0 0 0 4px ${styles.ringHex};" class="w-6 h-6 shrink-0 aspect-square rounded-full flex items-center justify-center scale-110 transition-transform">
+               <div style="width: 10px; height: 10px; min-width: 10px; min-height: 10px; aspect-ratio: 1 / 1; background-color: ${styles.dotColor};" class="w-2.5 h-2.5 shrink-0 aspect-square rounded-full"></div>
              </div>
            </div>`
-        : `<div style="width: 16px; height: 16px; transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
-             <div style="width: 16px; height: 16px; min-width: 16px; min-height: 16px; aspect-ratio: 1 / 1;" class="w-4 h-4 shrink-0 aspect-square rounded-full bg-primary text-white border-2 border-white shadow-md hover:scale-125 transition-transform flex items-center justify-center">
-               <div style="width: 6px; height: 6px; min-width: 6px; min-height: 6px; aspect-ratio: 1 / 1;" class="w-1.5 h-1.5 shrink-0 aspect-square rounded-full bg-white"></div>
+        : `<div style="width: 18px; height: 18px; transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
+             <div style="width: 16px; height: 16px; min-width: 16px; min-height: 16px; aspect-ratio: 1 / 1; background-color: ${styles.bgHex}; border: 2px solid ${styles.borderHex}; box-shadow: 0 2px 6px ${styles.ringHex};" class="w-4 h-4 shrink-0 aspect-square rounded-full shadow-md hover:scale-125 transition-transform flex items-center justify-center">
+               <div style="width: 6px; height: 6px; min-width: 6px; min-height: 6px; aspect-ratio: 1 / 1; background-color: ${styles.dotColor};" class="w-1.5 h-1.5 shrink-0 aspect-square rounded-full"></div>
              </div>
            </div>`;
 
@@ -167,17 +172,24 @@ function createMarkerIcon(
     }
 
     const formattedPrice = `$${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP`;
-    const html = cluster.isSelected
-      ? `<div style="width: 100px; transform: translate(-50%, -50%); cursor: pointer;">
-           <div class="px-3 py-1 rounded-full text-xs font-bold shadow-lg transition-transform scale-110 bg-primary text-primary-foreground border border-primary ring-4 ring-primary/25 flex items-center justify-center whitespace-nowrap">
-             ${formattedPrice}
-           </div>
-         </div>`
-      : `<div style="width: 100px; transform: translate(-50%, -50%); cursor: pointer;">
-           <div class="px-2.5 py-1 rounded-full text-xs font-bold shadow-md bg-card text-foreground border border-border hover:border-primary/60 hover:bg-secondary flex items-center justify-center whitespace-nowrap">
-             ${formattedPrice}
-           </div>
-         </div>`;
+    const ratingTag =
+      classification.tier !== 'unreviewed'
+        ? `<span style="display: inline-flex; align-items: center; gap: 2px; font-weight: 700; margin-right: 5px; font-size: 11px; opacity: 0.95;">
+             <span style="font-size: 10px;">★</span>
+             <span>${classification.ratingAverage.toFixed(1)}</span>
+           </span>`
+        : `<span style="font-size: 10px; font-weight: 600; opacity: 0.75; margin-right: 4px;">S/R</span>`;
+
+    const selectedRingStyle = cluster.isSelected
+      ? `box-shadow: 0 0 0 4px ${styles.ringHex}, 0 10px 20px -3px rgba(0, 0, 0, 0.25); transform: scale(1.1);`
+      : 'box-shadow: 0 3px 8px -1px rgba(0, 0, 0, 0.15);';
+
+    const html = `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="whitespace-nowrap flex items-center justify-center">
+      <div style="background-color: ${styles.bgHex}; color: ${styles.textHex}; border: 1.5px solid ${styles.borderHex}; ${selectedRingStyle}" class="px-2.5 py-1 rounded-full text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap">
+        ${ratingTag}
+        <span>${formattedPrice}</span>
+      </div>
+    </div>`;
 
     return L.divIcon({
       className: 'custom-div-icon',
@@ -328,6 +340,8 @@ export function MapScreen({
     const nextMarkersMap = new Map<string, import('leaflet').Marker>();
     const currentMarkersMap = activeMarkersMapRef.current;
 
+    const currentTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
+
     for (const cluster of clusters) {
       const modeKey =
         zoom >= 15
@@ -339,14 +353,14 @@ export function MapScreen({
             : cluster.isSingle
               ? 'badge'
               : 'cluster';
-      const cacheKey = `${cluster.id}:${cluster.isSelected ? '1' : '0'}:${modeKey}`;
+      const cacheKey = `${cluster.id}:${cluster.isSelected ? '1' : '0'}:${modeKey}:${currentTheme}`;
 
       const existingMarker = currentMarkersMap.get(cacheKey);
       if (existingMarker) {
         nextMarkersMap.set(cacheKey, existingMarker);
         currentMarkersMap.delete(cacheKey);
       } else {
-        const icon = createMarkerIcon(L, cluster, zoom);
+        const icon = createMarkerIcon(L, cluster, zoom, currentTheme);
         const marker = L.marker([cluster.latitude, cluster.longitude], {
           icon,
           zIndexOffset: cluster.isSelected ? 1000 : cluster.isSingle ? 100 : 200,
@@ -386,7 +400,7 @@ export function MapScreen({
     }
 
     activeMarkersMapRef.current = nextMarkersMap;
-  }, [mapPensions, activePinId, onSelectPension, panToPension]);
+  }, [mapPensions, activePinId, onSelectPension, panToPension, resolvedTheme]);
 
   const debouncedRenderMarkers = useCallback(() => {
     if (renderTimerRef.current !== null) {

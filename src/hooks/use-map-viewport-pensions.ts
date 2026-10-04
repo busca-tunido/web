@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { mapRawPensionToItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
+import { filterPensionsByRatingTier } from '@/lib/rating-tier';
 import type { PensionItem, SearchFilters } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 
@@ -103,9 +104,12 @@ export function useMapViewportPensions(options: {
         });
 
         if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
-          const mappedItems = res.data.items.map((dto) =>
+          const rawItems = res.data.items.map((dto) =>
             mapRawPensionToItem(dto as unknown as Record<string, unknown>),
           );
+          const mappedItems = filters?.ratingTier
+            ? filterPensionsByRatingTier(rawItems, filters.ratingTier)
+            : rawItems;
           updatePensionList(mappedItems);
         }
       } catch {
@@ -120,6 +124,7 @@ export function useMapViewportPensions(options: {
       filters?.query,
       filters?.minPriceClp,
       filters?.maxPriceClp,
+      filters?.ratingTier,
       filters?.roomType,
     ],
   );
@@ -146,9 +151,12 @@ export function useMapViewportPensions(options: {
         });
 
         if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
-          const mappedItems = res.data.items.map((dto) =>
+          const rawItems = res.data.items.map((dto) =>
             mapRawPensionToItem(dto as unknown as Record<string, unknown>),
           );
+          const mappedItems = filters?.ratingTier
+            ? filterPensionsByRatingTier(rawItems, filters.ratingTier)
+            : rawItems;
           updatePensionList(mappedItems);
         }
       } catch {
@@ -163,6 +171,7 @@ export function useMapViewportPensions(options: {
       filters?.query,
       filters?.minPriceClp,
       filters?.maxPriceClp,
+      filters?.ratingTier,
       filters?.roomType,
     ],
   );
@@ -187,9 +196,12 @@ export function useMapViewportPensions(options: {
         });
 
         if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
-          const mappedItems = res.data.items.map((dto) =>
+          const rawItems = res.data.items.map((dto) =>
             mapRawPensionToItem(dto as unknown as Record<string, unknown>),
           );
+          const mappedItems = filters?.ratingTier
+            ? filterPensionsByRatingTier(rawItems, filters.ratingTier)
+            : rawItems;
           updatePensionList(mappedItems);
         }
       } catch {
@@ -204,6 +216,7 @@ export function useMapViewportPensions(options: {
       filters?.query,
       filters?.minPriceClp,
       filters?.maxPriceClp,
+      filters?.ratingTier,
       filters?.roomType,
     ],
   );

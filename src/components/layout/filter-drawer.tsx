@@ -73,6 +73,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
     if (extraAmenities.kitchen) count += 1;
     if (extraAmenities.laundry) count += 1;
     if (extraAmenities.wifi) count += 1;
+    if (localFilters.ratingTier) count += 1;
     if (localFilters.genderPreference && localFilters.genderPreference !== 'ALL') {
       count += 1;
     }
@@ -92,6 +93,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
       minBeds: undefined,
       genderPreference: 'ALL',
       sortBy: localFilters.sortBy,
+      ratingTier: undefined,
     };
     setLocalFilters(reset);
     setExtraAmenities({
@@ -328,6 +330,62 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
                     }`}
                   >
                     {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 pt-6 pb-2">
+            <h3 className="text-base font-semibold text-foreground">
+              Calificación de la Comunidad
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                {
+                  id: 'high' as const,
+                  label: 'Alta',
+                  subtitle: '≥ 4.2',
+                  dotColor: '#15803d',
+                },
+                {
+                  id: 'medium' as const,
+                  label: 'Media',
+                  subtitle: '3.0 - 4.1',
+                  dotColor: '#d37b5d',
+                },
+                {
+                  id: 'low' as const,
+                  label: 'Baja',
+                  subtitle: '< 3.0',
+                  dotColor: '#78716c',
+                },
+              ].map((opt) => {
+                const isSelected = localFilters.ratingTier === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() =>
+                      setLocalFilters((prev) => ({
+                        ...prev,
+                        ratingTier: prev.ratingTier === opt.id ? undefined : opt.id,
+                      }))
+                    }
+                    className={`flex flex-col items-center justify-center p-3 min-h-[48px] rounded-xl border text-xs font-semibold transition active:scale-95 ${
+                      isSelected
+                        ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary'
+                        : 'border-border bg-card text-foreground hover:bg-muted hover:border-muted-foreground/30'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: opt.dotColor }}
+                      />
+                      <span>{opt.label}</span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground mt-0.5">{opt.subtitle}</span>
                   </button>
                 );
               })}

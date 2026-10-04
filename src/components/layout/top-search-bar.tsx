@@ -23,7 +23,31 @@ export function TopSearchBar({
     (filters.hasPrivateBathroom ? 1 : 0) +
     (filters.includesMeals ? 1 : 0) +
     (filters.maxPriceClp ? 1 : 0) +
+    (filters.ratingTier ? 1 : 0) +
     (selectedCityName ? 1 : 0);
+
+  const ratingChips = [
+    {
+      id: 'high' as const,
+      label: 'Alta',
+      dotColor: '#15803d',
+      activeClass:
+        'border-emerald-600 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 dark:border-emerald-400 font-semibold',
+    },
+    {
+      id: 'medium' as const,
+      label: 'Media',
+      dotColor: '#d37b5d',
+      activeClass: 'border-primary bg-primary/15 text-primary font-semibold',
+    },
+    {
+      id: 'low' as const,
+      label: 'Baja',
+      dotColor: '#78716c',
+      activeClass:
+        'border-stone-500 bg-stone-500/15 text-stone-800 dark:text-stone-300 dark:border-stone-400 font-semibold',
+    },
+  ] as const;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 px-4 py-3 backdrop-blur-xl transition-colors md:hidden">
@@ -67,6 +91,72 @@ export function TopSearchBar({
                 {activeFiltersCount}
               </span>
             )}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 min-w-0">
+          {ratingChips.map((chip) => {
+            const isActive = filters.ratingTier === chip.id;
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() =>
+                  onFilterChange({
+                    ...filters,
+                    ratingTier: isActive ? undefined : chip.id,
+                  })
+                }
+                className={`flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium shrink-0 cursor-pointer select-none transition-colors ${
+                  isActive
+                    ? chip.activeClass
+                    : 'border-border/70 bg-card/60 text-muted-foreground hover:text-foreground hover:border-border'
+                }`}
+                aria-pressed={isActive}
+              >
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: chip.dotColor }}
+                />
+                <span>{chip.label}</span>
+              </button>
+            );
+          })}
+
+          <button
+            type="button"
+            onClick={() =>
+              onFilterChange({
+                ...filters,
+                hasPrivateBathroom: !filters.hasPrivateBathroom ? true : undefined,
+              })
+            }
+            className={`flex h-7 items-center gap-1 rounded-full border px-2.5 text-xs font-medium shrink-0 cursor-pointer select-none transition-colors ${
+              filters.hasPrivateBathroom
+                ? 'border-primary bg-primary/15 text-primary font-semibold'
+                : 'border-border/70 bg-card/60 text-muted-foreground hover:text-foreground hover:border-border'
+            }`}
+            aria-pressed={Boolean(filters.hasPrivateBathroom)}
+          >
+            <span>Baño privado</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              onFilterChange({
+                ...filters,
+                includesMeals: !filters.includesMeals ? true : undefined,
+              })
+            }
+            className={`flex h-7 items-center gap-1 rounded-full border px-2.5 text-xs font-medium shrink-0 cursor-pointer select-none transition-colors ${
+              filters.includesMeals
+                ? 'border-primary bg-primary/15 text-primary font-semibold'
+                : 'border-border/70 bg-card/60 text-muted-foreground hover:text-foreground hover:border-border'
+            }`}
+            aria-pressed={Boolean(filters.includesMeals)}
+          >
+            <span>Comida</span>
           </button>
         </div>
 
