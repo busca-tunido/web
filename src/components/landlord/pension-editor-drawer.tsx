@@ -15,6 +15,7 @@ import {
   Navigation,
   ShieldCheck,
   Sparkles,
+  User,
   Users,
   Wifi,
   Zap,
@@ -119,7 +120,7 @@ const GENDER_OPTIONS: ReadonlyArray<{
     value: 'FEMALE_ONLY',
     label: 'Solo Mujeres',
     description: 'Exclusivo mujeres',
-    icon: Sparkles,
+    icon: User,
   },
   {
     value: 'MALE_ONLY',
@@ -700,25 +701,25 @@ export function PensionEditorDrawer({
                     key: 'waterIncluded' as const,
                     label: 'Agua Potable',
                     icon: Droplets,
-                    activeColor: 'text-sky-500',
+                    activeColor: 'text-primary',
                   },
                   {
                     key: 'electricityIncluded' as const,
                     label: 'Luz Eléctrica',
                     icon: Zap,
-                    activeColor: 'text-amber-500',
+                    activeColor: 'text-primary',
                   },
                   {
                     key: 'gasIncluded' as const,
                     label: 'Gas / Calefont',
                     icon: Flame,
-                    activeColor: 'text-orange-500',
+                    activeColor: 'text-primary',
                   },
                   {
                     key: 'internetIncluded' as const,
                     label: 'Internet Wi-Fi',
                     icon: Wifi,
-                    activeColor: 'text-indigo-500',
+                    activeColor: 'text-primary',
                   },
                 ].map((utility) => {
                   const isChecked = form[utility.key];

@@ -3,7 +3,6 @@
 import {
   BedDouble,
   Building2,
-  Check,
   ChevronDown,
   ChevronUp,
   DoorOpen,
@@ -64,10 +63,10 @@ export function LandlordDesktopSidebar({
 
   const navItems: readonly NavItemConfig[] = useMemo(
     () => [
-      { id: 'rooms', label: 'Habitaciones', icon: BedDouble },
       { id: 'pension', label: 'Mi Pensión', icon: Home },
+      { id: 'rooms', label: 'Habitaciones', icon: BedDouble },
+      { id: 'pensions', label: 'Mis Pensiones', icon: Building2 },
       { id: 'reviews', label: 'Reseñas', icon: Star, badge: pendingProposalsCount },
-      { id: 'account', label: 'Cuenta', icon: User },
     ],
     [pendingProposalsCount],
   );
@@ -116,51 +115,80 @@ export function LandlordDesktopSidebar({
           className,
         )}
       >
-        <div className="flex flex-col gap-2 p-5 border-b border-border/60">
-          <div className="flex items-center justify-between gap-2">
-            <BrandLogo size="sm" priority={false} />
-            <Badge
-              variant="outline"
-              className="border-primary/40 bg-primary/10 text-primary text-[10px] font-semibold shrink-0"
-            >
-              Panel Propietario
-            </Badge>
-          </div>
+        <div className="p-5 border-b border-border/60">
+          <BrandLogo size="sm" priority={false} />
         </div>
 
-        <div ref={propertyDropdownRef} className="relative px-4 pt-4 pb-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1.5 block">
+        <div className="px-4 pt-3 pb-1">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={openCreatePensionModal}
+            className="flex w-full min-h-[40px] items-center justify-center gap-2 rounded-xl border border-dashed border-primary/40 bg-primary/5 text-primary hover:border-primary/70 hover:bg-primary/10 text-xs font-semibold shadow-2xs transition active:scale-[0.99] cursor-pointer"
+          >
+            <Plus className="h-4 w-4 shrink-0" />
+            <span>Registrar Nueva Pensión</span>
+          </Button>
+        </div>
+
+        <div ref={propertyDropdownRef} className="relative px-4 pt-2 pb-2 flex flex-col gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 block">
             Pensión Activa
           </span>
-          <button
-            type="button"
-            onClick={() => setIsPropertyMenuOpen((prev) => !prev)}
-            aria-expanded={isPropertyMenuOpen}
-            aria-haspopup="listbox"
-            aria-controls={propertyListboxId}
-            className="flex w-full min-h-[48px] items-center justify-between gap-2 rounded-xl border border-border/80 bg-background/80 p-2.5 text-left transition hover:border-primary/40 hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shadow-2xs"
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Building2 className="h-4.5 w-4.5" />
+
+          <div className="relative flex items-center w-full">
+            <button
+              type="button"
+              onClick={() => setIsPropertyMenuOpen((prev) => !prev)}
+              aria-expanded={isPropertyMenuOpen}
+              aria-haspopup="listbox"
+              aria-controls={propertyListboxId}
+              className="flex w-full min-h-[56px] items-center justify-between gap-2 rounded-xl border border-border/80 bg-background/80 p-3 text-left transition hover:border-primary/40 hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shadow-2xs"
+            >
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Building2 className="h-5 w-5" />
+                  <span
+                    className={cn(
+                      'absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background',
+                      selectedPension?.isActive ? 'bg-emerald-500' : 'bg-muted-foreground/40',
+                    )}
+                  />
+                </div>
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate text-xs font-bold text-foreground">
+                    {selectedPension?.title ?? 'Mi Pensión'}
+                  </span>
+                  <span className="truncate text-[10px] text-muted-foreground">
+                    {selectedPension?.city ?? 'Alojamiento'}
+                  </span>
+                </div>
               </div>
-              <div className="flex min-w-0 flex-col">
-                <span className="truncate text-xs font-bold text-foreground">
-                  {selectedPension?.title ?? 'Mi Pensión'}
-                </span>
-                <span className="truncate text-[10px] text-muted-foreground">
-                  {selectedPension?.city ?? 'Alojamiento'}
-                </span>
+
+              <div className="flex items-center gap-1 shrink-0 text-muted-foreground">
+                <button
+                  type="button"
+                  title="Ver vista previa de la pensión"
+                  aria-label="Ver vista previa de la pensión"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsPreviewOpen(true);
+                  }}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-primary/10 hover:text-primary transition cursor-pointer text-muted-foreground"
+                >
+                  <Eye className="h-4 w-4" />
+                </button>
+                <div className="flex h-8 w-6 items-center justify-center">
+                  {isPropertyMenuOpen ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="shrink-0 text-muted-foreground">
-              {isPropertyMenuOpen ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </div>
-          </button>
+            </button>
+          </div>
 
           <AnimatePresence>
             {isPropertyMenuOpen && (
@@ -179,62 +207,93 @@ export function LandlordDesktopSidebar({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.98 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute left-4 right-4 top-full z-50 mt-1.5 rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-xl"
+                  className="absolute left-3 right-3 top-full z-50 mt-1.5 rounded-2xl border border-border bg-popover p-2 text-popover-foreground shadow-2xl"
                 >
-                  <div className="max-h-56 overflow-y-auto space-y-1">
+                  <div className="max-h-72 overflow-y-auto space-y-1.5">
                     {pensions.length > 0 ? (
                       pensions.map((prop) => {
                         const isSelected = prop.id === selectedPension?.id;
                         return (
-                          <button
+                          <div
                             key={prop.id}
-                            type="button"
-                            role="option"
-                            aria-selected={isSelected}
-                            onClick={() => {
-                              setSelectedPension(prop);
-                              setIsPropertyMenuOpen(false);
-                            }}
                             className={cn(
-                              'flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition cursor-pointer',
+                              'group flex w-full items-center justify-between gap-2 rounded-xl p-1.5 transition border',
                               isSelected
-                                ? 'bg-primary/10 text-primary font-semibold'
-                                : 'text-foreground hover:bg-secondary',
+                                ? 'bg-primary/10 border-primary/30'
+                                : 'border-transparent hover:bg-secondary/70 hover:border-border/60',
                             )}
                           >
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-xs font-medium">{prop.title}</p>
-                              <p className="truncate text-[10px] text-muted-foreground">
-                                {prop.city}
-                              </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedPension(prop);
+                                setIsPropertyMenuOpen(false);
+                              }}
+                              className="flex items-center gap-2.5 min-w-0 flex-1 text-left p-1 rounded-lg cursor-pointer transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            >
+                              <span
+                                className={cn(
+                                  'h-2.5 w-2.5 rounded-full shrink-0',
+                                  prop.isActive
+                                    ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]'
+                                    : 'bg-muted-foreground/30',
+                                )}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p
+                                  className={cn(
+                                    'truncate text-xs font-bold leading-tight',
+                                    isSelected ? 'text-primary' : 'text-foreground',
+                                  )}
+                                >
+                                  {prop.title}
+                                </p>
+                                <p className="truncate text-[10px] text-muted-foreground mt-0.5">
+                                  {prop.city} {prop.rooms ? `• ${prop.rooms.length} habs` : ''}
+                                </p>
+                              </div>
+                            </button>
+
+                            <div className="flex items-center shrink-0 pr-1">
+                              <button
+                                type="button"
+                                title="Vista previa de esta pensión"
+                                aria-label={`Vista previa de ${prop.title}`}
+                                onClick={() => {
+                                  setSelectedPension(prop);
+                                  setIsPreviewOpen(true);
+                                  setIsPropertyMenuOpen(false);
+                                }}
+                                className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary text-muted-foreground transition cursor-pointer"
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                              </button>
                             </div>
-                            {isSelected && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                          </button>
+                          </div>
                         );
                       })
                     ) : (
-                      <div className="p-2 text-center text-xs text-muted-foreground">
+                      <div className="p-3 text-center text-xs text-muted-foreground">
                         {selectedPension?.title ?? '1 pensión'}
                       </div>
                     )}
-                  </div>
-                  <div className="pt-1 mt-1 border-t border-border/60">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsPropertyMenuOpen(false);
-                        openCreatePensionModal();
-                      }}
-                      className="flex w-full min-h-[36px] items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-primary hover:bg-primary/10 transition cursor-pointer"
-                    >
-                      <Plus className="h-3.5 w-3.5 shrink-0" />
-                      <span>Registrar Nueva Pensión</span>
-                    </button>
                   </div>
                 </motion.div>
               </>
             )}
           </AnimatePresence>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsPreviewOpen(true)}
+            disabled={!selectedPension}
+            className="w-full min-h-[40px] items-center justify-center gap-2 rounded-xl border-border bg-background/60 hover:bg-secondary hover:text-foreground text-xs font-semibold cursor-pointer shadow-2xs transition"
+          >
+            <Eye className="h-4 w-4 text-primary shrink-0" />
+            <span className="truncate">Vista de Estudiante</span>
+          </Button>
         </div>
 
         <nav
@@ -286,7 +345,7 @@ export function LandlordDesktopSidebar({
           })}
         </nav>
 
-        <div className="px-3 py-2">
+        <div className="mt-auto flex flex-col gap-2.5 p-3 border-t border-border/60">
           <Card className="border-border/70 bg-secondary/30 shadow-2xs">
             <CardContent className="p-3.5 flex flex-col gap-2">
               <div className="flex items-center justify-between">
@@ -326,25 +385,22 @@ export function LandlordDesktopSidebar({
               </div>
             </CardContent>
           </Card>
-        </div>
 
-        <div className="px-3 py-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsPreviewOpen(true)}
-            disabled={!selectedPension}
-            className="w-full min-h-[44px] justify-start gap-2.5 rounded-xl border-dashed border-border hover:border-primary/50 hover:bg-primary/5 text-xs font-medium cursor-pointer"
+          <div
+            className={cn(
+              'flex items-center justify-between gap-2 p-2 rounded-xl transition',
+              activeTab === 'account'
+                ? 'bg-primary/10 border border-primary/30 shadow-2xs'
+                : 'hover:bg-secondary/70 border border-transparent',
+            )}
           >
-            <Eye className="h-4 w-4 text-primary shrink-0" />
-            <span className="truncate">Vista de Estudiante</span>
-          </Button>
-        </div>
-
-        <div className="mt-auto p-4 border-t border-border/60">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={() => setActiveTab('account')}
+              className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer group"
+              title="Ir a Mi Cuenta"
+              aria-label="Ir a Mi Cuenta"
+            >
               <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-border bg-card">
                 {user?.avatarUrl ? (
                   <Image
@@ -356,20 +412,26 @@ export function LandlordDesktopSidebar({
                     className="object-cover"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
+                  <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground group-hover:text-primary transition-colors">
                     <User className="h-4 w-4" />
                   </div>
                 )}
               </div>
               <div className="flex min-w-0 flex-col text-left">
-                <span className="truncate text-xs font-semibold text-foreground leading-tight">
+                <span
+                  className={cn(
+                    'truncate text-xs font-semibold leading-tight transition-colors',
+                    activeTab === 'account'
+                      ? 'text-primary'
+                      : 'text-foreground group-hover:text-primary',
+                  )}
+                >
                   {user ? `${user.firstName} ${user.lastName}` : 'Propietario'}
                 </span>
-                <span className="truncate text-[10px] text-muted-foreground">
-                  {user?.email ?? 'Sesión activa'}
-                </span>
+                <span className="truncate text-[10px] text-muted-foreground">Mi Cuenta</span>
               </div>
-            </div>
+            </button>
+
             <Button
               type="button"
               variant="ghost"

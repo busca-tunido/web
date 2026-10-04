@@ -141,7 +141,7 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
               {resolvedType === 'SHARED' && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[11px] font-medium"
+                  className="gap-1 border-secondary-foreground/20 bg-secondary text-secondary-foreground text-[11px] font-medium"
                 >
                   <Users className="h-3 w-3" />
                   Compartida ({beds} {beds === 1 ? 'cama' : 'camas'})
@@ -151,7 +151,7 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
               {resolvedType === 'STUDIO' && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-medium"
+                  className="gap-1 border-primary/30 bg-primary/10 text-primary text-[11px] font-medium"
                 >
                   <Sparkles className="h-3 w-3" />
                   Estudio

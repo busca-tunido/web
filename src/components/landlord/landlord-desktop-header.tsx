@@ -1,10 +1,7 @@
 'use client';
 
-import { ChevronRight, Home, LogOut, User } from 'lucide-react';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+import { ChevronRight, Home } from 'lucide-react';
 import { type LandlordTab, useLandlord } from '@/contexts/landlord-context';
-import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/utils';
 
 export type LandlordDesktopHeaderProps = {
@@ -14,22 +11,20 @@ export type LandlordDesktopHeaderProps = {
 };
 
 const TAB_LABELS: Record<LandlordTab, string> = {
-  rooms: 'Gestión de Habitaciones',
   pension: 'Ficha de Pensión',
+  rooms: 'Gestión de Habitaciones',
   reviews: 'Reseñas y Sugerencias',
+  pensions: 'Mis Pensiones',
   account: 'Mi Cuenta',
 };
 
 export function LandlordDesktopHeader({
   activeTab: propActiveTab,
-  onTabChange,
   className,
 }: LandlordDesktopHeaderProps) {
   const landlordContext = useLandlord();
-  const { user, logout } = useAuth();
 
   const activeTab = propActiveTab ?? landlordContext.activeTab;
-  const setActiveTab = onTabChange ?? landlordContext.setActiveTab;
   const selectedPension = landlordContext.selectedPension;
   const togglePensionActive = landlordContext.togglePensionActive;
 
@@ -111,55 +106,6 @@ export function LandlordDesktopHeader({
               />
             </span>
           </button>
-        )}
-
-        <div className="h-5 w-px bg-border/60" />
-
-        {user && (
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setActiveTab('account')}
-              className="flex items-center gap-2 rounded-full p-1 pr-2 hover:bg-secondary transition cursor-pointer"
-            >
-              <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-border bg-card">
-                {user.avatarUrl ? (
-                  <Image
-                    src={user.avatarUrl}
-                    alt={user.firstName}
-                    fill
-                    unoptimized
-                    sizes="32px"
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
-                    <User className="h-4 w-4" />
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-xs font-semibold leading-tight text-foreground">
-                  {user.firstName}
-                </span>
-                <span className="text-[10px] text-muted-foreground capitalize">
-                  {user.role.toLowerCase()}
-                </span>
-              </div>
-            </button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={logout}
-              className="h-8 w-8 p-0 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-              title="Cerrar sesión"
-              aria-label="Cerrar sesión"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
         )}
       </div>
     </header>

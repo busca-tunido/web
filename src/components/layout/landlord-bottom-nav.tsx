@@ -1,10 +1,10 @@
 'use client';
 
-import { BedDouble, Home, Star, User } from 'lucide-react';
+import { BedDouble, Building2, Home, Star, User } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 
-export type LandlordNavTab = 'rooms' | 'pension' | 'reviews' | 'account';
+export type LandlordNavTab = 'pension' | 'rooms' | 'reviews' | 'pensions' | 'account';
 
 export type LandlordBottomNavProps = {
   activeTab: LandlordNavTab;
@@ -27,8 +27,9 @@ export function LandlordBottomNav({
   className,
 }: LandlordBottomNavProps) {
   const navItems: readonly LandlordNavItem[] = [
-    { id: 'rooms', label: 'Habitaciones', icon: BedDouble },
     { id: 'pension', label: 'Mi Pensión', icon: Home },
+    { id: 'rooms', label: 'Habitaciones', icon: BedDouble },
+    { id: 'pensions', label: 'Pensiones', icon: Building2 },
     { id: 'reviews', label: 'Reseñas', icon: Star, badge: pendingProposalsCount },
     { id: 'account', label: 'Cuenta', icon: User },
   ];

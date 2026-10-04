@@ -90,7 +90,7 @@ function getSatisfactionLabel(
     return {
       label: 'Excelente',
       variant: 'default',
-      colorClass: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+      colorClass: 'text-primary bg-primary/15 border-primary/40',
     };
   }
   if (score >= 4.0) {
@@ -419,7 +419,7 @@ export function LandlordReviewsScreen({
             <div className="rounded-xl border border-border/70 bg-muted/15 p-3.5 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/10 text-sky-500">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Droplets className="h-4 w-4" />
                   </div>
                   <div>
@@ -449,7 +449,7 @@ export function LandlordReviewsScreen({
               <div className="flex items-center gap-2.5 pt-1">
                 <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
                   <div
-                    className="h-full bg-sky-500 rounded-full transition-all duration-500"
+                    className="h-full bg-primary rounded-full transition-all duration-500"
                     style={{
                       width: `${(satisfactionMetrics.cleanliness / 5) * 100}%`,
                     }}
@@ -466,7 +466,7 @@ export function LandlordReviewsScreen({
             <div className="rounded-xl border border-border/70 bg-muted/15 p-3.5 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-500/10 text-rose-500">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <HeartHandshake className="h-4 w-4" />
                   </div>
                   <div>
@@ -498,7 +498,7 @@ export function LandlordReviewsScreen({
               <div className="flex items-center gap-2.5 pt-1">
                 <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
                   <div
-                    className="h-full bg-rose-500 rounded-full transition-all duration-500"
+                    className="h-full bg-primary rounded-full transition-all duration-500"
                     style={{
                       width: `${(satisfactionMetrics.landlord / 5) * 100}%`,
                     }}
@@ -515,7 +515,7 @@ export function LandlordReviewsScreen({
             <div className="rounded-xl border border-border/70 bg-muted/15 p-3.5 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Moon className="h-4 w-4" />
                   </div>
                   <div>
@@ -545,7 +545,7 @@ export function LandlordReviewsScreen({
               <div className="flex items-center gap-2.5 pt-1">
                 <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
                   <div
-                    className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+                    className="h-full bg-primary rounded-full transition-all duration-500"
                     style={{
                       width: `${(satisfactionMetrics.quietness / 5) * 100}%`,
                     }}
@@ -562,7 +562,7 @@ export function LandlordReviewsScreen({
             <div className="rounded-xl border border-border/70 bg-muted/15 p-3.5 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     <Wifi className="h-4 w-4" />
                   </div>
                   <div>
@@ -594,7 +594,7 @@ export function LandlordReviewsScreen({
               <div className="flex items-center gap-2.5 pt-1">
                 <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    className="h-full bg-primary rounded-full transition-all duration-500"
                     style={{
                       width: `${(satisfactionMetrics.wifi / 5) * 100}%`,
                     }}

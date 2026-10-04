@@ -5,7 +5,7 @@ import { isApiSuccess } from '@/lib/api-response';
 import type { PensionItem } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 
-export type LandlordTab = 'rooms' | 'pension' | 'reviews' | 'account';
+export type LandlordTab = 'pension' | 'rooms' | 'reviews' | 'pensions' | 'account';
 
 export type LandlordContextValue = {
   pensions: PensionItem[];
@@ -30,7 +30,7 @@ export type LandlordProviderProps = {
 
 const LandlordContext = createContext<LandlordContextValue | null>(null);
 
-export function LandlordProvider({ children, initialTab = 'rooms' }: LandlordProviderProps) {
+export function LandlordProvider({ children, initialTab = 'pension' }: LandlordProviderProps) {
   const [pensions, setPensions] = useState<PensionItem[]>([]);
   const [selectedPension, setSelectedPension] = useState<PensionItem | null>(null);
   const [activeTab, setActiveTab] = useState<LandlordTab>(initialTab);
@@ -166,6 +166,10 @@ export function LandlordProvider({ children, initialTab = 'rooms' }: LandlordPro
   );
 
   return <LandlordContext.Provider value={value}>{children}</LandlordContext.Provider>;
+}
+
+export function useOptionalLandlord(): LandlordContextValue | null {
+  return useContext(LandlordContext);
 }
 
 export function useLandlord(): LandlordContextValue {
