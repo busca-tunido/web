@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { LandlordAccountScreen } from '@/components/account/landlord-account-screen';
 import { LandlordDesktopHeader } from '@/components/landlord/landlord-desktop-header';
 import { LandlordDesktopSidebar } from '@/components/landlord/landlord-desktop-sidebar';
@@ -15,7 +15,10 @@ import {
   LandlordMobileHeader,
   type LandlordPropertySummary,
 } from '@/components/layout/landlord-mobile-header';
+import { SplashScreen } from '@/components/layout/splash-screen';
 import { LandlordProvider, type LandlordTab, useLandlord } from '@/contexts/landlord-context';
+import { useUserRole } from '@/hooks/use-user-role';
+import { useAuth } from '@/lib/auth-context';
 
 export type LandlordAppShellProps = {
   initialTab?: LandlordTab;
@@ -108,6 +111,19 @@ function LandlordAppShellContent() {
 }
 
 export function LandlordAppShell({ initialTab = 'pension' }: LandlordAppShellProps) {
+  const { isLoading } = useAuth();
+  const { isLandlord } = useUserRole();
+
+  useEffect(() => {
+    if (!isLoading && !isLandlord && typeof window !== 'undefined') {
+      window.location.replace('/');
+    }
+  }, [isLoading, isLandlord]);
+
+  if (isLoading || !isLandlord) {
+    return <SplashScreen />;
+  }
+
   return (
     <LandlordProvider initialTab={initialTab}>
       <LandlordAppShellContent />
