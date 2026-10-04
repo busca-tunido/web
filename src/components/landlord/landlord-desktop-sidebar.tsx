@@ -40,7 +40,7 @@ type NavItemConfig = {
 export function LandlordDesktopSidebar({
   activeTab: propActiveTab,
   onTabChange,
-  pendingProposalsCount = 0,
+  pendingProposalsCount: _pendingProposalsCount = 0,
   className,
 }: LandlordDesktopSidebarProps) {
   const landlordContext = useLandlord();
@@ -59,18 +59,19 @@ export function LandlordDesktopSidebar({
   const propertyDropdownRef = useRef<HTMLDivElement>(null);
   const propertyListboxId = useId();
 
-  const navItems: readonly NavItemConfig[] = useMemo(
-    () => [
-      { id: 'pension', label: 'Mi Pensión', icon: Home },
-      { id: 'rooms', label: 'Habitaciones', icon: BedDouble },
-      { id: 'reviews', label: 'Reseñas', icon: Star, badge: pendingProposalsCount },
-    ],
-    [pendingProposalsCount],
-  );
-
   const rooms = selectedPension?.rooms ?? [];
   const totalRooms = rooms.length;
   const occupiedRooms = rooms.filter((r) => !r.isAvailable).length;
+  const reviewsCount = selectedPension?.reviewsCount ?? 0;
+
+  const navItems: readonly NavItemConfig[] = useMemo(
+    () => [
+      { id: 'pension', label: 'Mi Pensión', icon: Home },
+      { id: 'rooms', label: 'Habitaciones', icon: BedDouble, badge: totalRooms },
+      { id: 'reviews', label: 'Reseñas', icon: Star, badge: reviewsCount },
+    ],
+    [totalRooms, reviewsCount],
+  );
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent | TouchEvent) {
@@ -317,9 +318,9 @@ export function LandlordDesktopSidebar({
                 />
                 <span className="flex-1 text-left">{item.label}</span>
 
-                {item.badge !== undefined && item.badge > 0 && (
-                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                    {item.badge > 99 ? '99+' : item.badge}
+                {item.badge !== undefined && (
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-[10px] font-medium text-muted-foreground tabular-nums">
+                    {item.badge}
                   </span>
                 )}
 
@@ -353,11 +354,9 @@ export function LandlordDesktopSidebar({
               )}
             />
             <span className="flex-1 text-left">Mis Pensiones</span>
-            {pensions.length > 0 && (
-              <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-[10px] font-bold text-muted-foreground">
-                {pensions.length}
-              </span>
-            )}
+            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-[10px] font-medium text-muted-foreground tabular-nums">
+              {pensions.length}
+            </span>
             {activeTab === 'pensions' && (
               <motion.div
                 layoutId="active-landlord-desktop-sidebar-indicator"
