@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Home,
   MapPin,
+  PauseCircle,
   Phone,
   Plus,
   ShieldCheck,
@@ -88,7 +89,12 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
   }, [pensions]);
 
   const activeSelected = selectedPension ?? pensions[0] ?? null;
-  const otherPensions = pensions.filter((p) => p.id !== activeSelected?.id);
+  const otherActivePensions = pensions.filter(
+    (p) => p.id !== activeSelected?.id && (p.isActive ?? true),
+  );
+  const otherInactivePensions = pensions.filter(
+    (p) => p.id !== activeSelected?.id && p.isActive === false,
+  );
 
   const handleSelectToManage = (
     pension: PensionItem,
@@ -482,7 +488,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 <div className="flex items-center gap-2">
                   <Home className="h-4 w-4 text-muted-foreground" />
                   <h2 className="text-sm sm:text-base font-semibold text-foreground">
-                    Pensión en Administración Activa
+                    Pensión Seleccionada
                   </h2>
                 </div>
                 <Badge
@@ -492,10 +498,6 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                   Seleccionada
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground -mt-1.5">
-                Esta es la pensión que estás gestionando actualmente en las secciones de Mi Pensión,
-                Habitaciones y Reseñas.
-              </p>
 
               {activeSelected && renderPensionCard(activeSelected, true)}
             </div>
@@ -505,24 +507,20 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-muted-foreground" />
                   <h2 className="text-sm sm:text-base font-semibold text-foreground">
-                    Otras Pensiones Registradas
+                    Pensiones Activas
                   </h2>
                   <Badge
                     variant="outline"
                     className="text-xs font-normal border-border/80 text-muted-foreground"
                   >
-                    {otherPensions.length}
+                    {otherActivePensions.length}
                   </Badge>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground -mt-1.5">
-                Selecciona otra propiedad para administrarla o consultar su actividad.
-              </p>
-
-              {otherPensions.length === 0 ? (
+              {otherActivePensions.length === 0 ? (
                 <Card className="border-border/60 bg-card/40 p-6 text-center rounded-2xl">
                   <p className="text-xs text-muted-foreground">
-                    No tienes otras pensiones registradas. Si adquieres o administras otro
+                    No tienes otras pensiones activas registradas. Si adquieres o administras otro
                     alojamiento, regístralo aquí.
                   </p>
                   <Button
@@ -538,7 +536,35 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 </Card>
               ) : (
                 <div className="flex flex-col gap-4">
-                  {otherPensions.map((prop) => renderPensionCard(prop, false))}
+                  {otherActivePensions.map((prop) => renderPensionCard(prop, false))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-3 pt-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <PauseCircle className="h-4 w-4 text-muted-foreground" />
+                  <h2 className="text-sm sm:text-base font-semibold text-foreground">
+                    Pensiones Inactivas
+                  </h2>
+                  <Badge
+                    variant="outline"
+                    className="text-xs font-normal border-border/80 text-muted-foreground"
+                  >
+                    {otherInactivePensions.length}
+                  </Badge>
+                </div>
+              </div>
+              {otherInactivePensions.length === 0 ? (
+                <Card className="border-border/60 bg-card/40 p-6 text-center rounded-2xl">
+                  <p className="text-xs text-muted-foreground">
+                    No tienes pensiones inactivas o pausadas.
+                  </p>
+                </Card>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {otherInactivePensions.map((prop) => renderPensionCard(prop, false))}
                 </div>
               )}
             </div>
