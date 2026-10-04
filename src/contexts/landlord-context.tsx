@@ -7,6 +7,17 @@ import { pensionsService } from '@/services/pensions.service';
 
 export type LandlordTab = 'pension' | 'rooms' | 'reviews' | 'pensions' | 'account';
 
+export type LandlordDefaultContact = {
+  name: string;
+  phone: string;
+};
+
+export type PensionCustomContact = {
+  enabled: boolean;
+  name: string;
+  phone: string;
+};
+
 export type LandlordContextValue = {
   pensions: PensionItem[];
   selectedPension: PensionItem | null;
@@ -21,6 +32,10 @@ export type LandlordContextValue = {
   setIsCreatePensionOpen: (open: boolean) => void;
   openCreatePensionModal: () => void;
   closeCreatePensionModal: () => void;
+  defaultContact: LandlordDefaultContact;
+  updateDefaultContact: (contact: Partial<LandlordDefaultContact>) => void;
+  getPensionContact: (pensionId: string) => { isCustom: boolean; name: string; phone: string };
+  updatePensionCustomContact: (pensionId: string, custom: PensionCustomContact) => void;
 };
 
 export type LandlordProviderProps = {
@@ -37,6 +52,84 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreatePensionOpen, setIsCreatePensionOpen] = useState(false);
+  const [defaultContact, setDefaultContactState] = useState<LandlordDefaultContact>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('buscatunido_landlord_default_contact');
+        if (saved) return JSON.parse(saved);
+      } catch {
+        // ignore
+      }
+    }
+    return {
+      name: 'Propietario Demo',
+      phone: '+56 9 8765 4321',
+    };
+  });
+  const [customContacts, setCustomContacts] = useState<Record<string, PensionCustomContact>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('buscatunido_landlord_pension_custom_contacts');
+        if (saved) return JSON.parse(saved);
+      } catch {
+        // ignore
+      }
+    }
+    return {};
+  });
+
+  const updateDefaultContact = useCallback((partial: Partial<LandlordDefaultContact>) => {
+    setDefaultContactState((prev) => {
+      const updated = { ...prev, ...partial };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('buscatunido_landlord_default_contact', JSON.stringify(updated));
+        } catch {
+          // ignore
+        }
+      }
+      return updated;
+    });
+  }, []);
+
+  const updatePensionCustomContact = useCallback(
+    (pensionId: string, custom: PensionCustomContact) => {
+      setCustomContacts((prev) => {
+        const updated = { ...prev, [pensionId]: custom };
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(
+              'buscatunido_landlord_pension_custom_contacts',
+              JSON.stringify(updated),
+            );
+          } catch {
+            // ignore
+          }
+        }
+        return updated;
+      });
+    },
+    [],
+  );
+
+  const getPensionContact = useCallback(
+    (pensionId: string) => {
+      const custom = customContacts[pensionId];
+      if (custom?.enabled) {
+        return {
+          isCustom: true,
+          name: custom.name,
+          phone: custom.phone,
+        };
+      }
+      return {
+        isCustom: false,
+        name: defaultContact.name,
+        phone: defaultContact.phone,
+      };
+    },
+    [customContacts, defaultContact],
+  );
 
   const openCreatePensionModal = useCallback(() => {
     setIsCreatePensionOpen(true);
@@ -150,6 +243,10 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       setIsCreatePensionOpen,
       openCreatePensionModal,
       closeCreatePensionModal,
+      defaultContact,
+      updateDefaultContact,
+      getPensionContact,
+      updatePensionCustomContact,
     }),
     [
       pensions,
@@ -162,6 +259,10 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       isCreatePensionOpen,
       openCreatePensionModal,
       closeCreatePensionModal,
+      defaultContact,
+      updateDefaultContact,
+      getPensionContact,
+      updatePensionCustomContact,
     ],
   );
 

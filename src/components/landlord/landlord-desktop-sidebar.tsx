@@ -5,7 +5,6 @@ import {
   Building2,
   ChevronDown,
   ChevronUp,
-  DoorOpen,
   Eye,
   Home,
   LogOut,
@@ -16,11 +15,10 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { RoomOccupancyBar } from '@/components/landlord/room-occupancy-bar';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
-import { Badge } from '@/components/ui/badge';
 import { BrandLogo } from '@/components/ui/brand-logo';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { type LandlordTab, useLandlord } from '@/contexts/landlord-context';
 import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/utils';
@@ -73,9 +71,7 @@ export function LandlordDesktopSidebar({
 
   const rooms = selectedPension?.rooms ?? [];
   const totalRooms = rooms.length;
-  const availableRooms = rooms.filter((r) => r.isAvailable).length;
-  const occupiedRooms = Math.max(0, totalRooms - availableRooms);
-  const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
+  const occupiedRooms = rooms.filter((r) => !r.isAvailable).length;
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent | TouchEvent) {
@@ -346,45 +342,13 @@ export function LandlordDesktopSidebar({
         </nav>
 
         <div className="mt-auto flex flex-col gap-2.5 p-3 border-t border-border/60">
-          <Card className="border-border/70 bg-secondary/30 shadow-2xs">
-            <CardContent className="p-3.5 flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-                  <DoorOpen className="h-4 w-4 text-primary" />
-                  <span>Ocupación</span>
-                </div>
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    'text-[10px] font-bold px-1.5 py-0 border-0',
-                    occupancyRate >= 80
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                      : occupancyRate >= 40
-                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                        : 'bg-muted text-muted-foreground',
-                  )}
-                >
-                  {occupancyRate}%
-                </Badge>
-              </div>
-
-              <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full transition-all duration-300"
-                  style={{ width: `${occupancyRate}%` }}
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                <span>
-                  {occupiedRooms} {occupiedRooms === 1 ? 'ocupada' : 'ocupadas'}
-                </span>
-                <span>
-                  {availableRooms} {availableRooms === 1 ? 'libre' : 'libres'}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+          <RoomOccupancyBar
+            totalRooms={totalRooms}
+            occupiedRooms={occupiedRooms}
+            label="Ocupación"
+            showIcon
+            className="shadow-2xs"
+          />
 
           <div
             className={cn(

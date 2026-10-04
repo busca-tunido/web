@@ -33,7 +33,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useLandlord } from '@/contexts/landlord-context';
 import { mapRawPensionToPensionItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
-import { useAuth } from '@/lib/auth-context';
 import type { PensionItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { pensionsService } from '@/services/pensions.service';
@@ -61,6 +60,7 @@ type FormState = {
   quietHoursStart: string;
   quietHoursEnd: string;
   genderPreference: GenderPref;
+  useCustomContact: boolean;
   contactName: string;
   contactPhone: string;
 };
@@ -126,8 +126,13 @@ export function LandlordPensionScreen({
   onPensionUpdated,
   className,
 }: LandlordPensionScreenProps) {
-  const { user } = useAuth();
-  const { openCreatePensionModal, togglePensionActive } = useLandlord();
+  const {
+    openCreatePensionModal,
+    togglePensionActive,
+    defaultContact,
+    getPensionContact,
+    updatePensionCustomContact,
+  } = useLandlord();
 
   const [activePension, setActivePension] = useState<PensionDetailDto | PensionItem | null>(
     initialPension,
@@ -152,6 +157,7 @@ export function LandlordPensionScreen({
     quietHoursStart: '22:00',
     quietHoursEnd: '08:00',
     genderPreference: 'ANY',
+    useCustomContact: false,
     contactName: '',
     contactPhone: '',
   });
@@ -167,11 +173,10 @@ export function LandlordPensionScreen({
       const normalizedGender: GenderPref =
         rawGender === 'FEMALE_ONLY' || rawGender === 'MALE_ONLY' ? rawGender : 'ANY';
 
-      const phoneDefault =
-        (p as unknown as { contactPhone?: string })?.contactPhone || user?.phone || '+56 9 ';
-      const nameDefault =
-        (p as unknown as { contactName?: string })?.contactName ||
-        (user ? `${user.firstName} ${user.lastName}`.trim() : '');
+      const contactConfig = getPensionContact(p.id);
+      const isCustomContact = contactConfig.isCustom;
+      const resolvedName = isCustomContact ? contactConfig.name : defaultContact.name;
+      const resolvedPhone = isCustomContact ? contactConfig.phone : defaultContact.phone;
 
       setForm({
         waterIncluded: isPensionItemDto ? Boolean(p.waterIncluded ?? true) : true,
@@ -188,11 +193,12 @@ export function LandlordPensionScreen({
         quietHoursStart: (isPensionItemDto && p.quietHoursStart) || '22:00',
         quietHoursEnd: (isPensionItemDto && p.quietHoursEnd) || '08:00',
         genderPreference: normalizedGender,
-        contactName: nameDefault,
-        contactPhone: normalizePhoneToDisplay(phoneDefault),
+        useCustomContact: isCustomContact,
+        contactName: resolvedName,
+        contactPhone: normalizePhoneToDisplay(resolvedPhone),
       });
     },
-    [user],
+    [defaultContact, getPensionContact],
   );
 
   const loadPensionData = useCallback(async () => {
@@ -281,7 +287,13 @@ export function LandlordPensionScreen({
     setSaveSuccessMessage(null);
     setSaveErrorMessage(null);
 
-    const updatePayload: UpdatePensionDto = {
+    updatePensionCustomContact(activePension.id, {
+      enabled: form.useCustomContact,
+      name: form.useCustomContact ? form.contactName.trim() : defaultContact.name,
+      phone: form.useCustomContact ? form.contactPhone.trim() : defaultContact.phone,
+    });
+
+    const updatePayload: UpdatePensionDto & { contactName?: string; contactPhone?: string } = {
       currency: 'CLP',
       waterIncluded: form.waterIncluded,
       electricityIncluded: form.electricityIncluded,
@@ -294,6 +306,8 @@ export function LandlordPensionScreen({
       curfewTime: form.hasCurfew && form.curfewTime.trim() ? form.curfewTime.trim() : undefined,
       quietHoursStart: form.quietHoursStart.trim() || undefined,
       quietHoursEnd: form.quietHoursEnd.trim() || undefined,
+      contactName: form.useCustomContact ? form.contactName.trim() : defaultContact.name,
+      contactPhone: form.useCustomContact ? form.contactPhone.trim() : defaultContact.phone,
     };
 
     const response = await pensionsService.update(activePension.id, updatePayload);
@@ -767,23 +781,87 @@ export function LandlordPensionScreen({
 
         <Card className="xl:col-span-5 flex flex-col border-border/80 bg-card shadow-xs rounded-2xl overflow-hidden">
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <MessageCircle className="h-5 w-5" />
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+                  <MessageCircle className="h-5 w-5" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm sm:text-base font-bold text-foreground">
+                    Contacto Directo y WhatsApp
+                  </CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                    Canal oficial para que estudiantes interesados consulten disponibilidad
+                  </CardDescription>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-                  Contacto Directo y WhatsApp
-                </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                  Canal oficial para que estudiantes interesados consulten disponibilidad
-                </CardDescription>
+
+              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 bg-muted/40 px-3 py-1.5 rounded-xl border border-border/70">
+                <span className="text-xs font-semibold text-foreground">Personalizar</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.useCustomContact}
+                  aria-label="Personalizar datos de contacto para esta pensión"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      useCustomContact: !prev.useCustomContact,
+                      contactName: !prev.useCustomContact
+                        ? prev.contactName || defaultContact.name
+                        : defaultContact.name,
+                      contactPhone: !prev.useCustomContact
+                        ? prev.contactPhone || defaultContact.phone
+                        : normalizePhoneToDisplay(defaultContact.phone),
+                    }))
+                  }
+                  className={cn(
+                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    form.useCustomContact ? 'bg-primary' : 'bg-muted-foreground/30',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
+                      form.useCustomContact ? 'translate-x-4' : 'translate-x-0',
+                    )}
+                  />
+                </button>
               </div>
             </div>
           </CardHeader>
 
           <CardContent className="p-4 sm:p-5 space-y-4 flex-1 flex flex-col justify-between">
             <div className="space-y-4">
+              <div
+                className={cn(
+                  'rounded-xl border p-3 text-xs flex items-center justify-between gap-2 transition-colors',
+                  form.useCustomContact
+                    ? 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                    : 'border-primary/30 bg-primary/10 text-primary',
+                )}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span className="text-[11px] font-medium leading-tight">
+                    {form.useCustomContact
+                      ? 'Contacto personalizado activo para esta pensión'
+                      : 'Utilizando datos por defecto configurados en Mis Pensiones'}
+                  </span>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'text-[10px] shrink-0 font-bold',
+                    form.useCustomContact
+                      ? 'border-amber-500/40 bg-amber-500/20 text-amber-700 dark:text-amber-300'
+                      : 'border-primary/40 bg-primary/20 text-primary',
+                  )}
+                >
+                  {form.useCustomContact ? 'Personalizado' : 'Por Defecto'}
+                </Badge>
+              </div>
+
               <div>
                 <label
                   htmlFor="landlord-contact-name"
@@ -794,10 +872,16 @@ export function LandlordPensionScreen({
                 <input
                   id="landlord-contact-name"
                   type="text"
-                  value={form.contactName}
+                  disabled={!form.useCustomContact}
+                  value={form.useCustomContact ? form.contactName : defaultContact.name}
                   onChange={(e) => setForm((prev) => ({ ...prev, contactName: e.target.value }))}
-                  placeholder="Ej: Sra. Carmen Gloria"
-                  className="min-h-[48px] w-full rounded-xl border border-border bg-background px-4 text-xs font-medium text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  placeholder={defaultContact.name || 'Ej: Sra. Carmen Gloria'}
+                  className={cn(
+                    'min-h-[48px] w-full rounded-xl border border-border px-4 text-xs font-medium placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors',
+                    form.useCustomContact
+                      ? 'bg-background text-foreground'
+                      : 'bg-muted/40 text-muted-foreground cursor-not-allowed',
+                  )}
                 />
               </div>
 
@@ -825,14 +909,26 @@ export function LandlordPensionScreen({
                   <input
                     id="landlord-contact-whatsapp"
                     type="tel"
-                    value={form.contactPhone}
+                    disabled={!form.useCustomContact}
+                    value={
+                      form.useCustomContact
+                        ? form.contactPhone
+                        : normalizePhoneToDisplay(defaultContact.phone)
+                    }
                     onChange={(e) => handlePhoneChange(e.target.value)}
-                    placeholder="+56 9 1234 5678"
-                    className="min-h-[48px] w-full rounded-xl border border-border bg-background pl-9 pr-4 text-xs font-semibold text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    placeholder={normalizePhoneToDisplay(defaultContact.phone) || '+56 9 1234 5678'}
+                    className={cn(
+                      'min-h-[48px] w-full rounded-xl border border-border pl-9 pr-4 text-xs font-semibold placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors',
+                      form.useCustomContact
+                        ? 'bg-background text-foreground'
+                        : 'bg-muted/40 text-muted-foreground cursor-not-allowed',
+                    )}
                   />
                 </div>
                 <p className="text-[11px] text-muted-foreground mt-1.5">
-                  Permite a los estudiantes contactarte con 1 toque desde la ficha pública.
+                  {form.useCustomContact
+                    ? 'Los estudiantes contactarán a este número exclusivo para esta pensión.'
+                    : 'Para cambiar el contacto predeterminado de todas tus pensiones, edítalo en Mis Pensiones.'}
                 </p>
               </div>
             </div>

@@ -34,7 +34,7 @@ export function LandlordDesktopHeader({
     <header
       id="landlord-desktop-header"
       className={cn(
-        'sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-border/60 bg-background/95 backdrop-blur-lg px-6 lg:px-8 pr-8 lg:pr-12 transition-colors gap-4',
+        'sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-border/60 bg-background/95 backdrop-blur-lg px-6 lg:px-8 pr-8 lg:pr-12 transition-colors gap-4 py-2',
         className,
       )}
     >

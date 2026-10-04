@@ -13,6 +13,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { RoomEditorDrawer } from '@/components/landlord/room-editor-drawer';
 import { type RoomItem, RoomItemCard } from '@/components/landlord/room-item-card';
+import { RoomOccupancyBar } from '@/components/landlord/room-occupancy-bar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -170,8 +171,6 @@ export function LandlordRoomsScreen({
 
   const totalRooms = rooms.length;
   const occupiedRooms = rooms.filter((r) => !r.isAvailable).length;
-  const availableRooms = rooms.filter((r) => r.isAvailable).length;
-  const occupancyPercentage = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
 
   const projectedRevenue = rooms
     .filter((r) => !r.isAvailable)
@@ -205,31 +204,12 @@ export function LandlordRoomsScreen({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
-            <div className="flex flex-col justify-between rounded-xl border border-border/60 bg-muted/30 p-3.5 gap-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground">
-                  Tasa de Ocupación
-                </span>
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                  {occupancyPercentage}%
-                </span>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full bg-emerald-500 transition-all duration-500 ease-out"
-                    style={{ width: `${occupancyPercentage}%` }}
-                  />
-                </div>
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium">
-                  <span>
-                    {occupiedRooms} de {totalRooms} ocupadas
-                  </span>
-                  <span>{availableRooms} disponibles</span>
-                </div>
-              </div>
-            </div>
+            <RoomOccupancyBar
+              totalRooms={totalRooms}
+              occupiedRooms={occupiedRooms}
+              label="Tasa de Ocupación"
+              showIcon={false}
+            />
 
             <div className="flex flex-col justify-between rounded-xl border border-border/60 bg-muted/30 p-3.5 gap-2.5">
               <div className="flex items-center justify-between">
