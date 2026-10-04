@@ -47,9 +47,9 @@ const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
     id: 'rating_high',
     label: 'Alta',
     priority: 0,
-    dotColor: '#15803d',
+    dotColor: '#2d5e49',
     activeColorClass:
-      'border-emerald-600 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 dark:border-emerald-400 font-semibold',
+      'border-[#2d5e49] bg-[#2d5e49]/15 text-[#204535] dark:text-[#aee0ca] dark:border-[#366e56] font-semibold',
     isActive: (f) => f.ratingTier === 'high',
     toggle: (f) => ({ ...f, ratingTier: f.ratingTier === 'high' ? undefined : 'high' }),
   },

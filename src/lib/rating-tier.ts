@@ -95,10 +95,10 @@ export function getMarkerThemeStyles(
           ? 'scale-110 shadow-xl ring-4'
           : 'shadow-md hover:scale-105 transition-transform',
         dotColor: '#ffffff',
-        bgHex: isDark ? '#16a34a' : '#15803d',
+        bgHex: isDark ? '#366e56' : '#2d5e49',
         textHex: '#ffffff',
-        borderHex: isDark ? '#15803d' : '#166534',
-        ringHex: 'rgba(34, 197, 94, 0.45)',
+        borderHex: isDark ? '#2d5e49' : '#224838',
+        ringHex: isDark ? 'rgba(54, 110, 86, 0.45)' : 'rgba(45, 94, 73, 0.4)',
         isSolid: true,
       };
     }
@@ -106,11 +106,11 @@ export function getMarkerThemeStyles(
       containerClass: isSelected
         ? 'scale-110 shadow-lg ring-4'
         : 'shadow-sm hover:scale-105 transition-transform',
-      dotColor: isDark ? '#4ade80' : '#16a34a',
-      bgHex: isDark ? '#064e3b' : '#f0fdf4',
-      textHex: isDark ? '#bbf7d0' : '#166534',
-      borderHex: isDark ? '#16a34a' : '#86efac',
-      ringHex: 'rgba(74, 222, 128, 0.35)',
+      dotColor: isDark ? '#599b7d' : '#2d5e49',
+      bgHex: isDark ? '#162820' : '#f2f7f4',
+      textHex: isDark ? '#aee0ca' : '#204535',
+      borderHex: isDark ? '#2d5e49' : '#9ec2b1',
+      ringHex: isDark ? 'rgba(54, 110, 86, 0.3)' : 'rgba(45, 94, 73, 0.25)',
       isSolid: false,
     };
   }

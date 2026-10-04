@@ -53,7 +53,7 @@ describe('Rating Tier & Semaforo Logic', () => {
       false,
     );
     expect(highSolid.isSolid).toBe(true);
-    expect(highSolid.bgHex).toBe('#15803d');
+    expect(highSolid.bgHex).toBe('#2d5e49');
 
     const highSoft = getMarkerThemeStyles(
       { tier: 'high', reliability: 'low', label: 'Alta', ratingAverage: 4.8, reviewsCount: 2 },
@@ -61,7 +61,7 @@ describe('Rating Tier & Semaforo Logic', () => {
       false,
     );
     expect(highSoft.isSolid).toBe(false);
-    expect(highSoft.bgHex).toBe('#f0fdf4');
+    expect(highSoft.bgHex).toBe('#f2f7f4');
 
     const medSolid = getMarkerThemeStyles(
       { tier: 'medium', reliability: 'high', label: 'Media', ratingAverage: 3.5, reviewsCount: 6 },

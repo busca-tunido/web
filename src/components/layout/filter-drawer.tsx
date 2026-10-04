@@ -346,7 +346,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
                   id: 'high' as const,
                   label: 'Alta',
                   subtitle: '≥ 4.2',
-                  dotColor: '#15803d',
+                  dotColor: '#2d5e49',
                 },
                 {
                   id: 'medium' as const,
