@@ -168,6 +168,19 @@ export function LandlordRoomsScreen({
     );
   };
 
+  const totalRooms = rooms.length;
+  const activeRooms = useMemo(() => rooms.filter((r) => r.isActive !== false), [rooms]);
+  const occupiedRooms = useMemo(() => activeRooms.filter((r) => !r.isAvailable), [activeRooms]);
+  const availableRooms = useMemo(() => activeRooms.filter((r) => r.isAvailable), [activeRooms]);
+  const inactiveRooms = useMemo(() => rooms.filter((r) => r.isActive === false), [rooms]);
+
+  const projectedRevenue = useMemo(
+    () => occupiedRooms.reduce((sum, r) => sum + (r.monthlyPrice ?? r.priceMonthlyClp ?? 0), 0),
+    [occupiedRooms],
+  );
+
+  const formattedRevenue = `$${projectedRevenue.toLocaleString('es-CL')} CLP`;
+
   const isInitialLoading = landlordContext.isLoading && !effectivePension;
 
   if (isInitialLoading || (isLoadingRooms && rooms.length === 0 && !errorMessage)) {
@@ -213,19 +226,6 @@ export function LandlordRoomsScreen({
       </div>
     );
   }
-
-  const totalRooms = rooms.length;
-  const activeRooms = useMemo(() => rooms.filter((r) => r.isActive !== false), [rooms]);
-  const occupiedRooms = useMemo(() => activeRooms.filter((r) => !r.isAvailable), [activeRooms]);
-  const availableRooms = useMemo(() => activeRooms.filter((r) => r.isAvailable), [activeRooms]);
-  const inactiveRooms = useMemo(() => rooms.filter((r) => r.isActive === false), [rooms]);
-
-  const projectedRevenue = occupiedRooms.reduce(
-    (sum, r) => sum + (r.monthlyPrice ?? r.priceMonthlyClp ?? 0),
-    0,
-  );
-
-  const formattedRevenue = `$${projectedRevenue.toLocaleString('es-CL')} CLP`;
 
   return (
     <div className={cn('space-y-5 w-full', className)}>
