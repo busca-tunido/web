@@ -100,12 +100,7 @@ export function RoomOccupancyBar({
 
       {totalRooms > 0 && (
         <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5 font-normal">
-          <span>
-            {isFullyOccupied
-              ? 'Todas las habitaciones ocupadas'
-              : `${availableRooms} disponible${availableRooms === 1 ? '' : 's'}`}
-          </span>
-          <span>{totalRooms} habitaciones en total</span>
+          <span>{totalRooms} en total</span>
         </div>
       )}
     </div>

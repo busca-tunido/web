@@ -22,13 +22,34 @@ export function isValidTab(value: string | null): value is NavTab {
   return value !== null && (VALID_TABS as readonly string[]).includes(value);
 }
 
+export function getTabFromPathname(pathname: string): NavTab | null {
+  const segment = pathname
+    .split('?')[0]
+    .replace(/^\/+|\/+$/g, '')
+    .toLowerCase();
+  if (!segment) {
+    return null;
+  }
+  if (isValidTab(segment)) {
+    return segment;
+  }
+  return null;
+}
+
+export function getPathnameForTab(tab: NavTab): string {
+  if (tab === 'explore') return '/';
+  return `/${tab}`;
+}
+
 export function parseNavigationParams(
   search: string,
   defaultTab: NavTab = 'explore',
+  pathname?: string,
 ): UrlNavigationState {
   const params = new URLSearchParams(search);
   const rawTab = params.get('tab');
-  const tab: NavTab = isValidTab(rawTab) ? rawTab : defaultTab;
+  const pathTab = pathname ? getTabFromPathname(pathname) : null;
+  const tab: NavTab = isValidTab(rawTab) ? rawTab : (pathTab ?? defaultTab);
   const city = params.get('city') || null;
   const uni = params.get('uni') || null;
   const pensionId = params.get('pension') || null;
