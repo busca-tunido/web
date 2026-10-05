@@ -90,18 +90,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!isApiSuccess(res)) {
       throw new Error(res.message);
     }
+    const raw = res.data as unknown as Record<string, unknown>;
+    const nested =
+      raw && typeof raw === 'object' && 'data' in raw && raw.data
+        ? (raw.data as Record<string, unknown>)
+        : raw;
+    const user = (nested?.user ?? raw?.user) as UserProfile | undefined;
+    const token =
+      (nested?.token as string) ??
+      (nested?.accessToken as string) ??
+      (raw?.token as string) ??
+      (raw?.accessToken as string) ??
+      '';
+
+    if (!user?.id) {
+      throw new Error('No se pudo obtener el perfil del usuario');
+    }
+
     const profile: UserProfile = {
-      id: res.data.user.id,
-      email: res.data.user.email,
-      firstName: res.data.user.firstName,
-      lastName: res.data.user.lastName,
-      role: res.data.user.role,
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
     };
     setUser(profile);
-    setToken(res.data.token);
+    setToken(token);
     try {
       localStorage.setItem('tunido_user', JSON.stringify(profile));
-      localStorage.setItem('tunido_token', res.data.token);
+      localStorage.setItem('tunido_token', token);
       sessionStorage.removeItem('tunido_guest');
     } catch {}
   };

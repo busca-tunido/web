@@ -56,8 +56,12 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
       if (typeof window !== 'undefined') {
         window.location.replace('/landlord');
       }
-    } catch {
-      setLandlordError('Error al autenticar. Verifica las credenciales.');
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : 'Error al autenticar. Verifica las credenciales.';
+      setLandlordError(message);
     } finally {
       setLandlordLoading(false);
     }
@@ -109,8 +113,12 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
       }
 
       setLandlordError(res.message || 'Error al registrar la cuenta de propietario');
-    } catch {
-      setLandlordError('Error de conexión con el servidor. Reintentar.');
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : 'Error de conexión con el servidor. Reintentar.';
+      setLandlordError(message);
     } finally {
       setLandlordLoading(false);
     }

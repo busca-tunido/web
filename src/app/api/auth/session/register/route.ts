@@ -24,13 +24,30 @@ export async function POST(request: Request): Promise<NextResponse> {
       body: JSON.stringify(body),
     });
 
-    const data = await apiRes.json();
+    const rawData = (await apiRes.json()) as Record<string, unknown>;
 
     if (!apiRes.ok) {
-      return NextResponse.json(data, { status: apiRes.status });
+      return NextResponse.json(rawData, { status: apiRes.status });
     }
 
-    const token = data.accessToken || data.token;
+    const payload = (
+      rawData && typeof rawData === 'object' && 'data' in rawData && rawData.data
+        ? rawData.data
+        : rawData
+    ) as {
+      token?: string;
+      accessToken?: string;
+      user?: {
+        id: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        role: 'STUDENT' | 'LANDLORD' | 'ADMIN' | 'MODERATOR';
+      };
+    };
+
+    const token = payload.accessToken || payload.token || '';
+    const user = payload.user;
     const cookieStore = await cookies();
 
     if (token) {
@@ -43,8 +60,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       });
     }
 
-    if (data.user?.role) {
-      cookieStore.set('tunido_role', data.user.role, {
+    if (user?.role) {
+      cookieStore.set('tunido_role', user.role, {
         httpOnly: false,
         secure: env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -58,7 +75,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       statusCode: 201,
       data: {
         token,
-        user: data.user,
+        accessToken: token,
+        user,
       },
     });
   } catch (error: unknown) {

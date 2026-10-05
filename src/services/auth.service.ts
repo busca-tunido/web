@@ -15,18 +15,30 @@ export async function registerUser(payload: RegisterDto): Promise<ApiResponse<Au
   });
 
   if (isApiSuccess(response)) {
-    const token = response.data.accessToken ?? response.data.token ?? '';
-    if (typeof window !== 'undefined') {
+    const raw = response.data as unknown as Record<string, unknown>;
+    const nested =
+      raw && typeof raw === 'object' && 'data' in raw && raw.data
+        ? (raw.data as Record<string, unknown>)
+        : raw;
+    const token =
+      (nested?.accessToken as string) ??
+      (nested?.token as string) ??
+      (raw?.accessToken as string) ??
+      (raw?.token as string) ??
+      '';
+    const user = (nested?.user ?? raw?.user) as AuthSessionDto['user'];
+
+    if (typeof window !== 'undefined' && user) {
       try {
         localStorage.setItem('tunido_token', token);
-        localStorage.setItem('tunido_user', JSON.stringify(response.data.user));
+        localStorage.setItem('tunido_user', JSON.stringify(user));
         sessionStorage.removeItem('tunido_guest');
       } catch {}
     }
     return createSuccess<AuthSessionDto>(
       {
         token,
-        user: response.data.user,
+        user,
       },
       response.statusCode,
     );
@@ -44,18 +56,30 @@ export async function loginWithCredentials(
   });
 
   if (isApiSuccess(response)) {
-    const token = response.data.accessToken ?? response.data.token ?? '';
-    if (typeof window !== 'undefined') {
+    const raw = response.data as unknown as Record<string, unknown>;
+    const nested =
+      raw && typeof raw === 'object' && 'data' in raw && raw.data
+        ? (raw.data as Record<string, unknown>)
+        : raw;
+    const token =
+      (nested?.accessToken as string) ??
+      (nested?.token as string) ??
+      (raw?.accessToken as string) ??
+      (raw?.token as string) ??
+      '';
+    const user = (nested?.user ?? raw?.user) as AuthSessionDto['user'];
+
+    if (typeof window !== 'undefined' && user) {
       try {
         localStorage.setItem('tunido_token', token);
-        localStorage.setItem('tunido_user', JSON.stringify(response.data.user));
+        localStorage.setItem('tunido_user', JSON.stringify(user));
         sessionStorage.removeItem('tunido_guest');
       } catch {}
     }
     return createSuccess<AuthSessionDto>(
       {
         token,
-        user: response.data.user,
+        user,
       },
       response.statusCode,
     );
