@@ -21,7 +21,7 @@ import {
 } from '@/lib/rating-tier';
 import { useTheme } from '@/lib/theme-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
-import type { UserCoordinates } from '@/lib/use-user-location';
+import { findClosestCity, type UserCoordinates } from '@/lib/use-user-location';
 
 type MapScreenProps = {
   pensions: PensionItem[];
@@ -334,6 +334,34 @@ export function MapScreen({
     return [active, ...others];
   }, [mapPensions, activePinId]);
 
+  const [exploredCenter, setExploredCenter] = useState<UserCoordinates>(() => {
+    if (selectedUniversity) {
+      return { latitude: selectedUniversity.latitude, longitude: selectedUniversity.longitude };
+    }
+    if (selectedPension) {
+      return { latitude: selectedPension.latitude, longitude: selectedPension.longitude };
+    }
+    if (selectedCity) {
+      const cityMatch = cities.find((c) => c.name.toLowerCase() === selectedCity.toLowerCase());
+      if (cityMatch) return { latitude: cityMatch.latitude, longitude: cityMatch.longitude };
+    }
+    if (userLocation) {
+      return userLocation;
+    }
+    return { latitude: -33.4489, longitude: -70.6693 };
+  });
+
+  const nearestCity = useMemo(() => {
+    if (cities.length > 0) {
+      const closest = findClosestCity(cities, exploredCenter);
+      if (closest) return closest.name;
+    }
+    if (displayedPensions.length > 0) {
+      return displayedPensions[0].city;
+    }
+    return selectedCity;
+  }, [cities, exploredCenter, displayedPensions, selectedCity]);
+
   const renderMarkers = useCallback(() => {
     const L = leafletModuleRef.current;
     const map = mapInstanceRef.current;
@@ -607,6 +635,8 @@ export function MapScreen({
       mapInstanceRef.current = map;
 
       map.on('moveend', () => {
+        const center = map.getCenter();
+        setExploredCenter({ latitude: center.lat, longitude: center.lng });
         handleMapMoveEndRef.current();
         debouncedRenderMarkersRef.current();
       });
@@ -697,6 +727,10 @@ export function MapScreen({
     const map = mapInstanceRef.current;
     if (!map || !selectedUniversity) return;
     setActivePinId(null);
+    setExploredCenter({
+      latitude: selectedUniversity.latitude,
+      longitude: selectedUniversity.longitude,
+    });
     map.flyTo([selectedUniversity.latitude, selectedUniversity.longitude], 15, {
       duration: 1.2,
     });
@@ -709,6 +743,7 @@ export function MapScreen({
     setActivePinId(null);
     const cityMatch = cities.find((c) => c.name.toLowerCase() === selectedCity.toLowerCase());
     if (cityMatch) {
+      setExploredCenter({ latitude: cityMatch.latitude, longitude: cityMatch.longitude });
       map.flyTo([cityMatch.latitude, cityMatch.longitude], 13, {
         duration: 1.2,
       });
@@ -803,9 +838,9 @@ export function MapScreen({
               Explora en el listado o interactúa con los marcadores
             </p>
           </div>
-          {selectedCity && (
+          {nearestCity && (
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 shrink-0">
-              {selectedCity}
+              {nearestCity}
             </span>
           )}
         </div>
