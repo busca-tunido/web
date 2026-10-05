@@ -34,7 +34,7 @@ export function StudentRegisterModal({
   prefilledEmail,
   onSuccess,
 }: StudentRegisterModalProps) {
-  const { login } = useAuth();
+  const { login, setSession } = useAuth();
   const { universities } = useUniversities();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -98,6 +98,9 @@ export function StudentRegisterModal({
       });
 
       if (isApiSuccess(response)) {
+        if (response.data?.user) {
+          setSession?.(response.data.user, response.data.token);
+        }
         try {
           await login(validation.data.email.trim(), validation.data.password);
         } catch {}

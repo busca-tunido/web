@@ -28,7 +28,7 @@ export type AuthScreenProps = {
 };
 
 export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenProps = {}) {
-  const { login } = useAuth();
+  const { login, setSession } = useAuth();
   const [landlordMode, setLandlordMode] = useState<'login' | 'register'>('login');
   const [landlordEmail, setLandlordEmail] = useState('propietario.demo@buscatunido.cl');
   const [landlordPassword, setLandlordPassword] = useState('Password123!');
@@ -43,14 +43,15 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
     e.preventDefault();
     setLandlordError('');
 
-    if (!landlordEmail.trim() || !landlordEmail.includes('@')) {
+    const cleanEmail = landlordEmail.trim().toLowerCase();
+    if (!cleanEmail?.includes('@')) {
       setLandlordError('Ingresa un correo válido');
       return;
     }
 
     setLandlordLoading(true);
     try {
-      await login(landlordEmail, landlordPassword);
+      await login(cleanEmail, landlordPassword);
       setIsDrawerOpen(false);
       onSuccess?.();
       if (typeof window !== 'undefined') {
@@ -76,7 +77,8 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
       return;
     }
 
-    if (!landlordEmail.trim() || !landlordEmail.includes('@')) {
+    const cleanEmail = landlordEmail.trim().toLowerCase();
+    if (!cleanEmail?.includes('@')) {
       setLandlordError('Ingresa un correo válido');
       return;
     }
@@ -91,14 +93,19 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
       const res = await authService.registerUser({
         firstName: landlordRegisterFirstName.trim(),
         lastName: landlordRegisterLastName.trim(),
-        email: landlordEmail.trim().toLowerCase(),
+        email: cleanEmail,
         password: landlordPassword,
         phone: landlordRegisterPhone.trim() || undefined,
         role: 'LANDLORD',
       });
 
       if (isApiSuccess(res)) {
-        await login(landlordEmail.trim().toLowerCase(), landlordPassword);
+        if (res.data?.user) {
+          setSession?.(res.data.user, res.data.token);
+        }
+        try {
+          await login(cleanEmail, landlordPassword);
+        } catch {}
         setIsDrawerOpen(false);
         onSuccess?.();
         if (typeof window !== 'undefined') {

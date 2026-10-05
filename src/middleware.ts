@@ -12,7 +12,12 @@ export function middleware(request: NextRequest): NextResponse {
     return NextResponse.redirect(url);
   }
 
-  if (pathname.startsWith('/landlord') && role !== 'LANDLORD' && role !== 'ADMIN') {
+  const normalizedRole = role?.toUpperCase();
+  if (
+    pathname.startsWith('/landlord') &&
+    normalizedRole !== 'LANDLORD' &&
+    normalizedRole !== 'ADMIN'
+  ) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 

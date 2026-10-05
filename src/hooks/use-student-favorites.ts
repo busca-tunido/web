@@ -17,8 +17,9 @@ export function useStudentFavorites(initialFavorites?: string[]) {
     try {
       const res = await favoritesService.fetchStudentFavorites();
       if (isApiSuccess(res)) {
-        setFavoritePensions(res.data);
-        const ids = res.data.map((p) => p.id);
+        const list = Array.isArray(res.data) ? res.data : [];
+        setFavoritePensions(list);
+        const ids = list.map((p) => p.id);
         setFavorites(ids);
         if (typeof window !== 'undefined') {
           try {

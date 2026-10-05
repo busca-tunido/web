@@ -24,7 +24,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       body: JSON.stringify(body),
     });
 
-    const rawData = (await apiRes.json()) as Record<string, unknown>;
+    const rawData = (await apiRes.json().catch(() => ({}))) as Record<string, unknown>;
 
     if (!apiRes.ok) {
       return NextResponse.json(rawData, { status: apiRes.status });
@@ -61,7 +61,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     if (user?.role) {
-      cookieStore.set('tunido_role', user.role, {
+      cookieStore.set('tunido_role', user.role.toUpperCase(), {
         httpOnly: false,
         secure: env.NODE_ENV === 'production',
         sameSite: 'lax',

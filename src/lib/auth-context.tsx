@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { authService } from '@/services/auth.service';
 import { favoritesService } from '@/services/favorites.service';
 import { isApiSuccess } from './api-response';
@@ -13,6 +13,7 @@ type AuthContextType = {
   isLoading: boolean;
   favorites: string[];
   login: (email: string, password?: string) => Promise<void>;
+  setSession: (profile: UserProfile, token: string) => void;
   logout: () => void;
   toggleFavorite: (pensionId: string) => void;
   isFavorite: (pensionId: string) => boolean;
@@ -26,31 +27,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const setSession = useCallback((profile: UserProfile, sessionToken: string) => {
+    setUser(profile);
+    setToken(sessionToken);
     try {
-      const savedUser = localStorage.getItem('tunido_user');
-      const savedToken = localStorage.getItem('tunido_token');
-      const savedFavs = localStorage.getItem('tunido_favs');
-      if (savedUser && savedToken) {
-        const parsed = JSON.parse(savedUser);
-        setUser(parsed);
-        setToken(savedToken);
-      }
-      if (savedFavs) {
-        const parsed = JSON.parse(savedFavs);
-        if (Array.isArray(parsed)) {
-          const cleaned = parsed.filter(
-            (id: unknown) => typeof id === 'string' && !id.startsWith('pen-'),
-          );
-          setFavorites(cleaned);
-          localStorage.setItem('tunido_favs', JSON.stringify(cleaned));
+      localStorage.setItem('tunido_user', JSON.stringify(profile));
+      localStorage.setItem('tunido_token', sessionToken);
+      sessionStorage.removeItem('tunido_guest');
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const initAuth = async () => {
+      try {
+        const savedUser = localStorage.getItem('tunido_user');
+        const savedToken = localStorage.getItem('tunido_token');
+        const savedFavs = localStorage.getItem('tunido_favs');
+
+        if (savedFavs) {
+          const parsed = JSON.parse(savedFavs);
+          if (Array.isArray(parsed)) {
+            const cleaned = parsed.filter(
+              (id: unknown) => typeof id === 'string' && !id.startsWith('pen-'),
+            );
+            if (isMounted) setFavorites(cleaned);
+            localStorage.setItem('tunido_favs', JSON.stringify(cleaned));
+          }
+        }
+
+        if (savedUser && savedToken) {
+          const parsed = JSON.parse(savedUser);
+          if (isMounted) {
+            setUser(parsed);
+            setToken(savedToken);
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        const meRes = await authService.getCurrentUserProfile();
+        if (isMounted && isApiSuccess(meRes) && meRes.data?.id) {
+          const raw = meRes.data as unknown as Record<string, unknown>;
+          const userProfile: UserProfile = {
+            id: String(raw.id),
+            email: String(raw.email),
+            firstName: String(raw.firstName ?? ''),
+            lastName: String(raw.lastName ?? ''),
+            role: (raw.role as UserProfile['role']) ?? 'STUDENT',
+          };
+          const resolvedToken = (raw.token as string) ?? savedToken ?? '';
+          setSession(userProfile, resolvedToken);
+        }
+      } catch {
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
         }
       }
-    } catch {
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    };
+
+    void initAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [setSession]);
 
   useEffect(() => {
     const handleFavsUpdate = (e: Event) => {
@@ -73,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     favoritesService
       .fetchStudentFavorites()
       .then((res) => {
-        if (isApiSuccess(res)) {
+        if (isApiSuccess(res) && Array.isArray(res.data)) {
           const ids = res.data.map((p) => p.id);
           setFavorites(ids);
           try {
@@ -114,13 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       lastName: user.lastName,
       role: user.role,
     };
-    setUser(profile);
-    setToken(token);
-    try {
-      localStorage.setItem('tunido_user', JSON.stringify(profile));
-      localStorage.setItem('tunido_token', token);
-      sessionStorage.removeItem('tunido_guest');
-    } catch {}
+    setSession(profile, token);
   };
 
   const logout = () => {
@@ -158,6 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         favorites,
         login,
+        setSession,
         logout,
         toggleFavorite,
         isFavorite,

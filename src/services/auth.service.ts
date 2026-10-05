@@ -88,10 +88,24 @@ export async function loginWithCredentials(
   return response;
 }
 
-export async function getCurrentUserProfile(): Promise<ApiResponse<UserProfileDto>> {
-  return apiFetch<UserProfileDto>('/api/auth/session/me', {
+export async function getCurrentUserProfile(): Promise<
+  ApiResponse<UserProfileDto & { token?: string }>
+> {
+  const response = await apiFetch<UserProfileDto & { token?: string }>('/api/auth/session/me', {
     method: 'GET',
   });
+
+  if (isApiSuccess(response) && typeof window !== 'undefined' && response.data?.id) {
+    try {
+      localStorage.setItem('tunido_user', JSON.stringify(response.data));
+      if (response.data.token) {
+        localStorage.setItem('tunido_token', response.data.token);
+      }
+      sessionStorage.removeItem('tunido_guest');
+    } catch {}
+  }
+
+  return response;
 }
 
 export async function checkEmailExists(
