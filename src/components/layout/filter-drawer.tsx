@@ -173,7 +173,11 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
             <h3 className="text-base font-semibold text-foreground">Tipo de Alojamiento</h3>
             <div className="flex flex-wrap gap-2.5">
               {[
-                { id: 'SINGLE' as const, label: 'Pieza Individual', icon: User },
+                {
+                  id: 'SINGLE' as const,
+                  label: 'Pieza Individual',
+                  icon: User,
+                },
                 {
                   id: 'SHARED' as const,
                   label: 'Pieza Compartida',

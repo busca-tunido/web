@@ -9,7 +9,7 @@ type RawAuthResponse = {
 };
 
 export async function registerUser(payload: RegisterDto): Promise<ApiResponse<AuthSessionDto>> {
-  const response = await apiFetch<RawAuthResponse>('/auth/register', {
+  const response = await apiFetch<RawAuthResponse>('/api/auth/session/register', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -20,10 +20,6 @@ export async function registerUser(payload: RegisterDto): Promise<ApiResponse<Au
       try {
         localStorage.setItem('tunido_token', token);
         localStorage.setItem('tunido_user', JSON.stringify(response.data.user));
-        if (typeof document !== 'undefined' && response.data.user?.role) {
-          document.cookie = `tunido_role=${response.data.user.role}; path=/; max-age=2592000; SameSite=Lax`;
-          document.cookie = `tunido_token=${token}; path=/; max-age=2592000; SameSite=Lax`;
-        }
         sessionStorage.removeItem('tunido_guest');
       } catch {}
     }
@@ -42,7 +38,7 @@ export async function registerUser(payload: RegisterDto): Promise<ApiResponse<Au
 export async function loginWithCredentials(
   payload: LoginDto,
 ): Promise<ApiResponse<AuthSessionDto>> {
-  const response = await apiFetch<RawAuthResponse>('/auth/login', {
+  const response = await apiFetch<RawAuthResponse>('/api/auth/session/login', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -53,10 +49,6 @@ export async function loginWithCredentials(
       try {
         localStorage.setItem('tunido_token', token);
         localStorage.setItem('tunido_user', JSON.stringify(response.data.user));
-        if (typeof document !== 'undefined' && response.data.user?.role) {
-          document.cookie = `tunido_role=${response.data.user.role}; path=/; max-age=2592000; SameSite=Lax`;
-          document.cookie = `tunido_token=${token}; path=/; max-age=2592000; SameSite=Lax`;
-        }
         sessionStorage.removeItem('tunido_guest');
       } catch {}
     }
@@ -73,7 +65,7 @@ export async function loginWithCredentials(
 }
 
 export async function getCurrentUserProfile(): Promise<ApiResponse<UserProfileDto>> {
-  return apiFetch<UserProfileDto>('/auth/me', {
+  return apiFetch<UserProfileDto>('/api/auth/session/me', {
     method: 'GET',
   });
 }
@@ -97,6 +89,7 @@ export function logoutSession(): void {
     localStorage.removeItem('tunido_token');
     localStorage.removeItem('tunido_user');
     sessionStorage.removeItem('tunido_guest');
+    fetch('/api/auth/session/logout', { method: 'POST' }).catch(() => {});
   } catch {}
 }
 

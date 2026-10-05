@@ -35,10 +35,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(savedUser);
         setUser(parsed);
         setToken(savedToken);
-        if (typeof document !== 'undefined' && parsed?.role) {
-          document.cookie = `tunido_role=${parsed.role}; path=/; max-age=2592000; SameSite=Lax`;
-          document.cookie = `tunido_token=${savedToken}; path=/; max-age=2592000; SameSite=Lax`;
-        }
       }
       if (savedFavs) {
         const parsed = JSON.parse(savedFavs);
@@ -107,10 +103,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('tunido_user', JSON.stringify(profile));
       localStorage.setItem('tunido_token', res.data.token);
       sessionStorage.removeItem('tunido_guest');
-      if (typeof document !== 'undefined') {
-        document.cookie = `tunido_role=${profile.role}; path=/; max-age=2592000; SameSite=Lax`;
-        document.cookie = `tunido_token=${res.data.token}; path=/; max-age=2592000; SameSite=Lax`;
-      }
     } catch {}
   };
 
@@ -119,14 +111,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     setFavorites([]);
     try {
-      localStorage.removeItem('tunido_user');
-      localStorage.removeItem('tunido_token');
+      authService.logoutSession();
       localStorage.removeItem('tunido_favs');
-      sessionStorage.removeItem('tunido_guest');
-      if (typeof document !== 'undefined') {
-        document.cookie = 'tunido_role=; path=/; max-age=0; SameSite=Lax';
-        document.cookie = 'tunido_token=; path=/; max-age=0; SameSite=Lax';
-      }
       window.dispatchEvent(new CustomEvent('tunido_favs_updated', { detail: [] }));
     } catch {}
   };
