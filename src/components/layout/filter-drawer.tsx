@@ -354,9 +354,9 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
                   id: 'medium' as const,
                   label: 'Media',
                   subtitle: '3.0 - 4.1',
-                  colorClass: 'text-[#d37b5d] dark:text-[#e59a7d]',
+                  colorClass: 'text-[#945d0c] dark:text-[#e09d32]',
                   activeBorderClass:
-                    'border-[#d37b5d] bg-[#d37b5d]/15 text-[#d37b5d] dark:text-[#e59a7d] ring-1 ring-[#d37b5d]',
+                    'border-[#a26510] bg-[#a26510]/15 text-[#945d0c] dark:text-[#e09d32] ring-1 ring-[#a26510]',
                 },
                 {
                   id: 'low' as const,

@@ -71,7 +71,7 @@ describe('Rating Tier & Semaforo Logic', () => {
       false,
     );
     expect(medSolid.isSolid).toBe(true);
-    expect(medSolid.bgHex).toBe('#d37b5d');
+    expect(medSolid.bgHex).toBe('#a26510');
     expect(medSolid.opacity).toBe(1);
 
     const medSoft = getMarkerThemeStyles(
@@ -80,7 +80,7 @@ describe('Rating Tier & Semaforo Logic', () => {
       false,
     );
     expect(medSoft.isSolid).toBe(true);
-    expect(medSoft.bgHex).toBe('#d37b5d');
+    expect(medSoft.bgHex).toBe('#a26510');
     expect(medSoft.opacity).toBe(0.65);
 
     const lowSolid = getMarkerThemeStyles(

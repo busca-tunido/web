@@ -111,11 +111,11 @@ export function getMarkerThemeStyles(
       containerClass: isSelected
         ? 'scale-110 shadow-xl ring-4'
         : 'shadow-md hover:scale-105 transition-transform',
-      dotColor: isDark ? '#1c1a17' : '#ffffff',
-      bgHex: isDark ? '#e59a7d' : '#d37b5d',
-      textHex: isDark ? '#1c1a17' : '#ffffff',
-      borderHex: isDark ? '#d37b5d' : '#b96245',
-      ringHex: 'rgba(211, 123, 93, 0.45)',
+      dotColor: isDark ? '#1a140a' : '#ffffff',
+      bgHex: isDark ? '#c8861e' : '#a26510',
+      textHex: isDark ? '#1a140a' : '#ffffff',
+      borderHex: isDark ? '#a26510' : '#855108',
+      ringHex: isDark ? 'rgba(200, 134, 30, 0.45)' : 'rgba(162, 101, 16, 0.45)',
       isSolid: true,
       opacity: targetOpacity,
     };

@@ -27,9 +27,9 @@ export const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
     label: 'Media',
     priority: 0,
     textColorClass:
-      'text-[#d37b5d] dark:text-[#e59a7d] border-border/70 bg-card/60 hover:border-[#d37b5d]/50 font-semibold',
+      'text-[#945d0c] dark:text-[#e09d32] border-border/70 bg-card/60 hover:border-[#a26510]/50 font-semibold',
     activeColorClass:
-      'border-[#d37b5d] bg-[#d37b5d]/15 text-[#d37b5d] dark:text-[#e59a7d] dark:border-[#e59a7d] font-bold ring-1 ring-[#d37b5d]/30',
+      'border-[#a26510] bg-[#a26510]/15 text-[#945d0c] dark:text-[#e09d32] dark:border-[#c8861e] font-bold ring-1 ring-[#a26510]/30',
     isActive: (f) => f.ratingTier === 'medium',
     toggle: (f) => ({ ...f, ratingTier: f.ratingTier === 'medium' ? undefined : 'medium' }),
   },
