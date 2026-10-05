@@ -169,6 +169,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
             onOpenFilterDrawer={openFilters}
             selectedCityName={filters.city}
             onClearCity={clearCity}
+            onResetFilters={handleResetAll}
           />
         )}
 

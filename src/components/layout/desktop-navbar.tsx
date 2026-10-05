@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { BrandLogo } from '@/components/ui/brand-logo';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
+import { getSortedFilterChips } from '@/lib/filter-chips';
 import type { NavTab, SearchFilters } from '@/lib/types';
 
 type DesktopNavbarProps = {
@@ -31,117 +32,6 @@ type DesktopNavbarProps = {
   onResetFilters?: () => void;
   onOpenAuthModal?: () => void;
 };
-
-type FilterChipItem = {
-  id: string;
-  label: string;
-  priority: number;
-  dotColor?: string;
-  activeColorClass?: string;
-  isActive: (filters: SearchFilters) => boolean;
-  toggle: (filters: SearchFilters) => SearchFilters;
-};
-
-const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
-  {
-    id: 'rating_high',
-    label: 'Alta',
-    priority: 0,
-    dotColor: '#2d5e49',
-    activeColorClass:
-      'border-[#2d5e49] bg-[#2d5e49]/15 text-[#204535] dark:text-[#aee0ca] dark:border-[#366e56] font-semibold',
-    isActive: (f) => f.ratingTier === 'high',
-    toggle: (f) => ({ ...f, ratingTier: f.ratingTier === 'high' ? undefined : 'high' }),
-  },
-  {
-    id: 'rating_medium',
-    label: 'Media',
-    priority: 0,
-    dotColor: '#d37b5d',
-    activeColorClass: 'border-primary bg-primary/15 text-primary font-semibold',
-    isActive: (f) => f.ratingTier === 'medium',
-    toggle: (f) => ({ ...f, ratingTier: f.ratingTier === 'medium' ? undefined : 'medium' }),
-  },
-  {
-    id: 'rating_low',
-    label: 'Baja',
-    priority: 0,
-    dotColor: '#78716c',
-    activeColorClass:
-      'border-stone-500 bg-stone-500/15 text-stone-800 dark:text-stone-300 dark:border-stone-400 font-semibold',
-    isActive: (f) => f.ratingTier === 'low',
-    toggle: (f) => ({ ...f, ratingTier: f.ratingTier === 'low' ? undefined : 'low' }),
-  },
-  {
-    id: 'bathroom',
-    label: 'Baño privado',
-    priority: 1,
-    isActive: (f) => Boolean(f.hasPrivateBathroom),
-    toggle: (f) => ({ ...f, hasPrivateBathroom: !f.hasPrivateBathroom }),
-  },
-  {
-    id: 'meals',
-    label: 'Comida incluida',
-    priority: 2,
-    isActive: (f) => Boolean(f.includesMeals),
-    toggle: (f) => ({ ...f, includesMeals: !f.includesMeals }),
-  },
-  {
-    id: 'single',
-    label: 'Pieza individual',
-    priority: 3,
-    isActive: (f) => f.roomType === 'SINGLE',
-    toggle: (f) => ({ ...f, roomType: f.roomType === 'SINGLE' ? undefined : 'SINGLE' }),
-  },
-  {
-    id: 'female_only',
-    label: 'Solo mujeres',
-    priority: 4,
-    isActive: (f) => f.genderPreference === 'FEMALE_ONLY',
-    toggle: (f) => ({
-      ...f,
-      genderPreference: f.genderPreference === 'FEMALE_ONLY' ? undefined : 'FEMALE_ONLY',
-    }),
-  },
-  {
-    id: 'max_price',
-    label: 'Hasta $250k',
-    priority: 5,
-    isActive: (f) => f.maxPriceClp === 250000,
-    toggle: (f) => ({ ...f, maxPriceClp: f.maxPriceClp === 250000 ? undefined : 250000 }),
-  },
-  {
-    id: 'top_rated',
-    label: 'Mejor evaluadas',
-    priority: 6,
-    isActive: (f) => f.sortBy === 'rating',
-    toggle: (f) => ({ ...f, sortBy: f.sortBy === 'rating' ? undefined : 'rating' }),
-  },
-  {
-    id: 'price_asc',
-    label: 'Menor precio',
-    priority: 7,
-    isActive: (f) => f.sortBy === 'price_asc',
-    toggle: (f) => ({ ...f, sortBy: f.sortBy === 'price_asc' ? undefined : 'price_asc' }),
-  },
-  {
-    id: 'shared',
-    label: 'Pieza compartida',
-    priority: 8,
-    isActive: (f) => f.roomType === 'SHARED',
-    toggle: (f) => ({ ...f, roomType: f.roomType === 'SHARED' ? undefined : 'SHARED' }),
-  },
-  {
-    id: 'mixed',
-    label: 'Residencia mixta',
-    priority: 9,
-    isActive: (f) => f.genderPreference === 'MIXED',
-    toggle: (f) => ({
-      ...f,
-      genderPreference: f.genderPreference === 'MIXED' ? undefined : 'MIXED',
-    }),
-  },
-];
 
 export function DesktopNavbar({
   activeTab,
@@ -169,15 +59,7 @@ export function DesktopNavbar({
     );
   }, [filters, selectedCityName]);
 
-  const sortedChips = useMemo(() => {
-    return [...RECOMMENDED_FILTER_CHIPS].sort((a, b) => {
-      const aActive = a.isActive(filters);
-      const bActive = b.isActive(filters);
-      if (aActive && !bActive) return -1;
-      if (!aActive && bActive) return 1;
-      return a.priority - b.priority;
-    });
-  }, [filters]);
+  const sortedChips = useMemo(() => getSortedFilterChips(filters), [filters]);
 
   const navLinks: Array<{ id: NavTab; label: string; icon: typeof Compass; badge?: number }> = [
     { id: 'explore', label: 'Explorar', icon: Compass },
@@ -407,20 +289,15 @@ export function DesktopNavbar({
                     damping: 32,
                     mass: 0.8,
                   }}
-                  className={`flex h-7.5 items-center gap-1.5 rounded-full border px-3 text-xs font-medium shrink-0 cursor-pointer select-none transition-colors ${
+                  className={`flex h-7.5 items-center justify-center rounded-full border px-3 text-xs shrink-0 cursor-pointer select-none transition-colors ${
                     active
                       ? (chip.activeColorClass ??
                         'border-border/90 bg-secondary/80 text-foreground font-medium')
-                      : 'border-border/60 bg-transparent text-muted-foreground hover:text-foreground hover:border-border hover:bg-card/50'
+                      : (chip.textColorClass ??
+                        'border-border/60 bg-transparent text-muted-foreground hover:text-foreground hover:border-border hover:bg-card/50 font-medium')
                   }`}
                   aria-pressed={active}
                 >
-                  {chip.dotColor && (
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: chip.dotColor }}
-                    />
-                  )}
                   <span>{chip.label}</span>
                 </motion.button>
               );

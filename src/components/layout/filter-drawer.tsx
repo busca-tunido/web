@@ -346,19 +346,25 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
                   id: 'high' as const,
                   label: 'Alta',
                   subtitle: '≥ 4.2',
-                  dotColor: '#2d5e49',
+                  colorClass: 'text-[#2d5e49] dark:text-[#599b7d]',
+                  activeBorderClass:
+                    'border-[#2d5e49] bg-[#2d5e49]/15 text-[#2d5e49] dark:text-[#599b7d] ring-1 ring-[#2d5e49]',
                 },
                 {
                   id: 'medium' as const,
                   label: 'Media',
                   subtitle: '3.0 - 4.1',
-                  dotColor: '#d37b5d',
+                  colorClass: 'text-[#d37b5d] dark:text-[#e59a7d]',
+                  activeBorderClass:
+                    'border-[#d37b5d] bg-[#d37b5d]/15 text-[#d37b5d] dark:text-[#e59a7d] ring-1 ring-[#d37b5d]',
                 },
                 {
                   id: 'low' as const,
                   label: 'Baja',
                   subtitle: '< 3.0',
-                  dotColor: '#78716c',
+                  colorClass: 'text-[#78716c] dark:text-[#a8a29e]',
+                  activeBorderClass:
+                    'border-[#78716c] bg-[#78716c]/15 text-[#78716c] dark:text-[#a8a29e] ring-1 ring-[#78716c]',
                 },
               ].map((opt) => {
                 const isSelected = localFilters.ratingTier === opt.id;
@@ -374,17 +380,11 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
                     }
                     className={`flex flex-col items-center justify-center p-3 min-h-[48px] rounded-xl border text-xs font-semibold transition active:scale-95 ${
                       isSelected
-                        ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary'
-                        : 'border-border bg-card text-foreground hover:bg-muted hover:border-muted-foreground/30'
+                        ? opt.activeBorderClass
+                        : `border-border bg-card ${opt.colorClass} hover:bg-muted hover:border-muted-foreground/30`
                     }`}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0"
-                        style={{ backgroundColor: opt.dotColor }}
-                      />
-                      <span>{opt.label}</span>
-                    </div>
+                    <span className="font-bold text-sm">{opt.label}</span>
                     <span className="text-[10px] text-muted-foreground mt-0.5">{opt.subtitle}</span>
                   </button>
                 );
