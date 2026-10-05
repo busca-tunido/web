@@ -82,6 +82,76 @@ export function filterPensionsByRatingTier(
   });
 }
 
+export function getDominantRatingClassification(pensions: PensionItem[]): RatingClassification {
+  if (!pensions || pensions.length === 0) {
+    return {
+      tier: 'unreviewed',
+      reliability: 'unreviewed',
+      label: 'Sin reseñas',
+      ratingAverage: 0,
+      reviewsCount: 0,
+    };
+  }
+
+  const classifications = pensions.map((p) =>
+    classifyPensionRating(p.ratingAverage, p.reviewsCount),
+  );
+
+  const counts: Record<RatingTier | 'unreviewed', number> = {
+    high: 0,
+    medium: 0,
+    low: 0,
+    unreviewed: 0,
+  };
+
+  for (const c of classifications) {
+    counts[c.tier] += 1;
+  }
+
+  const tierOrder: (RatingTier | 'unreviewed')[] = ['high', 'medium', 'low', 'unreviewed'];
+
+  let dominantTier: RatingTier | 'unreviewed' = 'unreviewed';
+  let maxCount = 0;
+
+  for (const tier of tierOrder) {
+    if (counts[tier] > maxCount) {
+      maxCount = counts[tier];
+      dominantTier = tier;
+    }
+  }
+
+  const dominantPensions = classifications.filter((c) => c.tier === dominantTier);
+
+  if (dominantTier === 'unreviewed') {
+    return {
+      tier: 'unreviewed',
+      reliability: 'unreviewed',
+      label: 'Sin reseñas',
+      ratingAverage: 0,
+      reviewsCount: 0,
+    };
+  }
+
+  const highReliabilityCount = dominantPensions.filter((c) => c.reliability === 'high').length;
+
+  const reliability: ReliabilityTier =
+    highReliabilityCount >= dominantPensions.length / 2 ? 'high' : 'low';
+
+  const sumRating = dominantPensions.reduce((acc, c) => acc + c.ratingAverage, 0);
+  const avgRating = dominantPensions.length > 0 ? sumRating / dominantPensions.length : 0;
+  const totalReviews = dominantPensions.reduce((acc, c) => acc + c.reviewsCount, 0);
+
+  const label = dominantTier === 'high' ? 'Alta' : dominantTier === 'medium' ? 'Media' : 'Baja';
+
+  return {
+    tier: dominantTier,
+    reliability,
+    label,
+    ratingAverage: Math.round(avgRating * 10) / 10,
+    reviewsCount: totalReviews,
+  };
+}
+
 export function getMarkerThemeStyles(
   classification: RatingClassification,
   isDark: boolean,

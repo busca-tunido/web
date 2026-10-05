@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   classifyPensionRating,
   filterPensionsByRatingTier,
+  getDominantRatingClassification,
   getMarkerThemeStyles,
 } from '@/lib/rating-tier';
 import type { PensionItem } from '@/lib/types';
@@ -122,5 +123,59 @@ describe('Rating Tier & Semaforo Logic', () => {
 
     const allTiers = filterPensionsByRatingTier(mockPensions, undefined);
     expect(allTiers.length).toBe(5);
+  });
+
+  it('determines the dominant rating classification for cluster groupings', () => {
+    const emptyResult = getDominantRatingClassification([]);
+    expect(emptyResult.tier).toBe('unreviewed');
+
+    const highDominant = [
+      { id: '1', ratingAverage: 4.8, reviewsCount: 10 } as PensionItem,
+      { id: '2', ratingAverage: 4.6, reviewsCount: 6 } as PensionItem,
+      { id: '3', ratingAverage: 3.5, reviewsCount: 5 } as PensionItem,
+    ];
+    const highResult = getDominantRatingClassification(highDominant);
+    expect(highResult.tier).toBe('high');
+    expect(highResult.reliability).toBe('high');
+
+    const highLowReliability = [
+      { id: '1', ratingAverage: 4.8, reviewsCount: 2 } as PensionItem,
+      { id: '2', ratingAverage: 4.6, reviewsCount: 1 } as PensionItem,
+      { id: '3', ratingAverage: 3.5, reviewsCount: 8 } as PensionItem,
+    ];
+    const highSoftResult = getDominantRatingClassification(highLowReliability);
+    expect(highSoftResult.tier).toBe('high');
+    expect(highSoftResult.reliability).toBe('low');
+
+    const mediumDominant = [
+      { id: '1', ratingAverage: 3.8, reviewsCount: 5 } as PensionItem,
+      { id: '2', ratingAverage: 3.6, reviewsCount: 7 } as PensionItem,
+      { id: '3', ratingAverage: 4.9, reviewsCount: 15 } as PensionItem,
+    ];
+    const mediumResult = getDominantRatingClassification(mediumDominant);
+    expect(mediumResult.tier).toBe('medium');
+
+    const lowDominant = [
+      { id: '1', ratingAverage: 2.1, reviewsCount: 5 } as PensionItem,
+      { id: '2', ratingAverage: 2.4, reviewsCount: 8 } as PensionItem,
+      { id: '3', ratingAverage: 4.5, reviewsCount: 6 } as PensionItem,
+    ];
+    const lowResult = getDominantRatingClassification(lowDominant);
+    expect(lowResult.tier).toBe('low');
+
+    const unreviewedDominant = [
+      { id: '1', ratingAverage: 0, reviewsCount: 0 } as PensionItem,
+      { id: '2', ratingAverage: 0, reviewsCount: 0 } as PensionItem,
+      { id: '3', ratingAverage: 4.5, reviewsCount: 6 } as PensionItem,
+    ];
+    const unreviewedResult = getDominantRatingClassification(unreviewedDominant);
+    expect(unreviewedResult.tier).toBe('unreviewed');
+
+    const tieHighMedium = [
+      { id: '1', ratingAverage: 4.5, reviewsCount: 6 } as PensionItem,
+      { id: '2', ratingAverage: 3.5, reviewsCount: 6 } as PensionItem,
+    ];
+    const tieResult = getDominantRatingClassification(tieHighMedium);
+    expect(tieResult.tier).toBe('high');
   });
 });

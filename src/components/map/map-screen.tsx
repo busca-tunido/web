@@ -14,7 +14,11 @@ import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton
 import { env } from '@/env';
 import { useMapViewportPensions } from '@/hooks/use-map-viewport-pensions';
 import { useAuth } from '@/lib/auth-context';
-import { classifyPensionRating, getMarkerThemeStyles } from '@/lib/rating-tier';
+import {
+  classifyPensionRating,
+  getDominantRatingClassification,
+  getMarkerThemeStyles,
+} from '@/lib/rating-tier';
 import { useTheme } from '@/lib/theme-context';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
 import type { UserCoordinates } from '@/lib/use-user-location';
@@ -197,17 +201,21 @@ function createMarkerIcon(
   }
 
   const count = cluster.pensions.length;
-  const html = cluster.isSelected
-    ? `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="group flex items-center justify-center">
-         <div class="flex items-center justify-center min-w-[38px] h-9 px-2.5 rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-xl border-2 border-primary-foreground ring-4 ring-primary/40 scale-110 transition-transform whitespace-nowrap">
-           ${count}
-         </div>
-       </div>`
-    : `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="group flex items-center justify-center">
-         <div class="flex items-center justify-center min-w-[34px] h-8 px-2.5 rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-lg border-2 border-white ring-2 ring-primary/20 hover:scale-110 hover:ring-4 transition-transform whitespace-nowrap">
-           ${count}
-         </div>
-       </div>`;
+  const classification = getDominantRatingClassification(cluster.pensions);
+  const styles = getMarkerThemeStyles(classification, theme === 'dark', cluster.isSelected);
+  const opacityStyle = styles.opacity < 1 ? `opacity: ${styles.opacity};` : '';
+
+  const selectedRingStyle = cluster.isSelected
+    ? `box-shadow: 0 0 0 4px ${styles.ringHex}, 0 10px 20px -3px rgba(0, 0, 0, 0.25); transform: scale(1.1);`
+    : `box-shadow: 0 0 0 2px ${styles.ringHex}, 0 4px 6px -1px rgba(0, 0, 0, 0.15);`;
+
+  const sizeClass = cluster.isSelected ? 'min-w-[38px] h-9 px-2.5' : 'min-w-[34px] h-8 px-2.5';
+
+  const html = `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="group flex items-center justify-center">
+    <div style="background-color: ${styles.bgHex}; color: ${styles.textHex}; border: 2px solid ${styles.borderHex}; ${selectedRingStyle} ${opacityStyle}" class="flex items-center justify-center ${sizeClass} rounded-full font-bold text-xs transition-all whitespace-nowrap hover:scale-110 hover:opacity-100">
+      ${count}
+    </div>
+  </div>`;
 
   return L.divIcon({
     className: 'custom-div-icon',
@@ -350,7 +358,10 @@ export function MapScreen({
             : cluster.isSingle
               ? 'badge'
               : 'cluster';
-      const cacheKey = `${cluster.id}:${cluster.isSelected ? '1' : '0'}:${modeKey}:${currentTheme}`;
+      const tierKey = cluster.isSingle
+        ? (cluster.pensions[0]?.ratingAverage ?? '0')
+        : getDominantRatingClassification(cluster.pensions).tier;
+      const cacheKey = `${cluster.id}:${cluster.isSelected ? '1' : '0'}:${modeKey}:${currentTheme}:${tierKey}`;
 
       const existingMarker = currentMarkersMap.get(cacheKey);
       if (existingMarker) {
