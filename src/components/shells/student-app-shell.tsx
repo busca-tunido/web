@@ -72,6 +72,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
   const {
     cities,
     universities,
+    isLoadingMetadata,
     pensions,
     total: totalPensions,
     hasMore,
@@ -193,6 +194,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
                 <ExploreScreen
                   cities={cities}
                   universities={universities}
+                  isLoadingMetadata={isLoadingMetadata}
                   featuredPensions={pensions}
                   selectedCity={null}
                   onSelectCity={(city) => {

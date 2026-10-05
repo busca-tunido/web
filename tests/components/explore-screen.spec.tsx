@@ -1,0 +1,101 @@
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { ExploreScreen } from '@/components/explore/explore-screen';
+import type { CityInfo, UniversityInfo } from '@/lib/types';
+
+vi.mock('@/components/pensions/infinite-pension-list', () => ({
+  InfinitePensionList: () => <div data-testid="mock-pension-list" />,
+}));
+
+vi.mock('@/lib/auth-context', () => ({
+  useAuth: () => ({
+    isLoading: false,
+    user: null,
+    token: null,
+    isAuthenticated: false,
+    favorites: [],
+    login: vi.fn(),
+    logout: vi.fn(),
+    toggleFavorite: vi.fn(),
+    isFavorite: () => false,
+  }),
+}));
+
+describe('ExploreScreen Skeletons', () => {
+  const defaultProps = {
+    cities: [] as CityInfo[],
+    universities: [] as UniversityInfo[],
+    featuredPensions: [],
+    selectedCity: null,
+    onSelectCity: vi.fn(),
+    onSelectUniversity: vi.fn(),
+    onSelectPension: vi.fn(),
+    onNavigateToMap: vi.fn(),
+  };
+
+  it('renders city and university skeletons when isLoadingMetadata is true and data is empty', () => {
+    render(<ExploreScreen {...defaultProps} isLoadingMetadata={true} />);
+
+    const citySkeletons = screen.getAllByTestId('city-card-skeleton');
+    const uniSkeletons = screen.getAllByTestId('university-card-skeleton');
+
+    expect(citySkeletons).toHaveLength(6);
+    expect(uniSkeletons).toHaveLength(5);
+  });
+
+  it('renders city skeletons when isLoadingCities is explicitly true', () => {
+    render(<ExploreScreen {...defaultProps} isLoadingCities={true} />);
+
+    const citySkeletons = screen.getAllByTestId('city-card-skeleton');
+    expect(citySkeletons).toHaveLength(6);
+    expect(screen.queryByTestId('university-card-skeleton')).toBeNull();
+  });
+
+  it('renders university skeletons when isLoadingUniversities is explicitly true', () => {
+    render(<ExploreScreen {...defaultProps} isLoadingUniversities={true} />);
+
+    const uniSkeletons = screen.getAllByTestId('university-card-skeleton');
+    expect(uniSkeletons).toHaveLength(5);
+    expect(screen.queryByTestId('city-card-skeleton')).toBeNull();
+  });
+
+  it('renders real cards when data is available and not loading', () => {
+    const mockCities: CityInfo[] = [
+      {
+        id: 'c1',
+        name: 'Santiago',
+        slug: 'santiago',
+        pensionsCount: 42,
+        foreignStudentRate: 0.8,
+        latitude: -33.4489,
+        longitude: -70.6693,
+      },
+    ];
+
+    const mockUniversities: UniversityInfo[] = [
+      {
+        id: 'u1',
+        name: 'Universidad de Chile',
+        acronym: 'UCH',
+        city: 'Santiago',
+        foreignStudentRate: 0.9,
+        latitude: -33.444,
+        longitude: -70.655,
+      },
+    ];
+
+    render(
+      <ExploreScreen
+        {...defaultProps}
+        cities={mockCities}
+        universities={mockUniversities}
+        isLoadingMetadata={false}
+      />,
+    );
+
+    expect(screen.queryByTestId('city-card-skeleton')).toBeNull();
+    expect(screen.queryByTestId('university-card-skeleton')).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Santiago' })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Universidad de Chile' })).toBeDefined();
+  });
+});

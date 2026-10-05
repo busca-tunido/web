@@ -1,4 +1,6 @@
+import { CityCardSkeleton } from './city-card-skeleton';
 import { PensionCardSkeleton } from './pension-card-skeleton';
+import { UniversityCardSkeleton } from './university-card-skeleton';
 
 type ExploreSkeletonProps = {
   className?: string;
@@ -8,37 +10,31 @@ export function ExploreSkeleton({ className = '' }: ExploreSkeletonProps) {
   return (
     <div className={`flex flex-col gap-6 pb-28 pt-2 ${className}`} aria-hidden="true">
       <section>
-        <div className="flex items-center justify-between px-5 mb-3">
+        <div className="flex items-center justify-between px-5 md:px-0 mb-3">
           <div className="flex flex-col gap-1">
             <div className="h-5 w-24 rounded-md bg-muted animate-pulse" />
             <div className="h-3 w-44 rounded-md bg-muted/70 animate-pulse" />
           </div>
           <div className="h-3.5 w-12 rounded-md bg-muted/60 animate-pulse" />
         </div>
-        <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scrollbar-none">
-          {[1, 2, 3, 4].map((id) => (
-            <div
-              key={`city-skel-${id}`}
-              className="h-48 w-36 shrink-0 rounded-2xl bg-muted animate-pulse border border-border/40"
-            />
+        <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x md:grid md:grid-cols-6 md:px-0 md:gap-4 md:overflow-visible">
+          {[1, 2, 3, 4, 5, 6].map((id) => (
+            <CityCardSkeleton key={`city-skel-${id}`} />
           ))}
         </div>
       </section>
 
       <section>
-        <div className="flex items-center justify-between px-5 mb-3">
+        <div className="flex items-center justify-between px-5 md:px-0 mb-3">
           <div className="flex flex-col gap-1">
             <div className="h-5 w-32 rounded-md bg-muted animate-pulse" />
             <div className="h-3 w-48 rounded-md bg-muted/70 animate-pulse" />
           </div>
           <div className="h-3.5 w-14 rounded-md bg-muted/60 animate-pulse" />
         </div>
-        <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scrollbar-none">
-          {[1, 2, 3, 4].map((id) => (
-            <div
-              key={`uni-skel-${id}`}
-              className="h-48 w-44 shrink-0 rounded-2xl bg-muted animate-pulse border border-border/40"
-            />
+        <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x md:grid md:grid-cols-5 md:px-0 md:gap-4 md:overflow-visible">
+          {[1, 2, 3, 4, 5].map((id) => (
+            <UniversityCardSkeleton key={`uni-skel-${id}`} />
           ))}
         </div>
       </section>

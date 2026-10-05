@@ -8,8 +8,10 @@ import { NetworkErrorBanner } from '@/components/common/network-error-state';
 import { InfinitePensionList } from '@/components/pensions/infinite-pension-list';
 import { NearbyCitiesBar } from '@/components/pensions/nearby-cities-bar';
 import { Badge } from '@/components/ui/badge';
+import { CityCardSkeleton } from '@/components/ui/skeletons/city-card-skeleton';
 import { ExploreSkeleton } from '@/components/ui/skeletons/explore-skeleton';
 import { PensionCardSkeleton } from '@/components/ui/skeletons/pension-card-skeleton';
+import { UniversityCardSkeleton } from '@/components/ui/skeletons/university-card-skeleton';
 import { getCityImageUrl, getUniversityImageUrl } from '@/lib/location-images';
 import type { CityInfo, NearbyCityCount, PensionItem, UniversityInfo } from '@/lib/types';
 
@@ -25,6 +27,9 @@ type ExploreScreenProps = {
   hasMore?: boolean;
   isLoadingMore?: boolean;
   isLoadingPensions?: boolean;
+  isLoadingMetadata?: boolean;
+  isLoadingCities?: boolean;
+  isLoadingUniversities?: boolean;
   onLoadMorePensions?: () => void;
   nearbyCityCounts?: NearbyCityCount[];
   totalPensions?: number;
@@ -46,6 +51,9 @@ export function ExploreScreen({
   hasMore = false,
   isLoadingMore = false,
   isLoadingPensions = false,
+  isLoadingMetadata = false,
+  isLoadingCities,
+  isLoadingUniversities,
   onLoadMorePensions = () => {},
   nearbyCityCounts = [],
   totalPensions,
@@ -55,6 +63,10 @@ export function ExploreScreen({
   isRetrying = false,
 }: ExploreScreenProps) {
   const [isExpandedUniversities, setIsExpandedUniversities] = useState(false);
+
+  const isCitiesLoading = (isLoadingCities ?? isLoadingMetadata) && cities.length === 0;
+  const isUniversitiesLoading =
+    (isLoadingUniversities ?? isLoadingMetadata) && universities.length === 0;
 
   const sortedCities = [...cities].sort((a, b) => {
     if (a.isCurrentCity) return -1;
@@ -94,55 +106,59 @@ export function ExploreScreen({
         </div>
 
         <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x md:grid md:grid-cols-6 md:px-0 md:gap-4 md:overflow-visible">
-          {sortedCities.map((city, index) => {
-            const isSelected = selectedCity?.toLowerCase() === city.name.toLowerCase();
-            const cityImg =
-              city.imageUrl && city.imageUrl.trim().length > 0
-                ? city.imageUrl
-                : getCityImageUrl(city.name);
+          {isCitiesLoading
+            ? Array.from({ length: 6 }).map((_, index) => (
+                <CityCardSkeleton key={`city-skeleton-${index}`} />
+              ))
+            : sortedCities.map((city, index) => {
+                const isSelected = selectedCity?.toLowerCase() === city.name.toLowerCase();
+                const cityImg =
+                  city.imageUrl && city.imageUrl.trim().length > 0
+                    ? city.imageUrl
+                    : getCityImageUrl(city.name);
 
-            return (
-              <motion.button
-                type="button"
-                key={city.id}
-                whileTap={{ scale: 0.94 }}
-                onClick={() => onSelectCity(isSelected ? null : city.name)}
-                className={`group relative h-48 w-36 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border text-left transition-colors cursor-pointer shadow-sm ${
-                  isSelected
-                    ? 'border-primary ring-2 ring-primary/30'
-                    : 'border-border/60 hover:border-primary/50'
-                }`}
-              >
-                {cityImg && (
-                  <Image
-                    src={cityImg}
-                    alt={city.name}
-                    fill
-                    unoptimized
-                    loading={index < 3 ? 'eager' : 'lazy'}
-                    sizes="144px"
-                    className="object-cover transition duration-300 group-hover:scale-105"
-                  />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                return (
+                  <motion.button
+                    type="button"
+                    key={city.id}
+                    whileTap={{ scale: 0.94 }}
+                    onClick={() => onSelectCity(isSelected ? null : city.name)}
+                    className={`group relative h-48 w-36 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border text-left transition-colors cursor-pointer shadow-sm ${
+                      isSelected
+                        ? 'border-primary ring-2 ring-primary/30'
+                        : 'border-border/60 hover:border-primary/50'
+                    }`}
+                  >
+                    {cityImg && (
+                      <Image
+                        src={cityImg}
+                        alt={city.name}
+                        fill
+                        unoptimized
+                        loading={index < 3 ? 'eager' : 'lazy'}
+                        sizes="144px"
+                        className="object-cover transition duration-300 group-hover:scale-105"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-                {city.isCurrentCity && (
-                  <div className="absolute top-2.5 left-2.5">
-                    <Badge className="bg-primary text-primary-foreground font-bold text-[9px] px-2 py-0.5 shadow">
-                      Actual
-                    </Badge>
-                  </div>
-                )}
+                    {city.isCurrentCity && (
+                      <div className="absolute top-2.5 left-2.5">
+                        <Badge className="bg-primary text-primary-foreground font-bold text-[9px] px-2 py-0.5 shadow">
+                          Actual
+                        </Badge>
+                      </div>
+                    )}
 
-                <div className="absolute bottom-3 left-3 right-3">
-                  <h3 className="text-sm font-bold text-white leading-tight">{city.name}</h3>
-                  <span className="block text-[11px] text-zinc-200 mt-1">
-                    {city.pensionsCount} pensiones
-                  </span>
-                </div>
-              </motion.button>
-            );
-          })}
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <h3 className="text-sm font-bold text-white leading-tight">{city.name}</h3>
+                      <span className="block text-[11px] text-zinc-200 mt-1">
+                        {city.pensionsCount} pensiones
+                      </span>
+                    </div>
+                  </motion.button>
+                );
+              })}
         </div>
       </section>
 
@@ -166,61 +182,65 @@ export function ExploreScreen({
         </div>
 
         <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x md:grid md:grid-cols-5 md:px-0 md:gap-4 md:overflow-visible">
-          {sortedUniversities.map((uni, index) => {
-            const uniImg =
-              uni.imageUrl && uni.imageUrl.trim().length > 0
-                ? uni.imageUrl
-                : getUniversityImageUrl(uni.name, uni.acronym);
+          {isUniversitiesLoading
+            ? Array.from({ length: 5 }).map((_, index) => (
+                <UniversityCardSkeleton key={`uni-skeleton-${index}`} />
+              ))
+            : sortedUniversities.map((uni, index) => {
+                const uniImg =
+                  uni.imageUrl && uni.imageUrl.trim().length > 0
+                    ? uni.imageUrl
+                    : getUniversityImageUrl(uni.name, uni.acronym);
 
-            const isDesktopHidden = !isExpandedUniversities && index >= 5;
+                const isDesktopHidden = !isExpandedUniversities && index >= 5;
 
-            return (
-              <motion.button
-                type="button"
-                key={uni.id}
-                whileTap={{ scale: 0.94 }}
-                onClick={() => onSelectUniversity(uni)}
-                className={`group relative h-48 w-44 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-colors hover:border-primary/50 cursor-pointer shadow-sm ${
-                  isDesktopHidden ? 'md:hidden' : ''
-                }`}
-              >
-                {uniImg && (
-                  <Image
-                    src={uniImg}
-                    alt={uni.name}
-                    fill
-                    unoptimized
-                    loading={index < 3 ? 'eager' : 'lazy'}
-                    sizes="176px"
-                    className="object-cover opacity-80 transition duration-300 group-hover:scale-105"
-                  />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
-
-                <div className="absolute top-2.5 left-2.5">
-                  <Badge
-                    variant="outline"
-                    className="border-white/20 bg-black/60 text-white font-bold text-[10px] backdrop-blur-sm"
+                return (
+                  <motion.button
+                    type="button"
+                    key={uni.id}
+                    whileTap={{ scale: 0.94 }}
+                    onClick={() => onSelectUniversity(uni)}
+                    className={`group relative h-48 w-44 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-colors hover:border-primary/50 cursor-pointer shadow-sm ${
+                      isDesktopHidden ? 'md:hidden' : ''
+                    }`}
                   >
-                    {uni.acronym}
-                  </Badge>
-                </div>
+                    {uniImg && (
+                      <Image
+                        src={uniImg}
+                        alt={uni.name}
+                        fill
+                        unoptimized
+                        loading={index < 3 ? 'eager' : 'lazy'}
+                        sizes="176px"
+                        className="object-cover opacity-80 transition duration-300 group-hover:scale-105"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
 
-                <div className="absolute bottom-3 left-3 right-3">
-                  <h3 className="text-sm font-bold text-white leading-tight line-clamp-2">
-                    {uni.name}
-                  </h3>
-                  <div className="flex items-center gap-1 text-[11px] text-zinc-300 mt-1">
-                    <MapPin className="h-3 w-3" />
-                    <span>{uni.city}</span>
-                  </div>
-                </div>
-              </motion.button>
-            );
-          })}
+                    <div className="absolute top-2.5 left-2.5">
+                      <Badge
+                        variant="outline"
+                        className="border-white/20 bg-black/60 text-white font-bold text-[10px] backdrop-blur-sm"
+                      >
+                        {uni.acronym}
+                      </Badge>
+                    </div>
+
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <h3 className="text-sm font-bold text-white leading-tight line-clamp-2">
+                        {uni.name}
+                      </h3>
+                      <div className="flex items-center gap-1 text-[11px] text-zinc-300 mt-1">
+                        <MapPin className="h-3 w-3" />
+                        <span>{uni.city}</span>
+                      </div>
+                    </div>
+                  </motion.button>
+                );
+              })}
         </div>
 
-        {sortedUniversities.length > 5 && (
+        {!isUniversitiesLoading && sortedUniversities.length > 5 && (
           <div className="hidden md:flex justify-center mt-3">
             <button
               type="button"
