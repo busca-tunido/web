@@ -62,6 +62,8 @@ Every frontend UI enhancement, page, or bug fix must strictly adhere to the foll
 
 - `pnpm run check`: Unified command combining formatting, import organization, and safe lint autofixes (`biome check --write .`). Agents must run this after modifying code.
 - `pnpm run review`: Read-only verification check (`biome check .`) that returns an error exit code if any unresolved formatting or lint errors exist. Mandatory for validation.
+- `pnpm exec tsc --noEmit`: Fast incremental typecheck leveraging persistent `.tsbuildinfo` without full bundling.
+- `pnpm build`: Full Next.js production build (`next build`). Reserved for production asset compilation and deployment.
 
 > [!IMPORTANT]
 > **Always Use Global `pnpm run <script>` (Do Not Target Individual Files)**:
@@ -130,7 +132,7 @@ tasks/
    - Follows the integration checklist:
      1. Merge or rebase worker branches/worktrees into the base branch.
      2. Update shared integration hubs (e.g., register routes in shared navigation, integrate providers in `layout.tsx`).
-     3. Run global repository verification (`pnpm run check && pnpm run review` and `pnpm build`).
+     3. Run global repository verification (`pnpm run check && pnpm run review`, `pnpm exec tsc --noEmit`, and `pnpm exec vitest run`).
      4. Resolve any interoperability or type conflicts as the sole authorized agent.
      5. Teardown temporary worktrees (`git worktree remove`).
 
@@ -175,7 +177,8 @@ tasks/
 ## Verification
 
 - Code Quality (Biome): `pnpm run check && pnpm run review`
-- Build & Typecheck: `pnpm build`
+- Typecheck: `pnpm exec tsc --noEmit`
+- Tests: `pnpm exec vitest run`
 ```
 
 <!-- BEGIN:nextjs-agent-rules -->
