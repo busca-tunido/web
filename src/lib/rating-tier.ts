@@ -19,6 +19,7 @@ export type MarkerThemeStyle = {
   borderHex: string;
   ringHex: string;
   isSolid: boolean;
+  opacity: number;
 };
 
 export function classifyPensionRating(
@@ -87,85 +88,51 @@ export function getMarkerThemeStyles(
   isSelected: boolean,
 ): MarkerThemeStyle {
   const { tier, reliability } = classification;
+  const isLowReliability = reliability === 'low';
+  const targetOpacity = isLowReliability ? 0.65 : 1;
 
   if (tier === 'high') {
-    if (reliability === 'high') {
-      return {
-        containerClass: isSelected
-          ? 'scale-110 shadow-xl ring-4'
-          : 'shadow-md hover:scale-105 transition-transform',
-        dotColor: '#ffffff',
-        bgHex: isDark ? '#366e56' : '#2d5e49',
-        textHex: '#ffffff',
-        borderHex: isDark ? '#2d5e49' : '#224838',
-        ringHex: isDark ? 'rgba(54, 110, 86, 0.45)' : 'rgba(45, 94, 73, 0.4)',
-        isSolid: true,
-      };
-    }
     return {
       containerClass: isSelected
-        ? 'scale-110 shadow-lg ring-4'
-        : 'shadow-sm hover:scale-105 transition-transform',
-      dotColor: isDark ? '#599b7d' : '#2d5e49',
-      bgHex: isDark ? '#162820' : '#f2f7f4',
-      textHex: isDark ? '#aee0ca' : '#204535',
-      borderHex: isDark ? '#2d5e49' : '#9ec2b1',
-      ringHex: isDark ? 'rgba(54, 110, 86, 0.3)' : 'rgba(45, 94, 73, 0.25)',
-      isSolid: false,
+        ? 'scale-110 shadow-xl ring-4'
+        : 'shadow-md hover:scale-105 transition-transform',
+      dotColor: '#ffffff',
+      bgHex: isDark ? '#366e56' : '#2d5e49',
+      textHex: '#ffffff',
+      borderHex: isDark ? '#2d5e49' : '#224838',
+      ringHex: isDark ? 'rgba(54, 110, 86, 0.45)' : 'rgba(45, 94, 73, 0.4)',
+      isSolid: true,
+      opacity: targetOpacity,
     };
   }
 
   if (tier === 'medium') {
-    if (reliability === 'high') {
-      return {
-        containerClass: isSelected
-          ? 'scale-110 shadow-xl ring-4'
-          : 'shadow-md hover:scale-105 transition-transform',
-        dotColor: isDark ? '#1c1a17' : '#ffffff',
-        bgHex: isDark ? '#e59a7d' : '#d37b5d',
-        textHex: isDark ? '#1c1a17' : '#ffffff',
-        borderHex: isDark ? '#d37b5d' : '#b96245',
-        ringHex: 'rgba(211, 123, 93, 0.45)',
-        isSolid: true,
-      };
-    }
     return {
       containerClass: isSelected
-        ? 'scale-110 shadow-lg ring-4'
-        : 'shadow-sm hover:scale-105 transition-transform',
-      dotColor: isDark ? '#e59a7d' : '#d37b5d',
-      bgHex: isDark ? '#3d2319' : '#fdf6f3',
-      textHex: isDark ? '#fed7aa' : '#9c4f36',
-      borderHex: isDark ? '#e59a7d' : '#f4c7b8',
-      ringHex: 'rgba(229, 154, 125, 0.35)',
-      isSolid: false,
+        ? 'scale-110 shadow-xl ring-4'
+        : 'shadow-md hover:scale-105 transition-transform',
+      dotColor: isDark ? '#1c1a17' : '#ffffff',
+      bgHex: isDark ? '#e59a7d' : '#d37b5d',
+      textHex: isDark ? '#1c1a17' : '#ffffff',
+      borderHex: isDark ? '#d37b5d' : '#b96245',
+      ringHex: 'rgba(211, 123, 93, 0.45)',
+      isSolid: true,
+      opacity: targetOpacity,
     };
   }
 
   if (tier === 'low') {
-    if (reliability === 'high') {
-      return {
-        containerClass: isSelected
-          ? 'scale-110 shadow-xl ring-4'
-          : 'shadow-md hover:scale-105 transition-transform',
-        dotColor: isDark ? '#1c1a17' : '#ffffff',
-        bgHex: isDark ? '#a8a29e' : '#78716c',
-        textHex: isDark ? '#1c1a17' : '#ffffff',
-        borderHex: isDark ? '#78716c' : '#57534e',
-        ringHex: 'rgba(120, 113, 108, 0.45)',
-        isSolid: true,
-      };
-    }
     return {
       containerClass: isSelected
-        ? 'scale-110 shadow-lg ring-4'
-        : 'shadow-sm hover:scale-105 transition-transform',
-      dotColor: isDark ? '#a8a29e' : '#78716c',
-      bgHex: isDark ? '#292524' : '#f5f5f4',
-      textHex: isDark ? '#d6d3d1' : '#57534e',
-      borderHex: isDark ? '#57534e' : '#d6d3d1',
-      ringHex: 'rgba(168, 162, 158, 0.35)',
-      isSolid: false,
+        ? 'scale-110 shadow-xl ring-4'
+        : 'shadow-md hover:scale-105 transition-transform',
+      dotColor: isDark ? '#1c1a17' : '#ffffff',
+      bgHex: isDark ? '#a8a29e' : '#78716c',
+      textHex: isDark ? '#1c1a17' : '#ffffff',
+      borderHex: isDark ? '#78716c' : '#57534e',
+      ringHex: 'rgba(120, 113, 108, 0.45)',
+      isSolid: true,
+      opacity: targetOpacity,
     };
   }
 
@@ -179,5 +146,6 @@ export function getMarkerThemeStyles(
     borderHex: isDark ? '#36322d' : '#ece6de',
     ringHex: 'rgba(211, 123, 93, 0.25)',
     isSolid: false,
+    opacity: 1,
   };
 }

@@ -68,7 +68,7 @@ export function PensionDetailModal({
       >
         <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0 md:hidden" />
 
-        <div className="overflow-y-auto flex-1 px-4 md:px-8 pt-2 pb-6">
+        <div className="overflow-y-auto flex-1 px-4 md:px-8 pt-2 pb-6 md:pt-10">
           {detailError && (
             <NetworkErrorBanner
               message={detailError}

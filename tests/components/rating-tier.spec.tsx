@@ -54,14 +54,16 @@ describe('Rating Tier & Semaforo Logic', () => {
     );
     expect(highSolid.isSolid).toBe(true);
     expect(highSolid.bgHex).toBe('#2d5e49');
+    expect(highSolid.opacity).toBe(1);
 
     const highSoft = getMarkerThemeStyles(
       { tier: 'high', reliability: 'low', label: 'Alta', ratingAverage: 4.8, reviewsCount: 2 },
       false,
       false,
     );
-    expect(highSoft.isSolid).toBe(false);
-    expect(highSoft.bgHex).toBe('#f2f7f4');
+    expect(highSoft.isSolid).toBe(true);
+    expect(highSoft.bgHex).toBe('#2d5e49');
+    expect(highSoft.opacity).toBe(0.65);
 
     const medSolid = getMarkerThemeStyles(
       { tier: 'medium', reliability: 'high', label: 'Media', ratingAverage: 3.5, reviewsCount: 6 },
@@ -70,14 +72,16 @@ describe('Rating Tier & Semaforo Logic', () => {
     );
     expect(medSolid.isSolid).toBe(true);
     expect(medSolid.bgHex).toBe('#d37b5d');
+    expect(medSolid.opacity).toBe(1);
 
     const medSoft = getMarkerThemeStyles(
       { tier: 'medium', reliability: 'low', label: 'Media', ratingAverage: 3.5, reviewsCount: 2 },
       false,
       false,
     );
-    expect(medSoft.isSolid).toBe(false);
-    expect(medSoft.bgHex).toBe('#fdf6f3');
+    expect(medSoft.isSolid).toBe(true);
+    expect(medSoft.bgHex).toBe('#d37b5d');
+    expect(medSoft.opacity).toBe(0.65);
 
     const lowSolid = getMarkerThemeStyles(
       { tier: 'low', reliability: 'high', label: 'Baja', ratingAverage: 2.0, reviewsCount: 7 },
@@ -86,6 +90,7 @@ describe('Rating Tier & Semaforo Logic', () => {
     );
     expect(lowSolid.isSolid).toBe(true);
     expect(lowSolid.bgHex).toBe('#78716c');
+    expect(lowSolid.opacity).toBe(1);
 
     const unreviewed = getMarkerThemeStyles(
       { tier: 'unreviewed', reliability: 'unreviewed', label: 'Sin reseñas', ratingAverage: 0, reviewsCount: 0 },
@@ -94,6 +99,7 @@ describe('Rating Tier & Semaforo Logic', () => {
     );
     expect(unreviewed.isSolid).toBe(false);
     expect(unreviewed.bgHex).toBe('#ffffff');
+    expect(unreviewed.opacity).toBe(1);
   });
 
   it('filters pensions by rating tier selecting both reliability levels', () => {

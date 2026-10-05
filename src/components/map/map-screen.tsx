@@ -151,6 +151,9 @@ function createMarkerIcon(
     const styles = getMarkerThemeStyles(classification, theme === 'dark', cluster.isSelected);
 
     if (zoom < 14) {
+      const opacityVal = cluster.isSelected ? 1 : styles.opacity;
+      const opacityStyle = opacityVal < 1 ? `opacity: ${opacityVal};` : '';
+
       const html = cluster.isSelected
         ? `<div style="width: 24px; height: 24px; transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
              <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; aspect-ratio: 1 / 1; background-color: ${styles.bgHex}; border: 2px solid #ffffff; box-shadow: 0 0 0 4px ${styles.ringHex};" class="w-6 h-6 shrink-0 aspect-square rounded-full flex items-center justify-center scale-110 transition-transform">
@@ -158,7 +161,7 @@ function createMarkerIcon(
              </div>
            </div>`
         : `<div style="width: 18px; height: 18px; transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
-             <div style="width: 16px; height: 16px; min-width: 16px; min-height: 16px; aspect-ratio: 1 / 1; background-color: ${styles.bgHex}; border: 2px solid ${styles.borderHex}; box-shadow: 0 2px 6px ${styles.ringHex};" class="w-4 h-4 shrink-0 aspect-square rounded-full shadow-md hover:scale-125 transition-transform flex items-center justify-center">
+             <div style="width: 16px; height: 16px; min-width: 16px; min-height: 16px; aspect-ratio: 1 / 1; background-color: ${styles.bgHex}; border: 2px solid ${styles.borderHex}; box-shadow: 0 2px 6px ${styles.ringHex}; ${opacityStyle}" class="w-4 h-4 shrink-0 aspect-square rounded-full shadow-md hover:scale-125 transition-transform flex items-center justify-center hover:opacity-100">
                <div style="width: 6px; height: 6px; min-width: 6px; min-height: 6px; aspect-ratio: 1 / 1; background-color: ${styles.dotColor};" class="w-1.5 h-1.5 shrink-0 aspect-square rounded-full"></div>
              </div>
            </div>`;
@@ -172,13 +175,15 @@ function createMarkerIcon(
     }
 
     const formattedPrice = `$${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP`;
+    const opacityVal = cluster.isSelected ? 1 : styles.opacity;
+    const opacityStyle = opacityVal < 1 ? `opacity: ${opacityVal};` : '';
 
     const selectedRingStyle = cluster.isSelected
       ? `box-shadow: 0 0 0 4px ${styles.ringHex}, 0 10px 20px -3px rgba(0, 0, 0, 0.25); transform: scale(1.1);`
       : 'box-shadow: 0 3px 8px -1px rgba(0, 0, 0, 0.15);';
 
     const html = `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="whitespace-nowrap flex items-center justify-center">
-      <div style="background-color: ${styles.bgHex}; color: ${styles.textHex}; border: 1.5px solid ${styles.borderHex}; ${selectedRingStyle}" class="px-2.5 py-1 rounded-full text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap">
+      <div style="background-color: ${styles.bgHex}; color: ${styles.textHex}; border: 1.5px solid ${styles.borderHex}; ${selectedRingStyle} ${opacityStyle}" class="px-2.5 py-1 rounded-full text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap hover:opacity-100">
         <span>${formattedPrice}</span>
       </div>
     </div>`;
