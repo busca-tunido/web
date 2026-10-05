@@ -11,7 +11,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import { useAuth } from '@/lib/auth-context';
 import type { PensionReview, StayHistoryItem } from '@/lib/types';
 
 type UserReviewModalProps = {
@@ -21,36 +20,11 @@ type UserReviewModalProps = {
 };
 
 export function UserReviewModal({ isOpen, onClose, stay }: UserReviewModalProps) {
-  const { user } = useAuth();
   const [enlargedPhoto, setEnlargedPhoto] = useState<string | null>(null);
 
-  if (!stay) return null;
+  if (!stay?.review) return null;
 
-  const review: PensionReview = stay.review || {
-    id: `stay-rev-${stay.id}`,
-    pensionId: stay.pensionId,
-    overallRating: stay.ratingGiven ?? 5,
-    cleanlinessRating: stay.ratingGiven ?? 5,
-    landlordRating: stay.ratingGiven ?? 5,
-    quietnessRating: stay.ratingGiven ? Math.max(stay.ratingGiven - 1, 1) : 4,
-    wifiRating: stay.ratingGiven ?? 5,
-    comment:
-      'Mi estadía fue excelente durante todo el periodo universitario. Cumplieron con todos los servicios ofrecidos y el ambiente de estudio fue óptimo.',
-    stayDurationCategory: 'ONE_YEAR',
-    isResidentVerified: true,
-    createdAt: stay.endDate,
-    images: [],
-    user: {
-      id: user?.id || 'me',
-      firstName: user?.firstName || 'Tomás',
-      lastName: user?.lastName || 'González',
-      avatarUrl: user?.avatarUrl,
-      university: {
-        shortName: user?.universityName ? 'UCHILE' : 'UCHILE',
-        name: user?.universityName || 'Universidad de Chile',
-      },
-    },
-  };
+  const review: PensionReview = stay.review;
 
   const hasSubRatings = Boolean(
     review.cleanlinessRating ||

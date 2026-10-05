@@ -36,8 +36,8 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
     city: localFilters.city,
   });
 
-  const minBound = histogramData?.minPrice ?? DEFAULT_PRICE_HISTOGRAM.minPrice;
-  const maxBound = histogramData?.maxPrice ?? DEFAULT_PRICE_HISTOGRAM.maxPrice;
+  const minBound = histogramData?.minPrice ?? DEFAULT_PRICE_HISTOGRAM.minPrice ?? 100000;
+  const maxBound = histogramData?.maxPrice ?? DEFAULT_PRICE_HISTOGRAM.maxPrice ?? 600000;
   const currentMin = localFilters.minPriceClp ?? minBound;
   const currentMax = localFilters.maxPriceClp ?? maxBound;
 

@@ -107,8 +107,8 @@ export type PriceBinItem = {
 };
 
 export type PriceHistogramResponse = {
-  minPrice: number;
-  maxPrice: number;
+  minPrice: number | null;
+  maxPrice: number | null;
   currency: string;
   totalListings: number;
   bins: PriceBinItem[];
@@ -139,12 +139,12 @@ export type StayHistoryItem = {
   pensionTitle: string;
   pensionCity: string;
   roomTitle: string;
-  startDate: string;
-  endDate: string;
+  startDate?: string | null;
+  endDate?: string | null;
   ratingGiven?: number;
   hasReview: boolean;
   monthlyPaidClp: number;
-  imageUrl: string;
+  imageUrl?: string | null;
   review?: PensionReview;
 };
 
