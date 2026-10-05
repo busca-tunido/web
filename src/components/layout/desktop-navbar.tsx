@@ -375,7 +375,7 @@ export function DesktopNavbar({
       </div>
 
       <div className="flex h-12 w-full items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-10">
-        <div className="flex items-center justify-center gap-3 max-w-full min-w-0">
+        <div className="flex items-center justify-center gap-3 w-full max-w-4xl lg:max-w-5xl min-w-0">
           <button
             id="desktop-filter-button"
             type="button"
