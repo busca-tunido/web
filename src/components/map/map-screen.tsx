@@ -14,13 +14,14 @@ import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton
 import { env } from '@/env';
 import { useMapViewportPensions } from '@/hooks/use-map-viewport-pensions';
 import { useAuth } from '@/lib/auth-context';
+import { matchesSearchFilters } from '@/lib/filter-matcher';
 import {
   classifyPensionRating,
   getDominantRatingClassification,
   getMarkerThemeStyles,
 } from '@/lib/rating-tier';
 import { useTheme } from '@/lib/theme-context';
-import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
+import type { CityInfo, PensionItem, SearchFilters, UniversityInfo } from '@/lib/types';
 import { findClosestCity, type UserCoordinates } from '@/lib/use-user-location';
 
 type MapScreenProps = {
@@ -33,6 +34,7 @@ type MapScreenProps = {
   onRequestLocation: () => void;
   onSelectPension: (pension: PensionItem) => void;
   onOpenPensionDetail: (pension: PensionItem) => void;
+  filters?: SearchFilters;
 };
 
 type DrawerState = 'minimized' | 'half' | 'maximized';
@@ -243,6 +245,7 @@ export function MapScreen({
   onRequestLocation,
   onSelectPension,
   onOpenPensionDetail,
+  filters,
 }: MapScreenProps) {
   const { isFavorite, toggleFavorite } = useAuth();
   const { resolvedTheme } = useTheme();
@@ -260,7 +263,12 @@ export function MapScreen({
   } = useMapViewportPensions({
     initialPensions: pensions,
     activePensionId: selectedPension?.id ?? null,
+    filters,
   });
+
+  const visiblePensions = useMemo(() => {
+    return mapPensions.filter((p) => matchesSearchFilters(p, filters));
+  }, [mapPensions, filters]);
 
   const mapPensionsRef = useRef(mapPensions);
   mapPensionsRef.current = mapPensions;
@@ -327,12 +335,18 @@ export function MapScreen({
   }, []);
 
   const displayedPensions = useMemo(() => {
-    if (!activePinId) return mapPensions;
-    const active = mapPensions.find((p) => p.id === activePinId);
-    if (!active) return mapPensions;
-    const others = mapPensions.filter((p) => p.id !== activePinId);
+    if (!activePinId) return visiblePensions;
+    const active = visiblePensions.find((p) => p.id === activePinId);
+    if (!active) return visiblePensions;
+    const others = visiblePensions.filter((p) => p.id !== activePinId);
     return [active, ...others];
-  }, [mapPensions, activePinId]);
+  }, [visiblePensions, activePinId]);
+
+  useEffect(() => {
+    if (activePinId && !visiblePensions.some((p) => p.id === activePinId)) {
+      setActivePinId(null);
+    }
+  }, [activePinId, visiblePensions]);
 
   const [exploredCenter, setExploredCenter] = useState<UserCoordinates>(() => {
     if (selectedUniversity) {
@@ -369,7 +383,7 @@ export function MapScreen({
     if (!L || !map || !markersGroup) return;
 
     const zoom = map.getZoom();
-    const clusters = computeClusters(mapPensions, map, zoom, activePinId);
+    const clusters = computeClusters(visiblePensions, map, zoom, activePinId);
     const nextMarkersMap = new Map<string, import('leaflet').Marker>();
     const currentMarkersMap = activeMarkersMapRef.current;
 
@@ -436,7 +450,7 @@ export function MapScreen({
     }
 
     activeMarkersMapRef.current = nextMarkersMap;
-  }, [mapPensions, activePinId, onSelectPension, panToPension, resolvedTheme]);
+  }, [visiblePensions, activePinId, onSelectPension, panToPension, resolvedTheme]);
 
   const debouncedRenderMarkers = useCallback(() => {
     if (renderTimerRef.current !== null) {

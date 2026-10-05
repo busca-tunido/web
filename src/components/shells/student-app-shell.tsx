@@ -230,6 +230,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
                   onRequestLocation={requestLocation}
                   onSelectPension={selectPension}
                   onOpenPensionDetail={openPensionDetail}
+                  filters={effectiveFilters}
                 />
               )}
 
