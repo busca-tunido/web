@@ -30,8 +30,8 @@ export type AuthScreenProps = {
 export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenProps = {}) {
   const { login, setSession } = useAuth();
   const [landlordMode, setLandlordMode] = useState<'login' | 'register'>('login');
-  const [landlordEmail, setLandlordEmail] = useState('');
-  const [landlordPassword, setLandlordPassword] = useState('');
+  const [landlordEmail, setLandlordEmail] = useState('propietario.demo@buscatunido.cl');
+  const [landlordPassword, setLandlordPassword] = useState('Password123!');
   const [landlordRegisterFirstName, setLandlordRegisterFirstName] = useState('');
   const [landlordRegisterLastName, setLandlordRegisterLastName] = useState('');
   const [landlordRegisterPhone, setLandlordRegisterPhone] = useState('');
@@ -409,6 +409,8 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                           type="button"
                           onClick={() => {
                             setLandlordError('');
+                            setLandlordEmail('propietario.demo@buscatunido.cl');
+                            setLandlordPassword('Password123!');
                             setLandlordMode('login');
                           }}
                           className="font-semibold text-primary underline underline-offset-4 hover:opacity-80 transition cursor-pointer inline-flex items-center min-h-[44px]"

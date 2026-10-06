@@ -59,8 +59,8 @@ export function isEducationalEmail(email: string): boolean {
 
 export function useAuthFlow(options: UseAuthFlowOptions = {}): UseAuthFlowReturn {
   const { login, setSession } = useAuth();
-  const [email, setEmailState] = useState(options.initialEmail ?? '');
-  const [password, setPassword] = useState('');
+  const [email, setEmailState] = useState(options.initialEmail ?? 'estudiante.demo@uchile.cl');
+  const [password, setPassword] = useState('Password123!');
   const [step, setStep] = useState<AuthFlowStep>('email');
   const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
