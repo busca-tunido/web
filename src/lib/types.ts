@@ -16,9 +16,9 @@ export type CityInfo = {
   id: string;
   name: string;
   region: string;
-  foreignStudentRate: number;
+  foreignStudentRate?: number;
   pensionsCount: number;
-  averagePriceClp: number;
+  averagePriceClp?: number;
   imageUrl: string;
   isCurrentCity?: boolean;
   latitude: number;
@@ -31,7 +31,7 @@ export type UniversityInfo = {
   acronym: string;
   city: string;
   domains: string[];
-  foreignStudentRate: number;
+  foreignStudentRate?: number;
   pensionsNearbyCount: number;
   logoUrl?: string;
   imageUrl: string;

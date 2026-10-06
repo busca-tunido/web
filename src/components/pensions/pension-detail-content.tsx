@@ -3,6 +3,7 @@
 import {
   ArrowLeft,
   BookOpen,
+  Building2,
   Check,
   ChevronRight,
   Clock,
@@ -84,15 +85,21 @@ export function PensionDetailContent({
   return (
     <div className="flex flex-col w-full">
       <div className="relative h-64 sm:h-80 md:h-96 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm">
-        <Image
-          src={pension.photos[activePhotoIdx] ?? pension.photos[0]}
-          alt={pension.title}
-          fill
-          unoptimized
-          sizes="(max-width: 640px) 100vw, 896px"
-          className="object-cover transition duration-300"
-          priority
-        />
+        {(pension.photos[activePhotoIdx] ?? pension.photos[0]) ? (
+          <Image
+            src={pension.photos[activePhotoIdx] ?? pension.photos[0]}
+            alt={pension.title}
+            fill
+            unoptimized
+            sizes="(max-width: 640px) 100vw, 896px"
+            className="object-cover transition duration-300"
+            priority
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-muted/60">
+            <Building2 className="h-16 w-16 text-muted-foreground/30" />
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
 
         {showBackButton && onBack && (

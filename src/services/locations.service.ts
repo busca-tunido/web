@@ -105,8 +105,8 @@ export async function fetchCities(): Promise<ApiResponse<CityInfo[]>> {
     for (const u of uniRes.data) {
       if (u.city) {
         const existing = cityMap.get(u.city) ?? {
-          lat: Number(u.latitude) || -33.4489,
-          lng: Number(u.longitude) || -70.6693,
+          lat: Number(u.latitude) || 0,
+          lng: Number(u.longitude) || 0,
           count: 0,
         };
         existing.count += 1;
@@ -117,9 +117,7 @@ export async function fetchCities(): Promise<ApiResponse<CityInfo[]>> {
       id: cityName.toLowerCase().replace(/\s+/g, '-'),
       name: cityName,
       region: 'Chile',
-      foreignStudentRate: 0.12,
-      pensionsCount: data.count * 10,
-      averagePriceClp: 300000,
+      pensionsCount: 0,
       imageUrl: getCityImageUrl(cityName),
       latitude: data.lat,
       longitude: data.lng,

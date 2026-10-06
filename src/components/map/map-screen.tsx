@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronUp, Heart, Loader2, Locate, Star } from 'lucide-react';
+import { Building2, ChevronDown, ChevronUp, Heart, Loader2, Locate, Star } from 'lucide-react';
 import {
   AnimatePresence,
   motion,
@@ -1044,16 +1044,20 @@ function MapDrawerPensionList({
               }}
               className="w-full flex flex-col text-left cursor-pointer"
             >
-              <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm">
-                <Image
-                  src={pension.photos[0]}
-                  alt={pension.title}
-                  fill
-                  unoptimized
-                  sizes="(max-width: 640px) 100vw, 480px"
-                  className="object-cover transition duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm flex items-center justify-center">
+                {pension.photos[0] ? (
+                  <Image
+                    src={pension.photos[0]}
+                    alt={pension.title}
+                    fill
+                    unoptimized
+                    sizes="(max-width: 640px) 100vw, 480px"
+                    className="object-cover transition duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <Building2 className="h-10 w-10 text-muted-foreground/30" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
                 {pension.isVerified && (
                   <div className="absolute bottom-3 left-3">

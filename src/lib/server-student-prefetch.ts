@@ -94,8 +94,8 @@ export async function fetchInitialCities(baseUrl: string): Promise<CityInfo[]> {
       if (u.city && typeof u.city === 'string' && u.city.trim().length > 0) {
         const cityName = u.city.trim();
         const existing = cityMap.get(cityName) ?? {
-          lat: Number(u.latitude) || -33.4489,
-          lng: Number(u.longitude) || -70.6693,
+          lat: Number(u.latitude) || 0,
+          lng: Number(u.longitude) || 0,
           count: 0,
         };
         existing.count += 1;
@@ -106,9 +106,7 @@ export async function fetchInitialCities(baseUrl: string): Promise<CityInfo[]> {
       id: cityName.toLowerCase().replace(/\s+/g, '-'),
       name: cityName,
       region: 'Chile',
-      foreignStudentRate: 0.12,
-      pensionsCount: data.count * 10,
-      averagePriceClp: 300000,
+      pensionsCount: 0,
       imageUrl: getCityImageUrl(cityName),
       latitude: data.lat,
       longitude: data.lng,
@@ -140,6 +138,8 @@ export async function fetchInitialUniversities(baseUrl: string): Promise<Univers
         campusImageUrl?: string;
         imageUrl?: string;
         domains?: string[];
+        emailDomains?: string[];
+        _count?: { nearbyPensions?: number };
       }>;
     };
     const rawList = Array.isArray(json.data)
@@ -157,10 +157,12 @@ export async function fetchInitialUniversities(baseUrl: string): Promise<Univers
             campusImageUrl?: string;
             imageUrl?: string;
             domains?: string[];
+            emailDomains?: string[];
+            _count?: { nearbyPensions?: number };
           }>)
         : [];
 
-    return rawList.map((u, i) => {
+    return rawList.map((u) => {
       const name = String(u.name ?? '');
       const shortName = u.shortName || u.acronym;
       const acronym = shortName ? String(shortName) : name.slice(0, 4).toUpperCase();
@@ -176,13 +178,16 @@ export async function fetchInitialUniversities(baseUrl: string): Promise<Univers
         name,
         acronym,
         city: String(u.city ?? ''),
-        domains: Array.isArray(u.domains) ? u.domains : ['uchile.cl'],
-        foreignStudentRate: 0.15 + (i % 5) * 0.03,
-        pensionsNearbyCount: 12 + i * 2,
+        domains: Array.isArray(u.emailDomains)
+          ? u.emailDomains
+          : Array.isArray(u.domains)
+            ? u.domains
+            : [],
+        pensionsNearbyCount: u._count?.nearbyPensions ?? 0,
         logoUrl: typeof u.logoUrl === 'string' ? u.logoUrl : undefined,
         imageUrl: rawImage ?? getUniversityImageUrl(name, acronym),
-        latitude: Number(u.latitude) || -33.4489,
-        longitude: Number(u.longitude) || -70.6693,
+        latitude: Number(u.latitude) || 0,
+        longitude: Number(u.longitude) || 0,
       };
     });
   } catch {

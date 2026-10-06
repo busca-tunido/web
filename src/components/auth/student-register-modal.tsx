@@ -58,7 +58,7 @@ export function StudentRegisterModal({
       password: '',
       firstName: '',
       lastName: '',
-      phone: '+56912345678',
+      phone: '',
       universityId: defaultUniversityId,
       termsAccepted: true,
     },
@@ -92,7 +92,7 @@ export function StudentRegisterModal({
         password: validation.data.password,
         firstName: validation.data.firstName.trim(),
         lastName: validation.data.lastName.trim(),
-        phone: validation.data.phone.trim(),
+        phone: validation.data.phone?.trim() || undefined,
         universityId: validation.data.universityId,
         role: 'STUDENT',
       });
@@ -264,14 +264,12 @@ export function StudentRegisterModal({
           <FormField
             id="register-student-phone"
             label="Teléfono de contacto"
-            required
             hint="Formato internacional o chileno (+56912345678)"
             error={touched.phone ? errors.phone : undefined}
           >
             <input
               id="register-student-phone"
               type="tel"
-              required
               value={values.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
               onBlur={() => handleBlur('phone')}

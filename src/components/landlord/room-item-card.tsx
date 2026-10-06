@@ -1,6 +1,16 @@
 'use client';
 
-import { Bath, Edit3, Loader2, PauseCircle, PlayCircle, Sparkles, User, Users } from 'lucide-react';
+import {
+  Bath,
+  BedDouble,
+  Edit3,
+  Loader2,
+  PauseCircle,
+  PlayCircle,
+  Sparkles,
+  User,
+  Users,
+} from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -46,9 +56,6 @@ export type RoomItemCardProps = {
   className?: string;
 };
 
-const FALLBACK_ROOM_IMAGE =
-  'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/rooms/room-fallback.webp';
-
 export function RoomItemCard({
   room,
   onEdit,
@@ -77,7 +84,7 @@ export function RoomItemCard({
       : room.thumbnailUrl
         ? [room.thumbnailUrl]
         : [];
-  const thumbnail = imageList[0] || FALLBACK_ROOM_IMAGE;
+  const thumbnail = imageList[0];
 
   const formattedPrice = `$${price.toLocaleString('es-CL')} CLP`;
 
@@ -109,15 +116,19 @@ export function RoomItemCard({
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3.5 min-w-0 flex-1">
-          <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-xl bg-muted shadow-2xs">
-            <Image
-              src={thumbnail}
-              alt={rawTitle}
-              fill
-              unoptimized
-              sizes="(max-width: 640px) 96px, 112px"
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-            />
+          <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-xl bg-muted shadow-2xs flex items-center justify-center">
+            {thumbnail ? (
+              <Image
+                src={thumbnail}
+                alt={rawTitle}
+                fill
+                unoptimized
+                sizes="(max-width: 640px) 96px, 112px"
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+            ) : (
+              <BedDouble className="h-8 w-8 text-muted-foreground/40" />
+            )}
           </div>
 
           <div className="flex flex-col gap-1.5 min-w-0 flex-1 text-left">

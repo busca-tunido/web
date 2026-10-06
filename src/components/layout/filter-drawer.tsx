@@ -6,7 +6,7 @@ import { PriceHistogramRangeSlider } from '@/components/search/price-histogram-r
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from '@/components/ui/drawer';
-import { DEFAULT_PRICE_HISTOGRAM, usePriceHistogram } from '@/hooks/use-price-histogram';
+import { usePriceHistogram } from '@/hooks/use-price-histogram';
 import type { SearchFilters } from '@/lib/types';
 
 type FilterDrawerProps = {
@@ -36,8 +36,8 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
     city: localFilters.city,
   });
 
-  const minBound = histogramData?.minPrice ?? DEFAULT_PRICE_HISTOGRAM.minPrice ?? 100000;
-  const maxBound = histogramData?.maxPrice ?? DEFAULT_PRICE_HISTOGRAM.maxPrice ?? 600000;
+  const minBound = histogramData?.minPrice ?? 100000;
+  const maxBound = histogramData?.maxPrice ?? 600000;
   const currentMin = localFilters.minPriceClp ?? minBound;
   const currentMax = localFilters.maxPriceClp ?? maxBound;
 
