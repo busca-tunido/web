@@ -7,6 +7,7 @@ import { DesktopNavbar } from '@/components/layout/desktop-navbar';
 import type { SearchFilters } from '@/lib/types';
 
 let mockUser: { id: string; email: string; firstName: string; lastName: string; role: string } | null = null;
+let mockIsLoading = false;
 const mockOpenAuthModal = vi.fn();
 
 vi.mock('@/lib/auth-context', () => ({
@@ -15,10 +16,28 @@ vi.mock('@/lib/auth-context', () => ({
     logout: vi.fn(),
     user: mockUser,
     isAuthenticated: Boolean(mockUser),
-    isLoading: false,
+    isLoading: mockIsLoading,
     favorites: mockUser ? ['pension-1'] : [],
     isFavorite: (id: string) => Boolean(mockUser && id === 'pension-1'),
     toggleFavorite: vi.fn(),
+  }),
+}));
+
+vi.mock('@/hooks/use-student-favorites', () => ({
+  useStudentFavorites: () => ({
+    favorites: [],
+    isFavorite: () => false,
+    toggleFavorite: vi.fn(),
+    errorMessage: null,
+    clearError: vi.fn(),
+    favoritePensions: [],
+  }),
+}));
+
+vi.mock('@/hooks/use-stay-history', () => ({
+  useStayHistory: () => ({
+    stays: [],
+    formatDateRange: () => '',
   }),
 }));
 
@@ -64,6 +83,7 @@ vi.mock('@/lib/theme-context', () => ({
 describe('AuthGate and Guest Incentive Screens', () => {
   beforeEach(() => {
     mockUser = null;
+    mockIsLoading = false;
     vi.clearAllMocks();
   });
 
@@ -162,5 +182,78 @@ describe('AuthGate and Guest Incentive Screens', () => {
     fireEvent.click(histButton);
     expect(handleTabChange).toHaveBeenCalledWith('history');
     expect(handleOpenAuth).toHaveBeenCalledTimes(2);
+  });
+
+  it('renders nothing when isLoading is true in AuthGate', () => {
+    mockIsLoading = true;
+    mockUser = null;
+
+    const { container } = render(
+      <AuthGate
+        title="Inicia sesión para ver detalles"
+        description="Conoce opiniones y normas."
+        buttonText="Ingresar ahora"
+      >
+        <div data-testid="secret-content">Contenido exclusivo</div>
+      </AuthGate>,
+    );
+
+    expect(container.firstChild).toBeNull();
+    expect(screen.queryByText('Inicia sesión para ver detalles')).toBeNull();
+    expect(screen.queryByTestId('secret-content')).toBeNull();
+  });
+
+  it('renders nothing when isLoading is true on FavoritesScreen', () => {
+    mockIsLoading = true;
+    mockUser = null;
+
+    const { container } = render(
+      <FavoritesScreen allPensions={[]} onSelectPension={vi.fn()} onExplore={vi.fn()} />,
+    );
+
+    expect(container.firstChild).toBeNull();
+    expect(screen.queryByText('Guarda y compara tus pensiones favoritas')).toBeNull();
+  });
+
+  it('renders nothing when isLoading is true on HistoryScreen', () => {
+    mockIsLoading = true;
+    mockUser = null;
+
+    const { container } = render(<HistoryScreen onExplore={vi.fn()} />);
+
+    expect(container.firstChild).toBeNull();
+    expect(screen.queryByText('Construye tu historial de estadías')).toBeNull();
+  });
+
+  it('renders authenticated content when isLoading is false and user is authenticated on FavoritesScreen', () => {
+    mockIsLoading = false;
+    mockUser = {
+      id: 'usr-1',
+      email: 'student@universidad.cl',
+      firstName: 'Ana',
+      lastName: 'Valdés',
+      role: 'STUDENT',
+    };
+
+    render(<FavoritesScreen allPensions={[]} onSelectPension={vi.fn()} onExplore={vi.fn()} />);
+
+    expect(screen.getByText('Tus Favoritos')).toBeDefined();
+    expect(screen.queryByText('Guarda y compara tus pensiones favoritas')).toBeNull();
+  });
+
+  it('renders authenticated content when isLoading is false and user is authenticated on HistoryScreen', () => {
+    mockIsLoading = false;
+    mockUser = {
+      id: 'usr-1',
+      email: 'student@universidad.cl',
+      firstName: 'Ana',
+      lastName: 'Valdés',
+      role: 'STUDENT',
+    };
+
+    render(<HistoryScreen onExplore={vi.fn()} />);
+
+    expect(screen.getByText('Donde me he alojado')).toBeDefined();
+    expect(screen.queryByText('Construye tu historial de estadías')).toBeNull();
   });
 });
