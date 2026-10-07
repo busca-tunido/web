@@ -48,6 +48,13 @@ export function LandlordDesktopSidebar({
   const landlordContext = useLandlord();
   const { user, logout } = useAuth();
 
+  const handleLogout = () => {
+    logout();
+    if (typeof window !== 'undefined') {
+      window.location.replace('/');
+    }
+  };
+
   const activeTab = propActiveTab ?? landlordContext.activeTab;
   const setActiveTab = onTabChange ?? landlordContext.setActiveTab;
   const pensions = landlordContext.pensions;
@@ -355,7 +362,7 @@ export function LandlordDesktopSidebar({
               type="button"
               variant="ghost"
               size="sm"
-              onClick={logout}
+              onClick={handleLogout}
               className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive cursor-pointer shrink-0"
               title="Cerrar sesión"
               aria-label="Cerrar sesión"

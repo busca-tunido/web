@@ -20,6 +20,13 @@ export function LandlordAccountScreen() {
   const pensions = landlord?.pensions ?? [];
   const setActiveTab = landlord?.setActiveTab;
 
+  const handleLogout = () => {
+    logout();
+    if (typeof window !== 'undefined') {
+      window.location.replace('/');
+    }
+  };
+
   if (!user) {
     return <AuthScreen />;
   }
@@ -93,7 +100,7 @@ export function LandlordAccountScreen() {
         />
       </div>
 
-      <AccountLogoutButton onLogout={logout} />
+      <AccountLogoutButton onLogout={handleLogout} />
 
       <AccountBrandFooter tagline="Comunidad de anfitriones BuscaTuNido" />
     </AccountShell>

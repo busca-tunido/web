@@ -300,3 +300,5 @@ export function StudentAppShell({
     </NavigationProvider>
   );
 }
+
+export { StudentAppShell as UserAppShell };

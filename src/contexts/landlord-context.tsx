@@ -48,10 +48,61 @@ export type LandlordProviderProps = {
 
 const LandlordContext = createContext<LandlordContextValue | null>(null);
 
+function getLandlordTabFromPathname(pathname: string): LandlordTab | null {
+  const segment = pathname
+    .split('?')[0]
+    .replace(/^\/+|\/+$/g, '')
+    .toLowerCase();
+  if (segment === 'landlord' || segment === 'landlord/pension') return 'pension';
+  if (segment === 'landlord/rooms') return 'rooms';
+  if (segment === 'landlord/reviews') return 'reviews';
+  if (segment === 'landlord/proposals') return 'proposals';
+  if (segment === 'landlord/properties' || segment === 'landlord/pensions') return 'pensions';
+  if (segment === 'landlord/account') return 'account';
+  return null;
+}
+
+function getPathnameForLandlordTab(tab: LandlordTab): string {
+  if (tab === 'pension') return '/landlord';
+  if (tab === 'pensions') return '/landlord/properties';
+  return `/landlord/${tab}`;
+}
+
 export function LandlordProvider({ children, initialTab = 'pension' }: LandlordProviderProps) {
   const [pensions, setPensions] = useState<PensionItem[]>([]);
   const [selectedPension, setSelectedPension] = useState<PensionItem | null>(null);
-  const [activeTab, setActiveTab] = useState<LandlordTab>(initialTab);
+  const [activeTab, setActiveTabState] = useState<LandlordTab>(() => {
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/landlord')) {
+      const fromPath = getLandlordTabFromPathname(window.location.pathname);
+      if (fromPath) return fromPath;
+    }
+    return initialTab;
+  });
+
+  const setActiveTab = useCallback((tab: LandlordTab) => {
+    setActiveTabState(tab);
+    if (typeof window !== 'undefined') {
+      const targetPath = getPathnameForLandlordTab(tab);
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState(null, '', targetPath);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handlePopState = () => {
+      if (window.location.pathname.startsWith('/landlord')) {
+        const fromPath = getLandlordTabFromPathname(window.location.pathname);
+        if (fromPath) {
+          setActiveTabState(fromPath);
+        }
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreatePensionOpen, setIsCreatePensionOpen] = useState(false);
@@ -292,6 +343,7 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       updatePensionCustomContact,
       pendingProposalsCount,
       refetchProposals,
+      setActiveTab,
     ],
   );
 

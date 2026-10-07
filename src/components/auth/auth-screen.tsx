@@ -53,6 +53,9 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
       await login(landlordEmail, landlordPassword);
       setIsDrawerOpen(false);
       onSuccess?.();
+      if (typeof window !== 'undefined') {
+        window.location.replace('/landlord');
+      }
     } catch {
       setLandlordError('Error al autenticar. Verifica las credenciales.');
     } finally {
@@ -94,6 +97,9 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
         await login(landlordEmail.trim().toLowerCase(), landlordPassword);
         setIsDrawerOpen(false);
         onSuccess?.();
+        if (typeof window !== 'undefined') {
+          window.location.replace('/landlord');
+        }
         return;
       }
 

@@ -11,6 +11,8 @@ import {
 
 export {
   buildNavigationUrl,
+  getPathnameForTab,
+  getTabFromPathname,
   isValidTab,
   parseNavigationParams,
   parseSearchParams,
@@ -85,7 +87,7 @@ export function useUrlNavigationState(
         publishReviewPensionId: null,
       };
     }
-    return parseNavigationParams(window.location.search, defaultTab);
+    return parseNavigationParams(window.location.search, defaultTab, window.location.pathname);
   });
 
   const overlayDepthRef = useRef<number>(0);
@@ -355,7 +357,11 @@ export function useUrlNavigationState(
     if (typeof window === 'undefined') return;
 
     const handlePopState = (): void => {
-      const parsed = parseNavigationParams(window.location.search, defaultTab);
+      const parsed = parseNavigationParams(
+        window.location.search,
+        defaultTab,
+        window.location.pathname,
+      );
       const hasOverlay =
         Boolean(parsed.pensionId) ||
         parsed.isFiltersOpen ||
