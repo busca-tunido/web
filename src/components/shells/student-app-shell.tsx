@@ -4,12 +4,16 @@ import { AnimatePresence, motion } from 'motion/react';
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { NetworkErrorBanner } from '@/components/common/network-error-state';
-import { ExploreScreen } from '@/components/explore/explore-screen';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { DesktopNavbar } from '@/components/layout/desktop-navbar';
 import { TopSearchBar } from '@/components/layout/top-search-bar';
 import type { InitialPrefetchData } from '@/components/shells/role-router';
 import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
+
+const ExploreScreen = dynamic(
+  () => import('@/components/explore/explore-screen').then((mod) => mod.ExploreScreen),
+  { ssr: true },
+);
 
 const MapScreen = dynamic(
   () => import('@/components/map/map-screen').then((mod) => mod.MapScreen),
