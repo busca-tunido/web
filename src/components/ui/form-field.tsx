@@ -1,7 +1,6 @@
 'use client';
 
 import { AlertCircle } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
 import type React from 'react';
 import { cloneElement, isValidElement, useId } from 'react';
 
@@ -121,23 +120,17 @@ export function FormField({
         </p>
       )}
 
-      <AnimatePresence mode="wait">
-        {hasError && (
-          <motion.div
-            id={errorId}
-            role="alert"
-            aria-live="polite"
-            initial={{ opacity: 0, y: -4, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -4, height: 0 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="flex items-center gap-1.5 overflow-hidden pt-1.5 text-xs font-medium text-destructive"
-          >
-            <AlertCircle className="size-3.5 shrink-0" aria-hidden="true" />
-            <span>{error}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {hasError && (
+        <div
+          id={errorId}
+          role="alert"
+          aria-live="polite"
+          className="flex items-center gap-1.5 pt-1.5 text-xs font-medium text-destructive animate-in fade-in slide-in-from-top-1 duration-200"
+        >
+          <AlertCircle className="size-3.5 shrink-0" aria-hidden="true" />
+          <span>{error}</span>
+        </div>
+      )}
     </div>
   );
 }

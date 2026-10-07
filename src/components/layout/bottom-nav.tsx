@@ -1,7 +1,6 @@
 'use client';
 
 import { Compass, Heart, History, MapPin, User } from 'lucide-react';
-import { motion } from 'motion/react';
 import { useAuth } from '@/lib/auth-context';
 import type { NavTab } from '@/lib/types';
 
@@ -38,11 +37,10 @@ export function BottomNav({ activeTab, onTabChange, onOpenAuthModal }: BottomNav
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (
-            <motion.button
+            <button
               key={item.id}
               id={`nav-tab-${item.id}`}
               type="button"
-              whileTap={{ scale: 0.9 }}
               onClick={() => {
                 if (item.id === 'account' && !user) {
                   onOpenAuthModal?.();
@@ -53,7 +51,7 @@ export function BottomNav({ activeTab, onTabChange, onOpenAuthModal }: BottomNav
                   onOpenAuthModal?.();
                 }
               }}
-              className={`group relative flex min-h-[48px] min-w-[56px] flex-1 flex-col items-center justify-center rounded-xl py-1 text-xs font-medium transition-colors ${
+              className={`group relative flex min-h-[48px] min-w-[56px] flex-1 flex-col items-center justify-center rounded-xl py-1 text-xs font-medium transition-all duration-150 active:scale-95 touch-manipulation ${
                 isActive
                   ? 'text-primary font-semibold'
                   : 'text-muted-foreground hover:text-foreground'
@@ -66,24 +64,20 @@ export function BottomNav({ activeTab, onTabChange, onOpenAuthModal }: BottomNav
                   }`}
                 />
                 {item.badge !== undefined && item.badge > 0 && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground"
+                  <span
+                    className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground animate-in zoom-in duration-150"
                   >
                     {item.badge}
-                  </motion.span>
+                  </span>
                 )}
               </div>
               <span className="mt-1 text-[11px] tracking-tight">{item.label}</span>
               {isActive && (
-                <motion.span
-                  layoutId="active-bottom-nav-indicator"
-                  transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                  className="absolute bottom-0 h-1 w-6 rounded-full bg-primary"
+                <span
+                  className="absolute bottom-0 h-1 w-6 rounded-full bg-primary transition-all duration-200"
                 />
               )}
-            </motion.button>
+            </button>
           );
         })}
       </div>

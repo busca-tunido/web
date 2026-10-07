@@ -1,14 +1,12 @@
-'use client';
-
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
-interface BrandLogoProps {
+type BrandLogoProps = {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   showSubtitle?: boolean;
   priority?: boolean;
-}
+};
 
 export function BrandLogo({
   size = 'md',
