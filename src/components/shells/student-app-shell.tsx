@@ -30,7 +30,8 @@ const HistoryScreen = dynamic(
 );
 
 const StudentAccountScreen = dynamic(
-  () => import('@/components/account/student-account-screen').then((mod) => mod.StudentAccountScreen),
+  () =>
+    import('@/components/account/student-account-screen').then((mod) => mod.StudentAccountScreen),
   { ssr: false },
 );
 
@@ -48,6 +49,7 @@ const AuthModal = dynamic(
   () => import('@/components/auth/auth-modal').then((mod) => mod.AuthModal),
   { ssr: false },
 );
+
 import { NavigationProvider, useNavigation } from '@/contexts/navigation-context';
 import { SearchFiltersProvider, useSearchFilters } from '@/contexts/search-filters-context';
 import { useStudentPensionsFeed } from '@/hooks/use-student-pensions-feed';

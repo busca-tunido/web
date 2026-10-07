@@ -9,9 +9,7 @@ import { LandlordPensionsScreen } from '@/components/landlord/landlord-pensions-
 
 const LandlordAccountScreen = dynamic(
   () =>
-    import('@/components/account/landlord-account-screen').then(
-      (mod) => mod.LandlordAccountScreen,
-    ),
+    import('@/components/account/landlord-account-screen').then((mod) => mod.LandlordAccountScreen),
   { ssr: false },
 );
 
@@ -33,19 +31,16 @@ const LandlordReviewsScreen = dynamic(
 
 const LandlordRoomsScreen = dynamic(
   () =>
-    import('@/components/landlord/landlord-rooms-screen').then(
-      (mod) => mod.LandlordRoomsScreen,
-    ),
+    import('@/components/landlord/landlord-rooms-screen').then((mod) => mod.LandlordRoomsScreen),
   { ssr: false },
 );
 
 const PensionEditorDrawer = dynamic(
   () =>
-    import('@/components/landlord/pension-editor-drawer').then(
-      (mod) => mod.PensionEditorDrawer,
-    ),
+    import('@/components/landlord/pension-editor-drawer').then((mod) => mod.PensionEditorDrawer),
   { ssr: false },
 );
+
 import { LandlordBottomNav } from '@/components/layout/landlord-bottom-nav';
 import {
   LandlordMobileHeader,

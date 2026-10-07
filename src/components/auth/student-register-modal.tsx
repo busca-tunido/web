@@ -273,7 +273,8 @@ export function StudentRegisterModal({
               <div>
                 <p className="font-semibold">Dominio institucional no reconocido</p>
                 <p className="text-[11px] opacity-90 mt-0.5">
-                  El dominio del correo ingresado no coincide con ninguna universidad registrada. Por favor verifica tu correo oficial de estudiante.
+                  El dominio del correo ingresado no coincide con ninguna universidad registrada.
+                  Por favor verifica tu correo oficial de estudiante.
                 </p>
               </div>
             </div>

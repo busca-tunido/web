@@ -114,9 +114,7 @@ export async function getCurrentUserProfile(): Promise<
   return response;
 }
 
-export async function checkEmailExists(
-  email: string,
-): Promise<ApiResponse<CheckEmailResponseDto>> {
+export async function checkEmailExists(email: string): Promise<ApiResponse<CheckEmailResponseDto>> {
   return apiFetch<CheckEmailResponseDto>(
     `/auth/check-email?email=${encodeURIComponent(email.trim().toLowerCase())}`,
     {

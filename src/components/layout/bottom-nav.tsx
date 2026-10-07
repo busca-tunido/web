@@ -64,18 +64,14 @@ export function BottomNav({ activeTab, onTabChange, onOpenAuthModal }: BottomNav
                   }`}
                 />
                 {item.badge !== undefined && item.badge > 0 && (
-                  <span
-                    className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground animate-in zoom-in duration-150"
-                  >
+                  <span className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground animate-in zoom-in duration-150">
                     {item.badge}
                   </span>
                 )}
               </div>
               <span className="mt-1 text-[11px] tracking-tight">{item.label}</span>
               {isActive && (
-                <span
-                  className="absolute bottom-0 h-1 w-6 rounded-full bg-primary transition-all duration-200"
-                />
+                <span className="absolute bottom-0 h-1 w-6 rounded-full bg-primary transition-all duration-200" />
               )}
             </button>
           );
