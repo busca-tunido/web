@@ -86,12 +86,7 @@ export function classifyPensionRating(
 
   const crs = rAdj + deltaVerif + deltaWifi + deltaStudy + deltaProx;
 
-  const isHigh =
-    count >= 3 &&
-    rating >= 4.2 &&
-    rAdj >= 4.2 &&
-    hasWifi &&
-    crs >= 4.35;
+  const isHigh = count >= 3 && rating >= 4.2 && hasWifi && crs >= 4.25;
 
   if (isHigh) {
     return {

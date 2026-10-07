@@ -198,7 +198,7 @@ export function PensionDetailContent({
       {Boolean(
         pension.distanceToUniversityMeters &&
           pension.distanceToUniversityMeters > 0 &&
-          pension.nearestUniversityName
+          pension.nearestUniversityName,
       ) && (
         <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
           <div className="flex items-center gap-2 text-xs font-medium text-primary">
