@@ -20,8 +20,12 @@ type FavoritesScreenProps = {
 };
 
 export function FavoritesScreen(props: FavoritesScreenProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const { openAuthModal } = useNavigation();
+
+  if (isLoading) {
+    return null;
+  }
 
   if (!isAuthenticated) {
     return <FavoritesGuestIncentive onOpenAuth={openAuthModal} />;

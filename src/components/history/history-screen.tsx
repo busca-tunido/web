@@ -18,8 +18,12 @@ type HistoryScreenProps = {
 };
 
 export function HistoryScreen(props: HistoryScreenProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const { openAuthModal } = useNavigation();
+
+  if (isLoading) {
+    return null;
+  }
 
   if (!isAuthenticated) {
     return <HistoryGuestIncentive onOpenAuth={openAuthModal} />;

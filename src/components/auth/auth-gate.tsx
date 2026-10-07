@@ -23,8 +23,12 @@ export function AuthGate({
   previewHeight = '200px',
   onOpenAuthModal,
 }: AuthGateProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigation = useOptionalNavigation();
+
+  if (isLoading) {
+    return null;
+  }
 
   if (isAuthenticated) {
     return <>{children}</>;
