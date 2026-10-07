@@ -83,8 +83,12 @@ export function matchesSearchFilters(
   }
 
   if (filters.ratingTier) {
-    const classification = classifyPensionRating(pension.ratingAverage, pension.reviewsCount);
-    if (classification.tier !== filters.ratingTier) {
+    const classification = classifyPensionRating(pension);
+    if (filters.ratingTier === 'low') {
+      if (classification.tier !== 'low' && classification.tier !== 'unreviewed') {
+        return false;
+      }
+    } else if (classification.tier !== filters.ratingTier) {
       return false;
     }
   }

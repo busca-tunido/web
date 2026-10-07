@@ -120,5 +120,24 @@ describe('matchesSearchFilters', () => {
     };
     expect(matchesSearchFilters(mediumPension, { query: '', ratingTier: 'medium' })).toBe(true);
     expect(matchesSearchFilters(mediumPension, { query: '', ratingTier: 'high' })).toBe(false);
+    expect(matchesSearchFilters(mediumPension, { query: '', ratingTier: 'low' })).toBe(false);
+
+    const lowPension: PensionItem = {
+      ...basePension,
+      ratingAverage: 2.2,
+      reviewsCount: 4,
+    };
+    expect(matchesSearchFilters(lowPension, { query: '', ratingTier: 'low' })).toBe(true);
+    expect(matchesSearchFilters(lowPension, { query: '', ratingTier: 'high' })).toBe(false);
+    expect(matchesSearchFilters(lowPension, { query: '', ratingTier: 'medium' })).toBe(false);
+
+    const unreviewedPension: PensionItem = {
+      ...basePension,
+      ratingAverage: 0,
+      reviewsCount: 0,
+    };
+    expect(matchesSearchFilters(unreviewedPension, { query: '', ratingTier: 'low' })).toBe(true);
+    expect(matchesSearchFilters(unreviewedPension, { query: '', ratingTier: 'high' })).toBe(false);
+    expect(matchesSearchFilters(unreviewedPension, { query: '', ratingTier: 'medium' })).toBe(false);
   });
 });

@@ -23,9 +23,34 @@ export type MarkerThemeStyle = {
 };
 
 export function classifyPensionRating(
+  pension: PensionItem | Partial<PensionItem>,
+): RatingClassification;
+export function classifyPensionRating(
   ratingAverage?: number | null,
   reviewsCount?: number | null,
+  extraOptions?: Partial<PensionItem>,
+): RatingClassification;
+export function classifyPensionRating(
+  arg1?: number | null | Partial<PensionItem>,
+  arg2?: number | null,
+  arg3?: Partial<PensionItem>,
 ): RatingClassification {
+  let ratingAverage: number | null | undefined;
+  let reviewsCount: number | null | undefined;
+  let options: Partial<PensionItem> = {};
+
+  if (typeof arg1 === 'object' && arg1 !== null) {
+    ratingAverage = arg1.ratingAverage;
+    reviewsCount = arg1.reviewsCount;
+    options = arg1;
+  } else {
+    ratingAverage = arg1;
+    reviewsCount = arg2;
+    if (arg3 && typeof arg3 === 'object') {
+      options = arg3;
+    }
+  }
+
   const count = typeof reviewsCount === 'number' ? reviewsCount : 0;
   const rating = typeof ratingAverage === 'number' ? ratingAverage : 0;
 
@@ -40,22 +65,52 @@ export function classifyPensionRating(
   }
 
   const reliability: ReliabilityTier = count >= 5 ? 'high' : 'low';
+  const confidenceInertia = 3;
+  const priorMean = 3.5;
+  const rAdj =
+    (count / (count + confidenceInertia)) * rating +
+    (confidenceInertia / (count + confidenceInertia)) * priorMean;
 
-  if (rating >= 4.2) {
+  const isVerified = options.isVerified === true;
+  const hasWifi = options.includesWifi ?? true;
+  const hasStudyRoom = options.includesStudyRoom === true;
+  const hasProximity =
+    typeof options.distanceToUniversityMeters === 'number' &&
+    options.distanceToUniversityMeters > 0 &&
+    options.distanceToUniversityMeters <= 1200;
+
+  const deltaVerif = isVerified ? 0.25 : 0;
+  const deltaWifi = hasWifi ? 0.1 : 0;
+  const deltaStudy = hasStudyRoom ? 0.15 : 0;
+  const deltaProx = hasProximity ? 0.15 : 0;
+
+  const crs = rAdj + deltaVerif + deltaWifi + deltaStudy + deltaProx;
+
+  const isHigh =
+    count >= 3 &&
+    rating >= 4.2 &&
+    rAdj >= 4.2 &&
+    hasWifi &&
+    crs >= 4.35;
+
+  if (isHigh) {
     return {
       tier: 'high',
       reliability,
-      label: 'Alta',
+      label: 'Favoritas de la comunidad',
       ratingAverage: rating,
       reviewsCount: count,
     };
   }
 
-  if (rating >= 3.0) {
+  const isEmerging = count >= 1 && count <= 2 && rating >= 4.0;
+  const isSolidCommunity = rating >= 3.0 && crs >= 3.2;
+
+  if (isEmerging || isSolidCommunity) {
     return {
       tier: 'medium',
       reliability,
-      label: 'Media',
+      label: 'Experiencia positiva',
       ratingAverage: rating,
       reviewsCount: count,
     };
@@ -64,7 +119,7 @@ export function classifyPensionRating(
   return {
     tier: 'low',
     reliability,
-    label: 'Baja',
+    label: 'Otras alternativas',
     ratingAverage: rating,
     reviewsCount: count,
   };
@@ -77,7 +132,10 @@ export function filterPensionsByRatingTier(
   if (!tier) return pensions;
 
   return pensions.filter((p) => {
-    const classification = classifyPensionRating(p.ratingAverage, p.reviewsCount);
+    const classification = classifyPensionRating(p);
+    if (tier === 'low') {
+      return classification.tier === 'low' || classification.tier === 'unreviewed';
+    }
     return classification.tier === tier;
   });
 }
@@ -93,9 +151,7 @@ export function getDominantRatingClassification(pensions: PensionItem[]): Rating
     };
   }
 
-  const classifications = pensions.map((p) =>
-    classifyPensionRating(p.ratingAverage, p.reviewsCount),
-  );
+  const classifications = pensions.map((p) => classifyPensionRating(p));
 
   const counts: Record<RatingTier | 'unreviewed', number> = {
     high: 0,
@@ -141,7 +197,12 @@ export function getDominantRatingClassification(pensions: PensionItem[]): Rating
   const avgRating = dominantPensions.length > 0 ? sumRating / dominantPensions.length : 0;
   const totalReviews = dominantPensions.reduce((acc, c) => acc + c.reviewsCount, 0);
 
-  const label = dominantTier === 'high' ? 'Alta' : dominantTier === 'medium' ? 'Media' : 'Baja';
+  const label =
+    dominantTier === 'high'
+      ? 'Favoritas de la comunidad'
+      : dominantTier === 'medium'
+        ? 'Experiencia positiva'
+        : 'Otras alternativas';
 
   return {
     tier: dominantTier,
