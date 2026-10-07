@@ -348,24 +348,24 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
               {[
                 {
                   id: 'high' as const,
-                  label: 'Alta',
-                  subtitle: '≥ 4.2',
+                  label: 'Favoritas de la comunidad',
+                  subtitle: 'Top valoradas',
                   colorClass: 'text-[#2d5e49] dark:text-[#599b7d]',
                   activeBorderClass:
                     'border-[#2d5e49] bg-[#2d5e49]/15 text-[#2d5e49] dark:text-[#599b7d] ring-1 ring-[#2d5e49]',
                 },
                 {
                   id: 'medium' as const,
-                  label: 'Media',
-                  subtitle: '3.0 - 4.1',
+                  label: 'Experiencia positiva',
+                  subtitle: 'Buenas opiniones',
                   colorClass: 'text-[#945d0c] dark:text-[#e09d32]',
                   activeBorderClass:
                     'border-[#a26510] bg-[#a26510]/15 text-[#945d0c] dark:text-[#e09d32] ring-1 ring-[#a26510]',
                 },
                 {
                   id: 'low' as const,
-                  label: 'Baja',
-                  subtitle: '< 3.0',
+                  label: 'Otras alternativas',
+                  subtitle: 'Nuevas o por evaluar',
                   colorClass: 'text-[#78716c] dark:text-[#a8a29e]',
                   activeBorderClass:
                     'border-[#78716c] bg-[#78716c]/15 text-[#78716c] dark:text-[#a8a29e] ring-1 ring-[#78716c]',
@@ -382,13 +382,13 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
                         ratingTier: prev.ratingTier === opt.id ? undefined : opt.id,
                       }))
                     }
-                    className={`flex flex-col items-center justify-center p-3 min-h-[48px] rounded-xl border text-xs font-semibold transition active:scale-95 ${
+                    className={`flex flex-col items-center justify-center p-3 min-h-[48px] rounded-xl border text-xs font-semibold text-center transition active:scale-95 ${
                       isSelected
                         ? opt.activeBorderClass
                         : `border-border bg-card ${opt.colorClass} hover:bg-muted hover:border-muted-foreground/30`
                     }`}
                   >
-                    <span className="font-bold text-sm">{opt.label}</span>
+                    <span className="font-bold text-xs sm:text-sm leading-tight">{opt.label}</span>
                     <span className="text-[10px] text-muted-foreground mt-0.5">{opt.subtitle}</span>
                   </button>
                 );

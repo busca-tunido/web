@@ -13,7 +13,7 @@ export type FilterChipItem = {
 export const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
   {
     id: 'rating_high',
-    label: 'Calificación alta',
+    label: 'Favoritas de la comunidad',
     priority: 0,
     textColorClass:
       'text-[#2d5e49] dark:text-[#599b7d] border-border/70 bg-card/60 hover:border-[#2d5e49]/50 font-semibold',
@@ -27,7 +27,7 @@ export const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
   },
   {
     id: 'rating_medium',
-    label: 'Calificación media',
+    label: 'Experiencia positiva',
     priority: 0,
     textColorClass:
       'text-[#945d0c] dark:text-[#e09d32] border-border/70 bg-card/60 hover:border-[#a26510]/50 font-semibold',
@@ -41,7 +41,7 @@ export const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
   },
   {
     id: 'rating_low',
-    label: 'Calificación baja',
+    label: 'Otras alternativas',
     priority: 0,
     textColorClass:
       'text-[#78716c] dark:text-[#a8a29e] border-border/70 bg-card/60 hover:border-[#78716c]/50 font-semibold',
