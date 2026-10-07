@@ -183,7 +183,10 @@ export function ResponsiveModalFooter({
   const { isDesktop } = useResponsiveModal();
   if (isDesktop) {
     return (
-      <DialogFooter className={cn('p-4 border-t border-border/60 bg-muted/20', className)} {...props}>
+      <DialogFooter
+        className={cn('p-4 border-t border-border/60 bg-muted/20', className)}
+        {...props}
+      >
         {children}
       </DialogFooter>
     );
