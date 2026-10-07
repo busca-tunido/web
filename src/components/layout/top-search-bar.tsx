@@ -1,7 +1,9 @@
 'use client';
 
 import { Filter, MapPin, Search, X } from 'lucide-react';
+import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { getSortedFilterChips } from '@/lib/filter-chips';
 import type { SearchFilters } from '@/lib/types';
 
 type TopSearchBarProps = {
@@ -10,6 +12,7 @@ type TopSearchBarProps = {
   onOpenFilterDrawer?: () => void;
   selectedCityName?: string;
   onClearCity?: () => void;
+  onResetFilters?: () => void;
 };
 
 export function TopSearchBar({
@@ -18,16 +21,26 @@ export function TopSearchBar({
   onOpenFilterDrawer,
   selectedCityName,
   onClearCity,
+  onResetFilters,
 }: TopSearchBarProps) {
-  const activeFiltersCount =
-    (filters.hasPrivateBathroom ? 1 : 0) +
-    (filters.includesMeals ? 1 : 0) +
-    (filters.maxPriceClp ? 1 : 0) +
-    (selectedCityName ? 1 : 0);
+  const activeFiltersCount = useMemo(() => {
+    return (
+      (filters.hasPrivateBathroom ? 1 : 0) +
+      (filters.includesMeals ? 1 : 0) +
+      (filters.maxPriceClp ? 1 : 0) +
+      (filters.roomType ? 1 : 0) +
+      (filters.genderPreference && filters.genderPreference !== 'ALL' ? 1 : 0) +
+      (filters.sortBy && filters.sortBy !== 'relevance' ? 1 : 0) +
+      (filters.ratingTier ? 1 : 0) +
+      (selectedCityName ? 1 : 0)
+    );
+  }, [filters, selectedCityName]);
+
+  const sortedChips = useMemo(() => getSortedFilterChips(filters), [filters]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 px-4 py-3 backdrop-blur-xl transition-colors md:hidden">
-      <div className="mx-auto flex max-w-lg flex-col gap-2">
+    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/85 px-3 sm:px-4 py-3 backdrop-blur-xl transition-colors md:hidden">
+      <div className="w-full flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -68,6 +81,39 @@ export function TopSearchBar({
               </span>
             )}
           </button>
+        </div>
+
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 min-w-0 w-full">
+          {sortedChips.map((chip) => {
+            const active = chip.isActive(filters);
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => onFilterChange(chip.toggle(filters))}
+                className={`flex h-7.5 items-center justify-center rounded-full border px-3 text-xs shrink-0 cursor-pointer select-none transition-colors ${
+                  active
+                    ? (chip.activeColorClass ??
+                      'border-border/90 bg-secondary/80 text-foreground font-medium')
+                    : (chip.textColorClass ??
+                      'border-border/60 bg-card/60 text-muted-foreground hover:text-foreground hover:border-border font-medium')
+                }`}
+                aria-pressed={active}
+              >
+                <span>{chip.label}</span>
+              </button>
+            );
+          })}
+
+          {activeFiltersCount > 0 && onResetFilters && (
+            <button
+              type="button"
+              onClick={onResetFilters}
+              className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer underline underline-offset-2 ml-1 whitespace-nowrap"
+            >
+              Limpiar
+            </button>
+          )}
         </div>
 
         {selectedCityName && (

@@ -14,9 +14,15 @@ import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton
 import { env } from '@/env';
 import { useMapViewportPensions } from '@/hooks/use-map-viewport-pensions';
 import { useAuth } from '@/lib/auth-context';
+import { matchesSearchFilters } from '@/lib/filter-matcher';
+import {
+  classifyPensionRating,
+  getDominantRatingClassification,
+  getMarkerThemeStyles,
+} from '@/lib/rating-tier';
 import { useTheme } from '@/lib/theme-context';
-import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
-import type { UserCoordinates } from '@/lib/use-user-location';
+import type { CityInfo, PensionItem, SearchFilters, UniversityInfo } from '@/lib/types';
+import { findClosestCity, type UserCoordinates } from '@/lib/use-user-location';
 
 type MapScreenProps = {
   pensions: PensionItem[];
@@ -28,6 +34,7 @@ type MapScreenProps = {
   onRequestLocation: () => void;
   onSelectPension: (pension: PensionItem) => void;
   onOpenPensionDetail: (pension: PensionItem) => void;
+  filters?: SearchFilters;
 };
 
 type DrawerState = 'minimized' | 'half' | 'maximized';
@@ -142,19 +149,26 @@ function createMarkerIcon(
   L: typeof import('leaflet'),
   cluster: ClusterPoint,
   zoom: number,
+  theme: 'light' | 'dark' = 'light',
 ): import('leaflet').DivIcon {
   if (cluster.isSingle) {
     const pension = cluster.pensions[0];
+    const classification = classifyPensionRating(pension.ratingAverage, pension.reviewsCount);
+    const styles = getMarkerThemeStyles(classification, theme === 'dark', cluster.isSelected);
+
     if (zoom < 14) {
+      const opacityVal = cluster.isSelected ? 1 : styles.opacity;
+      const opacityStyle = opacityVal < 1 ? `opacity: ${opacityVal};` : '';
+
       const html = cluster.isSelected
         ? `<div style="width: 24px; height: 24px; transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
-             <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; aspect-ratio: 1 / 1;" class="w-6 h-6 shrink-0 aspect-square rounded-full bg-primary text-primary-foreground border-2 border-white shadow-xl ring-4 ring-primary/30 flex items-center justify-center scale-110 transition-transform">
-               <div style="width: 10px; height: 10px; min-width: 10px; min-height: 10px; aspect-ratio: 1 / 1;" class="w-2.5 h-2.5 shrink-0 aspect-square rounded-full bg-white"></div>
+             <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; aspect-ratio: 1 / 1; background-color: ${styles.bgHex}; border: 2px solid #ffffff; box-shadow: 0 0 0 4px ${styles.ringHex};" class="w-6 h-6 shrink-0 aspect-square rounded-full flex items-center justify-center scale-110 transition-transform">
+               <div style="width: 10px; height: 10px; min-width: 10px; min-height: 10px; aspect-ratio: 1 / 1; background-color: ${styles.dotColor};" class="w-2.5 h-2.5 shrink-0 aspect-square rounded-full"></div>
              </div>
            </div>`
-        : `<div style="width: 16px; height: 16px; transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
-             <div style="width: 16px; height: 16px; min-width: 16px; min-height: 16px; aspect-ratio: 1 / 1;" class="w-4 h-4 shrink-0 aspect-square rounded-full bg-primary text-white border-2 border-white shadow-md hover:scale-125 transition-transform flex items-center justify-center">
-               <div style="width: 6px; height: 6px; min-width: 6px; min-height: 6px; aspect-ratio: 1 / 1;" class="w-1.5 h-1.5 shrink-0 aspect-square rounded-full bg-white"></div>
+        : `<div style="width: 18px; height: 18px; transform: translate(-50%, -50%); cursor: pointer;" class="flex items-center justify-center">
+             <div style="width: 16px; height: 16px; min-width: 16px; min-height: 16px; aspect-ratio: 1 / 1; background-color: ${styles.bgHex}; border: 2px solid ${styles.borderHex}; box-shadow: 0 2px 6px ${styles.ringHex}; ${opacityStyle}" class="w-4 h-4 shrink-0 aspect-square rounded-full shadow-md hover:scale-125 transition-transform flex items-center justify-center hover:opacity-100">
+               <div style="width: 6px; height: 6px; min-width: 6px; min-height: 6px; aspect-ratio: 1 / 1; background-color: ${styles.dotColor};" class="w-1.5 h-1.5 shrink-0 aspect-square rounded-full"></div>
              </div>
            </div>`;
 
@@ -167,17 +181,18 @@ function createMarkerIcon(
     }
 
     const formattedPrice = `$${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP`;
-    const html = cluster.isSelected
-      ? `<div style="width: 100px; transform: translate(-50%, -50%); cursor: pointer;">
-           <div class="px-3 py-1 rounded-full text-xs font-bold shadow-lg transition-transform scale-110 bg-primary text-primary-foreground border border-primary ring-4 ring-primary/25 flex items-center justify-center whitespace-nowrap">
-             ${formattedPrice}
-           </div>
-         </div>`
-      : `<div style="width: 100px; transform: translate(-50%, -50%); cursor: pointer;">
-           <div class="px-2.5 py-1 rounded-full text-xs font-bold shadow-md bg-card text-foreground border border-border hover:border-primary/60 hover:bg-secondary flex items-center justify-center whitespace-nowrap">
-             ${formattedPrice}
-           </div>
-         </div>`;
+    const opacityVal = cluster.isSelected ? 1 : styles.opacity;
+    const opacityStyle = opacityVal < 1 ? `opacity: ${opacityVal};` : '';
+
+    const selectedRingStyle = cluster.isSelected
+      ? `box-shadow: 0 0 0 4px ${styles.ringHex}, 0 10px 20px -3px rgba(0, 0, 0, 0.25); transform: scale(1.1);`
+      : 'box-shadow: 0 3px 8px -1px rgba(0, 0, 0, 0.15);';
+
+    const html = `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="whitespace-nowrap flex items-center justify-center">
+      <div style="background-color: ${styles.bgHex}; color: ${styles.textHex}; border: 1.5px solid ${styles.borderHex}; ${selectedRingStyle} ${opacityStyle}" class="px-2.5 py-1 rounded-full text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap hover:opacity-100">
+        <span>${formattedPrice}</span>
+      </div>
+    </div>`;
 
     return L.divIcon({
       className: 'custom-div-icon',
@@ -188,17 +203,21 @@ function createMarkerIcon(
   }
 
   const count = cluster.pensions.length;
-  const html = cluster.isSelected
-    ? `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="group flex items-center justify-center">
-         <div class="flex items-center justify-center min-w-[38px] h-9 px-2.5 rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-xl border-2 border-primary-foreground ring-4 ring-primary/40 scale-110 transition-transform whitespace-nowrap">
-           ${count}
-         </div>
-       </div>`
-    : `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="group flex items-center justify-center">
-         <div class="flex items-center justify-center min-w-[34px] h-8 px-2.5 rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-lg border-2 border-white ring-2 ring-primary/20 hover:scale-110 hover:ring-4 transition-transform whitespace-nowrap">
-           ${count}
-         </div>
-       </div>`;
+  const classification = getDominantRatingClassification(cluster.pensions);
+  const styles = getMarkerThemeStyles(classification, theme === 'dark', cluster.isSelected);
+  const opacityStyle = styles.opacity < 1 ? `opacity: ${styles.opacity};` : '';
+
+  const selectedRingStyle = cluster.isSelected
+    ? `box-shadow: 0 0 0 4px ${styles.ringHex}, 0 10px 20px -3px rgba(0, 0, 0, 0.25); transform: scale(1.1);`
+    : `box-shadow: 0 0 0 2px ${styles.ringHex}, 0 4px 6px -1px rgba(0, 0, 0, 0.15);`;
+
+  const sizeClass = cluster.isSelected ? 'min-w-[38px] h-9 px-2.5' : 'min-w-[34px] h-8 px-2.5';
+
+  const html = `<div style="transform: translate(-50%, -50%); cursor: pointer;" class="group flex items-center justify-center">
+    <div style="background-color: ${styles.bgHex}; color: ${styles.textHex}; border: 2px solid ${styles.borderHex}; ${selectedRingStyle} ${opacityStyle}" class="flex items-center justify-center ${sizeClass} rounded-full font-bold text-xs transition-all whitespace-nowrap hover:scale-110 hover:opacity-100">
+      ${count}
+    </div>
+  </div>`;
 
   return L.divIcon({
     className: 'custom-div-icon',
@@ -226,6 +245,7 @@ export function MapScreen({
   onRequestLocation,
   onSelectPension,
   onOpenPensionDetail,
+  filters,
 }: MapScreenProps) {
   const { isFavorite, toggleFavorite } = useAuth();
   const { resolvedTheme } = useTheme();
@@ -243,7 +263,12 @@ export function MapScreen({
   } = useMapViewportPensions({
     initialPensions: pensions,
     activePensionId: selectedPension?.id ?? null,
+    filters,
   });
+
+  const visiblePensions = useMemo(() => {
+    return mapPensions.filter((p) => matchesSearchFilters(p, filters));
+  }, [mapPensions, filters]);
 
   const mapPensionsRef = useRef(mapPensions);
   mapPensionsRef.current = mapPensions;
@@ -310,12 +335,46 @@ export function MapScreen({
   }, []);
 
   const displayedPensions = useMemo(() => {
-    if (!activePinId) return mapPensions;
-    const active = mapPensions.find((p) => p.id === activePinId);
-    if (!active) return mapPensions;
-    const others = mapPensions.filter((p) => p.id !== activePinId);
+    if (!activePinId) return visiblePensions;
+    const active = visiblePensions.find((p) => p.id === activePinId);
+    if (!active) return visiblePensions;
+    const others = visiblePensions.filter((p) => p.id !== activePinId);
     return [active, ...others];
-  }, [mapPensions, activePinId]);
+  }, [visiblePensions, activePinId]);
+
+  useEffect(() => {
+    if (activePinId && !visiblePensions.some((p) => p.id === activePinId)) {
+      setActivePinId(null);
+    }
+  }, [activePinId, visiblePensions]);
+
+  const [exploredCenter, setExploredCenter] = useState<UserCoordinates>(() => {
+    if (selectedUniversity) {
+      return { latitude: selectedUniversity.latitude, longitude: selectedUniversity.longitude };
+    }
+    if (selectedPension) {
+      return { latitude: selectedPension.latitude, longitude: selectedPension.longitude };
+    }
+    if (selectedCity) {
+      const cityMatch = cities.find((c) => c.name.toLowerCase() === selectedCity.toLowerCase());
+      if (cityMatch) return { latitude: cityMatch.latitude, longitude: cityMatch.longitude };
+    }
+    if (userLocation) {
+      return userLocation;
+    }
+    return { latitude: -33.4489, longitude: -70.6693 };
+  });
+
+  const nearestCity = useMemo(() => {
+    if (cities.length > 0) {
+      const closest = findClosestCity(cities, exploredCenter);
+      if (closest) return closest.name;
+    }
+    if (displayedPensions.length > 0) {
+      return displayedPensions[0].city;
+    }
+    return selectedCity;
+  }, [cities, exploredCenter, displayedPensions, selectedCity]);
 
   const renderMarkers = useCallback(() => {
     const L = leafletModuleRef.current;
@@ -324,9 +383,11 @@ export function MapScreen({
     if (!L || !map || !markersGroup) return;
 
     const zoom = map.getZoom();
-    const clusters = computeClusters(mapPensions, map, zoom, activePinId);
+    const clusters = computeClusters(visiblePensions, map, zoom, activePinId);
     const nextMarkersMap = new Map<string, import('leaflet').Marker>();
     const currentMarkersMap = activeMarkersMapRef.current;
+
+    const currentTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
 
     for (const cluster of clusters) {
       const modeKey =
@@ -339,14 +400,17 @@ export function MapScreen({
             : cluster.isSingle
               ? 'badge'
               : 'cluster';
-      const cacheKey = `${cluster.id}:${cluster.isSelected ? '1' : '0'}:${modeKey}`;
+      const tierKey = cluster.isSingle
+        ? (cluster.pensions[0]?.ratingAverage ?? '0')
+        : getDominantRatingClassification(cluster.pensions).tier;
+      const cacheKey = `${cluster.id}:${cluster.isSelected ? '1' : '0'}:${modeKey}:${currentTheme}:${tierKey}`;
 
       const existingMarker = currentMarkersMap.get(cacheKey);
       if (existingMarker) {
         nextMarkersMap.set(cacheKey, existingMarker);
         currentMarkersMap.delete(cacheKey);
       } else {
-        const icon = createMarkerIcon(L, cluster, zoom);
+        const icon = createMarkerIcon(L, cluster, zoom, currentTheme);
         const marker = L.marker([cluster.latitude, cluster.longitude], {
           icon,
           zIndexOffset: cluster.isSelected ? 1000 : cluster.isSingle ? 100 : 200,
@@ -386,7 +450,7 @@ export function MapScreen({
     }
 
     activeMarkersMapRef.current = nextMarkersMap;
-  }, [mapPensions, activePinId, onSelectPension, panToPension]);
+  }, [visiblePensions, activePinId, onSelectPension, panToPension, resolvedTheme]);
 
   const debouncedRenderMarkers = useCallback(() => {
     if (renderTimerRef.current !== null) {
@@ -585,6 +649,8 @@ export function MapScreen({
       mapInstanceRef.current = map;
 
       map.on('moveend', () => {
+        const center = map.getCenter();
+        setExploredCenter({ latitude: center.lat, longitude: center.lng });
         handleMapMoveEndRef.current();
         debouncedRenderMarkersRef.current();
       });
@@ -675,6 +741,10 @@ export function MapScreen({
     const map = mapInstanceRef.current;
     if (!map || !selectedUniversity) return;
     setActivePinId(null);
+    setExploredCenter({
+      latitude: selectedUniversity.latitude,
+      longitude: selectedUniversity.longitude,
+    });
     map.flyTo([selectedUniversity.latitude, selectedUniversity.longitude], 15, {
       duration: 1.2,
     });
@@ -687,6 +757,7 @@ export function MapScreen({
     setActivePinId(null);
     const cityMatch = cities.find((c) => c.name.toLowerCase() === selectedCity.toLowerCase());
     if (cityMatch) {
+      setExploredCenter({ latitude: cityMatch.latitude, longitude: cityMatch.longitude });
       map.flyTo([cityMatch.latitude, cityMatch.longitude], 13, {
         duration: 1.2,
       });
@@ -781,9 +852,9 @@ export function MapScreen({
               Explora en el listado o interactúa con los marcadores
             </p>
           </div>
-          {selectedCity && (
+          {nearestCity && (
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 shrink-0">
-              {selectedCity}
+              {nearestCity}
             </span>
           )}
         </div>

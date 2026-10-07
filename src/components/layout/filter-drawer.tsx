@@ -73,6 +73,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
     if (extraAmenities.kitchen) count += 1;
     if (extraAmenities.laundry) count += 1;
     if (extraAmenities.wifi) count += 1;
+    if (localFilters.ratingTier) count += 1;
     if (localFilters.genderPreference && localFilters.genderPreference !== 'ALL') {
       count += 1;
     }
@@ -92,6 +93,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
       minBeds: undefined,
       genderPreference: 'ALL',
       sortBy: localFilters.sortBy,
+      ratingTier: undefined,
     };
     setLocalFilters(reset);
     setExtraAmenities({
@@ -328,6 +330,62 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
                     }`}
                   >
                     {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 pt-6 pb-2">
+            <h3 className="text-base font-semibold text-foreground">
+              Calificación de la Comunidad
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                {
+                  id: 'high' as const,
+                  label: 'Alta',
+                  subtitle: '≥ 4.2',
+                  colorClass: 'text-[#2d5e49] dark:text-[#599b7d]',
+                  activeBorderClass:
+                    'border-[#2d5e49] bg-[#2d5e49]/15 text-[#2d5e49] dark:text-[#599b7d] ring-1 ring-[#2d5e49]',
+                },
+                {
+                  id: 'medium' as const,
+                  label: 'Media',
+                  subtitle: '3.0 - 4.1',
+                  colorClass: 'text-[#945d0c] dark:text-[#e09d32]',
+                  activeBorderClass:
+                    'border-[#a26510] bg-[#a26510]/15 text-[#945d0c] dark:text-[#e09d32] ring-1 ring-[#a26510]',
+                },
+                {
+                  id: 'low' as const,
+                  label: 'Baja',
+                  subtitle: '< 3.0',
+                  colorClass: 'text-[#78716c] dark:text-[#a8a29e]',
+                  activeBorderClass:
+                    'border-[#78716c] bg-[#78716c]/15 text-[#78716c] dark:text-[#a8a29e] ring-1 ring-[#78716c]',
+                },
+              ].map((opt) => {
+                const isSelected = localFilters.ratingTier === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() =>
+                      setLocalFilters((prev) => ({
+                        ...prev,
+                        ratingTier: prev.ratingTier === opt.id ? undefined : opt.id,
+                      }))
+                    }
+                    className={`flex flex-col items-center justify-center p-3 min-h-[48px] rounded-xl border text-xs font-semibold transition active:scale-95 ${
+                      isSelected
+                        ? opt.activeBorderClass
+                        : `border-border bg-card ${opt.colorClass} hover:bg-muted hover:border-muted-foreground/30`
+                    }`}
+                  >
+                    <span className="font-bold text-sm">{opt.label}</span>
+                    <span className="text-[10px] text-muted-foreground mt-0.5">{opt.subtitle}</span>
                   </button>
                 );
               })}

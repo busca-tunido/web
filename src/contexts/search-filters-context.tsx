@@ -55,6 +55,7 @@ export function SearchFiltersProvider({ children, initialFilters }: SearchFilter
     if (filters.city) count += 1;
     if (filters.genderPreference && filters.genderPreference !== 'ALL') count += 1;
     if (filters.roomType) count += 1;
+    if (filters.ratingTier) count += 1;
     return count;
   }, [filters]);
 

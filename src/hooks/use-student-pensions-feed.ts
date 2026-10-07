@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { mapRawPensionToItem } from '@/lib/api-client';
 import { type ApiResponse, isApiSuccess } from '@/lib/api-response';
+import { filterPensionsByRatingTier } from '@/lib/rating-tier';
 import type {
   CityInfo,
   NearbyCityCount,
@@ -170,6 +171,7 @@ export function useStudentPensionsFeed(
   const filterGender = filters?.genderPreference;
   const filterRoomType = filters?.roomType;
   const filterSortBy = filters?.sortBy;
+  const filterRatingTier = filters?.ratingTier;
   const effectiveSortBy = sortBy ?? filterSortBy ?? 'relevance';
 
   const userLat = userLocation?.latitude;
@@ -231,9 +233,12 @@ export function useStudentPensionsFeed(
         }
 
         if (isApiSuccess(res)) {
-          const mappedItems: PensionItem[] = res.data.items.map((dto) =>
+          const rawItems: PensionItem[] = res.data.items.map((dto) =>
             mapRawPensionToItem(dto as unknown as Record<string, unknown>),
           );
+          const mappedItems = filterRatingTier
+            ? filterPensionsByRatingTier(rawItems, filterRatingTier)
+            : rawItems;
 
           if (isLoadMore) {
             setPensions((prev) => {
@@ -245,7 +250,7 @@ export function useStudentPensionsFeed(
             setPensions(mappedItems);
           }
 
-          setTotal(res.data.total ?? mappedItems.length);
+          setTotal(filterRatingTier ? mappedItems.length : (res.data.total ?? mappedItems.length));
           setHasMore(res.data.hasMore ?? false);
           setPage(pageIndex);
           if (res.data.nearbyCityCounts) {
@@ -279,6 +284,7 @@ export function useStudentPensionsFeed(
       filterMaxPrice,
       filterMinPrice,
       filterQuery,
+      filterRatingTier,
       filterRoomType,
       filterUni,
       limit,

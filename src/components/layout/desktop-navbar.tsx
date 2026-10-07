@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { BrandLogo } from '@/components/ui/brand-logo';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
+import { getSortedFilterChips } from '@/lib/filter-chips';
 import type { NavTab, SearchFilters } from '@/lib/types';
 
 type DesktopNavbarProps = {
@@ -31,86 +32,6 @@ type DesktopNavbarProps = {
   onResetFilters?: () => void;
   onOpenAuthModal?: () => void;
 };
-
-type FilterChipItem = {
-  id: string;
-  label: string;
-  priority: number;
-  isActive: (filters: SearchFilters) => boolean;
-  toggle: (filters: SearchFilters) => SearchFilters;
-};
-
-const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
-  {
-    id: 'bathroom',
-    label: 'Baño privado',
-    priority: 1,
-    isActive: (f) => Boolean(f.hasPrivateBathroom),
-    toggle: (f) => ({ ...f, hasPrivateBathroom: !f.hasPrivateBathroom }),
-  },
-  {
-    id: 'meals',
-    label: 'Comida incluida',
-    priority: 2,
-    isActive: (f) => Boolean(f.includesMeals),
-    toggle: (f) => ({ ...f, includesMeals: !f.includesMeals }),
-  },
-  {
-    id: 'single',
-    label: 'Pieza individual',
-    priority: 3,
-    isActive: (f) => f.roomType === 'SINGLE',
-    toggle: (f) => ({ ...f, roomType: f.roomType === 'SINGLE' ? undefined : 'SINGLE' }),
-  },
-  {
-    id: 'female_only',
-    label: 'Solo mujeres',
-    priority: 4,
-    isActive: (f) => f.genderPreference === 'FEMALE_ONLY',
-    toggle: (f) => ({
-      ...f,
-      genderPreference: f.genderPreference === 'FEMALE_ONLY' ? undefined : 'FEMALE_ONLY',
-    }),
-  },
-  {
-    id: 'max_price',
-    label: 'Hasta $250k',
-    priority: 5,
-    isActive: (f) => f.maxPriceClp === 250000,
-    toggle: (f) => ({ ...f, maxPriceClp: f.maxPriceClp === 250000 ? undefined : 250000 }),
-  },
-  {
-    id: 'top_rated',
-    label: 'Mejor evaluadas',
-    priority: 6,
-    isActive: (f) => f.sortBy === 'rating',
-    toggle: (f) => ({ ...f, sortBy: f.sortBy === 'rating' ? undefined : 'rating' }),
-  },
-  {
-    id: 'price_asc',
-    label: 'Menor precio',
-    priority: 7,
-    isActive: (f) => f.sortBy === 'price_asc',
-    toggle: (f) => ({ ...f, sortBy: f.sortBy === 'price_asc' ? undefined : 'price_asc' }),
-  },
-  {
-    id: 'shared',
-    label: 'Pieza compartida',
-    priority: 8,
-    isActive: (f) => f.roomType === 'SHARED',
-    toggle: (f) => ({ ...f, roomType: f.roomType === 'SHARED' ? undefined : 'SHARED' }),
-  },
-  {
-    id: 'mixed',
-    label: 'Residencia mixta',
-    priority: 9,
-    isActive: (f) => f.genderPreference === 'MIXED',
-    toggle: (f) => ({
-      ...f,
-      genderPreference: f.genderPreference === 'MIXED' ? undefined : 'MIXED',
-    }),
-  },
-];
 
 export function DesktopNavbar({
   activeTab,
@@ -133,19 +54,12 @@ export function DesktopNavbar({
       (filters.roomType ? 1 : 0) +
       (filters.genderPreference && filters.genderPreference !== 'ALL' ? 1 : 0) +
       (filters.sortBy && filters.sortBy !== 'relevance' ? 1 : 0) +
+      (filters.ratingTier ? 1 : 0) +
       (selectedCityName ? 1 : 0)
     );
   }, [filters, selectedCityName]);
 
-  const sortedChips = useMemo(() => {
-    return [...RECOMMENDED_FILTER_CHIPS].sort((a, b) => {
-      const aActive = a.isActive(filters);
-      const bActive = b.isActive(filters);
-      if (aActive && !bActive) return -1;
-      if (!aActive && bActive) return 1;
-      return a.priority - b.priority;
-    });
-  }, [filters]);
+  const sortedChips = useMemo(() => getSortedFilterChips(filters), [filters]);
 
   const navLinks: Array<{ id: NavTab; label: string; icon: typeof Compass; badge?: number }> = [
     { id: 'explore', label: 'Explorar', icon: Compass },
@@ -343,7 +257,7 @@ export function DesktopNavbar({
       </div>
 
       <div className="flex h-12 w-full items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-10">
-        <div className="flex items-center justify-center gap-3 max-w-full min-w-0">
+        <div className="flex items-center justify-center gap-3 w-full max-w-4xl lg:max-w-5xl min-w-0">
           <button
             id="desktop-filter-button"
             type="button"
@@ -375,10 +289,12 @@ export function DesktopNavbar({
                     damping: 32,
                     mass: 0.8,
                   }}
-                  className={`flex h-7.5 items-center gap-1 rounded-full border px-3 text-xs font-medium shrink-0 cursor-pointer select-none transition-colors ${
+                  className={`flex h-7.5 items-center justify-center rounded-full border px-3 text-xs shrink-0 cursor-pointer select-none transition-colors ${
                     active
-                      ? 'border-border/90 bg-secondary/80 text-foreground font-medium'
-                      : 'border-border/60 bg-transparent text-muted-foreground hover:text-foreground hover:border-border hover:bg-card/50'
+                      ? (chip.activeColorClass ??
+                        'border-border/90 bg-secondary/80 text-foreground font-medium')
+                      : (chip.textColorClass ??
+                        'border-border/60 bg-transparent text-muted-foreground hover:text-foreground hover:border-border hover:bg-card/50 font-medium')
                   }`}
                   aria-pressed={active}
                 >

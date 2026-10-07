@@ -72,6 +72,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
   const {
     cities,
     universities,
+    isLoadingMetadata,
     pensions,
     total: totalPensions,
     hasMore,
@@ -169,6 +170,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
             onOpenFilterDrawer={openFilters}
             selectedCityName={filters.city}
             onClearCity={clearCity}
+            onResetFilters={handleResetAll}
           />
         )}
 
@@ -192,6 +194,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
                 <ExploreScreen
                   cities={cities}
                   universities={universities}
+                  isLoadingMetadata={isLoadingMetadata}
                   featuredPensions={pensions}
                   selectedCity={null}
                   onSelectCity={(city) => {
@@ -227,6 +230,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
                   onRequestLocation={requestLocation}
                   onSelectPension={selectPension}
                   onOpenPensionDetail={openPensionDetail}
+                  filters={effectiveFilters}
                 />
               )}
 
