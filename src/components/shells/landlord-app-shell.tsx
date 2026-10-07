@@ -1,15 +1,51 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useMemo } from 'react';
-import { LandlordAccountScreen } from '@/components/account/landlord-account-screen';
 import { LandlordDesktopHeader } from '@/components/landlord/landlord-desktop-header';
 import { LandlordDesktopSidebar } from '@/components/landlord/landlord-desktop-sidebar';
 import { LandlordPensionScreen } from '@/components/landlord/landlord-pension-screen';
 import { LandlordPensionsScreen } from '@/components/landlord/landlord-pensions-screen';
-import { LandlordProposalsScreen } from '@/components/landlord/landlord-proposals-screen';
-import { LandlordReviewsScreen } from '@/components/landlord/landlord-reviews-screen';
-import { LandlordRoomsScreen } from '@/components/landlord/landlord-rooms-screen';
-import { PensionEditorDrawer } from '@/components/landlord/pension-editor-drawer';
+
+const LandlordAccountScreen = dynamic(
+  () =>
+    import('@/components/account/landlord-account-screen').then(
+      (mod) => mod.LandlordAccountScreen,
+    ),
+  { ssr: false },
+);
+
+const LandlordProposalsScreen = dynamic(
+  () =>
+    import('@/components/landlord/landlord-proposals-screen').then(
+      (mod) => mod.LandlordProposalsScreen,
+    ),
+  { ssr: false },
+);
+
+const LandlordReviewsScreen = dynamic(
+  () =>
+    import('@/components/landlord/landlord-reviews-screen').then(
+      (mod) => mod.LandlordReviewsScreen,
+    ),
+  { ssr: false },
+);
+
+const LandlordRoomsScreen = dynamic(
+  () =>
+    import('@/components/landlord/landlord-rooms-screen').then(
+      (mod) => mod.LandlordRoomsScreen,
+    ),
+  { ssr: false },
+);
+
+const PensionEditorDrawer = dynamic(
+  () =>
+    import('@/components/landlord/pension-editor-drawer').then(
+      (mod) => mod.PensionEditorDrawer,
+    ),
+  { ssr: false },
+);
 import { LandlordBottomNav } from '@/components/layout/landlord-bottom-nav';
 import {
   LandlordMobileHeader,

@@ -1,20 +1,53 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
+import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
-import { StudentAccountScreen } from '@/components/account/student-account-screen';
-import { AuthModal } from '@/components/auth/auth-modal';
 import { NetworkErrorBanner } from '@/components/common/network-error-state';
 import { ExploreScreen } from '@/components/explore/explore-screen';
-import { FavoritesScreen } from '@/components/favorites/favorites-screen';
-import { HistoryScreen } from '@/components/history/history-screen';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { DesktopNavbar } from '@/components/layout/desktop-navbar';
-import { FilterDrawer } from '@/components/layout/filter-drawer';
 import { TopSearchBar } from '@/components/layout/top-search-bar';
-import { MapScreen } from '@/components/map/map-screen';
-import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import type { InitialPrefetchData } from '@/components/shells/role-router';
+import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
+
+const MapScreen = dynamic(
+  () => import('@/components/map/map-screen').then((mod) => mod.MapScreen),
+  {
+    ssr: false,
+    loading: () => <MapDrawerSkeleton />,
+  },
+);
+
+const FavoritesScreen = dynamic(
+  () => import('@/components/favorites/favorites-screen').then((mod) => mod.FavoritesScreen),
+  { ssr: false },
+);
+
+const HistoryScreen = dynamic(
+  () => import('@/components/history/history-screen').then((mod) => mod.HistoryScreen),
+  { ssr: false },
+);
+
+const StudentAccountScreen = dynamic(
+  () => import('@/components/account/student-account-screen').then((mod) => mod.StudentAccountScreen),
+  { ssr: false },
+);
+
+const PensionDetailModal = dynamic(
+  () => import('@/components/pensions/pension-detail-modal').then((mod) => mod.PensionDetailModal),
+  { ssr: false },
+);
+
+const FilterDrawer = dynamic(
+  () => import('@/components/layout/filter-drawer').then((mod) => mod.FilterDrawer),
+  { ssr: false },
+);
+
+const AuthModal = dynamic(
+  () => import('@/components/auth/auth-modal').then((mod) => mod.AuthModal),
+  { ssr: false },
+);
 import { NavigationProvider, useNavigation } from '@/contexts/navigation-context';
 import { SearchFiltersProvider, useSearchFilters } from '@/contexts/search-filters-context';
 import { useStudentPensionsFeed } from '@/hooks/use-student-pensions-feed';
