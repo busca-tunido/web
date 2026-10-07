@@ -195,14 +195,20 @@ export function PensionDetailContent({
         </p>
       </div>
 
-      <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
-        <div className="flex items-center gap-2 text-xs font-medium text-primary">
-          <MapPin className="h-3.5 w-3.5 shrink-0" />
-          <span>
-            A {pension.distanceToUniversityMeters}m de {pension.nearestUniversityName}
-          </span>
+      {Boolean(
+        pension.distanceToUniversityMeters &&
+          pension.distanceToUniversityMeters > 0 &&
+          pension.nearestUniversityName
+      ) && (
+        <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
+          <div className="flex items-center gap-2 text-xs font-medium text-primary">
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            <span>
+              A {pension.distanceToUniversityMeters}m de {pension.nearestUniversityName}
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
       <AuthGate
         title="Inicia sesión para ver detalles y reseñas"
@@ -241,7 +247,11 @@ export function PensionDetailContent({
                   : 'border-border text-muted-foreground line-through opacity-50'
               }`}
             >
-              <Wifi className="h-4 w-4 text-primary shrink-0" />
+              <Wifi
+                className={`h-4 w-4 shrink-0 ${
+                  pension.includesWifi ? 'text-primary' : 'text-muted-foreground/60'
+                }`}
+              />
               <span>WiFi Alta Velocidad</span>
             </div>
             <div
@@ -251,7 +261,11 @@ export function PensionDetailContent({
                   : 'border-border text-muted-foreground opacity-50'
               }`}
             >
-              <Utensils className="h-4 w-4 text-primary shrink-0" />
+              <Utensils
+                className={`h-4 w-4 shrink-0 ${
+                  pension.includesMeals ? 'text-primary' : 'text-muted-foreground/60'
+                }`}
+              />
               <span>{pension.includesMeals ? 'Comida incluida' : 'Cocina libre uso'}</span>
             </div>
             <div
@@ -261,7 +275,11 @@ export function PensionDetailContent({
                   : 'border-border text-muted-foreground opacity-50'
               }`}
             >
-              <BookOpen className="h-4 w-4 text-primary shrink-0" />
+              <BookOpen
+                className={`h-4 w-4 shrink-0 ${
+                  pension.includesStudyRoom ? 'text-primary' : 'text-muted-foreground/60'
+                }`}
+              />
               <span>Sala de Estudio</span>
             </div>
             <div
@@ -271,20 +289,14 @@ export function PensionDetailContent({
                   : 'border-border text-muted-foreground opacity-50'
               }`}
             >
-              <Wind className="h-4 w-4 text-primary shrink-0" />
+              <Wind
+                className={`h-4 w-4 shrink-0 ${
+                  pension.includesLaundry ? 'text-primary' : 'text-muted-foreground/60'
+                }`}
+              />
               <span>Lavandería</span>
             </div>
           </div>
-
-          <button
-            type="button"
-            id="btn-open-amenities-breakdown"
-            onClick={() => setIsAmenitiesModalOpen(true)}
-            className="mt-2.5 w-full py-2.5 px-3 rounded-xl border border-border/80 bg-muted/30 hover:bg-muted/60 text-xs font-semibold text-foreground flex items-center justify-between transition cursor-pointer"
-          >
-            <span>Ver todas las comodidades y normas</span>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </button>
         </div>
 
         <PensionReviewsPreview

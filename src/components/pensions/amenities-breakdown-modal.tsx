@@ -91,34 +91,42 @@ export function AmenitiesBreakdownModal({
             </div>
             <div className="grid grid-cols-2 gap-2.5">
               <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
-                <Droplets className="h-4 w-4 text-sky-500 shrink-0" />
+                <Droplets className="h-4 w-4 text-primary shrink-0" />
                 <div>
                   <p className="text-xs font-semibold text-foreground">Agua Potable</p>
-                  <p className="text-[10px] text-emerald-600 font-medium">Incluido sin costo</p>
+                  <p className="text-[10px] text-primary font-medium">Incluido sin costo</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
-                <Zap className="h-4 w-4 text-amber-500 shrink-0" />
+                <Zap className="h-4 w-4 text-primary shrink-0" />
                 <div>
                   <p className="text-xs font-semibold text-foreground">Luz y Electricidad</p>
-                  <p className="text-[10px] text-emerald-600 font-medium">Incluido sin costo</p>
+                  <p className="text-[10px] text-primary font-medium">Incluido sin costo</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
-                <Flame className="h-4 w-4 text-orange-500 shrink-0" />
+                <Flame className="h-4 w-4 text-primary shrink-0" />
                 <div>
                   <p className="text-xs font-semibold text-foreground">Gas y Calefont</p>
-                  <p className="text-[10px] text-emerald-600 font-medium">Incluido sin costo</p>
+                  <p className="text-[10px] text-primary font-medium">Incluido sin costo</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
-                <Wifi className="h-4 w-4 text-primary shrink-0" />
+                <Wifi
+                  className={`h-4 w-4 shrink-0 ${
+                    pension.includesWifi ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                />
                 <div>
                   <p className="text-xs font-semibold text-foreground">Internet Fibra Óptica</p>
-                  <p className="text-[10px] text-emerald-600 font-medium">
+                  <p
+                    className={`text-[10px] font-medium ${
+                      pension.includesWifi ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
                     {pension.includesWifi ? 'Alta velocidad libre' : 'No incluido'}
                   </p>
                 </div>
@@ -138,19 +146,19 @@ export function AmenitiesBreakdownModal({
               </div>
               <ul className="space-y-2 text-xs text-foreground/85">
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Cama con colchón cómodo y juego de sábanas base</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Escritorio amplio con silla ergonómica de estudio</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Clóset individual con cajonera y colgador</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Enchufes accesibles junto al escritorio y velador</span>
                 </li>
               </ul>
@@ -163,15 +171,15 @@ export function AmenitiesBreakdownModal({
               </div>
               <ul className="space-y-2 text-xs text-foreground/85">
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Cocina completamente amoblada con microondas y hervidor</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Refrigerador de libre uso con espacio individual designado</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Comedor estudiantil y sala de estar compartida</span>
                 </li>
                 {pension.includesLaundry && (
@@ -190,7 +198,7 @@ export function AmenitiesBreakdownModal({
               </div>
               <ul className="space-y-2 text-xs text-foreground/85">
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>
                     {pension.includesStudyRoom
                       ? 'Sala de estudio silenciosa exclusiva para residentes'
@@ -198,11 +206,11 @@ export function AmenitiesBreakdownModal({
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Cobertura de Wi-Fi de alta velocidad en todos los ambientes</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Iluminación LED natural y adecuada para lectura nocturna</span>
                 </li>
               </ul>
@@ -215,11 +223,11 @@ export function AmenitiesBreakdownModal({
               </div>
               <ul className="space-y-2 text-xs text-foreground/85">
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Cerradura de seguridad en puerta principal y llaves independientes</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Entorno barrial seguro con acceso expedito al transporte</span>
                 </li>
               </ul>
@@ -233,7 +241,7 @@ export function AmenitiesBreakdownModal({
 
             <div className="space-y-2.5 text-xs text-foreground/90">
               <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-2.5">
-                <Clock className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                <Clock className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-foreground">Horario de Llegada / Acceso</p>
                   <p className="text-muted-foreground text-[11px] mt-0.5">
@@ -244,7 +252,7 @@ export function AmenitiesBreakdownModal({
               </div>
 
               <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-2.5">
-                <VolumeX className="h-4 w-4 text-sky-500 shrink-0 mt-0.5" />
+                <VolumeX className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-foreground">Horario de Silencio y Estudio</p>
                   <p className="text-muted-foreground text-[11px] mt-0.5">
@@ -254,7 +262,7 @@ export function AmenitiesBreakdownModal({
               </div>
 
               <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-2.5">
-                <Users className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <Users className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-foreground">Política de Visitas</p>
                   <p className="text-muted-foreground text-[11px] mt-0.5">
@@ -265,7 +273,7 @@ export function AmenitiesBreakdownModal({
               </div>
 
               <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-2.5">
-                <Ban className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
+                <Ban className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-foreground">Fumadores y Mascotas</p>
                   <p className="text-muted-foreground text-[11px] mt-0.5">
@@ -276,7 +284,7 @@ export function AmenitiesBreakdownModal({
               </div>
 
               <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-2.5">
-                <Moon className="h-4 w-4 text-indigo-500 shrink-0 mt-0.5" />
+                <Moon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-foreground">Preferencia de Convivencia</p>
                   <Badge variant="secondary" className="mt-1 text-[11px] font-semibold">
