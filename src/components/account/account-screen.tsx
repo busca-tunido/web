@@ -16,7 +16,7 @@ export function AccountScreen() {
     return <AuthScreen />;
   }
 
-  if (user.role === 'LANDLORD') {
+  if (user.role?.toUpperCase() === 'LANDLORD') {
     return <LandlordAccountScreen />;
   }
 

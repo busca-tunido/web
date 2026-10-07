@@ -113,10 +113,14 @@ export async function apiFetch<T>(
   }
 
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  const targetUrl = `${API_BASE_URL.replace(/\/+$/, '')}${normalizedEndpoint}`;
+  const isSessionEndpoint = normalizedEndpoint.startsWith('/api/auth/session');
+  const targetUrl = isSessionEndpoint
+    ? normalizedEndpoint
+    : `${API_BASE_URL.replace(/\/+$/, '')}${normalizedEndpoint}`;
 
   try {
     const response = await fetch(targetUrl, {
+      credentials: 'same-origin',
       ...restConfig,
       headers: requestHeaders,
       signal: controller.signal,

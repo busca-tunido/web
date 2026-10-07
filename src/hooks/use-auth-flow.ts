@@ -60,7 +60,7 @@ export function isEducationalEmail(email: string): boolean {
 }
 
 export function useAuthFlow(options: UseAuthFlowOptions = {}): UseAuthFlowReturn {
-  const { login } = useAuth();
+  const { login, setSession } = useAuth();
   const [email, setEmailState] = useState(options.initialEmail ?? 'estudiante.demo@uchile.cl');
   const [password, setPassword] = useState('Password123!');
   const [step, setStep] = useState<AuthFlowStep>('email');
@@ -166,6 +166,9 @@ export function useAuthFlow(options: UseAuthFlowOptions = {}): UseAuthFlowReturn
         });
 
         if (isApiSuccess(response)) {
+          if (response.data?.user) {
+            setSession?.(response.data.user, response.data.token);
+          }
           try {
             await login(payload.email.trim(), payload.password);
           } catch {}
@@ -187,7 +190,7 @@ export function useAuthFlow(options: UseAuthFlowOptions = {}): UseAuthFlowReturn
         return false;
       }
     },
-    [login, options],
+    [login, options, setSession],
   );
 
   return {

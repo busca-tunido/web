@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { authService } from '@/services/auth.service';
 import { favoritesService } from '@/services/favorites.service';
 import { isApiSuccess } from './api-response';
@@ -13,6 +13,7 @@ type AuthContextType = {
   isLoading: boolean;
   favorites: string[];
   login: (email: string, password?: string) => Promise<void>;
+  setSession: (profile: UserProfile, token: string) => void;
   logout: () => void;
   toggleFavorite: (pensionId: string) => void;
   isFavorite: (pensionId: string) => boolean;
@@ -26,35 +27,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const setSession = useCallback((profile: UserProfile, sessionToken: string) => {
+    setUser(profile);
+    setToken(sessionToken);
     try {
-      const savedUser = localStorage.getItem('tunido_user');
-      const savedToken = localStorage.getItem('tunido_token');
-      const savedFavs = localStorage.getItem('tunido_favs');
-      if (savedUser && savedToken) {
-        const parsed = JSON.parse(savedUser);
-        setUser(parsed);
-        setToken(savedToken);
-        if (typeof document !== 'undefined' && parsed?.role) {
-          document.cookie = `tunido_role=${parsed.role}; path=/; max-age=2592000; SameSite=Lax`;
-          document.cookie = `tunido_token=${savedToken}; path=/; max-age=2592000; SameSite=Lax`;
-        }
-      }
-      if (savedFavs) {
-        const parsed = JSON.parse(savedFavs);
-        if (Array.isArray(parsed)) {
-          const cleaned = parsed.filter(
-            (id: unknown) => typeof id === 'string' && !id.startsWith('pen-'),
-          );
-          setFavorites(cleaned);
-          localStorage.setItem('tunido_favs', JSON.stringify(cleaned));
-        }
-      }
-    } catch {
-    } finally {
-      setIsLoading(false);
-    }
+      localStorage.setItem('tunido_user', JSON.stringify(profile));
+      localStorage.setItem('tunido_token', sessionToken);
+      sessionStorage.removeItem('tunido_guest');
+    } catch {}
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const initAuth = async () => {
+      try {
+        const savedUser = localStorage.getItem('tunido_user');
+        const savedToken = localStorage.getItem('tunido_token');
+        const savedFavs = localStorage.getItem('tunido_favs');
+
+        if (savedFavs) {
+          const parsed = JSON.parse(savedFavs);
+          if (Array.isArray(parsed)) {
+            const cleaned = parsed.filter(
+              (id: unknown) => typeof id === 'string' && !id.startsWith('pen-'),
+            );
+            if (isMounted) setFavorites(cleaned);
+            localStorage.setItem('tunido_favs', JSON.stringify(cleaned));
+          }
+        }
+
+        if (savedUser && savedToken) {
+          const parsed = JSON.parse(savedUser);
+          if (isMounted) {
+            setUser(parsed);
+            setToken(savedToken);
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        const meRes = await authService.getCurrentUserProfile();
+        if (isMounted && isApiSuccess(meRes) && meRes.data?.id) {
+          const raw = meRes.data as unknown as Record<string, unknown>;
+          const userProfile: UserProfile = {
+            id: String(raw.id),
+            email: String(raw.email),
+            firstName: String(raw.firstName ?? ''),
+            lastName: String(raw.lastName ?? ''),
+            role: (raw.role as UserProfile['role']) ?? 'STUDENT',
+          };
+          const resolvedToken = (raw.token as string) ?? savedToken ?? '';
+          setSession(userProfile, resolvedToken);
+        }
+      } catch {
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void initAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [setSession]);
 
   useEffect(() => {
     const handleFavsUpdate = (e: Event) => {
@@ -77,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     favoritesService
       .fetchStudentFavorites()
       .then((res) => {
-        if (isApiSuccess(res)) {
+        if (isApiSuccess(res) && Array.isArray(res.data)) {
           const ids = res.data.map((p) => p.id);
           setFavorites(ids);
           try {
@@ -94,24 +133,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!isApiSuccess(res)) {
       throw new Error(res.message);
     }
+    const raw = res.data as unknown as Record<string, unknown>;
+    const nested =
+      raw && typeof raw === 'object' && 'data' in raw && raw.data
+        ? (raw.data as Record<string, unknown>)
+        : raw;
+    const user = (nested?.user ?? raw?.user) as UserProfile | undefined;
+    const token =
+      (nested?.token as string) ??
+      (nested?.accessToken as string) ??
+      (raw?.token as string) ??
+      (raw?.accessToken as string) ??
+      '';
+
+    if (!user?.id) {
+      throw new Error('No se pudo obtener el perfil del usuario');
+    }
+
     const profile: UserProfile = {
-      id: res.data.user.id,
-      email: res.data.user.email,
-      firstName: res.data.user.firstName,
-      lastName: res.data.user.lastName,
-      role: res.data.user.role,
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
     };
-    setUser(profile);
-    setToken(res.data.token);
-    try {
-      localStorage.setItem('tunido_user', JSON.stringify(profile));
-      localStorage.setItem('tunido_token', res.data.token);
-      sessionStorage.removeItem('tunido_guest');
-      if (typeof document !== 'undefined') {
-        document.cookie = `tunido_role=${profile.role}; path=/; max-age=2592000; SameSite=Lax`;
-        document.cookie = `tunido_token=${res.data.token}; path=/; max-age=2592000; SameSite=Lax`;
-      }
-    } catch {}
+    setSession(profile, token);
   };
 
   const logout = () => {
@@ -119,14 +165,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     setFavorites([]);
     try {
-      localStorage.removeItem('tunido_user');
-      localStorage.removeItem('tunido_token');
+      authService.logoutSession();
       localStorage.removeItem('tunido_favs');
-      sessionStorage.removeItem('tunido_guest');
-      if (typeof document !== 'undefined') {
-        document.cookie = 'tunido_role=; path=/; max-age=0; SameSite=Lax';
-        document.cookie = 'tunido_token=; path=/; max-age=0; SameSite=Lax';
-      }
       window.dispatchEvent(new CustomEvent('tunido_favs_updated', { detail: [] }));
     } catch {}
   };
@@ -155,6 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         favorites,
         login,
+        setSession,
         logout,
         toggleFavorite,
         isFavorite,

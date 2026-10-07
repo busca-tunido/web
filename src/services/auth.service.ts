@@ -9,28 +9,36 @@ type RawAuthResponse = {
 };
 
 export async function registerUser(payload: RegisterDto): Promise<ApiResponse<AuthSessionDto>> {
-  const response = await apiFetch<RawAuthResponse>('/auth/register', {
+  const response = await apiFetch<RawAuthResponse>('/api/auth/session/register', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
 
   if (isApiSuccess(response)) {
-    const token = response.data.accessToken ?? response.data.token ?? '';
-    if (typeof window !== 'undefined') {
+    const raw = response.data as unknown as Record<string, unknown>;
+    const nested =
+      raw && typeof raw === 'object' && 'data' in raw && raw.data
+        ? (raw.data as Record<string, unknown>)
+        : raw;
+    const token =
+      (nested?.accessToken as string) ??
+      (nested?.token as string) ??
+      (raw?.accessToken as string) ??
+      (raw?.token as string) ??
+      '';
+    const user = (nested?.user ?? raw?.user) as AuthSessionDto['user'];
+
+    if (typeof window !== 'undefined' && user) {
       try {
         localStorage.setItem('tunido_token', token);
-        localStorage.setItem('tunido_user', JSON.stringify(response.data.user));
-        if (typeof document !== 'undefined' && response.data.user?.role) {
-          document.cookie = `tunido_role=${response.data.user.role}; path=/; max-age=2592000; SameSite=Lax`;
-          document.cookie = `tunido_token=${token}; path=/; max-age=2592000; SameSite=Lax`;
-        }
+        localStorage.setItem('tunido_user', JSON.stringify(user));
         sessionStorage.removeItem('tunido_guest');
       } catch {}
     }
     return createSuccess<AuthSessionDto>(
       {
         token,
-        user: response.data.user,
+        user,
       },
       response.statusCode,
     );
@@ -42,28 +50,36 @@ export async function registerUser(payload: RegisterDto): Promise<ApiResponse<Au
 export async function loginWithCredentials(
   payload: LoginDto,
 ): Promise<ApiResponse<AuthSessionDto>> {
-  const response = await apiFetch<RawAuthResponse>('/auth/login', {
+  const response = await apiFetch<RawAuthResponse>('/api/auth/session/login', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
 
   if (isApiSuccess(response)) {
-    const token = response.data.accessToken ?? response.data.token ?? '';
-    if (typeof window !== 'undefined') {
+    const raw = response.data as unknown as Record<string, unknown>;
+    const nested =
+      raw && typeof raw === 'object' && 'data' in raw && raw.data
+        ? (raw.data as Record<string, unknown>)
+        : raw;
+    const token =
+      (nested?.accessToken as string) ??
+      (nested?.token as string) ??
+      (raw?.accessToken as string) ??
+      (raw?.token as string) ??
+      '';
+    const user = (nested?.user ?? raw?.user) as AuthSessionDto['user'];
+
+    if (typeof window !== 'undefined' && user) {
       try {
         localStorage.setItem('tunido_token', token);
-        localStorage.setItem('tunido_user', JSON.stringify(response.data.user));
-        if (typeof document !== 'undefined' && response.data.user?.role) {
-          document.cookie = `tunido_role=${response.data.user.role}; path=/; max-age=2592000; SameSite=Lax`;
-          document.cookie = `tunido_token=${token}; path=/; max-age=2592000; SameSite=Lax`;
-        }
+        localStorage.setItem('tunido_user', JSON.stringify(user));
         sessionStorage.removeItem('tunido_guest');
       } catch {}
     }
     return createSuccess<AuthSessionDto>(
       {
         token,
-        user: response.data.user,
+        user,
       },
       response.statusCode,
     );
@@ -72,10 +88,24 @@ export async function loginWithCredentials(
   return response;
 }
 
-export async function getCurrentUserProfile(): Promise<ApiResponse<UserProfileDto>> {
-  return apiFetch<UserProfileDto>('/auth/me', {
+export async function getCurrentUserProfile(): Promise<
+  ApiResponse<UserProfileDto & { token?: string }>
+> {
+  const response = await apiFetch<UserProfileDto & { token?: string }>('/api/auth/session/me', {
     method: 'GET',
   });
+
+  if (isApiSuccess(response) && typeof window !== 'undefined' && response.data?.id) {
+    try {
+      localStorage.setItem('tunido_user', JSON.stringify(response.data));
+      if (response.data.token) {
+        localStorage.setItem('tunido_token', response.data.token);
+      }
+      sessionStorage.removeItem('tunido_guest');
+    } catch {}
+  }
+
+  return response;
 }
 
 export async function checkEmailExists(
@@ -97,6 +127,7 @@ export function logoutSession(): void {
     localStorage.removeItem('tunido_token');
     localStorage.removeItem('tunido_user');
     sessionStorage.removeItem('tunido_guest');
+    fetch('/api/auth/session/logout', { method: 'POST' }).catch(() => {});
   } catch {}
 }
 

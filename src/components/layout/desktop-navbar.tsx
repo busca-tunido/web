@@ -225,7 +225,7 @@ export function DesktopNavbar({
                     {user.firstName}
                   </span>
                   <span className="text-[10px] text-muted-foreground font-medium capitalize mt-0.5">
-                    {user.role.toLowerCase()}
+                    {user?.role ? user.role.toLowerCase() : ''}
                   </span>
                 </div>
               </button>

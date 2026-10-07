@@ -66,7 +66,7 @@ export function useUniversities(): {
       const response = await fetchUniversities();
       if (!isMountedRef.current) return;
 
-      if (isApiSuccess(response) && response.data.length > 0) {
+      if (isApiSuccess(response) && Array.isArray(response.data) && response.data.length > 0) {
         setUniversities(response.data);
       } else if (!isApiSuccess(response)) {
         setError(response.message);

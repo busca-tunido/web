@@ -9,6 +9,7 @@ const mockLogin = vi.fn().mockResolvedValue(undefined);
 vi.mock('@/lib/auth-context', () => ({
   useAuth: () => ({
     login: mockLogin,
+    setSession: vi.fn(),
     user: null,
     token: null,
     isAuthenticated: false,
