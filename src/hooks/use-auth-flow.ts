@@ -5,6 +5,7 @@ import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
 import { emailCheckSchema } from '@/lib/validations/auth.schema';
 import { authService } from '@/services/auth.service';
+import type { DetectedUniversityDto } from '@/types/api-contracts';
 
 export type AuthFlowStep = 'email' | 'password';
 
@@ -34,6 +35,7 @@ export type UseAuthFlowReturn = {
   isRegisterModalOpen: boolean;
   error: string | null;
   isEduEmail: boolean;
+  detectedUniversity: DetectedUniversityDto | null;
   setEmail: (email: string) => void;
   setPassword: (password: string) => void;
   setError: (error: string | null) => void;
@@ -66,6 +68,7 @@ export function useAuthFlow(options: UseAuthFlowOptions = {}): UseAuthFlowReturn
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [detectedUniversity, setDetectedUniversity] = useState<DetectedUniversityDto | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const isEduEmail = useMemo(() => isEducationalEmail(email), [email]);
@@ -79,6 +82,7 @@ export function useAuthFlow(options: UseAuthFlowOptions = {}): UseAuthFlowReturn
   const resetToEmailStep = useCallback(() => {
     setStep('email');
     setPassword('');
+    setDetectedUniversity(null);
     setError(null);
   }, []);
 
@@ -101,6 +105,7 @@ export function useAuthFlow(options: UseAuthFlowOptions = {}): UseAuthFlowReturn
         if (isApiSuccess(response)) {
           const exists = Boolean(response.data.exists);
           setIsRegistered(exists);
+          setDetectedUniversity(response.data.detectedUniversity ?? null);
           if (exists) {
             setStep('password');
             setIsRegisterModalOpen(false);
@@ -201,6 +206,7 @@ export function useAuthFlow(options: UseAuthFlowOptions = {}): UseAuthFlowReturn
     isRegisterModalOpen,
     error,
     isEduEmail,
+    detectedUniversity,
     setEmail,
     setPassword,
     setError,

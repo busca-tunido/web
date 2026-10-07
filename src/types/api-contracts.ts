@@ -22,6 +22,19 @@ export type UpdateReportDto = components['schemas']['UpdateReportDto'];
 export type UpdateReviewVisibilityDto = components['schemas']['UpdateReviewVisibilityDto'];
 export type UpdatePensionStatusDto = components['schemas']['UpdatePensionStatusDto'];
 
+export type DetectedUniversityDto = {
+  id: string;
+  name: string;
+  shortName: string | null;
+  city: string;
+};
+
+export type CheckEmailResponseDto = {
+  exists: boolean;
+  role?: string;
+  detectedUniversity?: DetectedUniversityDto | null;
+};
+
 export type AuthSessionDto = {
   token: string;
   user: {

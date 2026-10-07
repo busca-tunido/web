@@ -1,6 +1,12 @@
 import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
-import type { AuthSessionDto, LoginDto, RegisterDto, UserProfileDto } from '@/types/api-contracts';
+import type {
+  AuthSessionDto,
+  CheckEmailResponseDto,
+  LoginDto,
+  RegisterDto,
+  UserProfileDto,
+} from '@/types/api-contracts';
 
 type RawAuthResponse = {
   accessToken?: string;
@@ -110,8 +116,8 @@ export async function getCurrentUserProfile(): Promise<
 
 export async function checkEmailExists(
   email: string,
-): Promise<ApiResponse<{ exists: boolean; role?: string }>> {
-  return apiFetch<{ exists: boolean; role?: string }>(
+): Promise<ApiResponse<CheckEmailResponseDto>> {
+  return apiFetch<CheckEmailResponseDto>(
     `/auth/check-email?email=${encodeURIComponent(email.trim().toLowerCase())}`,
     {
       method: 'GET',

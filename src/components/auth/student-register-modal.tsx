@@ -2,7 +2,7 @@
 
 import { AlertCircle, Eye, EyeOff, GraduationCap, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { UniversitySearchSelect } from '@/components/auth/university-search-select';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -15,16 +15,17 @@ import {
 } from '@/components/ui/drawer';
 import { FormField } from '@/components/ui/form-field';
 import { useFormValidation } from '@/hooks/use-form-validation';
-import { useUniversities } from '@/hooks/use-universities';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
 import { type StudentRegisterInput, studentRegisterSchema } from '@/lib/validations/auth.schema';
 import { authService } from '@/services/auth.service';
+import type { DetectedUniversityDto } from '@/types/api-contracts';
 
 export type StudentRegisterModalProps = {
   isOpen: boolean;
   onClose: () => void;
   prefilledEmail: string;
+  detectedUniversity?: DetectedUniversityDto | null;
   onSuccess?: () => void;
 };
 
@@ -32,15 +33,13 @@ export function StudentRegisterModal({
   isOpen,
   onClose,
   prefilledEmail,
+  detectedUniversity,
   onSuccess,
 }: StudentRegisterModalProps) {
   const { login, setSession } = useAuth();
-  const { universities } = useUniversities();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmittingManual, setIsSubmittingManual] = useState(false);
-
-  const defaultUniversityId = universities[0]?.id ?? '';
 
   const {
     values,
@@ -59,7 +58,7 @@ export function StudentRegisterModal({
       firstName: '',
       lastName: '',
       phone: '',
-      universityId: defaultUniversityId,
+      universityId: detectedUniversity?.id ?? '',
       termsAccepted: true,
     },
   });
@@ -71,10 +70,12 @@ export function StudentRegisterModal({
   }, [prefilledEmail, setFieldValue]);
 
   useEffect(() => {
-    if (isOpen && defaultUniversityId && !values.universityId) {
-      setFieldValue('universityId', defaultUniversityId);
+    if (detectedUniversity?.id) {
+      setFieldValue('universityId', detectedUniversity.id);
+    } else if (detectedUniversity === null) {
+      setFieldValue('universityId', '');
     }
-  }, [isOpen, defaultUniversityId, values.universityId, setFieldValue]);
+  }, [detectedUniversity, setFieldValue]);
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,21 +246,38 @@ export function StudentRegisterModal({
             )}
           </FormField>
 
-          <FormField
-            id="register-student-university"
-            label="Universidad"
-            required
-            error={touched.universityId ? errors.universityId : undefined}
-          >
-            <UniversitySearchSelect
-              id="register-student-university"
-              universities={universities}
-              value={values.universityId}
-              onChange={(val) => handleChange('universityId', val)}
-              onBlur={() => handleBlur('universityId')}
-              hasError={Boolean(touched.universityId && errors.universityId)}
-            />
-          </FormField>
+          {detectedUniversity ? (
+            <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+                <GraduationCap className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-bold text-foreground truncate">
+                    {detectedUniversity.name}
+                  </p>
+                  {detectedUniversity.shortName && (
+                    <Badge variant="secondary" className="text-[10px] py-0 px-1.5">
+                      {detectedUniversity.shortName}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Institución verificada automáticamente por tu correo
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start gap-2.5 rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold">Dominio institucional no reconocido</p>
+                <p className="text-[11px] opacity-90 mt-0.5">
+                  El dominio del correo ingresado no coincide con ninguna universidad registrada. Por favor verifica tu correo oficial de estudiante.
+                </p>
+              </div>
+            </div>
+          )}
 
           <FormField
             id="register-student-phone"
@@ -305,7 +323,7 @@ export function StudentRegisterModal({
             <Button
               id="btn-complete-register"
               type="submit"
-              disabled={isSubmittingManual}
+              disabled={isSubmittingManual || !detectedUniversity}
               className="min-h-12 w-full bg-primary font-bold text-primary-foreground hover:opacity-90 text-sm shadow-md transition active:scale-[0.98]"
             >
               {isSubmittingManual ? (

@@ -22,6 +22,7 @@ export function EmailCheckStep({ className, onSuccess, initialEmail }: EmailChec
     isRegisterModalOpen,
     error,
     isEduEmail,
+    detectedUniversity,
     setEmail,
     setPassword,
     setIsRegisterModalOpen,
@@ -137,6 +138,7 @@ export function EmailCheckStep({ className, onSuccess, initialEmail }: EmailChec
         isOpen={isRegisterModalOpen}
         onClose={() => setIsRegisterModalOpen(false)}
         prefilledEmail={email}
+        detectedUniversity={detectedUniversity}
         onSuccess={onSuccess}
       />
     </div>

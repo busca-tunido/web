@@ -124,7 +124,15 @@ describe('Two-step Auth Flow & Student Register Modal', () => {
     vi.mocked(authService.checkEmailExists).mockResolvedValueOnce({
       status: 'success',
       statusCode: 200,
-      data: { exists: false },
+      data: {
+        exists: false,
+        detectedUniversity: {
+          id: '00000000-0000-4000-8000-000000000001',
+          name: 'Universidad de Chile',
+          shortName: 'UCHILE',
+          city: 'Santiago',
+        },
+      },
     });
 
     render(<EmailCheckStep initialEmail="nuevo.alumno@uchile.cl" />);
@@ -194,6 +202,12 @@ describe('Two-step Auth Flow & Student Register Modal', () => {
         isOpen={true}
         onClose={handleClose}
         prefilledEmail="nuevo@uchile.cl"
+        detectedUniversity={{
+          id: '00000000-0000-4000-8000-000000000001',
+          name: 'Universidad de Chile',
+          shortName: 'UCHILE',
+          city: 'Santiago',
+        }}
         onSuccess={handleSuccess}
       />,
     );
@@ -247,6 +261,12 @@ describe('Two-step Auth Flow & Student Register Modal', () => {
         isOpen={true}
         onClose={vi.fn()}
         prefilledEmail="repetido@uchile.cl"
+        detectedUniversity={{
+          id: '00000000-0000-4000-8000-000000000001',
+          name: 'Universidad de Chile',
+          shortName: 'UCHILE',
+          city: 'Santiago',
+        }}
       />,
     );
 
