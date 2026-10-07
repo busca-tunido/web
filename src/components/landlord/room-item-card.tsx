@@ -4,10 +4,10 @@ import {
   Bath,
   BedDouble,
   Edit3,
+  Home,
   Loader2,
   PauseCircle,
   PlayCircle,
-  Sparkles,
   User,
   Users,
 } from 'lucide-react';
@@ -164,7 +164,7 @@ export function RoomItemCard({
                   variant="outline"
                   className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
                 >
-                  <Sparkles className="h-3 w-3 text-muted-foreground" />
+                  <Home className="h-3 w-3 text-muted-foreground" />
                   Estudio
                 </Badge>
               )}

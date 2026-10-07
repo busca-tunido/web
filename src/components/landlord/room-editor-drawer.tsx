@@ -5,11 +5,11 @@ import {
   Bath,
   ChevronLeft,
   DollarSign,
+  Home,
   Loader2,
   Minus,
   Plus,
   Save,
-  Sparkles,
   Upload,
   User,
   Users,
@@ -76,7 +76,7 @@ const ROOM_TYPE_OPTIONS: Array<{
   {
     type: 'STUDIO',
     label: 'Estudio',
-    icon: Sparkles,
+    icon: Home,
     description: 'Monoambiente',
   },
 ];

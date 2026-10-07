@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Heart, MapPin, Sparkles, Star } from 'lucide-react';
+import { Award, Building2, Heart, MapPin, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { memo } from 'react';
@@ -67,7 +67,7 @@ function PensionCardComponent({
             )}
             {isHighRelevance && (
               <span className="flex items-center gap-1 rounded-full bg-primary/90 px-2.5 py-0.5 text-[11px] font-semibold text-primary-foreground backdrop-blur-md shadow-sm">
-                <Sparkles className="h-3 w-3" />
+                <Award className="h-3 w-3" />
                 Recomendada
               </span>
             )}

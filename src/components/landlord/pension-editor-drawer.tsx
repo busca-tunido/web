@@ -14,7 +14,6 @@ import {
   MapPin,
   Navigation,
   ShieldCheck,
-  Sparkles,
   User,
   Users,
   Wifi,
@@ -138,7 +137,7 @@ const FREQUENT_AMENITIES: ReadonlyArray<{
   { slug: 'wifi-alta-velocidad', name: 'Wi-Fi fibra óptica', icon: Wifi },
   { slug: 'cocina-equipada', name: 'Cocina equipada', icon: Flame },
   { slug: 'lavadora', name: 'Lavadora disponible', icon: Droplets },
-  { slug: 'area-estudio', name: 'Sala de estudio', icon: Sparkles },
+  { slug: 'area-estudio', name: 'Sala de estudio', icon: GraduationCap },
   { slug: 'calefaccion', name: 'Calefacción', icon: Zap },
   { slug: 'camaras-seguridad', name: 'Seguridad / Cámaras', icon: ShieldCheck },
 ];
@@ -904,7 +903,7 @@ export function PensionEditorDrawer({
 
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                <Sparkles className="h-4 w-4 text-primary" />
+                <Check className="h-4 w-4 text-primary" />
                 <span>6. Comodidades Destacadas</span>
               </div>
 

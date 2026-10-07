@@ -9,7 +9,6 @@ import {
   ChevronUp,
   Loader2,
   PenLine,
-  Sparkles,
   Star,
   Wifi,
   Wind,
@@ -350,7 +349,7 @@ export function PublishReviewModal({
               <div className="mt-4 space-y-3.5 border-t border-border/60 pt-3 text-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
                     <span>Limpieza e Higiene</span>
                   </div>
                   <div className="flex items-center gap-2">

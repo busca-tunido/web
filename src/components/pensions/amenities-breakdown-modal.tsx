@@ -11,7 +11,6 @@ import {
   Home,
   Moon,
   Shield,
-  Sparkles,
   Users,
   VolumeX,
   Wifi,
@@ -84,7 +83,7 @@ export function AmenitiesBreakdownModal({
 
           <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <CheckCircle2 className="h-4 w-4 text-primary" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
                 Servicios Básicos Incluidos en la Mensualidad
               </h3>
