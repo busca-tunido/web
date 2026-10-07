@@ -5,7 +5,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { PriceHistogramRangeSlider } from '@/components/search/price-histogram-range-slider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from '@/components/ui/drawer';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import { usePriceHistogram } from '@/hooks/use-price-histogram';
 import type { SearchFilters } from '@/lib/types';
 
@@ -109,13 +114,14 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent
+    <ResponsiveModal open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <ResponsiveModalContent
         id="filter-drawer-content"
+        showClose={false}
         className="max-w-lg md:max-w-2xl mx-auto bg-card border-border text-foreground md:rounded-3xl max-h-[85vh] flex flex-col p-0 overflow-hidden"
       >
         <div className="sticky top-0 z-20 bg-card border-b border-border px-4 py-3 flex flex-col gap-2">
-          <div className="mx-auto w-10 h-1 shrink-0 rounded-full bg-muted-foreground/30" />
+          <div className="mx-auto w-10 h-1 shrink-0 rounded-full bg-muted-foreground/30 md:hidden" />
           <div className="flex items-center justify-between">
             <button
               type="button"
@@ -126,7 +132,9 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
               <X className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2">
-              <DrawerTitle className="font-semibold text-base text-foreground">Filtros</DrawerTitle>
+              <ResponsiveModalTitle className="font-semibold text-base text-foreground">
+                Filtros
+              </ResponsiveModalTitle>
               {activeFilterCount > 0 && (
                 <Badge
                   variant="secondary"
@@ -145,9 +153,9 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
               Limpiar
             </button>
           </div>
-          <DrawerDescription className="sr-only">
+          <ResponsiveModalDescription className="sr-only">
             Ajusta los filtros de búsqueda de pensiones
-          </DrawerDescription>
+          </ResponsiveModalDescription>
         </div>
 
         <div className="flex-1 max-h-[82vh] overflow-y-auto pr-1 p-4 md:p-6 flex flex-col gap-6 divide-y divide-border">
@@ -415,7 +423,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
               : 'Mostrar alojamientos'}
           </Button>
         </div>
-      </DrawerContent>
-    </Drawer>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }
