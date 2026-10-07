@@ -50,12 +50,10 @@ export function isEducationalEmail(email: string): boolean {
     normalized.endsWith('.edu') ||
     normalized.endsWith('.edu.cl') ||
     normalized.endsWith('.cl') ||
-    normalized.includes('alumnos') ||
-    normalized.includes('est') ||
-    normalized.includes('uchile') ||
-    normalized.includes('uc') ||
-    normalized.includes('usach') ||
-    normalized.includes('utfsm')
+    normalized.includes('.edu.') ||
+    normalized.includes('alumno') ||
+    normalized.includes('estudiante') ||
+    normalized.includes('est.')
   );
 }
 

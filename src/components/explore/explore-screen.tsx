@@ -71,11 +71,11 @@ export function ExploreScreen({
   const sortedCities = [...cities].sort((a, b) => {
     if (a.isCurrentCity) return -1;
     if (b.isCurrentCity) return 1;
-    return b.foreignStudentRate - a.foreignStudentRate;
+    return (b.pensionsCount ?? 0) - (a.pensionsCount ?? 0);
   });
 
   const sortedUniversities = [...universities].sort(
-    (a, b) => b.foreignStudentRate - a.foreignStudentRate,
+    (a, b) => (b.pensionsNearbyCount ?? 0) - (a.pensionsNearbyCount ?? 0),
   );
 
   return (

@@ -12,7 +12,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   isLoading: boolean;
   favorites: string[];
-  login: (email: string, password?: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   setSession: (profile: UserProfile, token: string) => void;
   logout: () => void;
   toggleFavorite: (pensionId: string) => void;
@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .catch(() => {});
   }, [token]);
 
-  const login = async (email: string, password = 'Password123!') => {
+  const login = async (email: string, password: string) => {
     const res = await authService.loginWithCredentials({ email, password });
     if (!isApiSuccess(res)) {
       throw new Error(res.message);

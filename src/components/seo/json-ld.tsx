@@ -149,43 +149,17 @@ export function RootJsonLd({ pensions = [] }: RootJsonLdProps = {}) {
 
   const itemListSchema: WithContext<ItemList> = generateItemListSchema(pensions, APP_URL);
 
-  const accommodationSchema: AccommodationWithOffers =
-    pensions.length > 0
-      ? generateAccommodationSchema(pensions[0], APP_URL)
-      : {
-          '@context': 'https://schema.org',
-          '@type': 'LodgingBusiness',
-          name: 'Pensiones y Residencias Universitarias en Chile',
-          description:
-            'Alojamientos y pensiones universitarias con habitaciones amobladas, wifi, servicios incluidos y verificación estudiantil.',
-          url: APP_URL,
-          image: `${APP_URL}/icon.png`,
-          address: {
-            '@type': 'PostalAddress',
-            addressCountry: 'CL',
-            addressRegion: 'Región Metropolitana',
-            addressLocality: 'Santiago',
-          },
-          geo: {
-            '@type': 'GeoCoordinates',
-            latitude: -33.4489,
-            longitude: -70.6693,
-          },
-          offers: {
-            '@type': 'Offer',
-            price: 250000,
-            priceCurrency: 'CLP',
-            availability: 'https://schema.org/InStock',
-            unitText: 'MONTH',
-          },
-        };
+  const accommodationSchema: AccommodationWithOffers | null =
+    pensions.length > 0 ? generateAccommodationSchema(pensions[0], APP_URL) : null;
 
   return (
     <>
       <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
       <script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
       <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>
-      <script type="application/ld+json">{JSON.stringify(accommodationSchema)}</script>
+      {accommodationSchema && (
+        <script type="application/ld+json">{JSON.stringify(accommodationSchema)}</script>
+      )}
     </>
   );
 }

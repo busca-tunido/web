@@ -346,8 +346,8 @@ export async function fetchPriceHistogram(
   }));
 
   const payload: PriceHistogramResponse = {
-    minPrice: Number(raw.minPrice ?? 0),
-    maxPrice: Number(raw.maxPrice ?? 0),
+    minPrice: raw.minPrice === null || raw.minPrice === undefined ? null : Number(raw.minPrice),
+    maxPrice: raw.maxPrice === null || raw.maxPrice === undefined ? null : Number(raw.maxPrice),
     currency: String(raw.currency ?? 'CLP'),
     totalListings: Number(raw.totalListings ?? 0),
     bins,

@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { isApiSuccess } from '@/lib/api-response';
+import { useAuth } from '@/lib/auth-context';
 import type { PensionItem } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 import { proposalsService } from '@/services/proposals.service';
@@ -106,6 +107,7 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreatePensionOpen, setIsCreatePensionOpen] = useState(false);
+  const { user } = useAuth();
   const [defaultContact, setDefaultContactState] = useState<LandlordDefaultContact>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -116,10 +118,23 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       }
     }
     return {
-      name: 'Propietario Demo',
-      phone: '+56 9 8765 4321',
+      name: '',
+      phone: '',
     };
   });
+
+  useEffect(() => {
+    if (user && (!defaultContact.name || !defaultContact.phone)) {
+      setDefaultContactState((prev) => {
+        const updatedName = prev.name || `${user.firstName} ${user.lastName}`.trim();
+        const updatedPhone = prev.phone || user.phone || '';
+        if (updatedName !== prev.name || updatedPhone !== prev.phone) {
+          return { name: updatedName, phone: updatedPhone };
+        }
+        return prev;
+      });
+    }
+  }, [user, defaultContact.name, defaultContact.phone]);
   const [customContacts, setCustomContacts] = useState<Record<string, PensionCustomContact>>(() => {
     if (typeof window !== 'undefined') {
       try {

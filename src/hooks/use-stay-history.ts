@@ -6,10 +6,19 @@ import type { StayHistoryItem } from '@/lib/types';
 import { staysService } from '@/services/stays.service';
 
 export function formatStayDateRange(
-  startDateStr: string,
-  endDateStr: string,
+  startDateStr?: string | null,
+  endDateStr?: string | null,
+  durationCategory?: string | null,
   locale = 'es-CL',
 ): string {
+  if (!startDateStr || !endDateStr) {
+    if (durationCategory === 'ONE_SEMESTER') return 'Estadía de 1 semestre';
+    if (durationCategory === 'ONE_YEAR') return 'Estadía de 1 año';
+    if (durationCategory === 'MORE_THAN_A_YEAR') return 'Estadía de más de 1 año';
+    if (durationCategory === 'FEW_WEEKS') return 'Estadía de algunas semanas';
+    if (durationCategory === 'FEW_DAYS') return 'Estadía de pocos días';
+    return 'Estadía registrada';
+  }
   const formatter = new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: 'short',

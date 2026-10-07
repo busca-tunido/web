@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, MapPin, Sparkles, Star } from 'lucide-react';
+import { Building2, Heart, MapPin, Sparkles, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { memo } from 'react';
@@ -44,16 +44,20 @@ function PensionCardComponent({
         className="w-full flex flex-col text-left cursor-pointer focus:outline-none"
         aria-label={`Ver detalles de ${pension.title}`}
       >
-        <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm">
-          <Image
-            src={pension.photos[0]}
-            alt={pension.title}
-            fill
-            unoptimized
-            sizes="(max-width: 640px) 100vw, 480px"
-            className="object-cover transition duration-300 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+        <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm flex items-center justify-center">
+          {pension.photos[0] ? (
+            <Image
+              src={pension.photos[0]}
+              alt={pension.title}
+              fill
+              unoptimized
+              sizes="(max-width: 640px) 100vw, 480px"
+              className="object-cover transition duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <Building2 className="h-10 w-10 text-muted-foreground/30" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
 
           <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
             {pension.isVerified && (

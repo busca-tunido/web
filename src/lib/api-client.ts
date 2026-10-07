@@ -98,17 +98,11 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
         .map((img) => normalizeImageUrl(typeof img === 'string' ? img : img.url))
         .filter(Boolean)
     : [];
-  const photos =
-    images.length > 0
-      ? images
-      : [
-          'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/rooms/room-fallback.webp',
-        ];
+  const photos = images;
 
   const firstNearby = raw.nearbyUniversities?.[0];
-  const nearestUniName =
-    firstNearby?.university?.shortName || firstNearby?.university?.name || 'Universidad de Chile';
-  const distanceMeters = firstNearby?.distanceMeters ?? 450;
+  const nearestUniName = firstNearby?.university?.shortName || firstNearby?.university?.name || '';
+  const distanceMeters = firstNearby?.distanceMeters ?? 0;
 
   const amenitiesSlugs = new Set((raw.amenities || []).map((a) => a.slug));
 
@@ -118,7 +112,7 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
           id: r.id ? String(r.id) : `room-${String(raw.id ?? 'pension')}-${idx + 1}`,
           title: r.title ?? `Habitación ${idx + 1}`,
           roomType: r.roomType === 'SHARED' ? 'SHARED' : 'SINGLE',
-          priceMonthlyClp: Number(r.priceMonthly) || Number(raw.baseMonthlyPrice) || 280000,
+          priceMonthlyClp: Number(r.priceMonthly) || Number(raw.baseMonthlyPrice) || 0,
           hasPrivateBathroom: Boolean(r.hasPrivateBathroom),
           isAvailable: r.isAvailable ?? true,
           photos:
@@ -126,30 +120,20 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
               ? r.photos.map(normalizeImageUrl).filter(Boolean)
               : photos,
         }))
-      : [
-          {
-            id: `room-${raw.id}-1`,
-            title: 'Habitación Individual Clásica',
-            roomType: 'SINGLE',
-            priceMonthlyClp: Number(raw.baseMonthlyPrice) || 280000,
-            hasPrivateBathroom: true,
-            isAvailable: true,
-            photos,
-          },
-        ];
+      : [];
 
   const pensionId = String(raw.id ?? '');
   return {
     id: pensionId,
     slug: raw.slug ?? `pension-${pensionId}`,
-    title: raw.title ?? 'Pensión Universitaria',
+    title: raw.title ?? '',
     description: raw.description ?? '',
     address: raw.address ?? '',
-    neighborhood: raw.neighborhood ?? 'Centro',
-    city: raw.city ?? 'Santiago',
-    latitude: Number(raw.latitude) || -33.4489,
-    longitude: Number(raw.longitude) || -70.6693,
-    priceMonthlyClp: Number(raw.baseMonthlyPrice) || 280000,
+    neighborhood: raw.neighborhood ?? '',
+    city: raw.city ?? '',
+    latitude: Number(raw.latitude) || 0,
+    longitude: Number(raw.longitude) || 0,
+    priceMonthlyClp: Number(raw.baseMonthlyPrice) || 0,
     depositClp: Number(raw.deposit) || 0,
     ratingAverage: (() => {
       const avg = raw.ratingAverage ?? raw.averageRating;
@@ -288,8 +272,8 @@ export async function fetchCities(): Promise<CityInfo[]> {
         for (const u of json.data) {
           if (u.city && !cityMap.has(u.city)) {
             cityMap.set(u.city, {
-              lat: Number(u.latitude) || -33.4489,
-              lng: Number(u.longitude) || -70.6693,
+              lat: Number(u.latitude) || 0,
+              lng: Number(u.longitude) || 0,
             });
           }
         }
@@ -297,9 +281,7 @@ export async function fetchCities(): Promise<CityInfo[]> {
           id: cityName.toLowerCase().replace(/\s+/g, '-'),
           name: cityName,
           region: 'Chile',
-          foreignStudentRate: 0.12,
           pensionsCount: 0,
-          averagePriceClp: 300000,
           imageUrl: getCityImageUrl(cityName),
           latitude: coords.lat,
           longitude: coords.lng,
@@ -330,21 +312,22 @@ export async function fetchUniversities(city?: string): Promise<UniversityInfo[]
           logoUrl?: string;
           campusImageUrl?: string;
           domains?: string[];
+          emailDomains?: string[];
+          _count?: { nearbyPensions?: number };
         }>
       >;
       if (json?.data && Array.isArray(json.data) && json.data.length > 0) {
-        return json.data.map((u, i) => ({
+        return json.data.map((u) => ({
           id: u.id,
           name: u.name,
           acronym: u.shortName || u.name.slice(0, 4).toUpperCase(),
           city: u.city,
-          domains: u.domains || ['uchile.cl'],
-          foreignStudentRate: 0.15 + (i % 5) * 0.03,
-          pensionsNearbyCount: 12 + i * 2,
+          domains: u.emailDomains ?? u.domains ?? [],
+          pensionsNearbyCount: u._count?.nearbyPensions ?? 0,
           logoUrl: u.logoUrl,
           imageUrl: u.campusImageUrl || getUniversityImageUrl(u.name, u.shortName),
-          latitude: Number(u.latitude) || -33.4489,
-          longitude: Number(u.longitude) || -70.6693,
+          latitude: Number(u.latitude) || 0,
+          longitude: Number(u.longitude) || 0,
         }));
       }
     }
@@ -376,7 +359,7 @@ export async function fetchPensionReviews(pensionId: string): Promise<PensionRev
 
 export async function loginWithEmail(
   email: string,
-  password = 'Password123!',
+  password: string,
 ): Promise<{ user: UserProfile; token: string }> {
   const { data, error, response } = await apiClient.POST('/auth/login', {
     body: { email, password },

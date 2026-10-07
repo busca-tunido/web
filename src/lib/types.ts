@@ -16,9 +16,9 @@ export type CityInfo = {
   id: string;
   name: string;
   region: string;
-  foreignStudentRate: number;
+  foreignStudentRate?: number;
   pensionsCount: number;
-  averagePriceClp: number;
+  averagePriceClp?: number;
   imageUrl: string;
   isCurrentCity?: boolean;
   latitude: number;
@@ -31,7 +31,7 @@ export type UniversityInfo = {
   acronym: string;
   city: string;
   domains: string[];
-  foreignStudentRate: number;
+  foreignStudentRate?: number;
   pensionsNearbyCount: number;
   logoUrl?: string;
   imageUrl: string;
@@ -107,8 +107,8 @@ export type PriceBinItem = {
 };
 
 export type PriceHistogramResponse = {
-  minPrice: number;
-  maxPrice: number;
+  minPrice: number | null;
+  maxPrice: number | null;
   currency: string;
   totalListings: number;
   bins: PriceBinItem[];
@@ -139,12 +139,12 @@ export type StayHistoryItem = {
   pensionTitle: string;
   pensionCity: string;
   roomTitle: string;
-  startDate: string;
-  endDate: string;
+  startDate?: string | null;
+  endDate?: string | null;
   ratingGiven?: number;
   hasReview: boolean;
   monthlyPaidClp: number;
-  imageUrl: string;
+  imageUrl?: string | null;
   review?: PensionReview;
 };
 

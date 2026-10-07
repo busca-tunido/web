@@ -13,10 +13,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech',
-      },
-      {
-        protocol: 'https',
         hostname: '*.storage.c-2.us-east-2.aws.neon.tech',
       },
       {

@@ -203,14 +203,16 @@ export function PublishReviewModal({
         createdAt: serverReview.createdAt ?? new Date().toISOString(),
         images: uploadedUrls.map((url, i) => ({ id: `img-${i}`, url })),
         user: {
-          id: user?.id || 'usr-current',
-          firstName: user?.firstName || 'Estudiante',
-          lastName: user?.lastName || 'Residente',
+          id: user?.id || '',
+          firstName: user?.firstName || '',
+          lastName: user?.lastName || '',
           avatarUrl: user?.avatarUrl,
-          university: {
-            name: user?.universityName || 'Universidad de Chile',
-            shortName: 'UCHILE',
-          },
+          university: user?.universityName
+            ? {
+                name: user.universityName,
+                shortName: user.universityName.slice(0, 4).toUpperCase(),
+              }
+            : undefined,
         },
       };
 

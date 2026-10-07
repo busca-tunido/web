@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, CheckCircle2, History, MessageSquare, Star } from 'lucide-react';
+import { Building2, Calendar, CheckCircle2, History, MessageSquare, Star } from 'lucide-react';
 import Image from 'next/image';
 import { Suspense, useState } from 'react';
 import { HistoryGuestIncentive } from '@/components/history/history-guest-incentive';
@@ -78,7 +78,11 @@ type HistoryListProps = {
   stays: StayHistoryItem[];
   onExplore?: () => void;
   onSelectReviewStay: (stay: StayHistoryItem) => void;
-  formatDateRange: (start: string, end: string) => string;
+  formatDateRange: (
+    start?: string | null,
+    end?: string | null,
+    durationCategory?: string | null,
+  ) => string;
 };
 
 function HistoryList({ stays, onExplore, onSelectReviewStay, formatDateRange }: HistoryListProps) {
@@ -101,26 +105,29 @@ function HistoryList({ stays, onExplore, onSelectReviewStay, formatDateRange }: 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       {stays.map((stay) => {
-        const stayImg =
-          stay.imageUrl && stay.imageUrl.trim().length > 0
-            ? stay.imageUrl
-            : 'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/pensions/stay-history-fallback.webp';
+        const hasImg = Boolean(stay.imageUrl && stay.imageUrl.trim().length > 0);
 
         return (
           <div
             key={stay.id}
             className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm flex flex-col"
           >
-            <div className="relative h-36 w-full overflow-hidden bg-muted">
-              <Image
-                src={stayImg}
-                alt={stay.pensionTitle}
-                fill
-                unoptimized
-                sizes="(max-width: 640px) 100vw, 480px"
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
+            <div className="relative h-36 w-full overflow-hidden bg-muted flex items-center justify-center">
+              {hasImg ? (
+                <Image
+                  src={stay.imageUrl as string}
+                  alt={stay.pensionTitle}
+                  fill
+                  unoptimized
+                  sizes="(max-width: 640px) 100vw, 480px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 via-card to-secondary/30 text-muted-foreground">
+                  <Building2 className="h-10 w-10 text-primary/40" />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
               <div className="absolute bottom-2.5 left-2.5">
                 <Badge className="bg-background/80 text-foreground border border-border text-[10px] backdrop-blur-md">
                   {stay.pensionCity}
@@ -144,7 +151,9 @@ function HistoryList({ stays, onExplore, onSelectReviewStay, formatDateRange }: 
 
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>{formatDateRange(stay.startDate, stay.endDate)}</span>
+                <span>
+                  {formatDateRange(stay.startDate, stay.endDate, stay.review?.stayDurationCategory)}
+                </span>
               </div>
 
               <div className="flex items-center justify-between border-t border-border pt-2.5">
