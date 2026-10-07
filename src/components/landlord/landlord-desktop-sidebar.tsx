@@ -3,25 +3,24 @@
 import {
   BedDouble,
   Building2,
-  Check,
   ChevronDown,
   ChevronUp,
-  DoorOpen,
   Eye,
   Home,
   LogOut,
+  MessageSquare,
   Plus,
   Star,
   User,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { RoomOccupancyBar } from '@/components/landlord/room-occupancy-bar';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
-import { Badge } from '@/components/ui/badge';
 import { BrandLogo } from '@/components/ui/brand-logo';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { type LandlordTab, useLandlord } from '@/contexts/landlord-context';
 import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/utils';
@@ -43,7 +42,7 @@ type NavItemConfig = {
 export function LandlordDesktopSidebar({
   activeTab: propActiveTab,
   onTabChange,
-  pendingProposalsCount = 0,
+  pendingProposalsCount: propPendingProposalsCount,
   className,
 }: LandlordDesktopSidebarProps) {
   const landlordContext = useLandlord();
@@ -55,39 +54,61 @@ export function LandlordDesktopSidebar({
   const selectedPension = landlordContext.selectedPension;
   const setSelectedPension = landlordContext.setSelectedPension;
   const openCreatePensionModal = landlordContext.openCreatePensionModal;
+  const pendingProposalsCount = propPendingProposalsCount ?? landlordContext.pendingProposalsCount;
 
   const [isPropertyMenuOpen, setIsPropertyMenuOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const propertyDropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const propertyListboxId = useId();
-
-  const navItems: readonly NavItemConfig[] = useMemo(
-    () => [
-      { id: 'rooms', label: 'Habitaciones', icon: BedDouble },
-      { id: 'pension', label: 'Mi Pensión', icon: Home },
-      { id: 'reviews', label: 'Reseñas', icon: Star, badge: pendingProposalsCount },
-      { id: 'account', label: 'Cuenta', icon: User },
-    ],
-    [pendingProposalsCount],
-  );
+  const [dropdownCoords, setDropdownCoords] = useState<{ top: number; left: number } | null>(null);
 
   const rooms = selectedPension?.rooms ?? [];
   const totalRooms = rooms.length;
-  const availableRooms = rooms.filter((r) => r.isAvailable).length;
-  const occupiedRooms = Math.max(0, totalRooms - availableRooms);
-  const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
+  const occupiedRooms = rooms.filter((r) => !r.isAvailable).length;
+  const reviewsCount = selectedPension?.reviewsCount ?? 0;
+
+  const navItems: readonly NavItemConfig[] = useMemo(
+    () => [
+      { id: 'pension', label: 'Mi Pensión', icon: Home },
+      { id: 'rooms', label: 'Habitaciones', icon: BedDouble, badge: totalRooms },
+      { id: 'reviews', label: 'Reseñas', icon: Star, badge: reviewsCount },
+      {
+        id: 'proposals',
+        label: 'Sugerencias',
+        icon: MessageSquare,
+        badge: pendingProposalsCount > 0 ? pendingProposalsCount : undefined,
+      },
+    ],
+    [totalRooms, reviewsCount, pendingProposalsCount],
+  );
+
+  const updateDropdownPosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    setDropdownCoords({
+      top: rect.bottom > 0 ? rect.bottom + 6 : 140,
+      left: rect.left > 0 ? rect.left : 16,
+    });
+  }, []);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (
-        propertyDropdownRef.current &&
-        !propertyDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsPropertyMenuOpen(false);
-      }
-    }
+    setMounted(true);
+  }, []);
 
+  useEffect(() => {
+    if (!isPropertyMenuOpen) return;
+    updateDropdownPosition();
+    window.addEventListener('resize', updateDropdownPosition);
+    window.addEventListener('scroll', updateDropdownPosition, true);
+    return () => {
+      window.removeEventListener('resize', updateDropdownPosition);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+    };
+  }, [isPropertyMenuOpen, updateDropdownPosition]);
+
+  useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsPropertyMenuOpen(false);
@@ -95,54 +116,59 @@ export function LandlordDesktopSidebar({
     }
 
     if (isPropertyMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
       document.addEventListener('keydown', handleKeyDown);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isPropertyMenuOpen]);
+
+  const togglePropertyMenu = () => {
+    if (!isPropertyMenuOpen) {
+      updateDropdownPosition();
+    }
+    setIsPropertyMenuOpen((prev) => !prev);
+  };
 
   return (
     <>
       <aside
         id="landlord-desktop-sidebar"
         className={cn(
-          'hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r border-border/60 bg-card/60 backdrop-blur min-h-screen sticky top-0 h-screen overflow-y-auto transition-colors z-30',
+          'hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r border-border/60 bg-card/60 backdrop-blur h-full md:h-screen overflow-y-auto overscroll-y-contain transition-colors z-30',
           className,
         )}
       >
-        <div className="flex flex-col gap-2 p-5 border-b border-border/60">
-          <div className="flex items-center justify-between gap-2">
-            <BrandLogo size="sm" priority={false} />
-            <Badge
-              variant="outline"
-              className="border-primary/40 bg-primary/10 text-primary text-[10px] font-semibold shrink-0"
-            >
-              Panel Propietario
-            </Badge>
-          </div>
+        <div className="p-5 border-b border-border/60">
+          <BrandLogo size="sm" priority={false} />
         </div>
 
-        <div ref={propertyDropdownRef} className="relative px-4 pt-4 pb-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-1.5 block">
+        <div className="relative px-4 pt-3 pb-2 flex flex-col gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1 block">
             Pensión Activa
           </span>
-          <button
-            type="button"
-            onClick={() => setIsPropertyMenuOpen((prev) => !prev)}
-            aria-expanded={isPropertyMenuOpen}
-            aria-haspopup="listbox"
-            aria-controls={propertyListboxId}
-            className="flex w-full min-h-[48px] items-center justify-between gap-2 rounded-xl border border-border/80 bg-background/80 p-2.5 text-left transition hover:border-primary/40 hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shadow-2xs"
+
+          <div
+            ref={triggerRef}
+            className="relative flex w-full min-h-[56px] items-center justify-between gap-1.5 rounded-xl border border-border/80 bg-background/80 p-2 transition hover:border-primary/40 focus-within:ring-2 focus-within:ring-ring shadow-2xs"
           >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <button
+              type="button"
+              onClick={togglePropertyMenu}
+              aria-expanded={isPropertyMenuOpen}
+              aria-haspopup="listbox"
+              aria-controls={propertyListboxId}
+              className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer focus-visible:outline-none rounded-lg p-1 transition hover:bg-secondary/40"
+            >
+              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <Building2 className="h-4.5 w-4.5" />
+                <span
+                  className={cn(
+                    'absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background',
+                    selectedPension?.isActive ? 'bg-emerald-500' : 'bg-muted-foreground/40',
+                  )}
+                />
               </div>
               <div className="flex min-w-0 flex-col">
                 <span className="truncate text-xs font-bold text-foreground">
@@ -152,89 +178,41 @@ export function LandlordDesktopSidebar({
                   {selectedPension?.city ?? 'Alojamiento'}
                 </span>
               </div>
-            </div>
-            <div className="shrink-0 text-muted-foreground">
+            </button>
+
+            <button
+              type="button"
+              onClick={togglePropertyMenu}
+              aria-label={isPropertyMenuOpen ? 'Cerrar selector' : 'Abrir selector'}
+              className="flex h-8 w-8 items-center justify-center cursor-pointer hover:text-foreground text-muted-foreground transition rounded-lg hover:bg-secondary/40"
+            >
               {isPropertyMenuOpen ? (
                 <ChevronUp className="h-4 w-4" />
               ) : (
                 <ChevronDown className="h-4 w-4" />
               )}
-            </div>
-          </button>
+            </button>
+          </div>
 
-          <AnimatePresence>
-            {isPropertyMenuOpen && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-40"
-                  onClick={() => setIsPropertyMenuOpen(false)}
-                />
-                <motion.div
-                  id={propertyListboxId}
-                  role="listbox"
-                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute left-4 right-4 top-full z-50 mt-1.5 rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-xl"
-                >
-                  <div className="max-h-56 overflow-y-auto space-y-1">
-                    {pensions.length > 0 ? (
-                      pensions.map((prop) => {
-                        const isSelected = prop.id === selectedPension?.id;
-                        return (
-                          <button
-                            key={prop.id}
-                            type="button"
-                            role="option"
-                            aria-selected={isSelected}
-                            onClick={() => {
-                              setSelectedPension(prop);
-                              setIsPropertyMenuOpen(false);
-                            }}
-                            className={cn(
-                              'flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition cursor-pointer',
-                              isSelected
-                                ? 'bg-primary/10 text-primary font-semibold'
-                                : 'text-foreground hover:bg-secondary',
-                            )}
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-xs font-medium">{prop.title}</p>
-                              <p className="truncate text-[10px] text-muted-foreground">
-                                {prop.city}
-                              </p>
-                            </div>
-                            {isSelected && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                          </button>
-                        );
-                      })
-                    ) : (
-                      <div className="p-2 text-center text-xs text-muted-foreground">
-                        {selectedPension?.title ?? '1 pensión'}
-                      </div>
-                    )}
-                  </div>
-                  <div className="pt-1 mt-1 border-t border-border/60">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsPropertyMenuOpen(false);
-                        openCreatePensionModal();
-                      }}
-                      className="flex w-full min-h-[36px] items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-primary hover:bg-primary/10 transition cursor-pointer"
-                    >
-                      <Plus className="h-3.5 w-3.5 shrink-0" />
-                      <span>Registrar Nueva Pensión</span>
-                    </button>
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
+          <RoomOccupancyBar
+            totalRooms={totalRooms}
+            occupiedRooms={occupiedRooms}
+            label="Ocupación"
+            showIcon
+            className="shadow-2xs mt-1"
+          />
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsPreviewOpen(true)}
+            disabled={!selectedPension}
+            className="w-full min-h-[40px] items-center justify-center gap-2 rounded-xl border-border bg-background/60 hover:bg-secondary hover:text-foreground text-xs font-semibold cursor-pointer shadow-2xs transition"
+          >
+            <Eye className="h-4 w-4 text-primary shrink-0" />
+            <span className="truncate">Vista de Estudiante</span>
+          </Button>
         </div>
 
         <nav
@@ -242,7 +220,7 @@ export function LandlordDesktopSidebar({
           className="flex flex-col gap-1 px-3 py-2"
         >
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 mb-1">
-            Menú Principal
+            Gestión de Pensión
           </span>
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -268,9 +246,9 @@ export function LandlordDesktopSidebar({
                 />
                 <span className="flex-1 text-left">{item.label}</span>
 
-                {item.badge !== undefined && item.badge > 0 && (
-                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                    {item.badge > 99 ? '99+' : item.badge}
+                {item.badge !== undefined && (
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-[10px] font-medium text-muted-foreground tabular-nums">
+                    {item.badge}
                   </span>
                 )}
 
@@ -286,65 +264,62 @@ export function LandlordDesktopSidebar({
           })}
         </nav>
 
-        <div className="px-3 py-2">
-          <Card className="border-border/70 bg-secondary/30 shadow-2xs">
-            <CardContent className="p-3.5 flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-                  <DoorOpen className="h-4 w-4 text-primary" />
-                  <span>Ocupación</span>
-                </div>
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    'text-[10px] font-bold px-1.5 py-0 border-0',
-                    occupancyRate >= 80
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                      : occupancyRate >= 40
-                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                        : 'bg-muted text-muted-foreground',
-                  )}
-                >
-                  {occupancyRate}%
-                </Badge>
-              </div>
+        <div className="mt-auto flex flex-col gap-2 p-3 border-t border-border/60">
+          <button
+            type="button"
+            onClick={() => setActiveTab('pensions')}
+            className={cn(
+              'group relative flex min-h-[42px] w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition cursor-pointer',
+              activeTab === 'pensions'
+                ? 'bg-primary/10 text-primary font-semibold'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+            )}
+          >
+            <Building2
+              className={cn(
+                'h-4.5 w-4.5 shrink-0 transition-transform duration-200',
+                activeTab === 'pensions' ? 'text-primary stroke-[2.2]' : 'stroke-[1.75]',
+              )}
+            />
+            <span className="flex-1 text-left">Mis Pensiones</span>
+            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-[10px] font-medium text-muted-foreground tabular-nums">
+              {pensions.length}
+            </span>
+            {activeTab === 'pensions' && (
+              <motion.div
+                layoutId="active-landlord-desktop-sidebar-indicator"
+                transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-primary"
+              />
+            )}
+          </button>
 
-              <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full transition-all duration-300"
-                  style={{ width: `${occupancyRate}%` }}
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                <span>
-                  {occupiedRooms} {occupiedRooms === 1 ? 'ocupada' : 'ocupadas'}
-                </span>
-                <span>
-                  {availableRooms} {availableRooms === 1 ? 'libre' : 'libres'}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="px-3 py-2">
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setIsPreviewOpen(true)}
-            disabled={!selectedPension}
-            className="w-full min-h-[44px] justify-start gap-2.5 rounded-xl border-dashed border-border hover:border-primary/50 hover:bg-primary/5 text-xs font-medium cursor-pointer"
+            onClick={openCreatePensionModal}
+            className="flex w-full min-h-[38px] items-center justify-center gap-2 rounded-xl border border-dashed border-primary/40 bg-primary/5 text-primary hover:border-primary/70 hover:bg-primary/10 text-xs font-semibold shadow-2xs transition active:scale-[0.99] cursor-pointer"
           >
-            <Eye className="h-4 w-4 text-primary shrink-0" />
-            <span className="truncate">Vista de Estudiante</span>
+            <Plus className="h-4 w-4 shrink-0" />
+            <span>Registrar Nueva Pensión</span>
           </Button>
-        </div>
 
-        <div className="mt-auto p-4 border-t border-border/60">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5 min-w-0">
+          <div
+            className={cn(
+              'flex items-center justify-between gap-2 p-2 rounded-xl transition',
+              activeTab === 'account'
+                ? 'bg-primary/10 border border-primary/30 shadow-2xs'
+                : 'hover:bg-secondary/70 border border-transparent',
+            )}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveTab('account')}
+              className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer group"
+              title="Ir a Mi Cuenta"
+              aria-label="Ir a Mi Cuenta"
+            >
               <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-border bg-card">
                 {user?.avatarUrl ? (
                   <Image
@@ -356,20 +331,26 @@ export function LandlordDesktopSidebar({
                     className="object-cover"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
+                  <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground group-hover:text-primary transition-colors">
                     <User className="h-4 w-4" />
                   </div>
                 )}
               </div>
               <div className="flex min-w-0 flex-col text-left">
-                <span className="truncate text-xs font-semibold text-foreground leading-tight">
+                <span
+                  className={cn(
+                    'truncate text-xs font-semibold leading-tight transition-colors',
+                    activeTab === 'account'
+                      ? 'text-primary'
+                      : 'text-foreground group-hover:text-primary',
+                  )}
+                >
                   {user ? `${user.firstName} ${user.lastName}` : 'Propietario'}
                 </span>
-                <span className="truncate text-[10px] text-muted-foreground">
-                  {user?.email ?? 'Sesión activa'}
-                </span>
+                <span className="truncate text-[10px] text-muted-foreground">Mi Cuenta</span>
               </div>
-            </div>
+            </button>
+
             <Button
               type="button"
               variant="ghost"
@@ -384,6 +365,110 @@ export function LandlordDesktopSidebar({
           </div>
         </div>
       </aside>
+
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {isPropertyMenuOpen && dropdownCoords && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-40 bg-black/10 dark:bg-black/25"
+                  onClick={() => setIsPropertyMenuOpen(false)}
+                />
+                <motion.div
+                  id={propertyListboxId}
+                  role="listbox"
+                  style={{
+                    position: 'fixed',
+                    top: dropdownCoords.top,
+                    left: dropdownCoords.left,
+                  }}
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                  className="z-50 w-[360px] max-w-[calc(100vw-32px)] rounded-2xl border border-border bg-popover/95 backdrop-blur-md p-2 text-popover-foreground shadow-2xl"
+                >
+                  <div className="max-h-72 overflow-y-auto space-y-1.5">
+                    {pensions.length > 0 ? (
+                      pensions.map((prop) => {
+                        const isSelected = prop.id === selectedPension?.id;
+                        return (
+                          <div
+                            key={prop.id}
+                            className={cn(
+                              'group flex w-full items-center justify-between gap-2.5 rounded-xl p-1.5 transition border',
+                              isSelected
+                                ? 'bg-primary/10 border-primary/30'
+                                : 'border-transparent hover:bg-secondary/70 hover:border-border/60',
+                            )}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedPension(prop);
+                                setIsPropertyMenuOpen(false);
+                              }}
+                              className="flex items-center gap-2.5 min-w-0 flex-1 text-left p-1 rounded-lg cursor-pointer transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            >
+                              <span
+                                className={cn(
+                                  'h-2.5 w-2.5 rounded-full shrink-0',
+                                  prop.isActive
+                                    ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]'
+                                    : 'bg-muted-foreground/30',
+                                )}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p
+                                  className={cn(
+                                    'truncate text-xs font-bold leading-tight',
+                                    isSelected ? 'text-primary' : 'text-foreground',
+                                  )}
+                                >
+                                  {prop.title}
+                                </p>
+                                <p className="truncate text-[10px] text-muted-foreground mt-0.5">
+                                  {prop.city} {prop.rooms ? `• ${prop.rooms.length} habs` : ''}
+                                </p>
+                              </div>
+                            </button>
+
+                            {!isSelected && (
+                              <div className="flex items-center shrink-0 pr-1">
+                                <button
+                                  type="button"
+                                  title="Vista previa de esta pensión"
+                                  aria-label={`Vista previa de ${prop.title}`}
+                                  onClick={() => {
+                                    setSelectedPension(prop);
+                                    setIsPreviewOpen(true);
+                                    setIsPropertyMenuOpen(false);
+                                  }}
+                                  className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-primary/15 hover:text-primary text-muted-foreground transition cursor-pointer"
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="p-3 text-center text-xs text-muted-foreground">
+                        {selectedPension?.title ?? '1 pensión'}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>,
+          document.body,
+        )}
 
       {selectedPension && (
         <PensionDetailModal

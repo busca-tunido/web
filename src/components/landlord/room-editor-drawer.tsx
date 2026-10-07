@@ -494,9 +494,9 @@ export function RoomEditorDrawer({
             </div>
 
             {form.type === 'SHARED' && (
-              <div className="rounded-2xl border border-indigo-500/30 bg-indigo-500/5 p-3.5 flex items-center justify-between gap-3 animate-in fade-in">
+              <div className="rounded-2xl border border-border/80 bg-muted/20 p-3.5 flex items-center justify-between gap-3 animate-in fade-in">
                 <div className="flex items-center gap-2.5 text-left">
-                  <div className="h-9 w-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                  <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <Users className="h-4 w-4" />
                   </div>
                   <div>

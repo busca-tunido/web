@@ -1,6 +1,6 @@
 'use client';
 
-import { Bath, Edit3, Loader2, Sparkles, User, Users } from 'lucide-react';
+import { Bath, Edit3, Loader2, PauseCircle, PlayCircle, Sparkles, User, Users } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +26,7 @@ export type RoomItem = {
   hasPrivateBathroom?: boolean;
   bathType?: 'PRIVATE' | 'SHARED';
   isAvailable: boolean;
+  isActive?: boolean;
   totalBeds?: number;
   availableBeds?: number;
   bedCount?: number;
@@ -41,13 +42,20 @@ export type RoomItemCardProps = {
   room: RoomItem;
   onEdit: (room: RoomItem) => void;
   onToggleAvailability: (roomId: string, isAvailable: boolean) => Promise<void>;
+  onToggleActive?: (roomId: string, isActive: boolean) => Promise<void> | void;
   className?: string;
 };
 
 const FALLBACK_ROOM_IMAGE =
   'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/rooms/room-fallback.webp';
 
-export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: RoomItemCardProps) {
+export function RoomItemCard({
+  room,
+  onEdit,
+  onToggleAvailability,
+  onToggleActive,
+  className,
+}: RoomItemCardProps) {
   const [isAvailable, setIsAvailable] = useState<boolean>(room.isAvailable);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
@@ -95,7 +103,7 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
   return (
     <Card
       className={cn(
-        'group relative overflow-hidden rounded-2xl border border-border/70 bg-card p-4 transition-all hover:border-border hover:shadow-md text-foreground',
+        'group relative overflow-hidden rounded-xl border border-border/70 bg-card p-4 transition-all hover:border-border hover:shadow-2xs text-foreground',
         className,
       )}
     >
@@ -110,14 +118,6 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
               sizes="(max-width: 640px) 96px, 112px"
               className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
-            <div
-              className={cn(
-                'absolute top-1.5 left-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold shadow-xs backdrop-blur-md',
-                isAvailable ? 'bg-emerald-500/90 text-white' : 'bg-zinc-900/80 text-zinc-300',
-              )}
-            >
-              {isAvailable ? 'Disponible' : 'Ocupada'}
-            </div>
           </div>
 
           <div className="flex flex-col gap-1.5 min-w-0 flex-1 text-left">
@@ -131,9 +131,9 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
               {resolvedType === 'SINGLE' && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-primary/30 bg-primary/5 text-primary text-[11px] font-medium"
+                  className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
                 >
-                  <User className="h-3 w-3" />
+                  <User className="h-3 w-3 text-muted-foreground" />
                   Individual
                 </Badge>
               )}
@@ -141,9 +141,9 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
               {resolvedType === 'SHARED' && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[11px] font-medium"
+                  className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
                 >
-                  <Users className="h-3 w-3" />
+                  <Users className="h-3 w-3 text-muted-foreground" />
                   Compartida ({beds} {beds === 1 ? 'cama' : 'camas'})
                 </Badge>
               )}
@@ -151,27 +151,27 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
               {resolvedType === 'STUDIO' && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-medium"
+                  className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
                 >
-                  <Sparkles className="h-3 w-3" />
+                  <Sparkles className="h-3 w-3 text-muted-foreground" />
                   Estudio
                 </Badge>
               )}
 
               {isPrivateBath ? (
                 <Badge
-                  variant="secondary"
-                  className="gap-1 text-[11px] font-medium text-foreground bg-secondary"
+                  variant="outline"
+                  className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
                 >
-                  <Bath className="h-3 w-3 text-primary" />
+                  <Bath className="h-3 w-3 text-muted-foreground" />
                   Baño privado
                 </Badge>
               ) : (
                 <Badge
                   variant="outline"
-                  className="gap-1 text-[11px] font-medium text-muted-foreground"
+                  className="gap-1 border-border/80 text-muted-foreground text-[11px] font-normal"
                 >
-                  <Bath className="h-3 w-3" />
+                  <Bath className="h-3 w-3 text-muted-foreground" />
                   Baño compartido
                 </Badge>
               )}
@@ -192,66 +192,95 @@ export function RoomItemCard({ room, onEdit, onToggleAvailability, className }: 
           </div>
         </div>
 
-        <div className="flex items-center justify-between sm:flex-col sm:items-end gap-3 pt-3 border-t border-border/50 sm:border-t-0 sm:pt-0 shrink-0">
-          <button
-            type="button"
-            role="switch"
-            aria-checked={isAvailable}
-            aria-label={`Cambiar disponibilidad de ${rawTitle}`}
-            disabled={isUpdating}
-            onClick={handleToggle}
-            className="flex min-h-12 items-center gap-2.5 rounded-xl px-2 py-1.5 text-xs transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer disabled:opacity-60"
-          >
-            <div className="flex flex-col text-left">
-              <span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider leading-none">
-                Estado
+        <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2.5 pt-3 border-t border-border/50 sm:border-t-0 sm:pt-0 shrink-0">
+          {room.isActive !== false ? (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isAvailable}
+              aria-label={`Cambiar disponibilidad de ${rawTitle}`}
+              disabled={isUpdating}
+              onClick={handleToggle}
+              className="flex min-h-[40px] items-center gap-2 rounded-xl px-2 py-1 text-xs transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer disabled:opacity-60"
+            >
+              <span className="text-xs font-medium text-muted-foreground select-none">
+                Disponibilidad
               </span>
-              <span
+
+              <div
                 className={cn(
-                  'text-xs font-bold leading-tight',
-                  isAvailable ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground',
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                  isAvailable ? 'bg-emerald-500' : 'bg-muted-foreground/30',
                 )}
               >
-                {isAvailable ? 'Disponible' : 'Ocupada'}
-              </span>
-            </div>
-
-            <div
-              className={cn(
-                'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                isAvailable ? 'bg-emerald-500' : 'bg-muted-foreground/30',
-              )}
+                {isUpdating ? (
+                  <div
+                    className={cn(
+                      'flex h-4 w-4 transform items-center justify-center rounded-full bg-white shadow-md transition duration-200 ease-in-out',
+                      isAvailable ? 'translate-x-4' : 'translate-x-0',
+                    )}
+                  >
+                    <Loader2 className="h-2.5 w-2.5 animate-spin text-emerald-600" />
+                  </div>
+                ) : (
+                  <span
+                    className={cn(
+                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
+                      isAvailable ? 'translate-x-4' : 'translate-x-0',
+                    )}
+                  />
+                )}
+              </div>
+            </button>
+          ) : (
+            <Badge
+              variant="outline"
+              className="border-border/80 text-muted-foreground text-[10px] py-0.5"
             >
-              {isUpdating ? (
-                <div
-                  className={cn(
-                    'flex h-5 w-5 transform items-center justify-center rounded-full bg-white shadow-md transition duration-200 ease-in-out',
-                    isAvailable ? 'translate-x-5' : 'translate-x-0',
-                  )}
-                >
-                  <Loader2 className="h-3 w-3 animate-spin text-emerald-600" />
-                </div>
-              ) : (
-                <span
-                  className={cn(
-                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                    isAvailable ? 'translate-x-5' : 'translate-x-0',
-                  )}
-                />
-              )}
-            </div>
-          </button>
+              No activa
+            </Badge>
+          )}
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => onEdit(room)}
-            className="min-h-12 px-4 rounded-xl border-border/80 hover:bg-secondary font-semibold text-xs gap-1.5 shadow-2xs cursor-pointer"
-          >
-            <Edit3 className="h-4 w-4 text-primary" />
-            <span>Editar</span>
-          </Button>
+          <div className="flex items-center gap-1.5">
+            {onToggleActive && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onToggleActive(room.id, room.isActive === false)}
+                className={cn(
+                  'min-h-[36px] px-2.5 text-xs font-semibold rounded-lg cursor-pointer transition',
+                  room.isActive === false
+                    ? 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+                title={room.isActive === false ? 'Reactivar habitación' : 'Desactivar habitación'}
+              >
+                {room.isActive === false ? (
+                  <>
+                    <PlayCircle className="h-3.5 w-3.5 mr-1 text-emerald-500" />
+                    <span>Activar</span>
+                  </>
+                ) : (
+                  <>
+                    <PauseCircle className="h-3.5 w-3.5 mr-1" />
+                    <span>Pausar</span>
+                  </>
+                )}
+              </Button>
+            )}
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(room)}
+              className="min-h-[36px] px-3 rounded-lg border-border/80 hover:bg-secondary font-semibold text-xs gap-1.5 shadow-2xs cursor-pointer"
+            >
+              <Edit3 className="h-3.5 w-3.5 text-muted-foreground" />
+              <span>Editar</span>
+            </Button>
+          </div>
         </div>
       </div>
     </Card>

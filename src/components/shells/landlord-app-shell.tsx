@@ -1,10 +1,12 @@
 'use client';
 
 import { useMemo } from 'react';
-import { AccountScreen } from '@/components/account/account-screen';
+import { LandlordAccountScreen } from '@/components/account/landlord-account-screen';
 import { LandlordDesktopHeader } from '@/components/landlord/landlord-desktop-header';
 import { LandlordDesktopSidebar } from '@/components/landlord/landlord-desktop-sidebar';
 import { LandlordPensionScreen } from '@/components/landlord/landlord-pension-screen';
+import { LandlordPensionsScreen } from '@/components/landlord/landlord-pensions-screen';
+import { LandlordProposalsScreen } from '@/components/landlord/landlord-proposals-screen';
 import { LandlordReviewsScreen } from '@/components/landlord/landlord-reviews-screen';
 import { LandlordRoomsScreen } from '@/components/landlord/landlord-rooms-screen';
 import { PensionEditorDrawer } from '@/components/landlord/pension-editor-drawer';
@@ -18,8 +20,6 @@ import { LandlordProvider, type LandlordTab, useLandlord } from '@/contexts/land
 export type LandlordAppShellProps = {
   initialTab?: LandlordTab;
 };
-
-const LandlordAccountSection = AccountScreen;
 
 function LandlordAppShellContent() {
   const {
@@ -60,9 +60,9 @@ function LandlordAppShellContent() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row text-foreground">
+    <div className="min-h-screen md:h-screen md:overflow-hidden bg-background flex flex-col md:flex-row text-foreground">
       <LandlordDesktopSidebar className="hidden md:flex" />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 md:h-screen md:overflow-y-auto overscroll-y-contain">
         <LandlordMobileHeader
           className="md:hidden"
           properties={propertySummaries}
@@ -87,7 +87,11 @@ function LandlordAppShellContent() {
           {activeTab === 'reviews' && (
             <LandlordReviewsScreen pension={selectedPension} pensionId={selectedPension?.id} />
           )}
-          {activeTab === 'account' && <LandlordAccountSection />}
+          {activeTab === 'proposals' && (
+            <LandlordProposalsScreen pension={selectedPension} pensionId={selectedPension?.id} />
+          )}
+          {activeTab === 'pensions' && <LandlordPensionsScreen />}
+          {activeTab === 'account' && <LandlordAccountScreen />}
         </main>
         <LandlordBottomNav activeTab={activeTab} onTabChange={setActiveTab} className="md:hidden" />
       </div>
@@ -103,7 +107,7 @@ function LandlordAppShellContent() {
   );
 }
 
-export function LandlordAppShell({ initialTab = 'rooms' }: LandlordAppShellProps) {
+export function LandlordAppShell({ initialTab = 'pension' }: LandlordAppShellProps) {
   return (
     <LandlordProvider initialTab={initialTab}>
       <LandlordAppShellContent />

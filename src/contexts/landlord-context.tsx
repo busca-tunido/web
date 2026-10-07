@@ -4,8 +4,20 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { isApiSuccess } from '@/lib/api-response';
 import type { PensionItem } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
+import { proposalsService } from '@/services/proposals.service';
 
-export type LandlordTab = 'rooms' | 'pension' | 'reviews' | 'account';
+export type LandlordTab = 'pension' | 'rooms' | 'reviews' | 'proposals' | 'pensions' | 'account';
+
+export type LandlordDefaultContact = {
+  name: string;
+  phone: string;
+};
+
+export type PensionCustomContact = {
+  enabled: boolean;
+  name: string;
+  phone: string;
+};
 
 export type LandlordContextValue = {
   pensions: PensionItem[];
@@ -21,6 +33,12 @@ export type LandlordContextValue = {
   setIsCreatePensionOpen: (open: boolean) => void;
   openCreatePensionModal: () => void;
   closeCreatePensionModal: () => void;
+  defaultContact: LandlordDefaultContact;
+  updateDefaultContact: (contact: Partial<LandlordDefaultContact>) => void;
+  getPensionContact: (pensionId: string) => { isCustom: boolean; name: string; phone: string };
+  updatePensionCustomContact: (pensionId: string, custom: PensionCustomContact) => void;
+  pendingProposalsCount: number;
+  refetchProposals: () => Promise<void>;
 };
 
 export type LandlordProviderProps = {
@@ -30,13 +48,113 @@ export type LandlordProviderProps = {
 
 const LandlordContext = createContext<LandlordContextValue | null>(null);
 
-export function LandlordProvider({ children, initialTab = 'rooms' }: LandlordProviderProps) {
+export function LandlordProvider({ children, initialTab = 'pension' }: LandlordProviderProps) {
   const [pensions, setPensions] = useState<PensionItem[]>([]);
   const [selectedPension, setSelectedPension] = useState<PensionItem | null>(null);
   const [activeTab, setActiveTab] = useState<LandlordTab>(initialTab);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreatePensionOpen, setIsCreatePensionOpen] = useState(false);
+  const [defaultContact, setDefaultContactState] = useState<LandlordDefaultContact>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('buscatunido_landlord_default_contact');
+        if (saved) return JSON.parse(saved);
+      } catch {
+        // ignore
+      }
+    }
+    return {
+      name: 'Propietario Demo',
+      phone: '+56 9 8765 4321',
+    };
+  });
+  const [customContacts, setCustomContacts] = useState<Record<string, PensionCustomContact>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('buscatunido_landlord_pension_custom_contacts');
+        if (saved) return JSON.parse(saved);
+      } catch {
+        // ignore
+      }
+    }
+    return {};
+  });
+
+  const [pendingProposalsCount, setPendingProposalsCount] = useState<number>(0);
+
+  const refetchProposals = useCallback(async () => {
+    if (!selectedPension?.id) {
+      setPendingProposalsCount(0);
+      return;
+    }
+    try {
+      const res = await proposalsService.fetchPensionProposals(selectedPension.id);
+      if (isApiSuccess(res)) {
+        const pending = (res.data ?? []).filter((p) => p.status === 'PENDING').length;
+        setPendingProposalsCount(pending);
+      }
+    } catch {
+      // ignore
+    }
+  }, [selectedPension?.id]);
+
+  useEffect(() => {
+    refetchProposals();
+  }, [refetchProposals]);
+
+  const updateDefaultContact = useCallback((partial: Partial<LandlordDefaultContact>) => {
+    setDefaultContactState((prev) => {
+      const updated = { ...prev, ...partial };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('buscatunido_landlord_default_contact', JSON.stringify(updated));
+        } catch {
+          // ignore
+        }
+      }
+      return updated;
+    });
+  }, []);
+
+  const updatePensionCustomContact = useCallback(
+    (pensionId: string, custom: PensionCustomContact) => {
+      setCustomContacts((prev) => {
+        const updated = { ...prev, [pensionId]: custom };
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(
+              'buscatunido_landlord_pension_custom_contacts',
+              JSON.stringify(updated),
+            );
+          } catch {
+            // ignore
+          }
+        }
+        return updated;
+      });
+    },
+    [],
+  );
+
+  const getPensionContact = useCallback(
+    (pensionId: string) => {
+      const custom = customContacts[pensionId];
+      if (custom?.enabled) {
+        return {
+          isCustom: true,
+          name: custom.name,
+          phone: custom.phone,
+        };
+      }
+      return {
+        isCustom: false,
+        name: defaultContact.name,
+        phone: defaultContact.phone,
+      };
+    },
+    [customContacts, defaultContact],
+  );
 
   const openCreatePensionModal = useCallback(() => {
     setIsCreatePensionOpen(true);
@@ -150,6 +268,12 @@ export function LandlordProvider({ children, initialTab = 'rooms' }: LandlordPro
       setIsCreatePensionOpen,
       openCreatePensionModal,
       closeCreatePensionModal,
+      defaultContact,
+      updateDefaultContact,
+      getPensionContact,
+      updatePensionCustomContact,
+      pendingProposalsCount,
+      refetchProposals,
     }),
     [
       pensions,
@@ -162,10 +286,20 @@ export function LandlordProvider({ children, initialTab = 'rooms' }: LandlordPro
       isCreatePensionOpen,
       openCreatePensionModal,
       closeCreatePensionModal,
+      defaultContact,
+      updateDefaultContact,
+      getPensionContact,
+      updatePensionCustomContact,
+      pendingProposalsCount,
+      refetchProposals,
     ],
   );
 
   return <LandlordContext.Provider value={value}>{children}</LandlordContext.Provider>;
+}
+
+export function useOptionalLandlord(): LandlordContextValue | null {
+  return useContext(LandlordContext);
 }
 
 export function useLandlord(): LandlordContextValue {

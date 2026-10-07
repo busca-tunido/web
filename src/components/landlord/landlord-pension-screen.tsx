@@ -6,12 +6,14 @@ import {
   Building2,
   Check,
   CheckCircle2,
+  ChevronRight,
   Clock,
   Droplets,
   Eye,
   Flame,
   Loader2,
   MessageCircle,
+  MessageSquare,
   Moon,
   PawPrint,
   Phone,
@@ -19,21 +21,29 @@ import {
   RefreshCw,
   Save,
   ShieldCheck,
-  Sparkles,
+  User,
   Users,
   Wifi,
   X,
   Zap,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { LandlordProposalsDrawer } from '@/components/landlord/landlord-proposals-drawer';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useLandlord } from '@/contexts/landlord-context';
 import { mapRawPensionToPensionItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
-import { useAuth } from '@/lib/auth-context';
 import type { PensionItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { pensionsService } from '@/services/pensions.service';
@@ -61,6 +71,7 @@ type FormState = {
   quietHoursStart: string;
   quietHoursEnd: string;
   genderPreference: GenderPref;
+  useCustomContact: boolean;
   contactName: string;
   contactPhone: string;
 };
@@ -110,13 +121,13 @@ const GENDER_OPTIONS: ReadonlyArray<{
     value: 'FEMALE_ONLY',
     label: 'Solo Mujeres',
     description: 'Exclusivo para estudiantes mujeres',
-    icon: Sparkles,
+    icon: User,
   },
   {
     value: 'MALE_ONLY',
     label: 'Solo Hombres',
     description: 'Exclusivo para estudiantes hombres',
-    icon: Users,
+    icon: User,
   },
 ];
 
@@ -126,8 +137,15 @@ export function LandlordPensionScreen({
   onPensionUpdated,
   className,
 }: LandlordPensionScreenProps) {
-  const { user } = useAuth();
-  const { openCreatePensionModal } = useLandlord();
+  const {
+    openCreatePensionModal,
+    togglePensionActive,
+    defaultContact,
+    getPensionContact,
+    updatePensionCustomContact,
+    pendingProposalsCount,
+    refetchProposals,
+  } = useLandlord();
 
   const [activePension, setActivePension] = useState<PensionDetailDto | PensionItem | null>(
     initialPension,
@@ -138,6 +156,7 @@ export function LandlordPensionScreen({
   const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState<boolean>(false);
+  const [isProposalsDrawerOpen, setIsProposalsDrawerOpen] = useState<boolean>(false);
 
   const [form, setForm] = useState<FormState>({
     waterIncluded: true,
@@ -152,6 +171,7 @@ export function LandlordPensionScreen({
     quietHoursStart: '22:00',
     quietHoursEnd: '08:00',
     genderPreference: 'ANY',
+    useCustomContact: false,
     contactName: '',
     contactPhone: '',
   });
@@ -167,11 +187,10 @@ export function LandlordPensionScreen({
       const normalizedGender: GenderPref =
         rawGender === 'FEMALE_ONLY' || rawGender === 'MALE_ONLY' ? rawGender : 'ANY';
 
-      const phoneDefault =
-        (p as unknown as { contactPhone?: string })?.contactPhone || user?.phone || '+56 9 ';
-      const nameDefault =
-        (p as unknown as { contactName?: string })?.contactName ||
-        (user ? `${user.firstName} ${user.lastName}`.trim() : '');
+      const contactConfig = getPensionContact(p.id);
+      const isCustomContact = contactConfig.isCustom;
+      const resolvedName = isCustomContact ? contactConfig.name : defaultContact.name;
+      const resolvedPhone = isCustomContact ? contactConfig.phone : defaultContact.phone;
 
       setForm({
         waterIncluded: isPensionItemDto ? Boolean(p.waterIncluded ?? true) : true,
@@ -188,11 +207,12 @@ export function LandlordPensionScreen({
         quietHoursStart: (isPensionItemDto && p.quietHoursStart) || '22:00',
         quietHoursEnd: (isPensionItemDto && p.quietHoursEnd) || '08:00',
         genderPreference: normalizedGender,
-        contactName: nameDefault,
-        contactPhone: normalizePhoneToDisplay(phoneDefault),
+        useCustomContact: isCustomContact,
+        contactName: resolvedName,
+        contactPhone: normalizePhoneToDisplay(resolvedPhone),
       });
     },
-    [user],
+    [defaultContact, getPensionContact],
   );
 
   const loadPensionData = useCallback(async () => {
@@ -281,7 +301,13 @@ export function LandlordPensionScreen({
     setSaveSuccessMessage(null);
     setSaveErrorMessage(null);
 
-    const updatePayload: UpdatePensionDto = {
+    updatePensionCustomContact(activePension.id, {
+      enabled: form.useCustomContact,
+      name: form.useCustomContact ? form.contactName.trim() : defaultContact.name,
+      phone: form.useCustomContact ? form.contactPhone.trim() : defaultContact.phone,
+    });
+
+    const updatePayload: UpdatePensionDto & { contactName?: string; contactPhone?: string } = {
       currency: 'CLP',
       waterIncluded: form.waterIncluded,
       electricityIncluded: form.electricityIncluded,
@@ -294,6 +320,8 @@ export function LandlordPensionScreen({
       curfewTime: form.hasCurfew && form.curfewTime.trim() ? form.curfewTime.trim() : undefined,
       quietHoursStart: form.quietHoursStart.trim() || undefined,
       quietHoursEnd: form.quietHoursEnd.trim() || undefined,
+      contactName: form.useCustomContact ? form.contactName.trim() : defaultContact.name,
+      contactPhone: form.useCustomContact ? form.contactPhone.trim() : defaultContact.phone,
     };
 
     const response = await pensionsService.update(activePension.id, updatePayload);
@@ -330,6 +358,23 @@ export function LandlordPensionScreen({
     };
   }, [activePension, form]);
 
+  const isPensionActive = activePension?.isActive ?? true;
+  const [showConfirmActiveModal, setShowConfirmActiveModal] = useState<boolean>(false);
+  const [isTogglingActive, setIsTogglingActive] = useState<boolean>(false);
+
+  const handleConfirmToggleActive = async () => {
+    if (!activePension || isTogglingActive) return;
+    setIsTogglingActive(true);
+    try {
+      const nextState = !isPensionActive;
+      await togglePensionActive(activePension.id, nextState);
+      setActivePension((prev) => (prev ? { ...prev, isActive: nextState } : prev));
+      setShowConfirmActiveModal(false);
+    } finally {
+      setIsTogglingActive(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 p-6 text-muted-foreground">
@@ -346,8 +391,8 @@ export function LandlordPensionScreen({
 
     if (isNoPensionFound) {
       return (
-        <div className="flex min-h-[55vh] flex-col items-center justify-center p-8 text-center rounded-3xl border border-dashed border-border/80 bg-card/60 my-4 max-w-md mx-auto">
-          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary mb-4 shadow-2xs">
+        <div className="flex min-h-[55vh] flex-col items-center justify-center p-8 text-center rounded-2xl border border-dashed border-border/80 bg-card/60 my-4 max-w-md mx-auto">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-4">
             <Building2 className="h-8 w-8" />
           </div>
           <h3 className="text-lg font-bold text-foreground tracking-tight">
@@ -402,24 +447,65 @@ export function LandlordPensionScreen({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={openCreatePensionModal}
-            className="min-h-[48px] px-4 text-xs font-semibold border-border hover:bg-secondary shadow-2xs cursor-pointer gap-1.5"
-          >
-            <Plus className="h-4 w-4 text-primary" />
-            <span>Nueva Pensión</span>
-          </Button>
+        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          {activePension && (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isPensionActive}
+              onClick={() => setShowConfirmActiveModal(true)}
+              className="flex min-h-[40px] items-center gap-2.5 rounded-full border border-border/80 bg-card px-3.5 py-1.5 text-xs font-medium transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shadow-2xs"
+              aria-label={
+                isPensionActive
+                  ? 'Pensión activa para estudiantes. Clic para pausar.'
+                  : 'Pensión pausada. Clic para activar.'
+              }
+            >
+              <span className="flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    'h-2 w-2 rounded-full transition-colors',
+                    isPensionActive
+                      ? 'bg-emerald-500 ring-2 ring-emerald-500/20 animate-pulse'
+                      : 'bg-muted-foreground/40',
+                  )}
+                />
+                <span
+                  className={cn(
+                    'text-[11px] font-semibold leading-none',
+                    isPensionActive
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-muted-foreground',
+                  )}
+                >
+                  {isPensionActive ? 'Publicación Activa' : 'Publicación Pausada'}
+                </span>
+              </span>
+
+              <span
+                className={cn(
+                  'relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                  isPensionActive ? 'bg-emerald-500' : 'bg-muted-foreground/30',
+                )}
+              >
+                <span
+                  className={cn(
+                    'pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
+                    isPensionActive ? 'translate-x-3.5' : 'translate-x-0',
+                  )}
+                />
+              </span>
+            </button>
+          )}
+
           <Button
             type="button"
             variant="outline"
             onClick={() => setIsPreviewModalOpen(true)}
-            className="min-h-[48px] px-4 text-xs font-bold border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 shadow-2xs cursor-pointer"
+            className="min-h-[40px] px-3.5 text-xs font-semibold border-border text-foreground hover:bg-secondary shadow-2xs cursor-pointer rounded-xl gap-1.5"
           >
-            <Eye className="h-4 w-4 mr-1.5" />
-            Vista Previa Estudiante
+            <Eye className="h-4 w-4 text-muted-foreground" />
+            <span>Vista de Estudiante</span>
           </Button>
         </div>
       </div>
@@ -459,514 +545,615 @@ export function LandlordPensionScreen({
         </div>
       )}
 
-      <Card className="border-border/80 bg-card shadow-xs rounded-2xl overflow-hidden">
-        <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Zap className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-                Servicios Básicos Incluidos
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                Indica qué cuentas básicas están cubiertas en el arriendo mensual
-              </CardDescription>
-            </div>
+      <div className="md:hidden rounded-xl border border-border/70 bg-card p-4 shadow-none flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+            <MessageSquare className="h-5 w-5" />
           </div>
-        </CardHeader>
-
-        <CardContent className="p-4 sm:p-5 space-y-3">
-          <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-500">
-                <Droplets className="h-4 w-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-foreground">Agua Potable</span>
-                <span className="text-[11px] text-muted-foreground">
-                  Consumo de agua fría y caliente incluido
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              role="switch"
-              aria-checked={form.waterIncluded}
-              aria-label="Incluir agua potable"
-              onClick={() => handleToggle('waterIncluded')}
-              className={cn(
-                'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                form.waterIncluded ? 'bg-primary' : 'bg-muted-foreground/30',
-              )}
-            >
-              <span
-                className={cn(
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                  form.waterIncluded ? 'translate-x-5' : 'translate-x-0',
-                )}
-              />
-            </button>
-          </div>
-
-          <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
-                <Zap className="h-4 w-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-foreground">Electricidad / Luz</span>
-                <span className="text-[11px] text-muted-foreground">
-                  Gasto eléctrico general y en habitaciones
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              role="switch"
-              aria-checked={form.electricityIncluded}
-              aria-label="Incluir electricidad"
-              onClick={() => handleToggle('electricityIncluded')}
-              className={cn(
-                'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                form.electricityIncluded ? 'bg-primary' : 'bg-muted-foreground/30',
-              )}
-            >
-              <span
-                className={cn(
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                  form.electricityIncluded ? 'translate-x-5' : 'translate-x-0',
-                )}
-              />
-            </button>
-          </div>
-
-          <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500">
-                <Flame className="h-4 w-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-foreground">Gas / Calefón</span>
-                <span className="text-[11px] text-muted-foreground">
-                  Gas para cocina y agua caliente
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              role="switch"
-              aria-checked={form.gasIncluded}
-              aria-label="Incluir gas"
-              onClick={() => handleToggle('gasIncluded')}
-              className={cn(
-                'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                form.gasIncluded ? 'bg-primary' : 'bg-muted-foreground/30',
-              )}
-            >
-              <span
-                className={cn(
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                  form.gasIncluded ? 'translate-x-5' : 'translate-x-0',
-                )}
-              />
-            </button>
-          </div>
-
-          <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
-                <Wifi className="h-4 w-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-foreground">Internet Wi-Fi</span>
-                <span className="text-[11px] text-muted-foreground">
-                  Conexión de alta velocidad para estudio
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              role="switch"
-              aria-checked={form.internetIncluded}
-              aria-label="Incluir internet WiFi"
-              onClick={() => handleToggle('internetIncluded')}
-              className={cn(
-                'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                form.internetIncluded ? 'bg-primary' : 'bg-muted-foreground/30',
-              )}
-            >
-              <span
-                className={cn(
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                  form.internetIncluded ? 'translate-x-5' : 'translate-x-0',
-                )}
-              />
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-border/80 bg-card shadow-xs rounded-2xl overflow-hidden">
-        <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-                Reglas y Convivencia
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                Define normas claras para mantener un ambiente de estudio y descanso
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-4 sm:p-5 space-y-4">
-          <div className="space-y-3">
-            <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500">
-                  <Users className="h-4 w-4" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-bold text-foreground">Visitas Permitidas</span>
-                  <span className="text-[11px] text-muted-foreground">
-                    Los residentes pueden recibir compañeros o familiares
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                role="switch"
-                aria-checked={form.guestsAllowed}
-                aria-label="Permitir visitas"
-                onClick={() => handleToggle('guestsAllowed')}
-                className={cn(
-                  'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  form.guestsAllowed ? 'bg-primary' : 'bg-muted-foreground/30',
-                )}
-              >
-                <span
-                  className={cn(
-                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                    form.guestsAllowed ? 'translate-x-5' : 'translate-x-0',
-                  )}
-                />
-              </button>
-            </div>
-
-            <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 text-rose-500">
-                  <Ban className="h-4 w-4" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-bold text-foreground">Permitido Fumar</span>
-                  <span className="text-[11px] text-muted-foreground">
-                    En áreas designadas o patios abiertos
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                role="switch"
-                aria-checked={form.smokingAllowed}
-                aria-label="Permitir fumar"
-                onClick={() => handleToggle('smokingAllowed')}
-                className={cn(
-                  'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  form.smokingAllowed ? 'bg-primary' : 'bg-muted-foreground/30',
-                )}
-              >
-                <span
-                  className={cn(
-                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                    form.smokingAllowed ? 'translate-x-5' : 'translate-x-0',
-                  )}
-                />
-              </button>
-            </div>
-
-            <div className="flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-2.5 transition-colors hover:bg-muted/40 select-none">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-500/10 text-teal-500">
-                  <PawPrint className="h-4 w-4" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-bold text-foreground">Mascotas Permitidas</span>
-                  <span className="text-[11px] text-muted-foreground">
-                    Acepta perros, gatos o mascotas pequeñas
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                role="switch"
-                aria-checked={form.petsAllowed}
-                aria-label="Permitir mascotas"
-                onClick={() => handleToggle('petsAllowed')}
-                className={cn(
-                  'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  form.petsAllowed ? 'bg-primary' : 'bg-muted-foreground/30',
-                )}
-              >
-                <span
-                  className={cn(
-                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                    form.petsAllowed ? 'translate-x-5' : 'translate-x-0',
-                  )}
-                />
-              </button>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border/70 bg-muted/15 p-3.5 space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" />
-                <span className="text-xs font-bold text-foreground">
-                  Horario Límite de Llegada (Toque de queda)
-                </span>
-              </div>
-
-              <button
-                type="button"
-                role="switch"
-                aria-checked={form.hasCurfew}
-                aria-label="Fijar toque de queda"
-                onClick={() => handleCurfewToggle(!form.hasCurfew)}
-                className={cn(
-                  'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  form.hasCurfew ? 'bg-primary' : 'bg-muted-foreground/30',
-                )}
-              >
-                <span
-                  className={cn(
-                    'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
-                    form.hasCurfew ? 'translate-x-5' : 'translate-x-0',
-                  )}
-                />
-              </button>
-            </div>
-
-            {form.hasCurfew ? (
-              <div className="pt-1">
-                <label
-                  htmlFor="curfew-time-input"
-                  className="block text-[11px] font-semibold text-muted-foreground mb-1"
-                >
-                  Hora máxima de regreso nocturno:
-                </label>
-                <input
-                  id="curfew-time-input"
-                  type="time"
-                  value={form.curfewTime}
-                  onChange={(e) => setForm((prev) => ({ ...prev, curfewTime: e.target.value }))}
-                  className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3.5 text-sm font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-            ) : (
-              <p className="text-[11px] text-muted-foreground italic">
-                Sin horario límite: los estudiantes cuentan con llave / acceso independiente 24/7.
-              </p>
-            )}
-          </div>
-
-          <div className="rounded-xl border border-border/70 bg-muted/15 p-3.5 space-y-3">
+          <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
-              <Moon className="h-4 w-4 text-primary" />
-              <span className="text-xs font-bold text-foreground">
-                Horario de Silencio y Estudio
+              <span className="text-xs sm:text-sm font-semibold text-foreground">
+                Sugerencias de la Comunidad
               </span>
+              {pendingProposalsCount > 0 && (
+                <Badge
+                  variant="outline"
+                  className="border-border/80 bg-secondary text-muted-foreground text-[10px] font-medium px-1.5 py-0"
+                >
+                  {pendingProposalsCount} {pendingProposalsCount === 1 ? 'pendiente' : 'pendientes'}
+                </Badge>
+              )}
             </div>
-            <p className="text-[11px] text-muted-foreground">
-              Franja horaria para evitar ruidos fuertes y favorecer la concentración y el descanso.
+            <p className="text-[11px] text-muted-foreground truncate">
+              {pendingProposalsCount > 0
+                ? 'Estudiantes han sugerido cambios para tu pensión.'
+                : 'No hay cambios sugeridos pendientes.'}
             </p>
+          </div>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setIsProposalsDrawerOpen(true)}
+          className="shrink-0 min-h-[38px] px-3 text-xs font-semibold cursor-pointer border-border hover:bg-secondary"
+        >
+          <span>{pendingProposalsCount > 0 ? 'Revisar' : 'Ver'}</span>
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+      </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-1">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
+        <Card className="xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+          <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
+            <div className="flex items-center gap-2.5">
+              <Zap className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
               <div>
-                <label
-                  htmlFor="quiet-start-input"
-                  className="block text-[11px] font-semibold text-muted-foreground mb-1"
-                >
-                  Inicio silencio:
-                </label>
-                <input
-                  id="quiet-start-input"
-                  type="time"
-                  value={form.quietHoursStart}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, quietHoursStart: e.target.value }))
-                  }
-                  className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="quiet-end-input"
-                  className="block text-[11px] font-semibold text-muted-foreground mb-1"
-                >
-                  Fin silencio:
-                </label>
-                <input
-                  id="quiet-end-input"
-                  type="time"
-                  value={form.quietHoursEnd}
-                  onChange={(e) => setForm((prev) => ({ ...prev, quietHoursEnd: e.target.value }))}
-                  className="min-h-[48px] w-full rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
+                <CardTitle className="text-sm font-semibold text-foreground">
+                  Servicios Básicos Incluidos
+                </CardTitle>
+                <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                  Indica qué cuentas básicas están cubiertas en el arriendo mensual
+                </CardDescription>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
 
-      <Card className="border-border/80 bg-card shadow-xs rounded-2xl overflow-hidden">
-        <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Users className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-                Preferencia de Género
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                Especifica a qué público universitario está dirigida la residencia
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
+          <CardContent className="p-0 divide-y divide-border/40 flex-1 flex flex-col justify-between">
+            <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
+              <div className="flex items-center gap-3 min-w-0">
+                <Droplets className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold text-foreground">Agua Potable</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    Consumo de agua fría y caliente incluido
+                  </span>
+                </div>
+              </div>
 
-        <CardContent className="p-4 sm:p-5">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            {GENDER_OPTIONS.map((option) => {
-              const isSelected = form.genderPreference === option.value;
-              const Icon = option.icon;
-
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => handleGenderSelect(option.value)}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.waterIncluded}
+                aria-label="Incluir agua potable"
+                onClick={() => handleToggle('waterIncluded')}
+                className={cn(
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  form.waterIncluded ? 'bg-foreground' : 'bg-muted-foreground/30',
+                )}
+              >
+                <span
                   className={cn(
-                    'flex min-h-[64px] flex-col items-start justify-center rounded-xl border p-3.5 text-left transition cursor-pointer select-none',
-                    isSelected
-                      ? 'border-primary bg-primary/10 ring-2 ring-primary/20'
-                      : 'border-border/70 bg-muted/20 hover:bg-muted/40 text-foreground',
+                    'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                    form.waterIncluded ? 'translate-x-4' : 'translate-x-0',
                   )}
-                >
-                  <div className="flex items-center justify-between w-full mb-1">
-                    <div className="flex items-center gap-2">
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
+              <div className="flex items-center gap-3 min-w-0">
+                <Zap className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold text-foreground">Electricidad / Luz</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    Gasto eléctrico general y en habitaciones
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.electricityIncluded}
+                aria-label="Incluir electricidad"
+                onClick={() => handleToggle('electricityIncluded')}
+                className={cn(
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  form.electricityIncluded ? 'bg-foreground' : 'bg-muted-foreground/30',
+                )}
+              >
+                <span
+                  className={cn(
+                    'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                    form.electricityIncluded ? 'translate-x-4' : 'translate-x-0',
+                  )}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
+              <div className="flex items-center gap-3 min-w-0">
+                <Flame className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold text-foreground">Gas / Calefón</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    Gas para cocina y agua caliente
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.gasIncluded}
+                aria-label="Incluir gas"
+                onClick={() => handleToggle('gasIncluded')}
+                className={cn(
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  form.gasIncluded ? 'bg-foreground' : 'bg-muted-foreground/30',
+                )}
+              >
+                <span
+                  className={cn(
+                    'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                    form.gasIncluded ? 'translate-x-4' : 'translate-x-0',
+                  )}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
+              <div className="flex items-center gap-3 min-w-0">
+                <Wifi className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold text-foreground">Internet Wi-Fi</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    Conexión de alta velocidad para estudio
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.internetIncluded}
+                aria-label="Incluir internet WiFi"
+                onClick={() => handleToggle('internetIncluded')}
+                className={cn(
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  form.internetIncluded ? 'bg-foreground' : 'bg-muted-foreground/30',
+                )}
+              >
+                <span
+                  className={cn(
+                    'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                    form.internetIncluded ? 'translate-x-4' : 'translate-x-0',
+                  )}
+                />
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+          <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
+            <div className="flex items-center gap-2.5">
+              <Users className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
+              <div>
+                <CardTitle className="text-sm font-semibold text-foreground">
+                  Preferencia de Género
+                </CardTitle>
+                <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                  Especifica a qué público universitario está dirigida la residencia
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-3">
+            <div className="flex flex-col gap-2">
+              {GENDER_OPTIONS.map((option) => {
+                const isSelected = form.genderPreference === option.value;
+                const Icon = option.icon;
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleGenderSelect(option.value)}
+                    className={cn(
+                      'flex min-h-[48px] items-center justify-between rounded-lg border px-3.5 py-2.5 text-left transition cursor-pointer select-none',
+                      isSelected
+                        ? 'border-foreground/30 bg-muted/40 text-foreground font-medium'
+                        : 'border-border/60 bg-card hover:bg-muted/20 text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
                       <Icon
                         className={cn(
-                          'h-4 w-4',
-                          isSelected ? 'text-primary' : 'text-muted-foreground',
+                          'h-4 w-4 shrink-0 transition-colors',
+                          isSelected ? 'text-foreground' : 'text-muted-foreground',
                         )}
                       />
-                      <span className="text-xs font-bold text-foreground">{option.label}</span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-medium text-foreground">{option.label}</span>
+                        <span className="text-[11px] text-muted-foreground">
+                          {option.description}
+                        </span>
+                      </div>
                     </div>
-                    {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
-                  </div>
-                  <span className="text-[10px] text-muted-foreground leading-tight">
-                    {option.description}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-border/80 bg-card shadow-xs rounded-2xl overflow-hidden">
-        <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <MessageCircle className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-                Contacto Directo y WhatsApp
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                Canal oficial para que estudiantes interesados consulten disponibilidad
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-4 sm:p-5 space-y-4">
-          <div>
-            <label
-              htmlFor="landlord-contact-name"
-              className="block text-xs font-bold text-foreground mb-1.5"
-            >
-              Nombre del Anfitrión o Administrador
-            </label>
-            <input
-              id="landlord-contact-name"
-              type="text"
-              value={form.contactName}
-              onChange={(e) => setForm((prev) => ({ ...prev, contactName: e.target.value }))}
-              placeholder="Ej: Sra. Carmen Gloria"
-              className="min-h-[48px] w-full rounded-xl border border-border bg-background px-4 text-xs font-medium text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label
-                htmlFor="landlord-contact-whatsapp"
-                className="block text-xs font-bold text-foreground"
-              >
-                WhatsApp de Contacto (Chile)
-              </label>
-              <Badge
-                variant="outline"
-                className="border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px]"
-              >
-                🇨🇱 Formato +56 9
-              </Badge>
+                    {isSelected ? (
+                      <Check className="h-4 w-4 text-foreground shrink-0 ml-2" />
+                    ) : (
+                      <span className="h-4 w-4 shrink-0 ml-2" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="relative flex items-center">
-              <div className="absolute left-3 flex items-center gap-1 text-xs font-bold text-muted-foreground pointer-events-none">
-                <Phone className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <div className="rounded-lg border border-border/50 bg-muted/15 p-2.5 text-[11px] text-muted-foreground">
+              Define la convivencia en áreas compartidas para tranquilidad de los postulantes.
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="xl:col-span-5 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+          <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <MessageCircle className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
+                <div>
+                  <CardTitle className="text-sm font-semibold text-foreground">
+                    Contacto Directo y WhatsApp
+                  </CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                    Canal oficial para consultas de disponibilidad
+                  </CardDescription>
+                </div>
               </div>
 
-              <input
-                id="landlord-contact-whatsapp"
-                type="tel"
-                value={form.contactPhone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
-                placeholder="+56 9 1234 5678"
-                className="min-h-[48px] w-full rounded-xl border border-border bg-background pl-9 pr-4 text-xs font-semibold text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
+              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 bg-muted/30 px-2.5 py-1 rounded-lg border border-border/60">
+                <span className="text-xs font-medium text-foreground">Personalizar</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.useCustomContact}
+                  aria-label="Personalizar datos de contacto para esta pensión"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      useCustomContact: !prev.useCustomContact,
+                      contactName: !prev.useCustomContact
+                        ? prev.contactName || defaultContact.name
+                        : defaultContact.name,
+                      contactPhone: !prev.useCustomContact
+                        ? prev.contactPhone || defaultContact.phone
+                        : normalizePhoneToDisplay(defaultContact.phone),
+                    }))
+                  }
+                  className={cn(
+                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    form.useCustomContact ? 'bg-foreground' : 'bg-muted-foreground/30',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                      form.useCustomContact ? 'translate-x-4' : 'translate-x-0',
+                    )}
+                  />
+                </button>
+              </div>
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1.5">
-              Permite a los estudiantes contactarte con 1 toque desde la ficha pública.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
 
-      <div className="sticky bottom-16 md:bottom-4 z-30 -mx-4 md:mx-0 p-4 border-t md:border border-border/80 bg-background/95 backdrop-blur-md md:rounded-2xl shadow-lg flex flex-col sm:flex-row items-center gap-3">
+          <CardContent className="p-4 sm:p-5 space-y-4 flex-1 flex flex-col justify-between">
+            <div className="space-y-3.5">
+              <div className="rounded-lg border border-border/60 bg-muted/20 p-2.5 text-xs flex items-center justify-between gap-2 text-muted-foreground">
+                <div className="flex items-center gap-2 min-w-0">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span className="text-[11px] leading-tight">
+                    {form.useCustomContact
+                      ? 'Contacto personalizado activo para esta pensión'
+                      : 'Utilizando datos por defecto configurados en Mis Pensiones'}
+                  </span>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="text-[10px] shrink-0 font-normal border-border/70 text-muted-foreground"
+                >
+                  {form.useCustomContact ? 'Personalizado' : 'Por Defecto'}
+                </Badge>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="landlord-contact-name"
+                  className="block text-xs font-medium text-foreground mb-1"
+                >
+                  Nombre del Anfitrión o Administrador
+                </label>
+                <input
+                  id="landlord-contact-name"
+                  type="text"
+                  disabled={!form.useCustomContact}
+                  value={form.useCustomContact ? form.contactName : defaultContact.name}
+                  onChange={(e) => setForm((prev) => ({ ...prev, contactName: e.target.value }))}
+                  placeholder={defaultContact.name || 'Ej: Sra. Carmen Gloria'}
+                  className={cn(
+                    'min-h-[42px] w-full rounded-lg border border-border/70 px-3 text-xs placeholder:text-muted-foreground focus:border-foreground/40 focus:outline-none transition-colors',
+                    form.useCustomContact
+                      ? 'bg-background text-foreground'
+                      : 'bg-muted/30 text-muted-foreground cursor-not-allowed',
+                  )}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label
+                    htmlFor="landlord-contact-whatsapp"
+                    className="block text-xs font-medium text-foreground"
+                  >
+                    WhatsApp de Contacto (Chile)
+                  </label>
+                  <span className="text-[10px] text-muted-foreground">+56 9</span>
+                </div>
+
+                <div className="relative flex items-center">
+                  <div className="absolute left-3 flex items-center text-muted-foreground pointer-events-none">
+                    <Phone className="h-3.5 w-3.5" />
+                  </div>
+
+                  <input
+                    id="landlord-contact-whatsapp"
+                    type="tel"
+                    disabled={!form.useCustomContact}
+                    value={
+                      form.useCustomContact
+                        ? form.contactPhone
+                        : normalizePhoneToDisplay(defaultContact.phone)
+                    }
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    placeholder={normalizePhoneToDisplay(defaultContact.phone) || '+56 9 1234 5678'}
+                    className={cn(
+                      'min-h-[42px] w-full rounded-lg border border-border/70 pl-8.5 pr-3 text-xs placeholder:text-muted-foreground focus:border-foreground/40 focus:outline-none transition-colors',
+                      form.useCustomContact
+                        ? 'bg-background text-foreground'
+                        : 'bg-muted/30 text-muted-foreground cursor-not-allowed',
+                    )}
+                  />
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  {form.useCustomContact
+                    ? 'Los estudiantes contactarán a este número exclusivo para esta pensión.'
+                    : 'Para cambiar el contacto general, edítalo en Mis Pensiones.'}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground pt-1">
+              Canal verificado para consultas directas de estudiantes.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="xl:col-span-7 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+          <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
+            <div className="flex items-center gap-2.5">
+              <ShieldCheck className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
+              <div>
+                <CardTitle className="text-sm font-semibold text-foreground">
+                  Reglas y Convivencia
+                </CardTitle>
+                <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                  Define normas claras para mantener un ambiente de estudio y descanso
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-0 flex-1 flex flex-col justify-between">
+            <div className="divide-y divide-border/40">
+              <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-foreground">
+                      Visitas Permitidas
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      Los residentes pueden recibir compañeros o familiares
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.guestsAllowed}
+                  aria-label="Permitir visitas"
+                  onClick={() => handleToggle('guestsAllowed')}
+                  className={cn(
+                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    form.guestsAllowed ? 'bg-foreground' : 'bg-muted-foreground/30',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                      form.guestsAllowed ? 'translate-x-4' : 'translate-x-0',
+                    )}
+                  />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Ban className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-foreground">Permitido Fumar</span>
+                    <span className="text-[11px] text-muted-foreground">
+                      En áreas designadas o patios abiertos
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.smokingAllowed}
+                  aria-label="Permitir fumar"
+                  onClick={() => handleToggle('smokingAllowed')}
+                  className={cn(
+                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    form.smokingAllowed ? 'bg-foreground' : 'bg-muted-foreground/30',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                      form.smokingAllowed ? 'translate-x-4' : 'translate-x-0',
+                    )}
+                  />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  <PawPrint className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-foreground">
+                      Mascotas Permitidas
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      Acepta perros, gatos o mascotas pequeñas
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.petsAllowed}
+                  aria-label="Permitir mascotas"
+                  onClick={() => handleToggle('petsAllowed')}
+                  className={cn(
+                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    form.petsAllowed ? 'bg-foreground' : 'bg-muted-foreground/30',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                      form.petsAllowed ? 'translate-x-4' : 'translate-x-0',
+                    )}
+                  />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5 pt-3 border-t border-border/40 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="rounded-lg border border-border/60 bg-muted/10 p-3 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs font-medium text-foreground">Toque de Queda</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={form.hasCurfew}
+                    aria-label="Fijar toque de queda"
+                    onClick={() => handleCurfewToggle(!form.hasCurfew)}
+                    className={cn(
+                      'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      form.hasCurfew ? 'bg-foreground' : 'bg-muted-foreground/30',
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                        form.hasCurfew ? 'translate-x-4' : 'translate-x-0',
+                      )}
+                    />
+                  </button>
+                </div>
+
+                {form.hasCurfew ? (
+                  <div className="pt-0.5">
+                    <label
+                      htmlFor="curfew-time-input"
+                      className="block text-[11px] text-muted-foreground mb-1"
+                    >
+                      Hora máxima de regreso:
+                    </label>
+                    <input
+                      id="curfew-time-input"
+                      type="time"
+                      value={form.curfewTime}
+                      onChange={(e) => setForm((prev) => ({ ...prev, curfewTime: e.target.value }))}
+                      className="min-h-[38px] w-full rounded-lg border border-border/70 bg-background px-3 text-xs font-medium text-foreground focus:border-foreground/40 focus:outline-none transition-colors"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground">
+                    Acceso independiente 24/7 sin límite de horario.
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-lg border border-border/60 bg-muted/10 p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Moon className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-foreground">Horario de Silencio</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Franja horaria para favorecer el descanso y estudio.
+                </p>
+
+                <div className="grid grid-cols-2 gap-2 pt-0.5">
+                  <div>
+                    <label
+                      htmlFor="quiet-start-input"
+                      className="block text-[10px] text-muted-foreground mb-1"
+                    >
+                      Inicio:
+                    </label>
+                    <input
+                      id="quiet-start-input"
+                      type="time"
+                      value={form.quietHoursStart}
+                      onChange={(e) =>
+                        setForm((prev) => ({ ...prev, quietHoursStart: e.target.value }))
+                      }
+                      className="min-h-[38px] w-full rounded-lg border border-border/70 bg-background px-2.5 text-xs font-medium text-foreground focus:border-foreground/40 focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="quiet-end-input"
+                      className="block text-[10px] text-muted-foreground mb-1"
+                    >
+                      Fin:
+                    </label>
+                    <input
+                      id="quiet-end-input"
+                      type="time"
+                      value={form.quietHoursEnd}
+                      onChange={(e) =>
+                        setForm((prev) => ({ ...prev, quietHoursEnd: e.target.value }))
+                      }
+                      className="min-h-[38px] w-full rounded-lg border border-border/70 bg-background px-2.5 text-xs font-medium text-foreground focus:border-foreground/40 focus:outline-none transition-colors"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="sticky bottom-16 md:bottom-4 z-30 p-4 border border-border/80 bg-background/95 backdrop-blur-md rounded-2xl shadow-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <Button
           type="button"
           variant="outline"
           onClick={() => setIsPreviewModalOpen(true)}
-          className="w-full sm:w-1/3 min-h-[48px] border-border text-foreground hover:bg-secondary text-xs font-bold cursor-pointer"
+          className="w-full sm:w-52 min-h-[48px] border-border text-foreground hover:bg-secondary text-xs font-bold cursor-pointer shrink-0"
         >
           <Eye className="h-4 w-4 mr-1.5 text-muted-foreground" />
           Vista Previa
@@ -977,7 +1164,7 @@ export function LandlordPensionScreen({
           variant="default"
           disabled={isSaving}
           onClick={handleSave}
-          className="w-full sm:w-2/3 min-h-[48px] bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold shadow-md cursor-pointer disabled:opacity-50"
+          className="w-full sm:flex-1 min-h-[48px] bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold shadow-md cursor-pointer disabled:opacity-50"
         >
           {isSaving ? (
             <>
@@ -1001,6 +1188,61 @@ export function LandlordPensionScreen({
           pensionId={previewPensionItem.id}
         />
       )}
+
+      {effectivePensionId && (
+        <LandlordProposalsDrawer
+          isOpen={isProposalsDrawerOpen}
+          onClose={() => setIsProposalsDrawerOpen(false)}
+          pensionId={effectivePensionId}
+          onProposalReviewed={refetchProposals}
+        />
+      )}
+
+      <Dialog
+        open={showConfirmActiveModal}
+        onOpenChange={(open) => !open && !isTogglingActive && setShowConfirmActiveModal(false)}
+      >
+        <DialogContent className="max-w-md p-5 sm:p-6 bg-background rounded-2xl">
+          <DialogHeader className="text-left space-y-1.5">
+            <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
+              {!isPensionActive
+                ? '¿Activar publicación de pensión?'
+                : '¿Pausar publicación de pensión?'}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              {!isPensionActive
+                ? `La pensión "${activePension?.title}" volverá a ser visible para todos los estudiantes universitarios en el mapa y búsquedas.`
+                : `La pensión "${activePension?.title}" quedará oculta temporalmente para los estudiantes. No recibirás nuevas solicitudes ni visitas mientras esté pausada.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex flex-col sm:flex-row items-center justify-end gap-2 pt-4 border-t border-border/50">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isTogglingActive}
+              onClick={() => setShowConfirmActiveModal(false)}
+              className="w-full sm:w-auto text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              disabled={isTogglingActive}
+              onClick={handleConfirmToggleActive}
+              className={cn(
+                'w-full sm:w-auto text-xs font-semibold text-white shadow-none cursor-pointer',
+                !isPensionActive
+                  ? 'bg-emerald-600 hover:bg-emerald-700'
+                  : 'bg-foreground text-background hover:opacity-90',
+              )}
+            >
+              {isTogglingActive && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
+              <span>{!isPensionActive ? 'Activar Publicación' : 'Pausar Publicación'}</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

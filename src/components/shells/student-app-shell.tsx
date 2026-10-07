@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
-import { AccountScreen } from '@/components/account/account-screen';
+import { StudentAccountScreen } from '@/components/account/student-account-screen';
 import { AuthModal } from '@/components/auth/auth-modal';
 import { NetworkErrorBanner } from '@/components/common/network-error-state';
 import { ExploreScreen } from '@/components/explore/explore-screen';
@@ -242,7 +242,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
                 <HistoryScreen onExplore={() => navigateTab('explore')} />
               )}
 
-              {activeTab === 'account' && <AccountScreen />}
+              {activeTab === 'account' && <StudentAccountScreen />}
             </motion.div>
           </AnimatePresence>
         </div>
