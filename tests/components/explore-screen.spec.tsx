@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ExploreScreen } from '@/components/explore/explore-screen';
 import type { CityInfo, UniversityInfo } from '@/lib/types';
@@ -103,4 +103,52 @@ describe('ExploreScreen Skeletons', () => {
     expect(screen.getByRole('heading', { name: 'Santiago' })).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Universidad de Chile' })).toBeDefined();
   });
+
+  it('limits cities to a single row on desktop and expands when clicking Ver más button', () => {
+    const mockCities: CityInfo[] = Array.from({ length: 9 }, (_, index) => ({
+      id: `city-${index + 1}`,
+      name: `Ciudad ${index + 1}`,
+      region: 'Región',
+      pensionsCount: 10 - index,
+      averagePriceClp: 300000,
+      imageUrl: '',
+      foreignStudentRate: 0.5,
+      latitude: -33.0,
+      longitude: -70.0,
+    }));
+
+    render(
+      <ExploreScreen
+        {...defaultProps}
+        cities={mockCities}
+        isLoadingMetadata={false}
+      />,
+    );
+
+    const toggleButton = screen.getByRole('button', {
+      name: /Ver más \(3 más\)/i,
+    });
+    expect(toggleButton).toBeDefined();
+
+    const cityCards = screen.getAllByRole('button').filter((btn) =>
+      btn.textContent?.includes('pensiones'),
+    );
+    expect(cityCards).toHaveLength(9);
+
+    expect(cityCards[0].className).not.toContain('md:hidden');
+    expect(cityCards[5].className).not.toContain('md:hidden');
+    expect(cityCards[6].className).toContain('md:hidden');
+    expect(cityCards[8].className).toContain('md:hidden');
+
+    fireEvent.click(toggleButton);
+
+    expect(screen.getByRole('button', { name: /Ver menos/i })).toBeDefined();
+    expect(cityCards[6].className).not.toContain('md:hidden');
+    expect(cityCards[8].className).not.toContain('md:hidden');
+
+    fireEvent.click(screen.getByRole('button', { name: /Ver menos/i }));
+    expect(screen.getByRole('button', { name: /Ver más \(3 más\)/i })).toBeDefined();
+    expect(cityCards[6].className).toContain('md:hidden');
+  });
 });
+

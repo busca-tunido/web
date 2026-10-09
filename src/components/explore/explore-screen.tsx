@@ -62,6 +62,7 @@ export function ExploreScreen({
   onRetry,
   isRetrying = false,
 }: ExploreScreenProps) {
+  const [isExpandedCities, setIsExpandedCities] = useState(false);
   const [isExpandedUniversities, setIsExpandedUniversities] = useState(false);
 
   const isCitiesLoading = (isLoadingCities ?? isLoadingMetadata) && cities.length === 0;
@@ -117,6 +118,8 @@ export function ExploreScreen({
                     ? city.imageUrl
                     : getCityImageUrl(city.name);
 
+                const isDesktopHidden = !isExpandedCities && index >= 6;
+
                 return (
                   <motion.button
                     type="button"
@@ -127,7 +130,7 @@ export function ExploreScreen({
                       isSelected
                         ? 'border-primary ring-2 ring-primary/30'
                         : 'border-border/60 hover:border-primary/50'
-                    }`}
+                    } ${isDesktopHidden ? 'md:hidden' : ''}`}
                   >
                     {cityImg && (
                       <Image
@@ -160,6 +163,26 @@ export function ExploreScreen({
                 );
               })}
         </div>
+
+        {!isCitiesLoading && sortedCities.length > 6 && (
+          <div className="hidden md:flex justify-center mt-3">
+            <button
+              type="button"
+              id="btn-toggle-cities-desktop"
+              onClick={() => setIsExpandedCities((prev) => !prev)}
+              className="flex items-center gap-1.5 rounded-full border border-border/80 bg-card px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary hover:border-primary/40 transition cursor-pointer shadow-xs"
+            >
+              <span>
+                {isExpandedCities ? 'Ver menos' : `Ver más (${sortedCities.length - 6} más)`}
+              </span>
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 ${
+                  isExpandedCities ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+          </div>
+        )}
       </section>
 
       <section>
