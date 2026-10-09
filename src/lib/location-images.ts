@@ -1,4 +1,7 @@
-const S3_BASE = 'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads';
+const S3_BASE = (
+  process.env.NEXT_PUBLIC_STORAGE_BASE_URL ||
+  'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/v1/shared'
+).replace(/\/+$/, '');
 
 const CITY_IMAGE_MAP: Record<string, string> = {
   santiago: `${S3_BASE}/cities/santiago.webp`,

@@ -44,10 +44,6 @@ const nextConfig: NextConfig = {
         source: '/api/:path*',
         destination: `${apiTarget}/:path*`,
       },
-      {
-        source: '/uploads/:path*',
-        destination: `${apiTarget}/uploads/:path*`,
-      },
     ];
   },
   async headers() {
