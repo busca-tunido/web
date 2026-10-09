@@ -48,11 +48,8 @@ export function LandlordDesktopSidebar({
   const landlordContext = useLandlord();
   const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    if (typeof window !== 'undefined') {
-      window.location.replace('/');
-    }
+  const handleLogout = async () => {
+    await logout();
   };
 
   const activeTab = propActiveTab ?? landlordContext.activeTab;

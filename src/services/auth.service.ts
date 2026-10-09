@@ -123,15 +123,19 @@ export async function checkEmailExists(email: string): Promise<ApiResponse<Check
   );
 }
 
-export function logoutSession(): void {
+export async function logoutSession(): Promise<void> {
   if (typeof window === 'undefined') {
     return;
   }
   try {
     localStorage.removeItem('tunido_token');
     localStorage.removeItem('tunido_user');
+    localStorage.removeItem('tunido_favs');
     sessionStorage.removeItem('tunido_guest');
-    fetch('/api/auth/session/logout', { method: 'POST' }).catch(() => {});
+    await fetch('/api/auth/session/logout', {
+      method: 'POST',
+      keepalive: true,
+    }).catch(() => {});
   } catch {}
 }
 

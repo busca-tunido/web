@@ -186,7 +186,7 @@ export function AccountActionRow({
 }
 
 export type AccountLogoutButtonProps = {
-  onLogout: () => void;
+  onLogout: () => void | Promise<void>;
   className?: string;
 };
 

@@ -14,7 +14,7 @@ type AuthContextType = {
   favorites: string[];
   login: (email: string, password: string) => Promise<void>;
   setSession: (profile: UserProfile, token: string) => void;
-  logout: () => void;
+  logout: () => void | Promise<void>;
   toggleFavorite: (pensionId: string) => void;
   isFavorite: (pensionId: string) => boolean;
 };
@@ -160,15 +160,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(profile, token);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      localStorage.removeItem('tunido_favs');
+      window.dispatchEvent(new CustomEvent('tunido_favs_updated', { detail: [] }));
+      await authService.logoutSession();
+    } catch {}
     setUser(null);
     setToken(null);
     setFavorites([]);
-    try {
-      authService.logoutSession();
-      localStorage.removeItem('tunido_favs');
-      window.dispatchEvent(new CustomEvent('tunido_favs_updated', { detail: [] }));
-    } catch {}
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/landlord')) {
+      window.location.replace('/');
+    }
   };
 
   const toggleFavorite = (pensionId: string) => {

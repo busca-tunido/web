@@ -20,11 +20,8 @@ export function LandlordAccountScreen() {
   const pensions = landlord?.pensions ?? [];
   const setActiveTab = landlord?.setActiveTab;
 
-  const handleLogout = () => {
-    logout();
-    if (typeof window !== 'undefined') {
-      window.location.replace('/');
-    }
+  const handleLogout = async () => {
+    await logout();
   };
 
   if (!user) {
