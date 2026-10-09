@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-export function middleware(request: NextRequest): NextResponse {
+export function proxy(request: NextRequest): NextResponse {
   const token = request.cookies.get('tunido_token')?.value;
   const role = request.cookies.get('tunido_role')?.value;
   const pathname = request.nextUrl.pathname;
@@ -23,6 +23,8 @@ export function middleware(request: NextRequest): NextResponse {
 
   return NextResponse.next();
 }
+
+export const middleware = proxy;
 
 export const config = {
   matcher: ['/landlord/:path*', '/account/:path*'],

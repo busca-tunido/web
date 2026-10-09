@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { NextRequest } from 'next/server';
-import { middleware } from '@/middleware';
+import { proxy } from '@/proxy';
 
-describe('Edge Middleware', () => {
+describe('Edge Proxy', () => {
   it('redirects to /?auth=login when no tunido_token is present', () => {
     const req = new NextRequest('http://localhost:3000/landlord/properties');
-    const res = middleware(req);
+    const res = proxy(req);
 
     expect(res.status).toBe(307);
     expect(res.headers.get('location')).toBe('http://localhost:3000/?auth=login');
@@ -15,7 +15,7 @@ describe('Edge Middleware', () => {
     const req = new NextRequest('http://localhost:3000/landlord/properties');
     req.cookies.set('tunido_token', 'valid-token');
     req.cookies.set('tunido_role', 'STUDENT');
-    const res = middleware(req);
+    const res = proxy(req);
 
     expect(res.status).toBe(307);
     expect(res.headers.get('location')).toBe('http://localhost:3000/');
@@ -25,7 +25,7 @@ describe('Edge Middleware', () => {
     const req = new NextRequest('http://localhost:3000/landlord/properties');
     req.cookies.set('tunido_token', 'valid-token');
     req.cookies.set('tunido_role', 'LANDLORD');
-    const res = middleware(req);
+    const res = proxy(req);
 
     expect(res.headers.get('location')).toBeNull();
   });
@@ -34,7 +34,7 @@ describe('Edge Middleware', () => {
     const req = new NextRequest('http://localhost:3000/account/profile');
     req.cookies.set('tunido_token', 'valid-token');
     req.cookies.set('tunido_role', 'STUDENT');
-    const res = middleware(req);
+    const res = proxy(req);
 
     expect(res.headers.get('location')).toBeNull();
   });
