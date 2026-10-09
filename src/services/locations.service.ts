@@ -1,8 +1,9 @@
+import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
 import { getCityImageUrl } from '@/lib/location-images';
 import type { CityInfo } from '@/lib/types';
 import { fetchUniversities as apiFetchUniversities } from '@/services/universities.service';
-import type { PensionItemDto, UniversityDto } from '@/types/api-contracts';
+import type { CitySummaryDto, PensionItemDto, UniversityDto } from '@/types/api-contracts';
 
 export type CityLocationItem = {
   city: string;
@@ -99,17 +100,29 @@ export function sortCitiesByCoordinates(
 }
 
 export async function fetchCities(): Promise<ApiResponse<CityInfo[]>> {
+  const citiesRes = await apiFetch<CitySummaryDto[]>('/cities', { method: 'GET' });
+  if (isApiSuccess(citiesRes) && Array.isArray(citiesRes.data) && citiesRes.data.length > 0) {
+    const cities: CityInfo[] = citiesRes.data.map((c) => ({
+      id: c.id,
+      name: c.name,
+      region: 'Chile',
+      pensionsCount: Number(c.pensionsCount ?? 0),
+      imageUrl: getCityImageUrl(c.name),
+      latitude: Number(c.latitude ?? 0),
+      longitude: Number(c.longitude ?? 0),
+    }));
+    return createSuccess(cities, citiesRes.statusCode);
+  }
+
   const uniRes = await apiFetchUniversities();
   if (isApiSuccess(uniRes) && Array.isArray(uniRes.data)) {
-    const cityMap = new Map<string, { lat: number; lng: number; count: number }>();
+    const cityMap = new Map<string, { lat: number; lng: number }>();
     for (const u of uniRes.data) {
       if (u.city) {
         const existing = cityMap.get(u.city) ?? {
           lat: Number(u.latitude) || 0,
           lng: Number(u.longitude) || 0,
-          count: 0,
         };
-        existing.count += 1;
         cityMap.set(u.city, existing);
       }
     }

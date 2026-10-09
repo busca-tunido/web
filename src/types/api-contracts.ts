@@ -29,6 +29,14 @@ export type DetectedUniversityDto = {
   city: string;
 };
 
+export type CitySummaryDto = {
+  id: string;
+  name: string;
+  pensionsCount: number;
+  latitude: number;
+  longitude: number;
+};
+
 export type CheckEmailResponseDto = {
   exists: boolean;
   role?: string;
