@@ -642,7 +642,12 @@ export function MapScreen({
 
       const tileLayer = L.tileLayer(tileUrl, {
         maxZoom: 20,
+        maxNativeZoom: 18,
         subdomains: 'abcd',
+        keepBuffer: 8,
+        updateWhenIdle: false,
+        updateInterval: 100,
+        crossOrigin: true,
       }).addTo(map);
 
       tileLayerRef.current = tileLayer;

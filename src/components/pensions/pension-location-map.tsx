@@ -100,7 +100,12 @@ export function PensionLocationMap({
       const tileUrl = getTileUrl(currentTheme);
       const tileLayer = L.tileLayer(tileUrl, {
         maxZoom: 20,
+        maxNativeZoom: 18,
         subdomains: 'abcd',
+        keepBuffer: 6,
+        updateWhenIdle: false,
+        updateInterval: 100,
+        crossOrigin: true,
       }).addTo(map);
 
       const markerIcon = createHouseMarkerIcon(L, currentTitle);
