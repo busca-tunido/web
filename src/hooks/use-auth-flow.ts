@@ -104,8 +104,17 @@ export function useAuthFlow(options: UseAuthFlowOptions = {}): UseAuthFlowReturn
         const response = await authService.checkEmailExists(targetEmail);
         if (isApiSuccess(response)) {
           const exists = Boolean(response.data.exists);
+          const detectedUni = response.data.detectedUniversity ?? null;
           setIsRegistered(exists);
-          setDetectedUniversity(response.data.detectedUniversity ?? null);
+          setDetectedUniversity(detectedUni);
+
+          if (!exists && !detectedUni) {
+            setError('Ese correo no es de una universidad registrada.');
+            setStep('email');
+            setIsRegisterModalOpen(false);
+            return { exists: false };
+          }
+
           if (exists) {
             setStep('password');
             setIsRegisterModalOpen(false);
