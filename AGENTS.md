@@ -51,6 +51,9 @@ BuscaTuNido Web is a mobile-first web application built with [Next.js](https://n
 1. **Conventional Commits (Concise, Single-Line Only)**:
    - All git commit messages must strictly follow the Conventional Commits specification (e.g., `feat`, `fix`, `chore`, `refactor`, `test`, `docs`).
    - Commit messages must be concise, single-line only, and omit any extended body description.
+1. **Feature Branching & Integration to Main**:
+   - Every significant change, new feature, or non-trivial bug fix must be grouped and developed within a dedicated branch (e.g., `feat/<name>`, `fix/<name>`).
+   - Upon completion, testing, and verification, integrate (merge) the branch cleanly into `main` and delete the feature branch. Direct uncoordinated work on `main` is prohibited for major tasks.
 1. **Strict Prohibition of Hardcoded Values & Real Data Integration**:
    - Hardcoded values, dummy/mock items, synthetic card fallbacks, and hardcoded external storage URLs are strictly prohibited across components, hooks, and services unless explicitly requested by the user.
    - If initial or sample data is needed for local development, testing, or demonstrations, it must be seeded in the backend database via the corresponding seed file (`api/prisma/seed.ts`, `seed-utils.ts`) or structured in dedicated test fixture files (`tests/**`).
