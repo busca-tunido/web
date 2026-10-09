@@ -110,3 +110,25 @@ export function getUniversityImageUrl(nameOrAcronym: string, identifier?: string
   const index = Math.abs(hash) % UNIVERSITY_FALLBACK_POOL.length;
   return UNIVERSITY_FALLBACK_POOL[index];
 }
+
+export const DEFAULT_FALLBACK_IMAGE = `${S3_BASE}/fallbacks/fallback.webp`;
+
+export function getFallbackImageUrl(): string {
+  return DEFAULT_FALLBACK_IMAGE;
+}
+
+export function getGenericAvatarUrl(role?: string, gender?: 'male' | 'female'): string {
+  if (role === 'ADMIN') return `${S3_BASE}/avatars/avatar-admin.webp`;
+  if (role === 'MODERATOR') return `${S3_BASE}/avatars/avatar-moderator.webp`;
+  if (role === 'LANDLORD') {
+    return gender === 'female'
+      ? `${S3_BASE}/avatars/avatar-landlord-female.webp`
+      : `${S3_BASE}/avatars/avatar-landlord-male.webp`;
+  }
+  if (role === 'STUDENT') {
+    return gender === 'female'
+      ? `${S3_BASE}/avatars/avatar-student-female.webp`
+      : `${S3_BASE}/avatars/avatar-student-male.webp`;
+  }
+  return `${S3_BASE}/avatars/avatar-default.webp`;
+}

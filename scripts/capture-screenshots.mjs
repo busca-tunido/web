@@ -111,7 +111,7 @@ async function captureScreen(cdp, baseUrl, theme, targetPath) {
         role: 'STUDENT',
         universityName: 'Universidad de Chile',
         isForeignStudent: true,
-        avatarUrl: 'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/avatars/avatar-student-cl-w.webp'
+        avatarUrl: 'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/v1/shared/avatars/avatar-student-female.webp'
       }));
       localStorage.setItem('tunido_token', 'demo-token');
       localStorage.setItem('tunido_favs', JSON.stringify(['pen-1', 'pen-2', 'pen-3', 'pen-4']));
