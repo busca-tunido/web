@@ -104,7 +104,12 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
   const nearestUniName = firstNearby?.university?.shortName || firstNearby?.university?.name || '';
   const distanceMeters = firstNearby?.distanceMeters ?? 0;
 
-  const amenitiesSlugs = new Set((raw.amenities || []).map((a) => a.slug));
+  const amenitiesList = Array.isArray(raw.amenities)
+    ? raw.amenities
+        .map((a) => (typeof a === 'string' ? a : a?.slug))
+        .filter((s): s is string => Boolean(s))
+    : [];
+  const amenitiesSlugs = new Set(amenitiesList);
 
   const rooms: RoomInfo[] =
     Array.isArray(raw.rooms) && raw.rooms.length > 0
@@ -157,10 +162,19 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
         : raw.genderPreference === 'FEMALE_ONLY'
           ? 'FEMALE_ONLY'
           : 'MIXED',
-    includesMeals: Boolean(amenitiesSlugs.has('comida-incluida')),
-    includesWifi: raw.internetIncluded ?? true,
-    includesLaundry: Boolean(amenitiesSlugs.has('lavanderia')),
-    includesStudyRoom: Boolean(amenitiesSlugs.has('sala-estudio')),
+    includesMeals: Boolean(
+      amenitiesSlugs.has('cocina-equipada') || amenitiesSlugs.has('comida-incluida'),
+    ),
+    includesWifi: Boolean(
+      raw.internetIncluded ?? (amenitiesSlugs.has('wifi-alta-velocidad') || true),
+    ),
+    includesLaundry: Boolean(
+      amenitiesSlugs.has('lavadora-secadora') || amenitiesSlugs.has('lavanderia'),
+    ),
+    includesStudyRoom: Boolean(
+      amenitiesSlugs.has('sala-estudio-cowork') || amenitiesSlugs.has('sala-estudio'),
+    ),
+    amenities: amenitiesList,
     nearestUniversityName: nearestUniName,
     distanceToUniversityMeters: distanceMeters,
     distanceKm:

@@ -254,7 +254,7 @@ export function PensionDetailContent({
                 pension.includesMeals ? 'text-primary' : 'text-muted-foreground/60'
               }`}
             />
-            <span>{pension.includesMeals ? 'Comida incluida' : 'Cocina libre uso'}</span>
+            <span>{pension.includesMeals ? 'Cocina equipada' : 'Sin cocina'}</span>
           </div>
           <div
             className={`flex items-center gap-2 rounded-lg border p-2.5 ${
