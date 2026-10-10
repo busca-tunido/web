@@ -120,7 +120,7 @@ export function ReviewCard({
               <Star
                 key={`star-${review.id}-${starVal}`}
                 className={`h-3 w-3 ${
-                  starVal < rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'
+                  starVal <= rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'
                 }`}
               />
             ))}
