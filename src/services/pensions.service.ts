@@ -144,6 +144,18 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
     mapReviewItemDto(rev as Record<string, unknown>),
   );
 
+  const rawAmenities = Array.isArray(raw.amenities) ? raw.amenities : [];
+  const amenities = rawAmenities.map((item) => {
+    if (typeof item === 'string') {
+      return { slug: item, name: item };
+    }
+    const obj = item as { slug?: string; name?: string };
+    return {
+      slug: String(obj.slug ?? ''),
+      name: String(obj.name ?? obj.slug ?? ''),
+    };
+  });
+
   return {
     id: String(raw.id ?? ''),
     slug: typeof raw.slug === 'string' ? raw.slug : undefined,
@@ -180,6 +192,7 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
     images: images.length > 0 ? images : undefined,
     rooms: rooms.length > 0 ? rooms : undefined,
     reviews: reviews.length > 0 ? reviews : undefined,
+    amenities: amenities.length > 0 ? amenities : undefined,
     averageRating:
       raw.averageRating !== undefined && raw.averageRating !== null
         ? Number(raw.averageRating)

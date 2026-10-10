@@ -44,11 +44,15 @@ export type SuggestEditAction =
     };
 
 export function createInitialSuggestEditState(pension: PensionItem): EditDraftState {
-  const activeAmenities: string[] = [];
-  if (pension.includesWifi) activeAmenities.push('wifi-alta-velocidad');
-  if (pension.includesMeals) activeAmenities.push('comida-incluida');
-  if (pension.includesLaundry) activeAmenities.push('lavanderia');
-  if (pension.includesStudyRoom) activeAmenities.push('sala-estudio');
+  const activeAmenities: string[] =
+    pension.amenities && pension.amenities.length > 0 ? [...pension.amenities] : [];
+
+  if (activeAmenities.length === 0) {
+    if (pension.includesWifi) activeAmenities.push('wifi-alta-velocidad');
+    if (pension.includesMeals) activeAmenities.push('cocina-equipada');
+    if (pension.includesLaundry) activeAmenities.push('lavadora-secadora');
+    if (pension.includesStudyRoom) activeAmenities.push('sala-estudio-cowork');
+  }
 
   return {
     activeAmenities,
@@ -165,18 +169,22 @@ export function calculateProposedDiff(
     changes.curfewTime = current.curfewText.trim();
   }
 
-  const originalAmenities: string[] = [];
-  if (original.includesWifi) {
-    originalAmenities.push('wifi-alta-velocidad');
-  }
-  if (original.includesMeals) {
-    originalAmenities.push('comida-incluida');
-  }
-  if (original.includesLaundry) {
-    originalAmenities.push('lavanderia');
-  }
-  if (original.includesStudyRoom) {
-    originalAmenities.push('sala-estudio');
+  const originalAmenities: string[] =
+    original.amenities && original.amenities.length > 0 ? [...original.amenities] : [];
+
+  if (originalAmenities.length === 0) {
+    if (original.includesWifi) {
+      originalAmenities.push('wifi-alta-velocidad');
+    }
+    if (original.includesMeals) {
+      originalAmenities.push('cocina-equipada');
+    }
+    if (original.includesLaundry) {
+      originalAmenities.push('lavadora-secadora');
+    }
+    if (original.includesStudyRoom) {
+      originalAmenities.push('sala-estudio-cowork');
+    }
   }
 
   const amenitiesToAdd = current.activeAmenities.filter(

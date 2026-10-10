@@ -69,6 +69,7 @@ export type PensionItem = {
   includesWifi: boolean;
   includesLaundry: boolean;
   includesStudyRoom: boolean;
+  amenities?: string[];
   nearestUniversityName: string;
   distanceToUniversityMeters: number;
   distanceKm?: number;

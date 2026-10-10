@@ -135,6 +135,7 @@ export type PensionItemDto = {
   images?: { id: string; url: string; order: number; isMain: boolean }[];
   rooms?: RoomDto[];
   reviews?: ReviewItemDto[];
+  amenities?: Array<{ slug: string; name: string }> | string[];
   averageRating?: number;
   ratingAverage?: number;
   reviewsCount?: number;
