@@ -146,6 +146,85 @@ async function fetchUniversities(params?: {
   return apiFetchUniversities(params);
 }
 
+export type ReverseGeocodeResponse = {
+  address: string;
+  neighborhood: string;
+  city: string;
+  displayName?: string;
+  rawAddress?: Record<string, string>;
+};
+
+export type ForwardGeocodeResponse = {
+  lat: number;
+  lng: number;
+  displayName: string;
+};
+
+export function normalizeCityName(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+export function findClosestCity<T extends { lat: number; lng: number }>(
+  lat: number,
+  lng: number,
+  candidates: readonly T[],
+): T {
+  let closest = candidates[0];
+  let minDistance = Number.POSITIVE_INFINITY;
+  for (const item of candidates) {
+    const dist = calculateHaversineDistanceKm(lat, lng, item.lat, item.lng);
+    if (dist < minDistance) {
+      minDistance = dist;
+      closest = item;
+    }
+  }
+  return closest;
+}
+
+export async function reverseGeocode(
+  lat: number,
+  lng: number,
+  signal?: AbortSignal,
+): Promise<ReverseGeocodeResponse | null> {
+  try {
+    const res = await fetch(`/api/geocoding/reverse?lat=${lat}&lng=${lng}`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      signal,
+    });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { success?: boolean; data?: ReverseGeocodeResponse };
+    return body.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function forwardGeocode(
+  query: string,
+  signal?: AbortSignal,
+): Promise<ForwardGeocodeResponse | null> {
+  const trimmed = query.trim();
+  if (trimmed.length < 3) return null;
+
+  try {
+    const res = await fetch(`/api/geocoding/forward?q=${encodeURIComponent(trimmed)}`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      signal,
+    });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { success?: boolean; data?: ForwardGeocodeResponse | null };
+    return body.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export const locationsService = {
   fetchCities,
   fetchUniversities,
@@ -156,4 +235,8 @@ export const locationsService = {
   extractCitiesWithCounts,
   sortLocationsByDistance,
   sortCitiesByCoordinates,
+  normalizeCityName,
+  findClosestCity,
+  reverseGeocode,
+  forwardGeocode,
 };

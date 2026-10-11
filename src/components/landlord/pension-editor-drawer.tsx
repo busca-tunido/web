@@ -20,7 +20,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type React from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { PensionLocationPickerMap } from '@/components/landlord/pension-location-picker-map';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,6 +32,12 @@ import {
 } from '@/components/ui/drawer';
 import { isApiSuccess } from '@/lib/api-response';
 import { cn } from '@/lib/utils';
+import {
+  findClosestCity,
+  forwardGeocode,
+  normalizeCityName,
+  reverseGeocode,
+} from '@/services/locations.service';
 import { pensionsService } from '@/services/pensions.service';
 import type { CreatePensionDto, PensionDetailDto } from '@/types/api-contracts';
 
@@ -201,6 +207,12 @@ export function PensionEditorDrawer({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [isReverseGeocoding, setIsReverseGeocoding] = useState<boolean>(false);
+  const [isForwardGeocoding, setIsForwardGeocoding] = useState<boolean>(false);
+
+  const isUpdatingFromMapRef = useRef<boolean>(false);
+  const reverseAbortRef = useRef<AbortController | null>(null);
+  const forwardAbortRef = useRef<AbortController | null>(null);
 
   const resetForm = useCallback(() => {
     setForm(INITIAL_FORM_STATE);
@@ -217,28 +229,160 @@ export function PensionEditorDrawer({
     }));
   };
 
-  const handleDetectLocation = () => {
+  const handleLocationChange = useCallback(async (lat: number, lng: number) => {
+    isUpdatingFromMapRef.current = true;
+    setForm((prev) => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng,
+    }));
+
+    if (reverseAbortRef.current) {
+      reverseAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    reverseAbortRef.current = controller;
+
+    setIsReverseGeocoding(true);
+    try {
+      const result = await reverseGeocode(lat, lng, controller.signal);
+      if (result && !controller.signal.aborted) {
+        const matchedCity = CHILEAN_CITIES.find(
+          (c) => normalizeCityName(c.city) === normalizeCityName(result.city),
+        );
+        const resolvedCity = matchedCity
+          ? matchedCity.city
+          : findClosestCity(lat, lng, CHILEAN_CITIES).city;
+
+        setForm((prev) => ({
+          ...prev,
+          latitude: lat,
+          longitude: lng,
+          city: resolvedCity,
+          neighborhood: result.neighborhood || prev.neighborhood,
+          address: result.address || prev.address,
+        }));
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        setIsReverseGeocoding(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isUpdatingFromMapRef.current) {
+      isUpdatingFromMapRef.current = false;
+      return;
+    }
+
+    const trimmedAddress = form.address.trim();
+    const trimmedNeighborhood = form.neighborhood.trim();
+
+    if (trimmedAddress.length < 3 && trimmedNeighborhood.length < 2) {
+      return;
+    }
+
+    if (forwardAbortRef.current) {
+      forwardAbortRef.current.abort();
+    }
+    const controller = new AbortController();
+    forwardAbortRef.current = controller;
+
+    const timer = setTimeout(async () => {
+      setIsForwardGeocoding(true);
+      try {
+        let result = null;
+        if (trimmedAddress.length >= 3 && trimmedNeighborhood.length >= 2) {
+          const fullQuery = `${trimmedAddress}, ${trimmedNeighborhood}, ${form.city}, Chile`;
+          result = await forwardGeocode(fullQuery, controller.signal);
+        }
+
+        if (!result && trimmedAddress.length >= 3 && !controller.signal.aborted) {
+          const addressQuery = `${trimmedAddress}, ${form.city}, Chile`;
+          result = await forwardGeocode(addressQuery, controller.signal);
+        }
+
+        if (
+          !result &&
+          !trimmedAddress &&
+          trimmedNeighborhood.length >= 2 &&
+          !controller.signal.aborted
+        ) {
+          const neighborhoodQuery = `${trimmedNeighborhood}, ${form.city}, Chile`;
+          result = await forwardGeocode(neighborhoodQuery, controller.signal);
+        }
+
+        if (result && !controller.signal.aborted) {
+          setForm((prev) => ({
+            ...prev,
+            latitude: result.lat,
+            longitude: result.lng,
+          }));
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsForwardGeocoding(false);
+        }
+      }
+    }, 700);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [form.address, form.neighborhood, form.city]);
+
+  const handleCompleteWithGps = () => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
       setErrorMessage('La geolocalización no está disponible en este navegador.');
       return;
     }
 
     setIsLocating(true);
+    setErrorMessage(null);
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
+        const lat = Number(position.coords.latitude.toFixed(6));
+        const lng = Number(position.coords.longitude.toFixed(6));
+
+        isUpdatingFromMapRef.current = true;
         setForm((prev) => ({
           ...prev,
-          latitude: Number(position.coords.latitude.toFixed(6)),
-          longitude: Number(position.coords.longitude.toFixed(6)),
+          latitude: lat,
+          longitude: lng,
         }));
-        setIsLocating(false);
+
+        try {
+          const result = await reverseGeocode(lat, lng);
+          if (result) {
+            const matchedCity = CHILEAN_CITIES.find(
+              (c) => normalizeCityName(c.city) === normalizeCityName(result.city),
+            );
+            const resolvedCity = matchedCity
+              ? matchedCity.city
+              : findClosestCity(lat, lng, CHILEAN_CITIES).city;
+
+            setForm((prev) => ({
+              ...prev,
+              latitude: lat,
+              longitude: lng,
+              city: resolvedCity,
+              neighborhood: result.neighborhood || prev.neighborhood,
+              address: result.address || prev.address,
+            }));
+          }
+        } finally {
+          setIsLocating(false);
+        }
       },
       (error) => {
         setIsLocating(false);
         setErrorMessage(
           error.code === error.PERMISSION_DENIED
-            ? 'Permiso de ubicación denegado. Puedes continuar con las coordenadas por defecto.'
-            : 'No fue posible obtener tu ubicación actual.',
+            ? 'Permiso de ubicación denegado. Puedes seleccionar tu ubicación directamente en el mapa.'
+            : 'No fue posible obtener tu ubicación actual vía GPS.',
         );
       },
       { timeout: 10000, enableHighAccuracy: true },
@@ -384,7 +528,7 @@ export function PensionEditorDrawer({
                 <Building2 className="h-5 w-5 text-primary shrink-0" />
                 <span>Registra tu Pensión Universitaria</span>
               </DrawerTitle>
-              <DrawerDescription className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+              <DrawerDescription className="text-xs text-muted-foreground mt-0.5 leading-relaxed text-left">
                 Publica los datos de tu alojamiento para comenzar a agregar habitaciones y recibir
                 solicitudes de estudiantes en BuscaTuNido.
               </DrawerDescription>
@@ -434,7 +578,12 @@ export function PensionEditorDrawer({
                   rows={3}
                   placeholder="Describe el ambiente, cercanía a campus universitarios, servicios cercanos y comodidades para estudiantes..."
                   value={form.description}
-                  onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none"
                 />
               </div>
@@ -448,7 +597,7 @@ export function PensionEditorDrawer({
                 </div>
                 <button
                   type="button"
-                  onClick={handleDetectLocation}
+                  onClick={handleCompleteWithGps}
                   disabled={isLocating}
                   className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:underline cursor-pointer disabled:opacity-50"
                 >
@@ -457,7 +606,7 @@ export function PensionEditorDrawer({
                   ) : (
                     <Navigation className="h-3 w-3" />
                   )}
-                  <span>Detectar GPS</span>
+                  <span>{isLocating ? 'Obteniendo GPS...' : 'Completar con GPS'}</span>
                 </button>
               </div>
 
@@ -506,7 +655,12 @@ export function PensionEditorDrawer({
                       selectedCityConfig?.neighborhoodPlaceholder ?? 'Ej: San Joaquín, Centro...'
                     }
                     value={form.neighborhood}
-                    onChange={(e) => setForm((prev) => ({ ...prev, neighborhood: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        neighborhood: e.target.value,
+                      }))
+                    }
                     className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                   />
                 </div>
@@ -535,6 +689,14 @@ export function PensionEditorDrawer({
                   <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                     <MapPin className="h-3.5 w-3.5 text-primary" />
                     <span>Ubicación en el Mapa</span>
+                    {(isReverseGeocoding || isForwardGeocoding) && (
+                      <span className="inline-flex items-center gap-1 text-[10px] text-primary font-normal animate-in fade-in">
+                        <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                        <span>
+                          {isReverseGeocoding ? 'Obteniendo dirección...' : 'Buscando en mapa...'}
+                        </span>
+                      </span>
+                    )}
                   </span>
                   <span className="text-[10px] text-muted-foreground">
                     Arrastra el marcador o haz clic en la calle exacta
@@ -546,13 +708,7 @@ export function PensionEditorDrawer({
                   city={form.city}
                   neighborhood={form.neighborhood}
                   address={form.address}
-                  onLocationChange={(lat, lng) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      latitude: lat,
-                      longitude: lng,
-                    }))
-                  }
+                  onLocationChange={handleLocationChange}
                 />
               </div>
             </div>
@@ -584,7 +740,10 @@ export function PensionEditorDrawer({
                       placeholder="250000"
                       value={form.baseMonthlyPrice}
                       onChange={(e) =>
-                        setForm((prev) => ({ ...prev, baseMonthlyPrice: e.target.value }))
+                        setForm((prev) => ({
+                          ...prev,
+                          baseMonthlyPrice: e.target.value,
+                        }))
                       }
                       className="w-full min-h-12 rounded-xl border border-border bg-background pl-8 pr-3.5 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                     />
@@ -612,7 +771,12 @@ export function PensionEditorDrawer({
                       step={5000}
                       placeholder="250000 (opcional)"
                       value={form.deposit}
-                      onChange={(e) => setForm((prev) => ({ ...prev, deposit: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          deposit: e.target.value,
+                        }))
+                      }
                       className="w-full min-h-12 rounded-xl border border-border bg-background pl-8 pr-3.5 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                     />
                   </div>
@@ -664,7 +828,10 @@ export function PensionEditorDrawer({
                       key={utility.key}
                       type="button"
                       onClick={() =>
-                        setForm((prev) => ({ ...prev, [utility.key]: !prev[utility.key] }))
+                        setForm((prev) => ({
+                          ...prev,
+                          [utility.key]: !prev[utility.key],
+                        }))
                       }
                       className={cn(
                         'flex flex-col items-center justify-center p-3 rounded-2xl border transition-all min-h-16 text-center cursor-pointer',
@@ -709,7 +876,10 @@ export function PensionEditorDrawer({
                         key={opt.value}
                         type="button"
                         onClick={() =>
-                          setForm((prev) => ({ ...prev, genderPreference: opt.value }))
+                          setForm((prev) => ({
+                            ...prev,
+                            genderPreference: opt.value,
+                          }))
                         }
                         className={cn(
                           'flex flex-col items-center justify-center p-3 rounded-2xl border transition-all text-center min-h-16 cursor-pointer',
@@ -752,7 +922,12 @@ export function PensionEditorDrawer({
                     <button
                       key={item.key}
                       type="button"
-                      onClick={() => setForm((prev) => ({ ...prev, [item.key]: !prev[item.key] }))}
+                      onClick={() =>
+                        setForm((prev) => ({
+                          ...prev,
+                          [item.key]: !prev[item.key],
+                        }))
+                      }
                       className={cn(
                         'flex items-center justify-between p-3 rounded-2xl border transition-all text-left min-h-12 cursor-pointer',
                         isChecked
@@ -828,7 +1003,12 @@ export function PensionEditorDrawer({
                       id="curfew-time-select"
                       type="time"
                       value={form.curfewTime}
-                      onChange={(e) => setForm((prev) => ({ ...prev, curfewTime: e.target.value }))}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          curfewTime: e.target.value,
+                        }))
+                      }
                       className="min-h-10 rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>

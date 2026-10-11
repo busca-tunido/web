@@ -340,7 +340,7 @@ export function LandlordRoomsScreen({
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
           <div className="flex flex-col gap-3.5">
             <div className="flex items-center justify-between pb-1.5 border-b border-border/50">
               <div className="flex items-center gap-2">
