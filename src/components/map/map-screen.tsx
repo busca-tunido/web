@@ -1087,8 +1087,7 @@ function MapDrawerPensionList({
                 </div>
 
                 <p className="text-xs text-muted-foreground line-clamp-1">
-                  {pension.neighborhood}, {pension.city} • a {pension.distanceToUniversityMeters}m
-                  de campus
+                  {pension.neighborhood}, {pension.city}
                 </p>
 
                 <div className="mt-0.5 flex items-baseline gap-1">

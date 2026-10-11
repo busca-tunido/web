@@ -20,7 +20,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { PensionLocationPickerMap } from '@/components/landlord/pension-location-picker-map';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,8 +33,7 @@ import {
 import { isApiSuccess } from '@/lib/api-response';
 import { cn } from '@/lib/utils';
 import { pensionsService } from '@/services/pensions.service';
-import { fetchUniversities } from '@/services/universities.service';
-import type { CreatePensionDto, PensionDetailDto, UniversityDto } from '@/types/api-contracts';
+import type { CreatePensionDto, PensionDetailDto } from '@/types/api-contracts';
 
 export type PensionEditorDrawerProps = {
   isOpen: boolean;
@@ -165,7 +164,6 @@ type PensionFormState = {
   smokingAllowed: boolean;
   petsAllowed: boolean;
   selectedAmenitySlugs: string[];
-  nearbyUniversityId: string;
 };
 
 const INITIAL_FORM_STATE: PensionFormState = {
@@ -191,7 +189,6 @@ const INITIAL_FORM_STATE: PensionFormState = {
   smokingAllowed: false,
   petsAllowed: false,
   selectedAmenitySlugs: ['wifi-alta-velocidad'],
-  nearbyUniversityId: '',
 };
 
 export function PensionEditorDrawer({
@@ -204,8 +201,6 @@ export function PensionEditorDrawer({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState<boolean>(false);
-  const [universities, setUniversities] = useState<UniversityDto[]>([]);
-  const [isLoadingUniversities, setIsLoadingUniversities] = useState<boolean>(false);
 
   const resetForm = useCallback(() => {
     setForm(INITIAL_FORM_STATE);
@@ -219,7 +214,6 @@ export function PensionEditorDrawer({
       city: cityName,
       latitude: foundCity ? foundCity.lat : prev.latitude,
       longitude: foundCity ? foundCity.lng : prev.longitude,
-      nearbyUniversityId: '',
     }));
   };
 
@@ -250,30 +244,6 @@ export function PensionEditorDrawer({
       { timeout: 10000, enableHighAccuracy: true },
     );
   };
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    let isMounted = true;
-    setIsLoadingUniversities(true);
-
-    fetchUniversities({ city: form.city })
-      .then((res) => {
-        if (!isMounted) return;
-        if (isApiSuccess(res)) {
-          setUniversities(res.data);
-        }
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsLoadingUniversities(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isOpen, form.city]);
 
   const toggleAmenity = (slug: string) => {
     setForm((prev) => {
@@ -357,7 +327,6 @@ export function PensionEditorDrawer({
         quietHoursStart: form.quietHoursStart || undefined,
         quietHoursEnd: form.quietHoursEnd || undefined,
         amenitySlugs: form.selectedAmenitySlugs.length > 0 ? form.selectedAmenitySlugs : undefined,
-        nearbyUniversityId: form.nearbyUniversityId || undefined,
       };
 
       const response = await pensionsService.createPension(payload);
@@ -560,40 +529,6 @@ export function PensionEditorDrawer({
                   />
                 </div>
               </div>
-
-              {universities.length > 0 && (
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="university-select"
-                    className="block text-xs font-semibold text-foreground flex items-center justify-between"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <GraduationCap className="h-3.5 w-3.5 text-primary" />
-                      Universidad Cercana (opcional)
-                    </span>
-                    {isLoadingUniversities && (
-                      <span className="text-[10px] text-muted-foreground font-normal">
-                        Cargando...
-                      </span>
-                    )}
-                  </label>
-                  <select
-                    id="university-select"
-                    value={form.nearbyUniversityId}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, nearbyUniversityId: e.target.value }))
-                    }
-                    className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-                  >
-                    <option value="">Selecciona universidad cercana si aplica...</option>
-                    {universities.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} {u.campus ? `(${u.campus})` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
 
               <div className="space-y-2 pt-1">
                 <div className="flex items-center justify-between">

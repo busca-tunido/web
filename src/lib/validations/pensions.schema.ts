@@ -85,7 +85,6 @@ export const createPensionSchema = z.object({
   internetIncluded: z.boolean().default(true),
   genderPreference: genderPreferenceEnum.default('ANY'),
   amenitySlugs: z.array(z.string()).default([]),
-  nearbyUniversityId: z.string().uuid('ID de universidad inválido').optional(),
 });
 
 export const pensionFilterSchema = z.object({
