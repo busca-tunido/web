@@ -104,11 +104,7 @@ function PensionCardComponent({
             <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
             <span>
               {pension.neighborhood}, {pension.city}
-              {pension.distanceKm !== undefined ? (
-                <> • a {pension.distanceKm} km</>
-              ) : (
-                <> • a {pension.distanceToUniversityMeters}m de campus</>
-              )}
+              {pension.distanceKm !== undefined && <> • a {pension.distanceKm} km</>}
             </span>
           </div>
 
