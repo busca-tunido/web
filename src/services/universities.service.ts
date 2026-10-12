@@ -2,6 +2,7 @@ import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
 import { getUniversityImageUrl } from '@/lib/location-images';
 import type {
+  CampusAreaDto,
   CreateUniversityDto,
   UniversityDto,
   UpdateUniversityDto,
@@ -26,6 +27,7 @@ export function mapUniversityDto(raw: Record<string, unknown>): UniversityDto {
     latitude: Number(raw.latitude ?? 0),
     longitude: Number(raw.longitude ?? 0),
     imageUrl: rawImage ?? getUniversityImageUrl(name, acronym),
+    campuses: Array.isArray(raw.campuses) ? (raw.campuses as CampusAreaDto[]) : undefined,
   };
 }
 
@@ -43,6 +45,16 @@ export async function fetchUniversities(params?: {
 
   const items = Array.isArray(response.data) ? response.data.map(mapUniversityDto) : [];
   return createSuccess(items, response.statusCode);
+}
+
+export async function fetchCampusAreas(params?: {
+  city?: string;
+}): Promise<ApiResponse<CampusAreaDto[]>> {
+  const query = params?.city ? `?city=${encodeURIComponent(params.city)}` : '';
+  const response = await apiFetch<CampusAreaDto[]>(`/universities/campuses${query}`, {
+    method: 'GET',
+  });
+  return response;
 }
 
 export async function fetchUniversityDetail(id: string): Promise<ApiResponse<UniversityDto>> {

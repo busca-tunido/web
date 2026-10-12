@@ -13,6 +13,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
 import { env } from '@/env';
 import { useMapViewportPensions } from '@/hooks/use-map-viewport-pensions';
+import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
 import { matchesSearchFilters } from '@/lib/filter-matcher';
 import {
@@ -23,6 +24,8 @@ import {
 import { useTheme } from '@/lib/theme-context';
 import type { CityInfo, PensionItem, SearchFilters, UniversityInfo } from '@/lib/types';
 import { findClosestCity, type UserCoordinates } from '@/lib/use-user-location';
+import { fetchCampusAreas } from '@/services/universities.service';
+import type { CampusAreaDto } from '@/types/api-contracts';
 
 type MapScreenProps = {
   pensions: PensionItem[];
@@ -227,6 +230,63 @@ function createMarkerIcon(
   });
 }
 
+function createSvgPattern(
+  id: string,
+  strokeColor: string,
+  strokeOpacity: string,
+): SVGPatternElement {
+  const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+  pattern.setAttribute('id', id);
+  pattern.setAttribute('width', '12');
+  pattern.setAttribute('height', '12');
+  pattern.setAttribute('patternTransform', 'rotate(45 0 0)');
+  pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line.setAttribute('x1', '0');
+  line.setAttribute('y1', '0');
+  line.setAttribute('x2', '0');
+  line.setAttribute('y2', '12');
+  line.setAttribute('stroke', strokeColor);
+  line.setAttribute('stroke-width', '1.2');
+  line.setAttribute('stroke-opacity', strokeOpacity);
+
+  pattern.appendChild(line);
+  return pattern;
+}
+
+function ensureCampusSvgPatterns(map: import('leaflet').Map) {
+  const container = map.getContainer();
+  const svg = container.querySelector('.leaflet-overlay-pane svg');
+  if (!svg) return;
+
+  if (svg.querySelector('#campus-stripes-light')) return;
+
+  let defs = svg.querySelector('defs');
+  if (!defs) {
+    defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    svg.prepend(defs);
+  }
+
+  defs.appendChild(createSvgPattern('campus-stripes-light', '#64748b', '0.35'));
+  defs.appendChild(createSvgPattern('campus-stripes-dark', '#94a3b8', '0.30'));
+}
+
+function isCampusInBounds(campus: CampusAreaDto, bounds: import('leaflet').LatLngBounds): boolean {
+  if (bounds.contains([campus.centerLat, campus.centerLng])) return true;
+  for (const pt of campus.polygon) {
+    if (bounds.contains([pt.latitude, pt.longitude])) return true;
+  }
+  const center = bounds.getCenter();
+  const minLat = Math.min(...campus.polygon.map((p) => p.latitude));
+  const maxLat = Math.max(...campus.polygon.map((p) => p.latitude));
+  const minLng = Math.min(...campus.polygon.map((p) => p.longitude));
+  const maxLng = Math.max(...campus.polygon.map((p) => p.longitude));
+  return (
+    center.lat >= minLat && center.lat <= maxLat && center.lng >= minLng && center.lng <= maxLng
+  );
+}
+
 function getTileUrl(theme: 'light' | 'dark') {
   const apiKey = env.NEXT_PUBLIC_CARTO_API_KEY;
   const keyParam = apiKey ? `?key=${apiKey}` : '';
@@ -308,14 +368,38 @@ export function MapScreen({
   useEffect(() => {
     drawerY.set(targetY);
   }, [targetY, drawerY]);
+  const [campusAreas, setCampusAreas] = useState<CampusAreaDto[]>([]);
   const mapInstanceRef = useRef<import('leaflet').Map | null>(null);
   const tileLayerRef = useRef<import('leaflet').TileLayer | null>(null);
+  const campusLayerRef = useRef<import('leaflet').LayerGroup | null>(null);
+  const activeCampusesMapRef = useRef<
+    Map<string, { polygon: import('leaflet').Polygon; marker: import('leaflet').Marker }>
+  >(new Map());
+  const campusRenderTimerRef = useRef<number | null>(null);
   const markersLayerRef = useRef<import('leaflet').LayerGroup | null>(null);
   const activeMarkersMapRef = useRef<Map<string, import('leaflet').Marker>>(new Map());
   const renderTimerRef = useRef<number | null>(null);
   const userMarkerRef = useRef<import('leaflet').Marker | null>(null);
   const universityMarkerRef = useRef<import('leaflet').Marker | null>(null);
   const leafletModuleRef = useRef<typeof import('leaflet') | null>(null);
+
+  useEffect(() => {
+    let isCancelled = false;
+    async function loadCampuses() {
+      try {
+        const res = await fetchCampusAreas();
+        if (!isCancelled && isApiSuccess(res) && Array.isArray(res.data)) {
+          setCampusAreas(res.data);
+        }
+      } catch {
+        // ignore
+      }
+    }
+    loadCampuses();
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   const panToPension = useCallback((lat: number, lng: number) => {
     const map = mapInstanceRef.current;
@@ -540,6 +624,119 @@ export function MapScreen({
     }
   }, [selectedUniversity]);
 
+  const renderCampuses = useCallback(() => {
+    const L = leafletModuleRef.current;
+    const map = mapInstanceRef.current;
+    const campusGroup = campusLayerRef.current;
+    if (!L || !map || !campusGroup) return;
+
+    const zoom = map.getZoom();
+    if (zoom < 12) {
+      for (const item of activeCampusesMapRef.current.values()) {
+        campusGroup.removeLayer(item.polygon);
+        campusGroup.removeLayer(item.marker);
+      }
+      activeCampusesMapRef.current.clear();
+      return;
+    }
+
+    ensureCampusSvgPatterns(map);
+
+    const bounds = map.getBounds();
+    const currentTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
+    const patternUrl = `url(#campus-stripes-${currentTheme})`;
+    const strokeColor = currentTheme === 'dark' ? '#94a3b8' : '#64748b';
+
+    const nextCampusesMap = new Map<
+      string,
+      { polygon: import('leaflet').Polygon; marker: import('leaflet').Marker }
+    >();
+    const currentCampusesMap = activeCampusesMapRef.current;
+
+    for (const campus of campusAreas) {
+      if (!campus.polygon || campus.polygon.length < 3) continue;
+      if (!isCampusInBounds(campus, bounds)) continue;
+
+      const cacheKey = `${campus.id}:${currentTheme}`;
+      const existing = currentCampusesMap.get(cacheKey);
+
+      if (existing) {
+        nextCampusesMap.set(cacheKey, existing);
+        currentCampusesMap.delete(cacheKey);
+      } else {
+        const latLngs = campus.polygon.map((p) => [p.latitude, p.longitude] as [number, number]);
+
+        const polygon = L.polygon(latLngs, {
+          dashArray: '5, 5',
+          weight: 1.5,
+          color: strokeColor,
+          opacity: 0.55,
+          fillColor: patternUrl,
+          fillOpacity: 1,
+          smoothFactor: 1,
+          interactive: true,
+        });
+
+        polygon.on('mouseover', () => {
+          polygon.setStyle({
+            opacity: 0.85,
+            weight: 2,
+          });
+        });
+
+        polygon.on('mouseout', () => {
+          polygon.setStyle({
+            opacity: 0.55,
+            weight: 1.5,
+          });
+        });
+
+        const tooltipContent = `<div style="font-family: inherit;"><div style="font-weight: 700; font-size: 12px; line-height: 1.2;">${campus.name}</div><div style="font-size: 11px; opacity: 0.75; margin-top: 2px;">${campus.universityName}</div></div>`;
+        polygon.bindTooltip(tooltipContent, {
+          className: 'campus-area-tooltip',
+          sticky: true,
+          direction: 'top',
+          offset: [0, -10],
+        });
+
+        const acronymIcon = L.divIcon({
+          className: 'custom-div-icon',
+          html: `<div style="transform: translate(-50%, -50%); pointer-events: none;" class="flex items-center justify-center"><div style="backdrop-filter: blur(4px); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);" class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border border-slate-400/40 dark:border-slate-500/40 bg-white/85 dark:bg-zinc-900/85 text-slate-700 dark:text-slate-200 select-none">${campus.acronym}</div></div>`,
+          iconSize: [0, 0],
+          iconAnchor: [0, 0],
+        });
+
+        const marker = L.marker([campus.centerLat, campus.centerLng], {
+          icon: acronymIcon,
+          interactive: false,
+          zIndexOffset: 50,
+        });
+
+        polygon.addTo(campusGroup);
+        marker.addTo(campusGroup);
+
+        nextCampusesMap.set(cacheKey, { polygon, marker });
+      }
+    }
+
+    for (const oldItem of currentCampusesMap.values()) {
+      campusGroup.removeLayer(oldItem.polygon);
+      campusGroup.removeLayer(oldItem.marker);
+    }
+
+    activeCampusesMapRef.current = nextCampusesMap;
+  }, [campusAreas, resolvedTheme]);
+
+  const debouncedRenderCampuses = useCallback(() => {
+    if (campusRenderTimerRef.current !== null) {
+      cancelAnimationFrame(campusRenderTimerRef.current);
+    }
+    campusRenderTimerRef.current = requestAnimationFrame(() => {
+      campusRenderTimerRef.current = null;
+      renderCampuses();
+    });
+  }, [renderCampuses]);
+
   const initPropsRef = useRef({
     selectedPension,
     selectedUniversity,
@@ -560,6 +757,12 @@ export function MapScreen({
 
   const renderUniversityMarkerRef = useRef(renderUniversityMarker);
   renderUniversityMarkerRef.current = renderUniversityMarker;
+
+  const renderCampusesRef = useRef(renderCampuses);
+  renderCampusesRef.current = renderCampuses;
+
+  const debouncedRenderCampusesRef = useRef(debouncedRenderCampuses);
+  debouncedRenderCampusesRef.current = debouncedRenderCampuses;
 
   const panToPensionRef = useRef(panToPension);
   panToPensionRef.current = panToPension;
@@ -658,11 +861,16 @@ export function MapScreen({
         setExploredCenter({ latitude: center.lat, longitude: center.lng });
         handleMapMoveEndRef.current();
         debouncedRenderMarkersRef.current();
+        debouncedRenderCampusesRef.current();
       });
 
       map.on('zoomend', () => {
         debouncedRenderMarkersRef.current();
+        debouncedRenderCampusesRef.current();
       });
+
+      const campusGroup = L.layerGroup().addTo(map);
+      campusLayerRef.current = campusGroup;
 
       const markersGroup = L.layerGroup().addTo(map);
       markersLayerRef.current = markersGroup;
@@ -675,6 +883,7 @@ export function MapScreen({
       }, 150);
 
       renderMarkersRef.current();
+      renderCampusesRef.current();
       renderUserMarkerRef.current();
       renderUniversityMarkerRef.current();
 
@@ -696,17 +905,27 @@ export function MapScreen({
         cancelAnimationFrame(renderTimerRef.current);
         renderTimerRef.current = null;
       }
+      if (campusRenderTimerRef.current !== null) {
+        cancelAnimationFrame(campusRenderTimerRef.current);
+        campusRenderTimerRef.current = null;
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
       activeMarkersMapRef.current.clear();
+      activeCampusesMapRef.current.clear();
       tileLayerRef.current = null;
+      campusLayerRef.current = null;
       markersLayerRef.current = null;
       userMarkerRef.current = null;
       universityMarkerRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    debouncedRenderCampuses();
+  }, [debouncedRenderCampuses]);
 
   useEffect(() => {
     if (tileLayerRef.current) {

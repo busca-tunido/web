@@ -160,6 +160,23 @@ export type PaginatedResponse<T> = {
 export type PaginatedPensionsResponse = PaginatedResponse<PensionItemDto>;
 export type PaginatedReviewsResponse = PaginatedResponse<ReviewItemDto>;
 
+export type GeoCoordinateDto = {
+  latitude: number;
+  longitude: number;
+};
+
+export type CampusAreaDto = {
+  id: string;
+  name: string;
+  acronym: string;
+  centerLat: number;
+  centerLng: number;
+  polygon: GeoCoordinateDto[];
+  universityId: string;
+  universityName: string;
+  city: string;
+};
+
 export type UniversityDto = {
   id: string;
   name: string;
@@ -169,6 +186,7 @@ export type UniversityDto = {
   latitude: number;
   longitude: number;
   imageUrl?: string;
+  campuses?: CampusAreaDto[];
 };
 
 export type ProposalDto = {

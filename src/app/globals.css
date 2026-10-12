@@ -184,3 +184,12 @@ div.leaflet-marker-icon.custom-div-icon {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+.leaflet-tooltip.campus-area-tooltip {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
