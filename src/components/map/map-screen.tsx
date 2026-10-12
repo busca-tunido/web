@@ -739,7 +739,7 @@ export function MapScreen({
           occupied.lat,
           occupied.lng,
         );
-        if (geoDist < 350) {
+        if (geoDist < 160) {
           hasCollision = true;
           break;
         }
