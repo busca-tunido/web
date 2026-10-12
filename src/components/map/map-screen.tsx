@@ -459,7 +459,6 @@ export function MapScreen({
   const activeMarkersMapRef = useRef<Map<string, import('leaflet').Marker>>(new Map());
   const renderTimerRef = useRef<number | null>(null);
   const userMarkerRef = useRef<import('leaflet').Marker | null>(null);
-  const universityMarkerRef = useRef<import('leaflet').Marker | null>(null);
   const leafletModuleRef = useRef<typeof import('leaflet') | null>(null);
 
   useEffect(() => {
@@ -659,49 +658,6 @@ export function MapScreen({
       userMarkerRef.current = null;
     }
   }, [userLocation]);
-
-  const renderUniversityMarker = useCallback(() => {
-    const L = leafletModuleRef.current;
-    const map = mapInstanceRef.current;
-    if (!L || !map) return;
-
-    if (selectedUniversity) {
-      const uniIconHtml = `
-        <div style="transform: translate(-50%, -100%); cursor: pointer;" class="flex flex-col items-center">
-          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-600 text-white font-bold text-xs shadow-xl border-2 border-white ring-2 ring-emerald-500/40 whitespace-nowrap">
-            <span>🎓</span>
-            <span>${selectedUniversity.acronym}</span>
-          </div>
-          <div class="w-2 h-2 -mt-1 rotate-45 bg-emerald-600 border-r border-b border-white"></div>
-        </div>
-      `;
-      const uniIcon = L.divIcon({
-        className: 'custom-div-icon',
-        html: uniIconHtml,
-        iconSize: [0, 0],
-        iconAnchor: [0, 0],
-      });
-
-      if (universityMarkerRef.current) {
-        universityMarkerRef.current.setLatLng([
-          selectedUniversity.latitude,
-          selectedUniversity.longitude,
-        ]);
-        universityMarkerRef.current.setIcon(uniIcon);
-      } else {
-        universityMarkerRef.current = L.marker(
-          [selectedUniversity.latitude, selectedUniversity.longitude],
-          {
-            icon: uniIcon,
-            zIndexOffset: 1500,
-          },
-        ).addTo(map);
-      }
-    } else if (universityMarkerRef.current) {
-      universityMarkerRef.current.remove();
-      universityMarkerRef.current = null;
-    }
-  }, [selectedUniversity]);
 
   const renderCampuses = useCallback(() => {
     const L = leafletModuleRef.current;
@@ -920,9 +876,6 @@ export function MapScreen({
   const renderUserMarkerRef = useRef(renderUserMarker);
   renderUserMarkerRef.current = renderUserMarker;
 
-  const renderUniversityMarkerRef = useRef(renderUniversityMarker);
-  renderUniversityMarkerRef.current = renderUniversityMarker;
-
   const renderCampusesRef = useRef(renderCampuses);
   renderCampusesRef.current = renderCampuses;
 
@@ -1050,7 +1003,6 @@ export function MapScreen({
       renderMarkersRef.current();
       renderCampusesRef.current();
       renderUserMarkerRef.current();
-      renderUniversityMarkerRef.current();
 
       const initialPension = initProps.selectedPension;
       if (initialPension && !initProps.selectedCity && !initProps.selectedUniversity) {
@@ -1084,7 +1036,6 @@ export function MapScreen({
       campusLayerRef.current = null;
       markersLayerRef.current = null;
       userMarkerRef.current = null;
-      universityMarkerRef.current = null;
     };
   }, []);
 
@@ -1105,10 +1056,6 @@ export function MapScreen({
   useEffect(() => {
     renderUserMarker();
   }, [renderUserMarker]);
-
-  useEffect(() => {
-    renderUniversityMarker();
-  }, [renderUniversityMarker]);
 
   useEffect(() => {
     if (selectedPension) {
