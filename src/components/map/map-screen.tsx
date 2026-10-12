@@ -357,6 +357,12 @@ function isCampusInBounds(campus: CampusAreaDto, bounds: import('leaflet').LatLn
   );
 }
 
+function distanceMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const dLat = (lat2 - lat1) * 111320;
+  const dLng = (lng2 - lng1) * 111320 * Math.cos(((lat1 + lat2) * Math.PI) / 360);
+  return Math.hypot(dLat, dLng);
+}
+
 function getTileUrl(theme: 'light' | 'dark') {
   const apiKey = env.NEXT_PUBLIC_CARTO_API_KEY;
   const keyParam = apiKey ? `?key=${apiKey}` : '';
@@ -727,10 +733,83 @@ export function MapScreen({
     >();
     const currentCampusesMap = activeCampusesMapRef.current;
 
-    for (const campus of campusAreas) {
-      if (!campus.polygon || campus.polygon.length < 3) continue;
-      if (!isCampusInBounds(campus, bounds)) continue;
+    const inBoundsCampuses = campusAreas.filter(
+      (c) => c.polygon && c.polygon.length >= 3 && isCampusInBounds(c, bounds),
+    );
 
+    inBoundsCampuses.sort((a, b) => {
+      if (selectedUniversity) {
+        const aMatches =
+          a.universityId === selectedUniversity.id ||
+          a.universityName.toLowerCase().includes(selectedUniversity.name.toLowerCase());
+        const bMatches =
+          b.universityId === selectedUniversity.id ||
+          b.universityName.toLowerCase().includes(selectedUniversity.name.toLowerCase());
+        if (aMatches && !bMatches) return -1;
+        if (!aMatches && bMatches) return 1;
+      }
+      if (a.polygon.length !== b.polygon.length) {
+        return b.polygon.length - a.polygon.length;
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+    const acceptedCampuses: CampusAreaDto[] = [];
+    const occupiedBoxes: Array<{
+      minX: number;
+      maxX: number;
+      minY: number;
+      maxY: number;
+      lat: number;
+      lng: number;
+    }> = [];
+
+    for (const campus of inBoundsCampuses) {
+      const point = map.latLngToLayerPoint([campus.centerLat, campus.centerLng]);
+      const boxWidth = Math.max(38, campus.acronym.length * 9 + 20) + 24;
+      const boxHeight = 24 + 16;
+
+      const minX = point.x - boxWidth / 2;
+      const maxX = point.x + boxWidth / 2;
+      const minY = point.y - boxHeight / 2;
+      const maxY = point.y + boxHeight / 2;
+
+      let hasCollision = false;
+
+      for (const occupied of occupiedBoxes) {
+        const geoDist = distanceMeters(
+          campus.centerLat,
+          campus.centerLng,
+          occupied.lat,
+          occupied.lng,
+        );
+        if (geoDist < 350) {
+          hasCollision = true;
+          break;
+        }
+
+        const xOverlap = minX < occupied.maxX && maxX > occupied.minX;
+        const yOverlap = minY < occupied.maxY && maxY > occupied.minY;
+        if (xOverlap && yOverlap) {
+          hasCollision = true;
+          break;
+        }
+      }
+
+      if (!hasCollision) {
+        acceptedCampuses.push(campus);
+        occupiedBoxes.push({
+          minX,
+          maxX,
+          minY,
+          maxY,
+          lat: campus.centerLat,
+          lng: campus.centerLng,
+        });
+      }
+    }
+
+    for (const campus of acceptedCampuses) {
       const cacheKey = `${campus.id}:${currentTheme}`;
       const existing = currentCampusesMap.get(cacheKey);
 
@@ -811,7 +890,7 @@ export function MapScreen({
     }
 
     activeCampusesMapRef.current = nextCampusesMap;
-  }, [campusAreas, resolvedTheme]);
+  }, [campusAreas, resolvedTheme, selectedUniversity]);
 
   const debouncedRenderCampuses = useCallback(() => {
     if (campusRenderTimerRef.current !== null) {
