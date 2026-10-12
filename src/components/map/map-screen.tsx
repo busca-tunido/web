@@ -272,6 +272,76 @@ function ensureCampusSvgPatterns(map: import('leaflet').Map) {
   defs.appendChild(createSvgPattern('campus-stripes-dark', '#94a3b8', '0.30'));
 }
 
+function updateCampusMask(
+  map: import('leaflet').Map,
+  campusId: string,
+  centerLat: number,
+  centerLng: number,
+  acronymLength: number,
+) {
+  const container = map.getContainer();
+  const svg = container.querySelector('.leaflet-overlay-pane svg');
+  if (!svg) return;
+
+  let defs = svg.querySelector('defs');
+  if (!defs) {
+    defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    svg.prepend(defs);
+  }
+
+  const maskId = `campus-mask-${campusId}`;
+  let mask = defs.querySelector<SVGMaskElement>(`#${maskId}`);
+
+  const point = map.latLngToLayerPoint([centerLat, centerLng]);
+  const boxWidth = Math.max(38, acronymLength * 9 + 20);
+  const boxHeight = 24;
+  const x = Math.round(point.x - boxWidth / 2);
+  const y = Math.round(point.y - boxHeight / 2);
+
+  if (!mask) {
+    mask = document.createElementNS('http://www.w3.org/2000/svg', 'mask');
+    mask.setAttribute('id', maskId);
+    mask.setAttribute('maskUnits', 'userSpaceOnUse');
+
+    const baseWhite = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    baseWhite.setAttribute('x', '-100000');
+    baseWhite.setAttribute('y', '-100000');
+    baseWhite.setAttribute('width', '200000');
+    baseWhite.setAttribute('height', '200000');
+    baseWhite.setAttribute('fill', '#ffffff');
+
+    const cutoutBlack = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    cutoutBlack.setAttribute('class', 'mask-cutout');
+    cutoutBlack.setAttribute('x', String(x));
+    cutoutBlack.setAttribute('y', String(y));
+    cutoutBlack.setAttribute('width', String(boxWidth));
+    cutoutBlack.setAttribute('height', String(boxHeight));
+    cutoutBlack.setAttribute('rx', '6');
+    cutoutBlack.setAttribute('ry', '6');
+    cutoutBlack.setAttribute('fill', '#000000');
+
+    mask.appendChild(baseWhite);
+    mask.appendChild(cutoutBlack);
+    defs.appendChild(mask);
+  } else {
+    const cutoutBlack = mask.querySelector('.mask-cutout');
+    if (cutoutBlack) {
+      cutoutBlack.setAttribute('x', String(x));
+      cutoutBlack.setAttribute('y', String(y));
+      cutoutBlack.setAttribute('width', String(boxWidth));
+      cutoutBlack.setAttribute('height', String(boxHeight));
+    }
+  }
+}
+
+function removeCampusMask(map: import('leaflet').Map, campusId: string) {
+  const container = map.getContainer();
+  const mask = container.querySelector(`.leaflet-overlay-pane svg defs #campus-mask-${campusId}`);
+  if (mask) {
+    mask.remove();
+  }
+}
+
 function isCampusInBounds(campus: CampusAreaDto, bounds: import('leaflet').LatLngBounds): boolean {
   if (bounds.contains([campus.centerLat, campus.centerLng])) return true;
   for (const pt of campus.polygon) {
@@ -373,7 +443,10 @@ export function MapScreen({
   const tileLayerRef = useRef<import('leaflet').TileLayer | null>(null);
   const campusLayerRef = useRef<import('leaflet').LayerGroup | null>(null);
   const activeCampusesMapRef = useRef<
-    Map<string, { polygon: import('leaflet').Polygon; marker: import('leaflet').Marker }>
+    Map<
+      string,
+      { polygon: import('leaflet').Polygon; marker: import('leaflet').Marker; campusId: string }
+    >
   >(new Map());
   const campusRenderTimerRef = useRef<number | null>(null);
   const markersLayerRef = useRef<import('leaflet').LayerGroup | null>(null);
@@ -635,6 +708,7 @@ export function MapScreen({
       for (const item of activeCampusesMapRef.current.values()) {
         campusGroup.removeLayer(item.polygon);
         campusGroup.removeLayer(item.marker);
+        removeCampusMask(map, item.campusId);
       }
       activeCampusesMapRef.current.clear();
       return;
@@ -649,7 +723,7 @@ export function MapScreen({
 
     const nextCampusesMap = new Map<
       string,
-      { polygon: import('leaflet').Polygon; marker: import('leaflet').Marker }
+      { polygon: import('leaflet').Polygon; marker: import('leaflet').Marker; campusId: string }
     >();
     const currentCampusesMap = activeCampusesMapRef.current;
 
@@ -660,7 +734,13 @@ export function MapScreen({
       const cacheKey = `${campus.id}:${currentTheme}`;
       const existing = currentCampusesMap.get(cacheKey);
 
+      updateCampusMask(map, campus.id, campus.centerLat, campus.centerLng, campus.acronym.length);
+
       if (existing) {
+        const pathEl = existing.polygon.getElement();
+        if (pathEl && !pathEl.getAttribute('mask')) {
+          pathEl.setAttribute('mask', `url(#campus-mask-${campus.id})`);
+        }
         nextCampusesMap.set(cacheKey, existing);
         currentCampusesMap.delete(cacheKey);
       } else {
@@ -701,7 +781,7 @@ export function MapScreen({
 
         const acronymIcon = L.divIcon({
           className: 'custom-div-icon',
-          html: `<div style="transform: translate(-50%, -50%); pointer-events: none;" class="flex items-center justify-center"><div style="backdrop-filter: blur(4px); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);" class="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border border-slate-400/40 dark:border-slate-500/40 bg-white/85 dark:bg-zinc-900/85 text-slate-700 dark:text-slate-200 select-none">${campus.acronym}</div></div>`,
+          html: `<div style="transform: translate(-50%, -50%); pointer-events: none;" class="flex items-center justify-center select-none"><span class="text-[11px] font-bold tracking-wider uppercase text-slate-600 dark:text-slate-300 transition-colors [text-shadow:_0_0_5px_rgba(255,255,255,0.95),_0_0_10px_rgba(255,255,255,0.8)] dark:[text-shadow:_0_0_5px_rgba(0,0,0,0.95),_0_0_10px_rgba(0,0,0,0.8)]">${campus.acronym}</span></div>`,
           iconSize: [0, 0],
           iconAnchor: [0, 0],
         });
@@ -715,13 +795,19 @@ export function MapScreen({
         polygon.addTo(campusGroup);
         marker.addTo(campusGroup);
 
-        nextCampusesMap.set(cacheKey, { polygon, marker });
+        const pathEl = polygon.getElement();
+        if (pathEl) {
+          pathEl.setAttribute('mask', `url(#campus-mask-${campus.id})`);
+        }
+
+        nextCampusesMap.set(cacheKey, { polygon, marker, campusId: campus.id });
       }
     }
 
     for (const oldItem of currentCampusesMap.values()) {
       campusGroup.removeLayer(oldItem.polygon);
       campusGroup.removeLayer(oldItem.marker);
+      removeCampusMask(map, oldItem.campusId);
     }
 
     activeCampusesMapRef.current = nextCampusesMap;
