@@ -154,7 +154,7 @@ export function PensionDetailContent({
           {pension.isVerified && (
             <Badge
               variant="outline"
-              className="border-primary/40 bg-primary/10 text-primary gap-1 text-[11px]"
+              className="border-trust/30 bg-trust/10 text-trust gap-1 text-[11px] font-semibold"
             >
               <ShieldCheck className="h-3 w-3" />
               Verificado BuscaTuNido
@@ -193,10 +193,10 @@ export function PensionDetailContent({
           pension.distanceToUniversityMeters > 0 &&
           pension.nearestUniversityName,
       ) && (
-        <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
-          <div className="flex items-center gap-2 text-xs font-medium text-primary">
+        <div className="mb-4 rounded-xl border border-trust/25 bg-trust/5 p-3">
+          <div className="flex items-center gap-2 text-xs font-semibold text-trust">
             <MapPin className="h-3.5 w-3.5 shrink-0" />
-            <span>
+            <span className="text-foreground">
               A {pension.distanceToUniversityMeters}m de {pension.nearestUniversityName}
             </span>
           </div>

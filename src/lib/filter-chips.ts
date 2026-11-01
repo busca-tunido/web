@@ -16,9 +16,9 @@ export const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
     label: 'Favoritas de la comunidad',
     priority: 0,
     textColorClass:
-      'text-[#2d5e49] dark:text-[#599b7d] border-border/70 bg-card/60 hover:border-[#2d5e49]/50 font-semibold',
+      'text-[#2d5e49] dark:text-[#72bca0] border-border/70 bg-card/60 hover:border-[#2d5e49]/50 font-semibold',
     activeColorClass:
-      'border-[#2d5e49] bg-[#2d5e49]/15 text-[#2d5e49] dark:text-[#599b7d] dark:border-[#366e56] font-bold ring-1 ring-[#2d5e49]/30',
+      'border-[#2d5e49] bg-[#2d5e49]/15 text-[#2d5e49] dark:text-[#72bca0] dark:border-[#366e56] font-bold ring-1 ring-[#2d5e49]/30',
     isActive: (f) => f.ratingTier === 'high',
     toggle: (f) => ({
       ...f,
@@ -44,9 +44,9 @@ export const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
     label: 'Otras alternativas',
     priority: 0,
     textColorClass:
-      'text-[#78716c] dark:text-[#a8a29e] border-border/70 bg-card/60 hover:border-[#78716c]/50 font-semibold',
+      'text-[#57534e] dark:text-[#a8a29e] border-border/70 bg-card/60 hover:border-[#78716c]/50 font-semibold',
     activeColorClass:
-      'border-[#78716c] bg-[#78716c]/15 text-[#78716c] dark:text-[#a8a29e] dark:border-[#a8a29e] font-bold ring-1 ring-[#78716c]/30',
+      'border-[#78716c] bg-[#78716c]/15 text-[#57534e] dark:text-[#a8a29e] dark:border-[#a8a29e] font-bold ring-1 ring-[#78716c]/30',
     isActive: (f) => f.ratingTier === 'low',
     toggle: (f) => ({
       ...f,

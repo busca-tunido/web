@@ -185,9 +185,9 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                     {prop.isVerified && (
                       <Badge
                         variant="outline"
-                        className="border-border/80 text-foreground text-[10px] py-0 font-normal"
+                        className="border-trust/30 bg-trust/10 text-trust text-[10px] py-0 font-semibold"
                       >
-                        <ShieldCheck className="h-3 w-3 mr-1 text-muted-foreground" />
+                        <ShieldCheck className="h-3 w-3 mr-1 text-trust" />
                         Verificada
                       </Badge>
                     )}

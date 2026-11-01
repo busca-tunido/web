@@ -1,6 +1,15 @@
 'use client';
 
-import { Building2, ChevronDown, ChevronUp, Heart, Loader2, Locate, Star } from 'lucide-react';
+import {
+  Building2,
+  ChevronDown,
+  ChevronUp,
+  Heart,
+  Loader2,
+  Locate,
+  ShieldCheck,
+  Star,
+} from 'lucide-react';
 import {
   AnimatePresence,
   motion,
@@ -268,8 +277,8 @@ function ensureCampusSvgPatterns(map: import('leaflet').Map) {
     svg.prepend(defs);
   }
 
-  defs.appendChild(createSvgPattern('campus-stripes-light', '#64748b', '0.35'));
-  defs.appendChild(createSvgPattern('campus-stripes-dark', '#94a3b8', '0.30'));
+  defs.appendChild(createSvgPattern('campus-stripes-light', '#1a5b66', '0.25'));
+  defs.appendChild(createSvgPattern('campus-stripes-dark', '#4bb5b8', '0.25'));
 }
 
 function updateCampusMask(
@@ -681,7 +690,7 @@ export function MapScreen({
     const bounds = map.getBounds();
     const currentTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
     const patternUrl = `url(#campus-stripes-${currentTheme})`;
-    const strokeColor = currentTheme === 'dark' ? '#94a3b8' : '#64748b';
+    const strokeColor = currentTheme === 'dark' ? '#4bb5b8' : '#1a5b66';
 
     const nextCampusesMap = new Map<
       string,
@@ -1397,7 +1406,8 @@ function MapDrawerPensionList({
 
                 {pension.isVerified && (
                   <div className="absolute bottom-3 left-3">
-                    <span className="rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold text-foreground backdrop-blur-md border border-border/60">
+                    <span className="flex items-center gap-1 rounded-full bg-trust/90 px-2.5 py-0.5 text-[11px] font-semibold text-trust-foreground backdrop-blur-md shadow-sm">
+                      <ShieldCheck className="h-3 w-3" />
                       Verificada
                     </span>
                   </div>

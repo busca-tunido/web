@@ -358,9 +358,9 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
                   id: 'high' as const,
                   label: 'Favoritas de la comunidad',
                   subtitle: 'Top valoradas',
-                  colorClass: 'text-[#2d5e49] dark:text-[#599b7d]',
+                  colorClass: 'text-[#2d5e49] dark:text-[#72bca0]',
                   activeBorderClass:
-                    'border-[#2d5e49] bg-[#2d5e49]/15 text-[#2d5e49] dark:text-[#599b7d] ring-1 ring-[#2d5e49]',
+                    'border-[#2d5e49] bg-[#2d5e49]/15 text-[#2d5e49] dark:text-[#72bca0] ring-1 ring-[#2d5e49]',
                 },
                 {
                   id: 'medium' as const,
@@ -374,9 +374,9 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
                   id: 'low' as const,
                   label: 'Otras alternativas',
                   subtitle: 'Nuevas o por evaluar',
-                  colorClass: 'text-[#78716c] dark:text-[#a8a29e]',
+                  colorClass: 'text-[#57534e] dark:text-[#a8a29e]',
                   activeBorderClass:
-                    'border-[#78716c] bg-[#78716c]/15 text-[#78716c] dark:text-[#a8a29e] ring-1 ring-[#78716c]',
+                    'border-[#78716c] bg-[#78716c]/15 text-[#57534e] dark:text-[#a8a29e] ring-1 ring-[#78716c]',
                 },
               ].map((opt) => {
                 const isSelected = localFilters.ratingTier === opt.id;

@@ -1,6 +1,6 @@
 'use client';
 
-import { Award, Building2, Heart, MapPin, Star } from 'lucide-react';
+import { Award, Building2, Heart, MapPin, ShieldCheck, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { memo } from 'react';
@@ -61,7 +61,8 @@ function PensionCardComponent({
 
           <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
             {pension.isVerified && (
-              <span className="rounded-full bg-background/85 px-2.5 py-0.5 text-[11px] font-semibold text-foreground backdrop-blur-md border border-border/60 shadow-sm">
+              <span className="flex items-center gap-1 rounded-full bg-trust/90 px-2.5 py-0.5 text-[11px] font-semibold text-trust-foreground backdrop-blur-md shadow-sm">
+                <ShieldCheck className="h-3 w-3" />
                 Verificada
               </span>
             )}

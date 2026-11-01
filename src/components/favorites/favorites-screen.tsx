@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Heart, Star } from 'lucide-react';
+import { Building2, Heart, ShieldCheck, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { Suspense, useMemo } from 'react';
@@ -163,7 +163,8 @@ function FavoritesGrid({
 
               {pension.isVerified && (
                 <div className="absolute bottom-3 left-3">
-                  <span className="rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold text-foreground backdrop-blur-md border border-border/60">
+                  <span className="flex items-center gap-1 rounded-full bg-trust/90 px-2.5 py-0.5 text-[11px] font-semibold text-trust-foreground backdrop-blur-md shadow-sm">
+                    <ShieldCheck className="h-3 w-3" />
                     Verificada
                   </span>
                 </div>
