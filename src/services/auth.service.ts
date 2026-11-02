@@ -44,6 +44,7 @@ export async function registerUser(payload: RegisterDto): Promise<ApiResponse<Au
     return createSuccess<AuthSessionDto>(
       {
         token,
+        accessToken: token,
         user,
       },
       response.statusCode,
@@ -85,6 +86,7 @@ export async function loginWithCredentials(
     return createSuccess<AuthSessionDto>(
       {
         token,
+        accessToken: token,
         user,
       },
       response.statusCode,

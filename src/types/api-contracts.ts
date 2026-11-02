@@ -22,78 +22,49 @@ export type UpdateReportDto = components['schemas']['UpdateReportDto'];
 export type UpdateReviewVisibilityDto = components['schemas']['UpdateReviewVisibilityDto'];
 export type UpdatePensionStatusDto = components['schemas']['UpdatePensionStatusDto'];
 
-export type DetectedUniversityDto = {
-  id: string;
-  name: string;
-  shortName: string | null;
-  city: string;
-};
-
-export type CitySummaryDto = {
-  id: string;
-  name: string;
-  pensionsCount: number;
-  latitude: number;
-  longitude: number;
-};
-
-export type CheckEmailResponseDto = {
-  exists: boolean;
-  role?: string;
-  detectedUniversity?: DetectedUniversityDto | null;
-};
+export type DetectedUniversityDto = components['schemas']['DetectedUniversityResponseDto'];
+export type CitySummaryDto = components['schemas']['CitySummaryResponseDto'];
+export type CheckEmailResponseDto = components['schemas']['CheckEmailResponseDto'];
 
 export type AuthSessionDto = {
   token: string;
-  user: {
+  accessToken?: string;
+  user: Partial<components['schemas']['SanitizedUserResponseDto']> & {
     id: string;
     email: string;
     firstName: string;
     lastName: string;
-    role: 'STUDENT' | 'LANDLORD' | 'ADMIN' | 'MODERATOR';
+    role: components['schemas']['Role'];
   };
 };
 
-export type UserProfileDto = {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string | null;
-  role: 'STUDENT' | 'LANDLORD' | 'ADMIN' | 'MODERATOR';
-  universityId?: string | null;
-  avatarUrl?: string | null;
-  createdAt: string;
-};
+export type UserProfileDto = components['schemas']['SanitizedUserResponseDto'];
 
-export type RoomDto = {
+export type RoomDto = Partial<components['schemas']['RoomResponseDto']> & {
   id: string;
   pensionId: string;
-  name: string;
-  description?: string | null;
   monthlyPrice: number;
   isAvailable: boolean;
+  name?: string;
   bathType?: 'PRIVATE' | 'SHARED';
   availableFrom?: string | null;
   images?: string[];
+  photos?: string[];
 };
 
-export type ReviewItemDto = {
+export type ReviewItemDto = Partial<components['schemas']['ReviewResponseDto']> & {
   id: string;
   pensionId: string;
   userId: string;
-  userName?: string;
   rating: number;
-  cleanlinessRating?: number;
-  landlordRating?: number;
-  locationRating?: number;
-  roomType?: string;
   comment: string;
-  stayDuration?: string;
-  images?: string[];
   helpfulCount: number;
+  userName?: string;
+  overallRating?: number;
+  landlordRating?: number;
+  stayDuration?: string;
   userVoted?: boolean;
-  createdAt: string;
+  images?: string[];
   user?: {
     id: string;
     firstName: string;
@@ -106,50 +77,42 @@ export type ReviewItemDto = {
   };
 };
 
-export type PensionItemDto = {
+export type PensionItemDto = Partial<components['schemas']['PensionItemResponseDto']> & {
   id: string;
-  slug?: string;
   title: string;
-  description?: string;
-  address?: string;
-  neighborhood?: string;
   city: string;
-  latitude?: number;
-  longitude?: number;
   baseMonthlyPrice?: number;
-  currency?: string;
-  deposit?: number | null;
-  waterIncluded?: boolean;
-  electricityIncluded?: boolean;
-  gasIncluded?: boolean;
-  internetIncluded?: boolean;
-  curfewTime?: string | null;
-  guestsAllowed?: boolean;
-  smokingAllowed?: boolean;
-  petsAllowed?: boolean;
-  genderPreference?: 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY';
-  quietHoursStart?: string | null;
-  quietHoursEnd?: string | null;
-  verificationStatus?: string;
-  isActive?: boolean;
-  images?: { id: string; url: string; order: number; isMain: boolean }[];
-  rooms?: RoomDto[];
-  reviews?: ReviewItemDto[];
-  amenities?: Array<{ slug: string; name: string }> | string[];
   averageRating?: number;
   ratingAverage?: number;
   reviewsCount?: number;
   ratingCount?: number;
+  verificationStatus?: components['schemas']['VerificationStatus'];
+  isActive?: boolean;
+  quietHoursStart?: string | null;
+  quietHoursEnd?: string | null;
+  images?: Array<
+    | components['schemas']['PensionImageResponseDto']
+    | { id: string; url: string; order?: number; isMain?: boolean }
+  >;
+  rooms?: RoomDto[];
+  reviews?: ReviewItemDto[];
+  amenities?: Array<
+    components['schemas']['PensionAmenityResponseDto'] | { id?: string; slug: string; name: string }
+  >;
 };
 
 export type PensionDetailDto = PensionItemDto;
 
+export type PaginationMeta = components['schemas']['PaginationMetaDto'];
+
 export type PaginatedResponse<T> = {
   items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  hasMore: boolean;
+  pagination?: PaginationMeta;
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+  hasMore?: boolean;
   nearbyCityCounts?: Array<{
     city: string;
     count: number;
@@ -160,67 +123,26 @@ export type PaginatedResponse<T> = {
 export type PaginatedPensionsResponse = PaginatedResponse<PensionItemDto>;
 export type PaginatedReviewsResponse = PaginatedResponse<ReviewItemDto>;
 
-export type GeoCoordinateDto = {
+export type GeoCoordinateDto = components['schemas']['GeoCoordinateDto'];
+export type CampusAreaDto = components['schemas']['CampusAreaResponseDto'];
+
+export type UniversityDto = Partial<components['schemas']['UniversityResponseDto']> & {
+  id: string;
+  name: string;
+  acronym: string;
+  city: string;
   latitude: number;
   longitude: number;
-};
-
-export type CampusAreaDto = {
-  id: string;
-  name: string;
-  acronym: string;
-  centerLat: number;
-  centerLng: number;
-  polygon: GeoCoordinateDto[];
-  universityId: string;
-  universityName: string;
-  city: string;
-};
-
-export type UniversityDto = {
-  id: string;
-  name: string;
-  acronym: string;
-  city: string;
   campus?: string;
-  latitude: number;
-  longitude: number;
   imageUrl?: string;
   campuses?: CampusAreaDto[];
 };
 
-export type ProposalDto = {
-  id: string;
-  pensionId: string;
-  userId: string;
-  type: string;
+export type ProposalDto = components['schemas']['ProposalResponseDto'] & {
+  userId?: string;
   proposedChanges: Record<string, unknown>;
-  submissionNotes?: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  reviewNotes?: string;
-  createdAt: string;
 };
 
-export type ReportDto = {
-  id: string;
-  pensionId: string;
-  userId: string;
-  reason: string;
-  description: string;
-  status: 'PENDING' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED';
-  resolutionNotes?: string;
-  createdAt: string;
-};
-
-export type UploadImageResult = {
-  url?: string;
-  thumbnailUrl?: string;
-  width?: number;
-  height?: number;
-  format?: string;
-  size?: number;
-};
-
-export type UserHelpfulVotesResponse = {
-  reviewIds: string[];
-};
+export type ReportDto = components['schemas']['ReportResponseDto'];
+export type UploadImageResult = components['schemas']['UploadImageResponseDto'];
+export type UserHelpfulVotesResponse = components['schemas']['HelpfulVotesResponseDto'];

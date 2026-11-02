@@ -11,7 +11,7 @@ type PensionReviewsPreviewProps = {
   onOpenFullReviews: () => void;
 };
 
-function formatStayDuration(cat?: string): string {
+function formatStayDuration(cat?: string | null): string {
   switch (cat) {
     case 'FEW_DAYS':
       return 'Unos días';

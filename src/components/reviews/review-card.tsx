@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import type { PensionReview } from '@/lib/types';
 import { normalizeImageUrl } from '@/lib/utils';
 
-export function formatStayDuration(cat?: string): string {
+export function formatStayDuration(cat?: string | null): string {
   switch (cat) {
     case 'FEW_DAYS':
       return 'Estadía de unos días';

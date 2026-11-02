@@ -1,10 +1,9 @@
 import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
+import type { paths } from '@/lib/api-schema';
 import type { CreateReportDto, ReportDto, UpdateReportDto } from '@/types/api-contracts';
 
-export type ReportFilterQuery = {
-  status?: 'PENDING' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED';
-};
+export type ReportFilterQuery = NonNullable<paths['/reports']['get']['parameters']['query']>;
 
 type RawReport = {
   id: string;
@@ -27,6 +26,7 @@ function normalizeReport(raw: RawReport): ReportDto {
     status: (raw.status as ReportDto['status']) ?? 'PENDING',
     resolutionNotes: raw.resolutionNotes ?? undefined,
     createdAt: String(raw.createdAt),
+    updatedAt: String(raw.createdAt),
   };
 }
 

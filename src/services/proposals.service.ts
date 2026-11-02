@@ -1,12 +1,11 @@
 import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
+import type { paths } from '@/lib/api-schema';
 import type { CreateProposalDto, ProposalDto, ReviewProposalDto } from '@/types/api-contracts';
 
-export type ModerationProposalsQuery = {
-  status?: 'PENDING' | 'APPROVED' | 'REJECTED';
-  page?: number;
-  limit?: number;
-};
+export type ModerationProposalsQuery = NonNullable<
+  paths['/moderation/proposals']['get']['parameters']['query']
+>;
 
 type RawProposal = {
   id: string;
@@ -26,12 +25,19 @@ function normalizeProposal(raw: RawProposal): ProposalDto {
     id: raw.id,
     pensionId: raw.pensionId,
     userId: raw.userId ?? raw.submittedById ?? '',
+    submittedById: raw.submittedById ?? raw.userId ?? '',
     type: raw.type,
     proposedChanges: (raw.proposedChanges as Record<string, unknown>) ?? {},
     submissionNotes: raw.submissionNotes ?? undefined,
     status: (raw.status as ProposalDto['status']) ?? 'PENDING',
     reviewNotes: raw.reviewNotes ?? undefined,
     createdAt: String(raw.createdAt),
+    updatedAt: String(raw.createdAt),
+    submittedBy: {
+      id: raw.userId ?? raw.submittedById ?? '',
+      firstName: 'Estudiante',
+      lastName: '',
+    },
   };
 }
 

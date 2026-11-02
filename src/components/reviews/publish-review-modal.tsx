@@ -207,7 +207,7 @@ export function PublishReviewModal({
           id: user?.id || '',
           firstName: user?.firstName || '',
           lastName: user?.lastName || '',
-          avatarUrl: user?.avatarUrl,
+          avatarUrl: user?.avatarUrl || undefined,
           university: user?.universityName
             ? {
                 name: user.universityName,
