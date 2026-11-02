@@ -848,6 +848,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "maxLength": 60,
               "example": "Santiago",
               "type": "string"
             }
@@ -857,6 +858,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "maxLength": 60,
               "example": "San Joaquín",
               "type": "string"
             }
@@ -866,6 +868,8 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 0,
+              "maximum": 2000000,
               "example": 150000,
               "type": "number"
             }
@@ -875,6 +879,8 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 0,
+              "maximum": 2000000,
               "example": 400000,
               "type": "number"
             }
@@ -949,6 +955,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "maxLength": 100,
               "example": "República",
               "type": "string"
             }
@@ -1241,6 +1248,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "maxLength": 60,
               "example": "Santiago",
               "type": "string"
             }
@@ -1250,6 +1258,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "maxLength": 60,
               "example": "San Joaquín",
               "type": "string"
             }
@@ -1259,6 +1268,8 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 0,
+              "maximum": 2000000,
               "example": 150000,
               "type": "number"
             }
@@ -1268,6 +1279,8 @@
             "required": false,
             "in": "query",
             "schema": {
+              "minimum": 0,
+              "maximum": 2000000,
               "example": 400000,
               "type": "number"
             }
@@ -1342,6 +1355,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "maxLength": 100,
               "example": "República",
               "type": "string"
             }
@@ -4652,23 +4666,34 @@
         "properties": {
           "email": {
             "type": "string",
-            "example": "juan.perez@alumnos.uchile.cl"
+            "example": "juan.perez@alumnos.uchile.cl",
+            "maxLength": 100
           },
           "password": {
             "type": "string",
-            "example": "ContrasenaSegura123!"
+            "example": "ContrasenaSegura123!",
+            "minLength": 8,
+            "maxLength": 72
           },
           "firstName": {
             "type": "string",
-            "example": "Juan"
+            "example": "Juan",
+            "minLength": 2,
+            "maxLength": 40,
+            "pattern": "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s'-]+$"
           },
           "lastName": {
             "type": "string",
-            "example": "Pérez"
+            "example": "Pérez",
+            "minLength": 2,
+            "maxLength": 40,
+            "pattern": "^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s'-]+$"
           },
           "phone": {
             "type": "string",
-            "example": "+56912345678"
+            "example": "+56912345678",
+            "maxLength": 16,
+            "pattern": "^(\\+?56)?\\s?0?9\\s?[0-9]{4}\\s?[0-9]{4}$|^(\\+?56)?\\s?0?9\\s?[0-9]{8}$"
           },
           "role": {
             "type": "string",
@@ -4881,11 +4906,14 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "Universidad de Chile"
+            "example": "Universidad de Chile",
+            "minLength": 3,
+            "maxLength": 100
           },
           "shortName": {
             "type": "string",
-            "example": "UCH"
+            "example": "UCH",
+            "maxLength": 20
           },
           "emailDomains": {
             "example": ["uchile.cl", "alumnos.uchile.cl"],
@@ -4896,11 +4924,13 @@
           },
           "city": {
             "type": "string",
-            "example": "Santiago"
+            "example": "Santiago",
+            "maxLength": 60
           },
           "address": {
             "type": "string",
-            "example": "Av. Libertador Bernardo O'Higgins 1058"
+            "example": "Av. Libertador Bernardo O'Higgins 1058",
+            "maxLength": 150
           },
           "latitude": {
             "type": "number",
@@ -4918,11 +4948,14 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "Universidad de Chile"
+            "example": "Universidad de Chile",
+            "minLength": 3,
+            "maxLength": 100
           },
           "shortName": {
             "type": "string",
-            "example": "UCH"
+            "example": "UCH",
+            "maxLength": 20
           },
           "emailDomains": {
             "example": ["uchile.cl", "alumnos.uchile.cl"],
@@ -4933,11 +4966,13 @@
           },
           "city": {
             "type": "string",
-            "example": "Santiago"
+            "example": "Santiago",
+            "maxLength": 60
           },
           "address": {
             "type": "string",
-            "example": "Av. Libertador Bernardo O'Higgins 1058"
+            "example": "Av. Libertador Bernardo O'Higgins 1058",
+            "maxLength": 150
           },
           "latitude": {
             "type": "number",
@@ -5393,23 +5428,29 @@
         "properties": {
           "title": {
             "type": "string",
-            "example": "Residencia San Joaquín"
+            "example": "Residencia San Joaquín",
+            "minLength": 3,
+            "maxLength": 100
           },
           "description": {
             "type": "string",
-            "example": "Excelente pensión cerca de campus San Joaquín"
+            "example": "Excelente pensión cerca de campus San Joaquín",
+            "maxLength": 1500
           },
           "address": {
             "type": "string",
-            "example": "Av. Vicuña Mackenna 4860"
+            "example": "Av. Vicuña Mackenna 4860",
+            "maxLength": 120
           },
           "city": {
             "type": "string",
-            "example": "Santiago"
+            "example": "Santiago",
+            "maxLength": 60
           },
           "neighborhood": {
             "type": "string",
-            "example": "San Joaquín"
+            "example": "San Joaquín",
+            "maxLength": 60
           },
           "latitude": {
             "type": "number",
@@ -5421,11 +5462,15 @@
           },
           "baseMonthlyPrice": {
             "type": "number",
-            "example": 250000
+            "example": 250000,
+            "minimum": 0,
+            "maximum": 2000000
           },
           "deposit": {
             "type": "number",
-            "example": 250000
+            "example": 250000,
+            "minimum": 0,
+            "maximum": 1500000
           },
           "currency": {
             "type": "string",
@@ -5516,23 +5561,29 @@
         "properties": {
           "title": {
             "type": "string",
-            "example": "Residencia San Joaquín"
+            "example": "Residencia San Joaquín",
+            "minLength": 3,
+            "maxLength": 100
           },
           "description": {
             "type": "string",
-            "example": "Excelente pensión cerca de campus San Joaquín"
+            "example": "Excelente pensión cerca de campus San Joaquín",
+            "maxLength": 1500
           },
           "address": {
             "type": "string",
-            "example": "Av. Vicuña Mackenna 4860"
+            "example": "Av. Vicuña Mackenna 4860",
+            "maxLength": 120
           },
           "city": {
             "type": "string",
-            "example": "Santiago"
+            "example": "Santiago",
+            "maxLength": 60
           },
           "neighborhood": {
             "type": "string",
-            "example": "San Joaquín"
+            "example": "San Joaquín",
+            "maxLength": 60
           },
           "latitude": {
             "type": "number",
@@ -5544,11 +5595,15 @@
           },
           "baseMonthlyPrice": {
             "type": "number",
-            "example": 250000
+            "example": 250000,
+            "minimum": 0,
+            "maximum": 2000000
           },
           "deposit": {
             "type": "number",
-            "example": 250000
+            "example": 250000,
+            "minimum": 0,
+            "maximum": 1500000
           },
           "currency": {
             "type": "string",
@@ -5733,15 +5788,19 @@
         "properties": {
           "roomNumber": {
             "type": "string",
-            "example": "Hab 101"
+            "example": "Hab 101",
+            "maxLength": 20
           },
           "title": {
             "type": "string",
-            "example": "Habitación Individual Luminosa"
+            "example": "Habitación Individual Luminosa",
+            "minLength": 3,
+            "maxLength": 80
           },
           "description": {
             "type": "string",
-            "example": "Pieza amoblada con clóset y escritorio."
+            "example": "Pieza amoblada con clóset y escritorio.",
+            "maxLength": 800
           },
           "type": {
             "type": "string",
@@ -5750,11 +5809,15 @@
           },
           "monthlyPrice": {
             "type": "number",
-            "example": 250000
+            "example": 250000,
+            "minimum": 0,
+            "maximum": 1200000
           },
           "deposit": {
             "type": "number",
-            "example": 250000
+            "example": 250000,
+            "minimum": 0,
+            "maximum": 1200000
           },
           "hasPrivateBathroom": {
             "type": "boolean",
@@ -5764,12 +5827,16 @@
           "totalBeds": {
             "type": "number",
             "example": 1,
-            "default": 1
+            "default": 1,
+            "minimum": 1,
+            "maximum": 10
           },
           "availableBeds": {
             "type": "number",
             "example": 1,
-            "default": 1
+            "default": 1,
+            "minimum": 0,
+            "maximum": 10
           },
           "isAvailable": {
             "type": "boolean",
@@ -5778,6 +5845,7 @@
           },
           "images": {
             "example": ["https://example.com/room1.jpg"],
+            "maxItems": 5,
             "type": "array",
             "items": {
               "type": "string"
@@ -5791,15 +5859,19 @@
         "properties": {
           "roomNumber": {
             "type": "string",
-            "example": "Hab 101"
+            "example": "Hab 101",
+            "maxLength": 20
           },
           "title": {
             "type": "string",
-            "example": "Habitación Individual Luminosa"
+            "example": "Habitación Individual Luminosa",
+            "minLength": 3,
+            "maxLength": 80
           },
           "description": {
             "type": "string",
-            "example": "Pieza amoblada con clóset y escritorio."
+            "example": "Pieza amoblada con clóset y escritorio.",
+            "maxLength": 800
           },
           "type": {
             "type": "string",
@@ -5808,11 +5880,15 @@
           },
           "monthlyPrice": {
             "type": "number",
-            "example": 250000
+            "example": 250000,
+            "minimum": 0,
+            "maximum": 1200000
           },
           "deposit": {
             "type": "number",
-            "example": 250000
+            "example": 250000,
+            "minimum": 0,
+            "maximum": 1200000
           },
           "hasPrivateBathroom": {
             "type": "boolean",
@@ -5822,12 +5898,16 @@
           "totalBeds": {
             "type": "number",
             "example": 1,
-            "default": 1
+            "default": 1,
+            "minimum": 1,
+            "maximum": 10
           },
           "availableBeds": {
             "type": "number",
             "example": 1,
-            "default": 1
+            "default": 1,
+            "minimum": 0,
+            "maximum": 10
           },
           "isAvailable": {
             "type": "boolean",
@@ -5836,6 +5916,7 @@
           },
           "images": {
             "example": ["https://example.com/room1.jpg"],
+            "maxItems": 5,
             "type": "array",
             "items": {
               "type": "string"
@@ -6094,10 +6175,13 @@
           },
           "comment": {
             "type": "string",
-            "example": "Excelente pensión y ambiente de estudio."
+            "example": "Excelente pensión y ambiente de estudio.",
+            "minLength": 15,
+            "maxLength": 1000
           },
           "images": {
             "example": ["https://example.com/review1.jpg"],
+            "maxItems": 3,
             "type": "array",
             "items": {
               "type": "string"
@@ -6145,10 +6229,13 @@
           },
           "comment": {
             "type": "string",
-            "example": "Excelente pensión y ambiente de estudio."
+            "example": "Excelente pensión y ambiente de estudio.",
+            "minLength": 15,
+            "maxLength": 1000
           },
           "images": {
             "example": ["https://example.com/review1.jpg"],
+            "maxItems": 3,
             "type": "array",
             "items": {
               "type": "string"
@@ -6316,7 +6403,9 @@
           },
           "description": {
             "type": "string",
-            "example": "El precio cobrado no coincide con el publicado en el sitio web."
+            "example": "El precio cobrado no coincide con el publicado en el sitio web.",
+            "minLength": 10,
+            "maxLength": 1000
           }
         },
         "required": ["pensionId", "reason", "description"]
@@ -6557,7 +6646,8 @@
           },
           "submissionNotes": {
             "type": "string",
-            "example": "Actualización tras consulta presencial."
+            "example": "Actualización tras consulta presencial.",
+            "maxLength": 500
           }
         },
         "required": ["type", "proposedChanges"]
