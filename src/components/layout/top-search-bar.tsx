@@ -47,6 +47,10 @@ export function TopSearchBar({
             <input
               id="top-search-input"
               type="text"
+              maxLength={100}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               value={filters.query}
               onChange={(e) => onFilterChange({ ...filters, query: e.target.value })}
               placeholder="Buscar pensión, universidad o barrio..."

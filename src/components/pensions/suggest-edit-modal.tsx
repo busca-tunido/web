@@ -11,6 +11,7 @@ import {
   Send,
 } from 'lucide-react';
 import { useEffect, useReducer } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -20,6 +21,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { useSuggestEdit } from '@/hooks/use-suggest-edit';
+import { clampNumber } from '@/lib/format-utils';
 import type { PensionItem } from '@/lib/types';
 import {
   calculateProposedDiff,
@@ -64,6 +66,34 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
 
   const toggleAmenity = (slug: string) => {
     dispatch({ type: 'TOGGLE_AMENITY', slug });
+  };
+
+  const handlePriceChange = (val: string) => {
+    const digits = val.replace(/\D/g, '');
+    const num = digits ? Number.parseInt(digits, 10) : 0;
+    const clamped = clampNumber(num, 0, 2000000);
+    if (clamped.wasClamped && num > 2000000) {
+      toast.info('El precio mensual máximo sugerido es $2.000.000 CLP.');
+    }
+    dispatch({
+      type: 'SET_FIELD',
+      field: 'monthlyPrice',
+      value: clamped.value,
+    });
+  };
+
+  const handleDepositChange = (val: string) => {
+    const digits = val.replace(/\D/g, '');
+    const num = digits ? Number.parseInt(digits, 10) : 0;
+    const clamped = clampNumber(num, 0, 1500000);
+    if (clamped.wasClamped && num > 1500000) {
+      toast.info('El mes de garantía máximo sugerido es $1.500.000 CLP.');
+    }
+    dispatch({
+      type: 'SET_FIELD',
+      field: 'deposit',
+      value: clamped.value,
+    });
   };
 
   const handleSubmit = async () => {
@@ -174,15 +204,11 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 </label>
                 <input
                   id="suggest-price-input"
-                  type="number"
-                  value={state.monthlyPrice}
-                  onChange={(e) =>
-                    dispatch({
-                      type: 'SET_FIELD',
-                      field: 'monthlyPrice',
-                      value: Number(e.target.value) || 0,
-                    })
-                  }
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={state.monthlyPrice ? Number(state.monthlyPrice).toLocaleString('es-CL') : ''}
+                  onChange={(e) => handlePriceChange(e.target.value)}
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                 />
               </div>
@@ -196,15 +222,11 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 </label>
                 <input
                   id="suggest-deposit-input"
-                  type="number"
-                  value={state.deposit}
-                  onChange={(e) =>
-                    dispatch({
-                      type: 'SET_FIELD',
-                      field: 'deposit',
-                      value: Number(e.target.value) || 0,
-                    })
-                  }
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={state.deposit ? Number(state.deposit).toLocaleString('es-CL') : ''}
+                  onChange={(e) => handleDepositChange(e.target.value)}
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                 />
               </div>
@@ -427,6 +449,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <input
                   id="suggest-title-input"
                   type="text"
+                  maxLength={100}
                   value={state.title}
                   onChange={(e) =>
                     dispatch({
@@ -449,6 +472,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <textarea
                   id="suggest-description-textarea"
                   rows={3}
+                  maxLength={1500}
                   value={state.description}
                   onChange={(e) =>
                     dispatch({
@@ -471,6 +495,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <input
                   id="suggest-address-input"
                   type="text"
+                  maxLength={120}
                   value={state.address}
                   onChange={(e) =>
                     dispatch({
@@ -493,6 +518,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <input
                   id="suggest-neighborhood-input"
                   type="text"
+                  maxLength={60}
                   value={state.neighborhood}
                   onChange={(e) =>
                     dispatch({
@@ -515,6 +541,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                 <input
                   id="suggest-city-input"
                   type="text"
+                  maxLength={60}
                   value={state.city}
                   onChange={(e) =>
                     dispatch({
@@ -539,6 +566,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
             <textarea
               id="suggest-submission-notes"
               value={state.submissionNotes}
+              maxLength={500}
               onChange={(e) =>
                 dispatch({
                   type: 'SET_SUBMISSION_NOTES',

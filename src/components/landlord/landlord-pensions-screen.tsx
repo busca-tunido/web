@@ -33,6 +33,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useLandlord } from '@/contexts/landlord-context';
+import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
 import type { PensionItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -458,6 +459,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
 
             <form
               onSubmit={handleSaveDefaultContact}
+              noValidate
               className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end pt-1"
             >
               <div className="sm:col-span-5">
@@ -470,8 +472,9 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 <input
                   id="default-contact-name-input"
                   type="text"
+                  maxLength={70}
                   value={defaultContactName}
-                  onChange={(e) => setDefaultContactName(e.target.value)}
+                  onChange={(e) => setDefaultContactName(filterAlphabeticName(e.target.value))}
                   placeholder="Ej: Propietario Demo"
                   className="min-h-[40px] w-full rounded-lg border border-border/70 bg-background px-3 text-xs font-medium text-foreground focus:border-foreground/40 focus:outline-none transition-colors"
                 />
@@ -487,8 +490,10 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 <input
                   id="default-contact-phone-input"
                   type="tel"
+                  inputMode="tel"
+                  maxLength={16}
                   value={defaultContactPhone}
-                  onChange={(e) => setDefaultContactPhone(e.target.value)}
+                  onChange={(e) => setDefaultContactPhone(formatChileanPhone(e.target.value))}
                   placeholder="+56 9 8765 4321"
                   className="min-h-[40px] w-full rounded-lg border border-border/70 bg-background px-3 text-xs font-medium text-foreground focus:border-foreground/40 focus:outline-none transition-colors"
                 />

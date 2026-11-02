@@ -4,2037 +4,1892 @@
  */
 
 export interface paths {
-  '/': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getHello"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations['AppController_getHello'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/register': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Check API and database health */
+        get: operations["getHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Register a new user account */
-    post: operations['AuthController_register'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/login': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register a new user account */
+        post: operations["register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Log in with email and password */
-    post: operations['AuthController_login'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/auth/me': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log in with email and password */
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get current authenticated user profile */
-    get: operations['AuthController_getProfile'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/pensions': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/check-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Check if an email address is already registered and auto-detect university */
+        get: operations["checkEmail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List pensions with filtering and pagination */
-    get: operations['PensionsController_findAll'];
-    put?: never;
-    /** Create a new pension (Landlord or Admin) */
-    post: operations['PensionsController_create'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/pensions/{idOrSlug}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get current authenticated user profile */
+        get: operations["getProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get pension detail by ID or Slug */
-    get: operations['PensionsController_findOne'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/pensions/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/universities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all universities with optional city filter */
+        get: operations["findAll"];
+        put?: never;
+        /** Create a new university (Admin only) */
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Soft delete pension (Owner or Admin) */
-    delete: operations['PensionsController_delete'];
-    options?: never;
-    head?: never;
-    /** Update pension details (Owner or Admin) */
-    patch: operations['PensionsController_update'];
-    trace?: never;
-  };
-  '/pensions/{pensionId}/rooms': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/universities/campuses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all university campus areas with perimeter polygons */
+        get: operations["findCampusAreas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List rooms for a specific pension */
-    get: operations['RoomsController_findByPension'];
-    put?: never;
-    /** Add a new room to a pension (Owner or Admin) */
-    post: operations['RoomsController_create'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/rooms/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/universities/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get university by ID */
+        get: operations["findOne"];
+        put?: never;
+        post?: never;
+        /** Soft delete university (Admin only) */
+        delete: operations["delete"];
+        options?: never;
+        head?: never;
+        /** Update university (Admin only) */
+        patch: operations["update"];
+        trace?: never;
     };
-    /** Get room by ID */
-    get: operations['RoomsController_findOne'];
-    put?: never;
-    post?: never;
-    /** Soft delete room (Owner or Admin) */
-    delete: operations['RoomsController_delete'];
-    options?: never;
-    head?: never;
-    /** Update room details (Owner or Admin) */
-    patch: operations['RoomsController_update'];
-    trace?: never;
-  };
-  '/universities': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/pensions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List pensions with filtering and pagination */
+        get: operations["findAll"];
+        put?: never;
+        /** Create a new pension (Landlord or Admin) */
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List all universities with optional city filter */
-    get: operations['UniversitiesController_findAll'];
-    put?: never;
-    /** Create a new university (Admin only) */
-    post: operations['UniversitiesController_create'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/universities/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/pensions/price-histogram": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get price distribution histogram for pensions */
+        get: operations["getPriceHistogram"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get university by ID */
-    get: operations['UniversitiesController_findOne'];
-    put?: never;
-    post?: never;
-    /** Soft delete university (Admin only) */
-    delete: operations['UniversitiesController_delete'];
-    options?: never;
-    head?: never;
-    /** Update university (Admin only) */
-    patch: operations['UniversitiesController_update'];
-    trace?: never;
-  };
-  '/pensions/{pensionId}/reviews': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/pensions/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List pensions owned by authenticated landlord */
+        get: operations["getMine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get all reviews for a pension */
-    get: operations['ReviewsController_findByPension'];
-    put?: never;
-    /** Post a review for a pension (Authenticated students) */
-    post: operations['ReviewsController_create'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/reviews/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/pensions/cities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all cities with absolute pension counts and coordinates */
+        get: operations["getCities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Delete your review (Owner or Admin) */
-    delete: operations['ReviewsController_delete'];
-    options?: never;
-    head?: never;
-    /** Update your review (Owner or Admin) */
-    patch: operations['ReviewsController_update'];
-    trace?: never;
-  };
-  '/reports': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/pensions/{idOrSlug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get pension detail by ID or Slug */
+        get: operations["findOne"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List all reports (Admin and Moderator only) */
-    get: operations['ReportsController_findAll'];
-    put?: never;
-    /** Submit an infraction report for a pension */
-    post: operations['ReportsController_create'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/reports/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/pensions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Soft delete pension (Owner or Admin) */
+        delete: operations["delete"];
+        options?: never;
+        head?: never;
+        /** Update pension details (Owner or Admin) */
+        patch: operations["update"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Update report resolution status (Admin or Moderator only) */
-    patch: operations['ReportsController_update'];
-    trace?: never;
-  };
-  '/favorites': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/cities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all cities with absolute pension counts and coordinates */
+        get: operations["findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List all favorite pensions for the current user */
-    get: operations['FavoritesController_findAll'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/favorites/{pensionId}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/pensions/{pensionId}/rooms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List rooms for a specific pension */
+        get: operations["findByPension"];
+        put?: never;
+        /** Add a new room to a pension (Owner or Admin) */
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Add a pension to favorites */
-    post: operations['FavoritesController_add'];
-    /** Remove a pension from favorites */
-    delete: operations['FavoritesController_remove'];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/pensions/{id}/proposals': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/rooms/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get room by ID */
+        get: operations["findOne"];
+        put?: never;
+        post?: never;
+        /** Soft delete room (Owner or Admin) */
+        delete: operations["delete"];
+        options?: never;
+        head?: never;
+        /** Update room details (Owner or Admin) */
+        patch: operations["update"];
+        trace?: never;
     };
-    /** Get proposal history for a specific pension */
-    get: operations['ProposalsController_findByPension'];
-    put?: never;
-    /** Submit a change proposal for a pension listing */
-    post: operations['ProposalsController_create'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/moderation/proposals': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/pensions/{pensionId}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get paginated reviews for a pension with optional rating filter and sorting */
+        get: operations["findByPension"];
+        put?: never;
+        /** Post a review for a pension (Authenticated students) */
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List proposals for moderation review (Moderator or Admin only) */
-    get: operations['ProposalsController_findModerationProposals'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/moderation/proposals/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/stays": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get stay history for current authenticated student based on their reviews */
+        get: operations["findUserStays"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Inspect proposal diff and context (Moderator or Admin only) */
-    get: operations['ProposalsController_findProposalWithDiff'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/moderation/proposals/{id}/review': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/reviews/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete your review (Owner or Admin) */
+        delete: operations["delete"];
+        options?: never;
+        head?: never;
+        /** Update your review (Owner or Admin) */
+        patch: operations["update"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Approve, reject, or modify and merge proposal (Moderator or Admin only) */
-    patch: operations['ProposalsController_review'];
-    trace?: never;
-  };
-  '/moderation/reviews/{id}/visibility': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/reviews/helpful/voted": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List review IDs the current user has voted as helpful */
+        get: operations["findUserHelpfulVotes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Hide or unhide a review (Moderator or Admin only) */
-    patch: operations['ModerationController_updateReviewVisibility'];
-    trace?: never;
-  };
-  '/moderation/pensions/{id}/status': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/reviews/{id}/helpful": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Vote a review as helpful (toggle) */
+        post: operations["voteHelpful"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Update pension verification status or active flag (Moderator or Admin only) */
-    patch: operations['ModerationController_updatePensionStatus'];
-    trace?: never;
-  };
-  '/uploads/images': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all reports (Admin and Moderator only) */
+        get: operations["findAll"];
+        put?: never;
+        /** Submit an infraction report for a pension */
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Upload and process image to WebP with responsive variants */
-    post: operations['UploadsController_uploadImage'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
+    "/reports/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update report resolution status (Admin or Moderator only) */
+        patch: operations["update"];
+        trace?: never;
+    };
+    "/favorites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all favorite pensions for the current user */
+        get: operations["findAll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/favorites/{pensionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a pension to favorites */
+        post: operations["add"];
+        /** Remove a pension from favorites */
+        delete: operations["remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pensions/{id}/proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get proposal history for a specific pension */
+        get: operations["findByPension"];
+        put?: never;
+        /** Submit a change proposal for a pension listing */
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/moderation/proposals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List proposals for moderation review (Moderator or Admin only) */
+        get: operations["findModerationProposals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/moderation/proposals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Inspect proposal diff and context (Moderator or Admin only) */
+        get: operations["findProposalWithDiff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/moderation/proposals/{id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Approve, reject, or modify and merge proposal (Moderator, Admin, or Landlord) */
+        patch: operations["review"];
+        trace?: never;
+    };
+    "/moderation/reviews/{id}/visibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Hide or unhide a review (Moderator or Admin only) */
+        patch: operations["updateReviewVisibility"];
+        trace?: never;
+    };
+    "/moderation/pensions/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update pension verification status or active flag (Moderator or Admin only) */
+        patch: operations["updatePensionStatus"];
+        trace?: never;
+    };
+    "/uploads/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload and process image to WebP with responsive variants */
+        post: operations["uploadImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    RegisterDto: {
-      /** @example juan.perez@alumnos.uchile.cl */
-      email: string;
-      /** @example ContrasenaSegura123! */
-      password: string;
-      /** @example Juan */
-      firstName: string;
-      /** @example Pérez */
-      lastName: string;
-      /** @example +56912345678 */
-      phone?: string;
-      /**
-       * @default STUDENT
-       * @enum {string}
-       */
-      role: 'STUDENT' | 'LANDLORD';
-      /** @example 00000000-0000-0000-0000-000000000000 */
-      universityId?: string;
+    schemas: {
+        GeoCoordinateDto: {
+            /** @example -33.496388 */
+            latitude: number;
+            /** @example -70.616067 */
+            longitude: number;
+        };
+        CampusAreaResponseDto: {
+            /** @example cuid-12345 */
+            id: string;
+            /** @example Campus San Joaquín */
+            name: string;
+            /** @example San Joaquín */
+            acronym: string;
+            /** @example -33.49706 */
+            centerLat: number;
+            /** @example -70.61459 */
+            centerLng: number;
+            polygon: components["schemas"]["GeoCoordinateDto"][];
+            /** @example 6acbfe8bac0ea03feffc1e7a */
+            universityId: string;
+            /** @example Pontificia Universidad Católica de Chile */
+            universityName: string;
+            /** @example Santiago */
+            city: string;
+        };
     };
-    LoginDto: {
-      /** @example juan.perez@alumnos.uchile.cl */
-      email: string;
-      /** @example ContrasenaSegura123! */
-      password: string;
-    };
-    CreatePensionDto: {
-      /** @example Residencia San Joaquín */
-      title: string;
-      /** @example Excelente pensión cerca de campus San Joaquín */
-      description: string;
-      /** @example Av. Vicuña Mackenna 4860 */
-      address: string;
-      /** @example Santiago */
-      city: string;
-      /** @example San Joaquín */
-      neighborhood: string;
-      /** @example -33.4996 */
-      latitude: number;
-      /** @example -70.6145 */
-      longitude: number;
-      /** @example 250000 */
-      baseMonthlyPrice: number;
-      /** @example 250000 */
-      deposit?: number;
-      /**
-       * @default CLP
-       * @example CLP
-       */
-      currency: string;
-      /**
-       * @default true
-       * @example true
-       */
-      waterIncluded: boolean;
-      /**
-       * @default true
-       * @example true
-       */
-      electricityIncluded: boolean;
-      /**
-       * @default true
-       * @example true
-       */
-      gasIncluded: boolean;
-      /**
-       * @default true
-       * @example true
-       */
-      internetIncluded: boolean;
-      /** @example 23:00 */
-      curfewTime?: string;
-      /**
-       * @default false
-       * @example true
-       */
-      guestsAllowed: boolean;
-      /**
-       * @default false
-       * @example false
-       */
-      smokingAllowed: boolean;
-      /**
-       * @default false
-       * @example false
-       */
-      petsAllowed: boolean;
-      /**
-       * @default ANY
-       * @enum {string}
-       */
-      genderPreference: 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY';
-      /** @example 23:00 */
-      quietHoursStart?: string;
-      /** @example 07:00 */
-      quietHoursEnd?: string;
-      /**
-       * @example [
-       *       "wifi-alta-velocidad",
-       *       "bano-privado"
-       *     ]
-       */
-      amenitySlugs?: string[];
-      /** @example 00000000-0000-0000-0000-000000000000 */
-      nearbyUniversityId?: string;
-      /** @example 500 */
-      distanceMeters?: number;
-    };
-    UpdatePensionDto: {
-      /** @example Residencia San Joaquín */
-      title?: string;
-      /** @example Excelente pensión cerca de campus San Joaquín */
-      description?: string;
-      /** @example Av. Vicuña Mackenna 4860 */
-      address?: string;
-      /** @example Santiago */
-      city?: string;
-      /** @example San Joaquín */
-      neighborhood?: string;
-      /** @example -33.4996 */
-      latitude?: number;
-      /** @example -70.6145 */
-      longitude?: number;
-      /** @example 250000 */
-      baseMonthlyPrice?: number;
-      /** @example 250000 */
-      deposit?: number;
-      /**
-       * @default CLP
-       * @example CLP
-       */
-      currency: string;
-      /**
-       * @default true
-       * @example true
-       */
-      waterIncluded: boolean;
-      /**
-       * @default true
-       * @example true
-       */
-      electricityIncluded: boolean;
-      /**
-       * @default true
-       * @example true
-       */
-      gasIncluded: boolean;
-      /**
-       * @default true
-       * @example true
-       */
-      internetIncluded: boolean;
-      /** @example 23:00 */
-      curfewTime?: string;
-      /**
-       * @default false
-       * @example true
-       */
-      guestsAllowed: boolean;
-      /**
-       * @default false
-       * @example false
-       */
-      smokingAllowed: boolean;
-      /**
-       * @default false
-       * @example false
-       */
-      petsAllowed: boolean;
-      /**
-       * @default ANY
-       * @enum {string}
-       */
-      genderPreference: 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY';
-      /** @example 23:00 */
-      quietHoursStart?: string;
-      /** @example 07:00 */
-      quietHoursEnd?: string;
-      /**
-       * @example [
-       *       "wifi-alta-velocidad",
-       *       "bano-privado"
-       *     ]
-       */
-      amenitySlugs?: string[];
-      /** @example 00000000-0000-0000-0000-000000000000 */
-      nearbyUniversityId?: string;
-      /** @example 500 */
-      distanceMeters?: number;
-    };
-    CreateRoomDto: {
-      /** @example Hab 101 */
-      roomNumber: string;
-      /** @example Habitación Individual Luminosa */
-      title: string;
-      /** @example Pieza amoblada con clóset y escritorio. */
-      description?: string;
-      /**
-       * @default SINGLE
-       * @enum {string}
-       */
-      type: 'SINGLE' | 'SHARED' | 'STUDIO';
-      /** @example 250000 */
-      monthlyPrice: number;
-      /** @example 250000 */
-      deposit?: number;
-      /**
-       * @default false
-       * @example false
-       */
-      hasPrivateBathroom: boolean;
-      /**
-       * @default 1
-       * @example 1
-       */
-      totalBeds: number;
-      /**
-       * @default 1
-       * @example 1
-       */
-      availableBeds: number;
-      /**
-       * @default true
-       * @example true
-       */
-      isAvailable: boolean;
-      /**
-       * @example [
-       *       "https://example.com/room1.jpg"
-       *     ]
-       */
-      images?: string[];
-    };
-    UpdateRoomDto: {
-      /** @example Hab 101 */
-      roomNumber?: string;
-      /** @example Habitación Individual Luminosa */
-      title?: string;
-      /** @example Pieza amoblada con clóset y escritorio. */
-      description?: string;
-      /**
-       * @default SINGLE
-       * @enum {string}
-       */
-      type: 'SINGLE' | 'SHARED' | 'STUDIO';
-      /** @example 250000 */
-      monthlyPrice?: number;
-      /** @example 250000 */
-      deposit?: number;
-      /**
-       * @default false
-       * @example false
-       */
-      hasPrivateBathroom: boolean;
-      /**
-       * @default 1
-       * @example 1
-       */
-      totalBeds: number;
-      /**
-       * @default 1
-       * @example 1
-       */
-      availableBeds: number;
-      /**
-       * @default true
-       * @example true
-       */
-      isAvailable: boolean;
-      /**
-       * @example [
-       *       "https://example.com/room1.jpg"
-       *     ]
-       */
-      images?: string[];
-    };
-    CreateUniversityDto: {
-      /** @example Universidad de Chile */
-      name: string;
-      /** @example UCH */
-      shortName?: string;
-      /**
-       * @example [
-       *       "uchile.cl",
-       *       "alumnos.uchile.cl"
-       *     ]
-       */
-      emailDomains?: string[];
-      /** @example Santiago */
-      city: string;
-      /** @example Av. Libertador Bernardo O'Higgins 1058 */
-      address: string;
-      /** @example -33.4442 */
-      latitude: number;
-      /** @example -70.6517 */
-      longitude: number;
-    };
-    UpdateUniversityDto: {
-      /** @example Universidad de Chile */
-      name?: string;
-      /** @example UCH */
-      shortName?: string;
-      /**
-       * @example [
-       *       "uchile.cl",
-       *       "alumnos.uchile.cl"
-       *     ]
-       */
-      emailDomains?: string[];
-      /** @example Santiago */
-      city?: string;
-      /** @example Av. Libertador Bernardo O'Higgins 1058 */
-      address?: string;
-      /** @example -33.4442 */
-      latitude?: number;
-      /** @example -70.6517 */
-      longitude?: number;
-    };
-    CreateReviewDto: {
-      /** @example 5 */
-      overallRating: number;
-      /** @example 5 */
-      cleanlinessRating?: number;
-      /** @example 4 */
-      landlordRating?: number;
-      /** @example 4 */
-      quietnessRating?: number;
-      /** @example 5 */
-      wifiRating?: number;
-      /** @example Excelente pensión y ambiente de estudio. */
-      comment: string;
-      /**
-       * @example [
-       *       "https://example.com/review1.jpg"
-       *     ]
-       */
-      images?: string[];
-      /** @enum {string} */
-      stayDurationCategory?:
-        | 'FEW_DAYS'
-        | 'FEW_WEEKS'
-        | 'ONE_SEMESTER'
-        | 'ONE_YEAR'
-        | 'MORE_THAN_A_YEAR';
-    };
-    UpdateReviewDto: {
-      /** @example 5 */
-      overallRating?: number;
-      /** @example 5 */
-      cleanlinessRating?: number;
-      /** @example 4 */
-      landlordRating?: number;
-      /** @example 4 */
-      quietnessRating?: number;
-      /** @example 5 */
-      wifiRating?: number;
-      /** @example Excelente pensión y ambiente de estudio. */
-      comment?: string;
-      /**
-       * @example [
-       *       "https://example.com/review1.jpg"
-       *     ]
-       */
-      images?: string[];
-      /** @enum {string} */
-      stayDurationCategory?:
-        | 'FEW_DAYS'
-        | 'FEW_WEEKS'
-        | 'ONE_SEMESTER'
-        | 'ONE_YEAR'
-        | 'MORE_THAN_A_YEAR';
-    };
-    CreateReportDto: {
-      /** @example 00000000-0000-0000-0000-000000000000 */
-      pensionId: string;
-      /**
-       * @example INACCURATE_PRICE
-       * @enum {string}
-       */
-      reason:
-        | 'FRAUD_OR_SCAM'
-        | 'INACCURATE_PRICE'
-        | 'MISLEADING_PHOTOS'
-        | 'HOUSE_RULES_VIOLATION'
-        | 'PROPERTY_UNAVAILABLE'
-        | 'INAPPROPRIATE_CONTENT';
-      /** @example El precio cobrado no coincide con el publicado en el sitio web. */
-      description: string;
-    };
-    UpdateReportDto: {
-      /**
-       * @example RESOLVED
-       * @enum {string}
-       */
-      status?: 'PENDING' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED';
-      /** @example Se contactó al arrendador y se corrigió el precio publicado. */
-      resolutionNotes?: string;
-    };
-    CreateProposalDto: {
-      /**
-       * @default BASIC_INFO
-       * @enum {string}
-       */
-      type: 'AMENITIES_UPDATE' | 'BASIC_INFO' | 'LOCATION_UPDATE' | 'FULL_UPDATE';
-      /**
-       * @description Object with proposed field corrections or amenities diff
-       * @example {
-       *       "curfewTime": "23:30",
-       *       "quietHoursStart": "22:00",
-       *       "amenitiesToAdd": [
-       *         "sala-estudio"
-       *       ],
-       *       "amenitiesToRemove": []
-       *     }
-       */
-      proposedChanges: Record<string, never>;
-      /** @example Actualización tras consulta presencial. */
-      submissionNotes?: string;
-    };
-    ReviewProposalDto: {
-      /**
-       * @example APPROVE
-       * @enum {string}
-       */
-      action: 'APPROVE' | 'REJECT' | 'MODIFY_AND_APPROVE';
-      /** @example Cambios validados telefónicamente. */
-      reviewNotes?: string;
-      /**
-       * @description Subset or override of changes to apply when action is MODIFY_AND_APPROVE
-       * @example {
-       *       "curfewTime": "23:30"
-       *     }
-       */
-      modifiedChanges?: Record<string, never>;
-    };
-    UpdateReviewVisibilityDto: {
-      /**
-       * @description Whether the review is hidden from public display
-       * @example true
-       */
-      isHidden: boolean;
-      /** @example Comentario con lenguaje inapropiado o difamatorio. */
-      reason?: string;
-    };
-    UpdatePensionStatusDto: {
-      /**
-       * @example COMMUNITY_VERIFIED
-       * @enum {string}
-       */
-      verificationStatus?: 'UNVERIFIED' | 'COMMUNITY_VERIFIED' | 'OFFICIALLY_VERIFIED' | 'REJECTED';
-      /**
-       * @description Set false to suspend or delist the pension
-       * @example false
-       */
-      isActive?: boolean;
-      /** @example Publicación suspendida por reporte fundado de fraude. */
-      reason?: string;
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  AppController_getHello: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  AuthController_register: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['RegisterDto'];
-      };
-    };
-    responses: {
-      /** @description User successfully created and token issued */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Email already registered */
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  AuthController_login: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['LoginDto'];
-      };
-    };
-    responses: {
-      /** @description Authentication successful */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Invalid credentials */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  AuthController_getProfile: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Profile returned */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  PensionsController_findAll: {
-    parameters: {
-      query?: {
-        city?: string;
-        neighborhood?: string;
-        minPrice?: number;
-        maxPrice?: number;
-        genderPreference?: 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY';
-        universityId?: string;
-        amenities?: string[];
-        search?: string;
-        page?: number;
-        limit?: number;
-        /** @description Latitude coordinate of user location */
-        latitude?: number;
-        /** @description Longitude coordinate of user location */
-        longitude?: number;
-        /** @description Radius in km (1-100) */
-        radiusKm?: number;
-        sortBy?: 'relevance' | 'distance' | 'rating' | 'price_asc' | 'price_desc';
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Paginated list of pensions */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  PensionsController_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreatePensionDto'];
-      };
-    };
-    responses: {
-      /** @description Pension created successfully */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden - Insufficient permissions */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  PensionsController_findOne: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        idOrSlug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Pension detailed information */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Pension not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  PensionsController_delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Pension deleted successfully */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden - You do not own this pension */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Pension not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  PensionsController_update: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdatePensionDto'];
-      };
-    };
-    responses: {
-      /** @description Pension updated successfully */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden - You do not own this pension */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Pension not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  RoomsController_findByPension: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        pensionId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description List of rooms */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  RoomsController_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        pensionId: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateRoomDto'];
-      };
-    };
-    responses: {
-      /** @description Room created successfully */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden - You do not own this pension */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  RoomsController_findOne: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Room details */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Room not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  RoomsController_delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Room deleted successfully */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden - You do not own this room */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Room not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  RoomsController_update: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateRoomDto'];
-      };
-    };
-    responses: {
-      /** @description Room updated successfully */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden - You do not own this room */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Room not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  UniversitiesController_findAll: {
-    parameters: {
-      query?: {
-        city?: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description List of universities */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  UniversitiesController_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateUniversityDto'];
-      };
-    };
-    responses: {
-      /** @description University created */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  UniversitiesController_findOne: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description University details */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description University not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  UniversitiesController_delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description University deleted */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  UniversitiesController_update: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateUniversityDto'];
-      };
-    };
-    responses: {
-      /** @description University updated */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ReviewsController_findByPension: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        pensionId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description List of reviews */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ReviewsController_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        pensionId: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateReviewDto'];
-      };
-    };
-    responses: {
-      /** @description Review posted successfully */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Already reviewed this pension */
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ReviewsController_delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Review deleted successfully */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ReviewsController_update: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateReviewDto'];
-      };
-    };
-    responses: {
-      /** @description Review updated successfully */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ReportsController_findAll: {
-    parameters: {
-      query?: {
-        status?: 'PENDING' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED';
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description List of reports */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ReportsController_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateReportDto'];
-      };
-    };
-    responses: {
-      /** @description Report submitted successfully */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Pension not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ReportsController_update: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateReportDto'];
-      };
-    };
-    responses: {
-      /** @description Report status updated */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  FavoritesController_findAll: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description List of user favorites */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  FavoritesController_add: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        pensionId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Favorite added successfully */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Already favorited */
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  FavoritesController_remove: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        pensionId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Favorite removed successfully */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Favorite not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ProposalsController_findByPension: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description List of proposals */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ProposalsController_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateProposalDto'];
-      };
-    };
-    responses: {
-      /** @description Proposal submitted successfully */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Pension not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ProposalsController_findModerationProposals: {
-    parameters: {
-      query?: {
-        status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'MODIFIED_AND_APPROVED';
-        page?: number;
-        limit?: number;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Paginated proposals for moderation */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ProposalsController_findProposalWithDiff: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Proposal and diff against active pension */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Proposal not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ProposalsController_review: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['ReviewProposalDto'];
-      };
-    };
-    responses: {
-      /** @description Proposal reviewed and merged */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Invalid review action or notes missing */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Proposal not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ModerationController_updateReviewVisibility: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateReviewVisibilityDto'];
-      };
-    };
-    responses: {
-      /** @description Review visibility updated */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Review not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  ModerationController_updatePensionStatus: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdatePensionStatusDto'];
-      };
-    };
-    responses: {
-      /** @description Pension status updated */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Forbidden */
-      403: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Pension not found */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  UploadsController_uploadImage: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'multipart/form-data': {
-          /**
-           * Format: binary
-           * @description Image file (JPEG, PNG, WebP, AVIF, HEIF, GIF - max 8MB)
-           */
-          file: string;
-        };
-      };
-    };
-    responses: {
-      /** @description Image processed and converted to WebP successfully */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': {
-            /** @example /uploads/abcd-1234.webp */
-            url?: string;
-            /** @example /uploads/abcd-1234-thumb.webp */
-            thumbnailUrl?: string;
-            /** @example 1200 */
-            width?: number;
-            /** @example 800 */
-            height?: number;
-            /** @example webp */
-            format?: string;
-            /** @example 124500 */
-            size?: number;
-          };
-        };
-      };
-      /** @description Invalid image or unsupported format */
-      400: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Unauthorized */
-      401: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
+    getHello: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Health check result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User successfully created and token issued */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Email already registered */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authentication successful */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid credentials */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Too many requests / verification required */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    checkEmail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Check email status and detected university returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Profile returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findAll: {
+        parameters: {
+            query?: {
+                city?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of universities */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description University created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findCampusAreas: {
+        parameters: {
+            query?: {
+                city?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of campus areas with polygons */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampusAreaResponseDto"][];
+                };
+            };
+        };
+    };
+    findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description University details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description University not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description University deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description University updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated list of pensions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pension created successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden - Insufficient permissions */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getPriceHistogram: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Price distribution histogram with 28 bins */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of pensions owned by landlord */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden - Insufficient permissions */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getCities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of cities with absolute pension counts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pension detailed information */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pension not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pension deleted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden - You do not own this pension */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pension not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pension updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden - You do not own this pension */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pension not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of cities with absolute pension counts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findByPension: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of rooms */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Room created successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden - You do not own this pension */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findOne: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Room details */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Room not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Room deleted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden - You do not own this room */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Room not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Room updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden - You do not own this room */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Room not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findByPension: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated reviews response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Review posted successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Already reviewed this pension */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findUserStays: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of student stays */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Review deleted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Review updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findUserHelpfulVotes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of review IDs voted helpful */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    voteHelpful: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Review vote toggled successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findAll: {
+        parameters: {
+            query?: {
+                status?: "PENDING" | "UNDER_REVIEW" | "RESOLVED" | "DISMISSED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of reports */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Report submitted successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pension not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Report status updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findAll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of user favorites */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    add: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Favorite added successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Already favorited */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Favorite removed successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Favorite not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findByPension: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of proposals */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Proposal submitted successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pension not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findModerationProposals: {
+        parameters: {
+            query?: {
+                limit?: number;
+                page?: number;
+                status?: "PENDING" | "APPROVED" | "REJECTED" | "MODIFIED_AND_APPROVED";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated proposals for moderation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    findProposalWithDiff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Proposal and diff against active pension */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Proposal not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    review: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Proposal reviewed and merged */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid review action or notes missing */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Proposal not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateReviewVisibility: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Review visibility updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updatePensionStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pension status updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Pension not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    uploadImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description Image file (JPEG, PNG, WebP, AVIF, HEIF, GIF - max 8MB)
+                     */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Image processed and converted to WebP successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example /uploads/abcd-1234.webp */
+                        url?: string;
+                        /** @example /uploads/abcd-1234-thumb.webp */
+                        thumbnailUrl?: string;
+                        /** @example 1200 */
+                        width?: number;
+                        /** @example 800 */
+                        height?: number;
+                        /** @example webp */
+                        format?: string;
+                        /** @example 124500 */
+                        size?: number;
+                    };
+                };
+            };
+            /** @description Invalid image or unsupported format */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description File size exceeds limit */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
 }

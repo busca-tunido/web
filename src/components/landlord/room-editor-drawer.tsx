@@ -704,6 +704,7 @@ export function RoomEditorDrawer({
               <textarea
                 id="room-desc-textarea"
                 rows={3}
+                maxLength={800}
                 placeholder="Ej: Incluye clóset amplio, escritorio de estudio ergonómico y ventana con luz natural..."
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}

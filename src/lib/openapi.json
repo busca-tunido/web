@@ -3,19 +3,36 @@
   "paths": {
     "/": {
       "get": {
-        "operationId": "AppController_getHello",
+        "operationId": "getHello",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
-        "tags": ["App"]
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Health check result"
+          }
+        },
+        "summary": "Check API and database health",
+        "tags": [
+          "App"
+        ]
       }
     },
     "/auth/register": {
       "post": {
-        "operationId": "AuthController_register",
+        "operationId": "register",
         "parameters": [],
         "responses": {
           "201": {
@@ -26,12 +43,14 @@
           }
         },
         "summary": "Register a new user account",
-        "tags": ["Auth"]
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/auth/login": {
       "post": {
-        "operationId": "AuthController_login",
+        "operationId": "login",
         "parameters": [],
         "responses": {
           "200": {
@@ -39,28 +58,38 @@
           },
           "401": {
             "description": "Invalid credentials"
+          },
+          "429": {
+            "description": "Too many requests / verification required"
           }
         },
         "summary": "Log in with email and password",
-        "tags": ["Auth"]
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/auth/check-email": {
       "get": {
-        "operationId": "AuthController_checkEmail",
+        "operationId": "checkEmail",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Check email status returned"
+            "description": "Check email status and detected university returned"
+          },
+          "429": {
+            "description": "Too many requests"
           }
         },
-        "summary": "Check if an email address is already registered",
-        "tags": ["Auth"]
+        "summary": "Check if an email address is already registered and auto-detect university",
+        "tags": [
+          "Auth"
+        ]
       }
     },
     "/auth/me": {
       "get": {
-        "operationId": "AuthController_getProfile",
+        "operationId": "getProfile",
         "parameters": [],
         "responses": {
           "200": {
@@ -76,12 +105,153 @@
           }
         ],
         "summary": "Get current authenticated user profile",
-        "tags": ["Auth"]
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/universities": {
+      "get": {
+        "operationId": "findAll",
+        "parameters": [
+          {
+            "name": "city",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of universities"
+          }
+        },
+        "summary": "List all universities with optional city filter",
+        "tags": [
+          "Universities"
+        ]
+      },
+      "post": {
+        "operationId": "create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "University created"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new university (Admin only)",
+        "tags": [
+          "Universities"
+        ]
+      }
+    },
+    "/universities/campuses": {
+      "get": {
+        "operationId": "findCampusAreas",
+        "parameters": [
+          {
+            "name": "city",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of campus areas with polygons",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CampusAreaResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List all university campus areas with perimeter polygons",
+        "tags": [
+          "Universities"
+        ]
+      }
+    },
+    "/universities/{id}": {
+      "get": {
+        "operationId": "findOne",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "University details"
+          },
+          "404": {
+            "description": "University not found"
+          }
+        },
+        "summary": "Get university by ID",
+        "tags": [
+          "Universities"
+        ]
+      },
+      "patch": {
+        "operationId": "update",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "University updated"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update university (Admin only)",
+        "tags": [
+          "Universities"
+        ]
+      },
+      "delete": {
+        "operationId": "delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "University deleted"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Soft delete university (Admin only)",
+        "tags": [
+          "Universities"
+        ]
       }
     },
     "/pensions": {
       "get": {
-        "operationId": "PensionsController_findAll",
+        "operationId": "findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -89,10 +259,12 @@
           }
         },
         "summary": "List pensions with filtering and pagination",
-        "tags": ["Pensions"]
+        "tags": [
+          "Pensions"
+        ]
       },
       "post": {
-        "operationId": "PensionsController_create",
+        "operationId": "create",
         "parameters": [],
         "responses": {
           "201": {
@@ -111,12 +283,14 @@
           }
         ],
         "summary": "Create a new pension (Landlord or Admin)",
-        "tags": ["Pensions"]
+        "tags": [
+          "Pensions"
+        ]
       }
     },
     "/pensions/price-histogram": {
       "get": {
-        "operationId": "PensionsController_getPriceHistogram",
+        "operationId": "getPriceHistogram",
         "parameters": [],
         "responses": {
           "200": {
@@ -124,12 +298,14 @@
           }
         },
         "summary": "Get price distribution histogram for pensions",
-        "tags": ["Pensions"]
+        "tags": [
+          "Pensions"
+        ]
       }
     },
     "/pensions/mine": {
       "get": {
-        "operationId": "PensionsController_getMine",
+        "operationId": "getMine",
         "parameters": [],
         "responses": {
           "200": {
@@ -148,12 +324,29 @@
           }
         ],
         "summary": "List pensions owned by authenticated landlord",
-        "tags": ["Pensions"]
+        "tags": [
+          "Pensions"
+        ]
+      }
+    },
+    "/pensions/cities": {
+      "get": {
+        "operationId": "getCities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of cities with absolute pension counts"
+          }
+        },
+        "summary": "List all cities with absolute pension counts and coordinates",
+        "tags": [
+          "Pensions"
+        ]
       }
     },
     "/pensions/{idOrSlug}": {
       "get": {
-        "operationId": "PensionsController_findOne",
+        "operationId": "findOne",
         "parameters": [],
         "responses": {
           "200": {
@@ -164,12 +357,14 @@
           }
         },
         "summary": "Get pension detail by ID or Slug",
-        "tags": ["Pensions"]
+        "tags": [
+          "Pensions"
+        ]
       }
     },
     "/pensions/{id}": {
       "patch": {
-        "operationId": "PensionsController_update",
+        "operationId": "update",
         "parameters": [],
         "responses": {
           "200": {
@@ -191,10 +386,12 @@
           }
         ],
         "summary": "Update pension details (Owner or Admin)",
-        "tags": ["Pensions"]
+        "tags": [
+          "Pensions"
+        ]
       },
       "delete": {
-        "operationId": "PensionsController_delete",
+        "operationId": "delete",
         "parameters": [],
         "responses": {
           "200": {
@@ -216,12 +413,29 @@
           }
         ],
         "summary": "Soft delete pension (Owner or Admin)",
-        "tags": ["Pensions"]
+        "tags": [
+          "Pensions"
+        ]
+      }
+    },
+    "/cities": {
+      "get": {
+        "operationId": "findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of cities with absolute pension counts"
+          }
+        },
+        "summary": "List all cities with absolute pension counts and coordinates",
+        "tags": [
+          "Cities"
+        ]
       }
     },
     "/pensions/{pensionId}/rooms": {
       "get": {
-        "operationId": "RoomsController_findByPension",
+        "operationId": "findByPension",
         "parameters": [],
         "responses": {
           "200": {
@@ -237,10 +451,12 @@
           }
         ],
         "summary": "List rooms for a specific pension",
-        "tags": ["Rooms"]
+        "tags": [
+          "Rooms"
+        ]
       },
       "post": {
-        "operationId": "RoomsController_create",
+        "operationId": "create",
         "parameters": [],
         "responses": {
           "201": {
@@ -259,12 +475,14 @@
           }
         ],
         "summary": "Add a new room to a pension (Owner or Admin)",
-        "tags": ["Rooms"]
+        "tags": [
+          "Rooms"
+        ]
       }
     },
     "/rooms/{id}": {
       "get": {
-        "operationId": "RoomsController_findOne",
+        "operationId": "findOne",
         "parameters": [],
         "responses": {
           "200": {
@@ -283,10 +501,12 @@
           }
         ],
         "summary": "Get room by ID",
-        "tags": ["Rooms"]
+        "tags": [
+          "Rooms"
+        ]
       },
       "patch": {
-        "operationId": "RoomsController_update",
+        "operationId": "update",
         "parameters": [],
         "responses": {
           "200": {
@@ -308,10 +528,12 @@
           }
         ],
         "summary": "Update room details (Owner or Admin)",
-        "tags": ["Rooms"]
+        "tags": [
+          "Rooms"
+        ]
       },
       "delete": {
-        "operationId": "RoomsController_delete",
+        "operationId": "delete",
         "parameters": [],
         "responses": {
           "200": {
@@ -333,126 +555,27 @@
           }
         ],
         "summary": "Soft delete room (Owner or Admin)",
-        "tags": ["Rooms"]
-      }
-    },
-    "/universities": {
-      "get": {
-        "operationId": "UniversitiesController_findAll",
-        "parameters": [
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of universities"
-          }
-        },
-        "summary": "List all universities with optional city filter",
-        "tags": ["Universities"]
-      },
-      "post": {
-        "operationId": "UniversitiesController_create",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "University created"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new university (Admin only)",
-        "tags": ["Universities"]
-      }
-    },
-    "/universities/{id}": {
-      "get": {
-        "operationId": "UniversitiesController_findOne",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "University details"
-          },
-          "404": {
-            "description": "University not found"
-          }
-        },
-        "summary": "Get university by ID",
-        "tags": ["Universities"]
-      },
-      "patch": {
-        "operationId": "UniversitiesController_update",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "University updated"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update university (Admin only)",
-        "tags": ["Universities"]
-      },
-      "delete": {
-        "operationId": "UniversitiesController_delete",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "University deleted"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Soft delete university (Admin only)",
-        "tags": ["Universities"]
+        "tags": [
+          "Rooms"
+        ]
       }
     },
     "/pensions/{pensionId}/reviews": {
       "get": {
-        "operationId": "ReviewsController_findByPension",
+        "operationId": "findByPension",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Paginated reviews response"
-          },
-          "401": {
-            "description": "Unauthorized"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
         "summary": "Get paginated reviews for a pension with optional rating filter and sorting",
-        "tags": ["Reviews"]
+        "tags": [
+          "Reviews"
+        ]
       },
       "post": {
-        "operationId": "ReviewsController_create",
+        "operationId": "create",
         "parameters": [],
         "responses": {
           "201": {
@@ -468,12 +591,14 @@
           }
         ],
         "summary": "Post a review for a pension (Authenticated students)",
-        "tags": ["Reviews"]
+        "tags": [
+          "Reviews"
+        ]
       }
     },
     "/stays": {
       "get": {
-        "operationId": "ReviewsController_findUserStays",
+        "operationId": "findUserStays",
         "parameters": [],
         "responses": {
           "200": {
@@ -486,12 +611,14 @@
           }
         ],
         "summary": "Get stay history for current authenticated student based on their reviews",
-        "tags": ["Reviews"]
+        "tags": [
+          "Reviews"
+        ]
       }
     },
     "/reviews/{id}": {
       "patch": {
-        "operationId": "ReviewsController_update",
+        "operationId": "update",
         "parameters": [],
         "responses": {
           "200": {
@@ -507,10 +634,12 @@
           }
         ],
         "summary": "Update your review (Owner or Admin)",
-        "tags": ["Reviews"]
+        "tags": [
+          "Reviews"
+        ]
       },
       "delete": {
-        "operationId": "ReviewsController_delete",
+        "operationId": "delete",
         "parameters": [],
         "responses": {
           "200": {
@@ -526,12 +655,14 @@
           }
         ],
         "summary": "Delete your review (Owner or Admin)",
-        "tags": ["Reviews"]
+        "tags": [
+          "Reviews"
+        ]
       }
     },
     "/reviews/helpful/voted": {
       "get": {
-        "operationId": "ReviewsController_findUserHelpfulVotes",
+        "operationId": "findUserHelpfulVotes",
         "parameters": [],
         "responses": {
           "200": {
@@ -544,12 +675,14 @@
           }
         ],
         "summary": "List review IDs the current user has voted as helpful",
-        "tags": ["Reviews"]
+        "tags": [
+          "Reviews"
+        ]
       }
     },
     "/reviews/{id}/helpful": {
       "post": {
-        "operationId": "ReviewsController_voteHelpful",
+        "operationId": "voteHelpful",
         "parameters": [],
         "responses": {
           "200": {
@@ -562,19 +695,26 @@
           }
         ],
         "summary": "Vote a review as helpful (toggle)",
-        "tags": ["Reviews"]
+        "tags": [
+          "Reviews"
+        ]
       }
     },
     "/reports": {
       "get": {
-        "operationId": "ReportsController_findAll",
+        "operationId": "findAll",
         "parameters": [
           {
             "name": "status",
             "required": false,
             "in": "query",
             "schema": {
-              "enum": ["PENDING", "UNDER_REVIEW", "RESOLVED", "DISMISSED"],
+              "enum": [
+                "PENDING",
+                "UNDER_REVIEW",
+                "RESOLVED",
+                "DISMISSED"
+              ],
               "type": "string"
             }
           }
@@ -593,10 +733,12 @@
           }
         ],
         "summary": "List all reports (Admin and Moderator only)",
-        "tags": ["Reports"]
+        "tags": [
+          "Reports"
+        ]
       },
       "post": {
-        "operationId": "ReportsController_create",
+        "operationId": "create",
         "parameters": [],
         "responses": {
           "201": {
@@ -612,12 +754,14 @@
           }
         ],
         "summary": "Submit an infraction report for a pension",
-        "tags": ["Reports"]
+        "tags": [
+          "Reports"
+        ]
       }
     },
     "/reports/{id}": {
       "patch": {
-        "operationId": "ReportsController_update",
+        "operationId": "update",
         "parameters": [],
         "responses": {
           "200": {
@@ -633,12 +777,14 @@
           }
         ],
         "summary": "Update report resolution status (Admin or Moderator only)",
-        "tags": ["Reports"]
+        "tags": [
+          "Reports"
+        ]
       }
     },
     "/favorites": {
       "get": {
-        "operationId": "FavoritesController_findAll",
+        "operationId": "findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -651,12 +797,14 @@
           }
         ],
         "summary": "List all favorite pensions for the current user",
-        "tags": ["Favorites"]
+        "tags": [
+          "Favorites"
+        ]
       }
     },
     "/favorites/{pensionId}": {
       "post": {
-        "operationId": "FavoritesController_add",
+        "operationId": "add",
         "parameters": [],
         "responses": {
           "201": {
@@ -672,10 +820,12 @@
           }
         ],
         "summary": "Add a pension to favorites",
-        "tags": ["Favorites"]
+        "tags": [
+          "Favorites"
+        ]
       },
       "delete": {
-        "operationId": "FavoritesController_remove",
+        "operationId": "remove",
         "parameters": [],
         "responses": {
           "200": {
@@ -691,12 +841,14 @@
           }
         ],
         "summary": "Remove a pension from favorites",
-        "tags": ["Favorites"]
+        "tags": [
+          "Favorites"
+        ]
       }
     },
     "/pensions/{id}/proposals": {
       "post": {
-        "operationId": "ProposalsController_create",
+        "operationId": "create",
         "parameters": [],
         "responses": {
           "201": {
@@ -715,10 +867,12 @@
           }
         ],
         "summary": "Submit a change proposal for a pension listing",
-        "tags": ["Proposals"]
+        "tags": [
+          "Proposals"
+        ]
       },
       "get": {
-        "operationId": "ProposalsController_findByPension",
+        "operationId": "findByPension",
         "parameters": [],
         "responses": {
           "200": {
@@ -734,12 +888,14 @@
           }
         ],
         "summary": "Get proposal history for a specific pension",
-        "tags": ["Proposals"]
+        "tags": [
+          "Proposals"
+        ]
       }
     },
     "/moderation/proposals": {
       "get": {
-        "operationId": "ProposalsController_findModerationProposals",
+        "operationId": "findModerationProposals",
         "parameters": [
           {
             "name": "limit",
@@ -762,7 +918,12 @@
             "required": false,
             "in": "query",
             "schema": {
-              "enum": ["PENDING", "APPROVED", "REJECTED", "MODIFIED_AND_APPROVED"],
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED",
+                "MODIFIED_AND_APPROVED"
+              ],
               "type": "string"
             }
           }
@@ -781,12 +942,14 @@
           }
         ],
         "summary": "List proposals for moderation review (Moderator or Admin only)",
-        "tags": ["Proposals"]
+        "tags": [
+          "Proposals"
+        ]
       }
     },
     "/moderation/proposals/{id}": {
       "get": {
-        "operationId": "ProposalsController_findProposalWithDiff",
+        "operationId": "findProposalWithDiff",
         "parameters": [],
         "responses": {
           "200": {
@@ -802,12 +965,14 @@
           }
         ],
         "summary": "Inspect proposal diff and context (Moderator or Admin only)",
-        "tags": ["Proposals"]
+        "tags": [
+          "Proposals"
+        ]
       }
     },
     "/moderation/proposals/{id}/review": {
       "patch": {
-        "operationId": "ProposalsController_review",
+        "operationId": "review",
         "parameters": [],
         "responses": {
           "200": {
@@ -829,12 +994,14 @@
           }
         ],
         "summary": "Approve, reject, or modify and merge proposal (Moderator, Admin, or Landlord)",
-        "tags": ["Proposals"]
+        "tags": [
+          "Proposals"
+        ]
       }
     },
     "/moderation/reviews/{id}/visibility": {
       "patch": {
-        "operationId": "ModerationController_updateReviewVisibility",
+        "operationId": "updateReviewVisibility",
         "parameters": [],
         "responses": {
           "200": {
@@ -853,12 +1020,14 @@
           }
         ],
         "summary": "Hide or unhide a review (Moderator or Admin only)",
-        "tags": ["Moderation"]
+        "tags": [
+          "Moderation"
+        ]
       }
     },
     "/moderation/pensions/{id}/status": {
       "patch": {
-        "operationId": "ModerationController_updatePensionStatus",
+        "operationId": "updatePensionStatus",
         "parameters": [],
         "responses": {
           "200": {
@@ -877,12 +1046,14 @@
           }
         ],
         "summary": "Update pension verification status or active flag (Moderator or Admin only)",
-        "tags": ["Moderation"]
+        "tags": [
+          "Moderation"
+        ]
       }
     },
     "/uploads/images": {
       "post": {
-        "operationId": "UploadsController_uploadImage",
+        "operationId": "uploadImage",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -897,7 +1068,9 @@
                     "description": "Image file (JPEG, PNG, WebP, AVIF, HEIF, GIF - max 8MB)"
                   }
                 },
-                "required": ["file"]
+                "required": [
+                  "file"
+                ]
               }
             }
           }
@@ -955,7 +1128,9 @@
           }
         ],
         "summary": "Upload and process image to WebP with responsive variants",
-        "tags": ["Uploads"]
+        "tags": [
+          "Uploads"
+        ]
       }
     }
   },
@@ -975,6 +1150,78 @@
         "type": "http"
       }
     },
-    "schemas": {}
+    "schemas": {
+      "GeoCoordinateDto": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "example": -33.496388
+          },
+          "longitude": {
+            "type": "number",
+            "example": -70.616067
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      },
+      "CampusAreaResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "cuid-12345"
+          },
+          "name": {
+            "type": "string",
+            "example": "Campus San Joaquín"
+          },
+          "acronym": {
+            "type": "string",
+            "example": "San Joaquín"
+          },
+          "centerLat": {
+            "type": "number",
+            "example": -33.49706
+          },
+          "centerLng": {
+            "type": "number",
+            "example": -70.61459
+          },
+          "polygon": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeoCoordinateDto"
+            }
+          },
+          "universityId": {
+            "type": "string",
+            "example": "6acbfe8bac0ea03feffc1e7a"
+          },
+          "universityName": {
+            "type": "string",
+            "example": "Pontificia Universidad Católica de Chile"
+          },
+          "city": {
+            "type": "string",
+            "example": "Santiago"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "acronym",
+          "centerLat",
+          "centerLng",
+          "polygon",
+          "universityId",
+          "universityName",
+          "city"
+        ]
+      }
+    }
   }
 }

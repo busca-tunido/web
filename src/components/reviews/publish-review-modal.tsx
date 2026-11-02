@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { type ChangeEvent, useEffect, useReducer } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -28,6 +29,7 @@ import {
 import { createReviewSchema, usePensionReviews } from '@/hooks/use-pension-reviews';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
+import { translateApiError } from '@/lib/error-translator';
 import { prepareImageForUpload, validateImageFile } from '@/lib/image-utils';
 import type { PensionItem, PensionReview, StayDurationCategory } from '@/lib/types';
 import {
@@ -216,6 +218,7 @@ export function PublishReviewModal({
       };
 
       dispatch({ type: 'SET_SUCCESS', success: true });
+      toast.success('¡Reseña publicada exitosamente!');
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('tunido_review_published'));
       }
@@ -232,16 +235,19 @@ export function PublishReviewModal({
         errStr.toLowerCase().includes('already reviewed') ||
         errStr.toLowerCase().includes('ya has publicado')
       ) {
+        const errorMsg = 'Ya has publicado una reseña para esta pensión. Puedes editar tu opinión existente desde tu perfil.';
         dispatch({
           type: 'SET_ERROR',
-          error:
-            'Ya has publicado una reseña para esta pensión. Puedes editar tu opinión existente desde tu perfil.',
+          error: errorMsg,
         });
+        toast.error(errorMsg);
       } else {
+        const friendly = translateApiError(err, 'Hubo un error al enviar tu reseña. Inténtalo nuevamente.');
         dispatch({
           type: 'SET_ERROR',
-          error: errStr || 'Hubo un error al enviar tu reseña. Inténtalo nuevamente.',
+          error: friendly,
         });
+        toast.error(friendly);
       }
     } finally {
       dispatch({ type: 'SET_SUBMITTING', isSubmitting: false });
@@ -552,6 +558,7 @@ export function PublishReviewModal({
             <textarea
               id="review-comment-textarea"
               value={state.comment}
+              maxLength={1000}
               onChange={(e) => dispatch({ type: 'SET_COMMENT', comment: e.target.value })}
               placeholder="Ej. Viví aquí durante mi primer año de universidad. Las piezas son amplias, la cocina siempre limpia y el ambiente es silencioso para estudiar. El internet funciona muy bien en épocas de certámenes..."
               rows={4}
