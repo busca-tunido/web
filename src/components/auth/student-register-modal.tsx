@@ -95,7 +95,7 @@ export function StudentRegisterModal({
         password: validation.data.password,
         firstName: validation.data.firstName.trim(),
         lastName: validation.data.lastName.trim(),
-        phone: validation.data.phone?.trim() || undefined,
+        phone: validation.data.phone ? validation.data.phone.replace(/\s+/g, '') : undefined,
         universityId: validation.data.universityId,
         role: 'STUDENT',
       });
@@ -115,11 +115,15 @@ export function StudentRegisterModal({
       }
 
       if (response.statusCode === 409) {
-        setServerError('Este correo electrónico ya está registrado. Puedes iniciar sesión en su lugar.');
+        setServerError(
+          'Este correo ya ha sido registrado. Si ya tienes una cuenta, puedes iniciar sesión.',
+        );
         return;
       }
 
-      setServerError(translateApiError(response.message, 'Error de conexión con el servidor. Reintentar.'));
+      setServerError(
+        translateApiError(response.message, 'Error de conexión con el servidor. Reintentar.'),
+      );
     } catch {
       setServerError('Error de conexión con el servidor. Reintentar.');
     } finally {

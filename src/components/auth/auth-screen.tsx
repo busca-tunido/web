@@ -206,7 +206,11 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                 </DrawerHeader>
 
                 {landlordMode === 'login' ? (
-                  <form onSubmit={handleLandlordSubmit} noValidate className="p-4 flex flex-col gap-4">
+                  <form
+                    onSubmit={handleLandlordSubmit}
+                    noValidate
+                    className="p-4 flex flex-col gap-4"
+                  >
                     <div className="flex flex-col gap-1.5">
                       <label
                         htmlFor="landlord-email"
@@ -305,7 +309,9 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                           autoCapitalize="words"
                           maxLength={50}
                           value={landlordRegisterFirstName}
-                          onChange={(e) => setLandlordRegisterFirstName(filterAlphabeticName(e.target.value))}
+                          onChange={(e) =>
+                            setLandlordRegisterFirstName(filterAlphabeticName(e.target.value))
+                          }
                           placeholder="Ej. Roberto"
                           className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                         />
@@ -325,7 +331,9 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                           autoCapitalize="words"
                           maxLength={50}
                           value={landlordRegisterLastName}
-                          onChange={(e) => setLandlordRegisterLastName(filterAlphabeticName(e.target.value))}
+                          onChange={(e) =>
+                            setLandlordRegisterLastName(filterAlphabeticName(e.target.value))
+                          }
                           placeholder="Ej. Gómez"
                           className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                         />
@@ -371,7 +379,9 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                         autoComplete="tel"
                         maxLength={16}
                         value={landlordRegisterPhone}
-                        onChange={(e) => setLandlordRegisterPhone(formatChileanPhone(e.target.value))}
+                        onChange={(e) =>
+                          setLandlordRegisterPhone(formatChileanPhone(e.target.value))
+                        }
                         placeholder="+56 9 1234 5678"
                         className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />

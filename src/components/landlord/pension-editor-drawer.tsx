@@ -529,7 +529,9 @@ export function PensionEditorDrawer({
         onSuccess?.(response.data);
         onClose();
       } else {
-        const friendly = translateApiError(response.message || 'No fue posible registrar la pensión.');
+        const friendly = translateApiError(
+          response.message || 'No fue posible registrar la pensión.',
+        );
         setErrorMessage(friendly);
         toast.error(friendly);
       }
@@ -572,7 +574,11 @@ export function PensionEditorDrawer({
           <div className="w-9" />
         </div>
 
-        <form onSubmit={handleSubmit} noValidate className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className="flex-1 flex flex-col min-h-0 overflow-hidden"
+        >
           <div className="overflow-y-auto flex-1 px-4 py-4 space-y-6">
             <DrawerHeader className="p-0 text-left">
               <DrawerTitle className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight flex items-center gap-2">
@@ -810,7 +816,11 @@ export function PensionEditorDrawer({
                       inputMode="numeric"
                       pattern="[0-9]*"
                       placeholder="250.000"
-                      value={form.baseMonthlyPrice ? Number(form.baseMonthlyPrice).toLocaleString('es-CL') : ''}
+                      value={
+                        form.baseMonthlyPrice
+                          ? Number(form.baseMonthlyPrice).toLocaleString('es-CL')
+                          : ''
+                      }
                       onChange={(e) => handlePriceChange(e.target.value)}
                       className="w-full min-h-12 rounded-xl border border-border bg-background pl-8 pr-3.5 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                     />

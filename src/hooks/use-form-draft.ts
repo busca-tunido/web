@@ -42,14 +42,16 @@ export function useFormDraft<T extends Record<string, unknown>>(
     debounceTimerRef.current = setTimeout(() => {
       try {
         const isDifferent = Object.keys(currentValues).some(
-          (k) => currentValues[k] !== initialValues[k] && currentValues[k] !== '' && currentValues[k] !== undefined,
+          (k) =>
+            currentValues[k] !== initialValues[k] &&
+            currentValues[k] !== '' &&
+            currentValues[k] !== undefined,
         );
         if (isDifferent) {
           window.sessionStorage.setItem(fullKey, JSON.stringify(currentValues));
           setHasDraft(true);
         }
-      } catch {
-      }
+      } catch {}
     }, 600);
 
     return () => {
@@ -77,8 +79,7 @@ export function useFormDraft<T extends Record<string, unknown>>(
     try {
       window.sessionStorage.removeItem(fullKey);
       setHasDraft(false);
-    } catch {
-    }
+    } catch {}
   }, [fullKey]);
 
   return {

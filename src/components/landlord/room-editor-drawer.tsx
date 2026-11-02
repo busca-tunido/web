@@ -305,7 +305,9 @@ export function RoomEditorDrawer({
 
         const res = await updateRoom(roomToEdit.id, updatePayload);
         if (!isApiSuccess(res)) {
-          const friendly = translateApiError(res.message || 'No fue posible actualizar la habitación.');
+          const friendly = translateApiError(
+            res.message || 'No fue posible actualizar la habitación.',
+          );
           setErrorMessage(friendly);
           toast.error(friendly);
           setIsSubmitting(false);
@@ -336,7 +338,9 @@ export function RoomEditorDrawer({
       }
 
       clearDraft();
-      toast.success(isEditing ? 'Habitación actualizada exitosamente' : 'Habitación creada exitosamente');
+      toast.success(
+        isEditing ? 'Habitación actualizada exitosamente' : 'Habitación creada exitosamente',
+      );
       onSuccess();
       onClose();
     } catch (err) {
@@ -380,7 +384,11 @@ export function RoomEditorDrawer({
           <div className="w-12" />
         </div>
 
-        <form onSubmit={handleSubmit} noValidate className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className="flex-1 flex flex-col min-h-0 overflow-hidden"
+        >
           <div className="overflow-y-auto flex-1 px-4 py-4 space-y-5">
             <DrawerHeader className="p-0 text-left">
               <DrawerTitle className="text-lg font-bold text-foreground">
@@ -394,7 +402,9 @@ export function RoomEditorDrawer({
 
             {hasDraft && !isEditing && (
               <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs">
-                <span className="text-foreground">Tienes un borrador de habitación no guardado.</span>
+                <span className="text-foreground">
+                  Tienes un borrador de habitación no guardado.
+                </span>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
@@ -489,7 +499,9 @@ export function RoomEditorDrawer({
                     inputMode="numeric"
                     pattern="[0-9]*"
                     placeholder="260.000"
-                    value={form.monthlyPrice ? Number(form.monthlyPrice).toLocaleString('es-CL') : ''}
+                    value={
+                      form.monthlyPrice ? Number(form.monthlyPrice).toLocaleString('es-CL') : ''
+                    }
                     onChange={(e) => handleMonthlyPriceChange(e.target.value)}
                     className="w-full min-h-12 pl-9 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                   />

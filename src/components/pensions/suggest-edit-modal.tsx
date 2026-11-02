@@ -207,7 +207,9 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  value={state.monthlyPrice ? Number(state.monthlyPrice).toLocaleString('es-CL') : ''}
+                  value={
+                    state.monthlyPrice ? Number(state.monthlyPrice).toLocaleString('es-CL') : ''
+                  }
                   onChange={(e) => handlePriceChange(e.target.value)}
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                 />

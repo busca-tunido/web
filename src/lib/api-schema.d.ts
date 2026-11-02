@@ -598,6 +598,115 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        HealthCheckResponseDto: {
+            /** @example ok */
+            status: string;
+            /** @example connected */
+            database: string;
+            /** @example OK */
+            details?: string;
+        };
+        /** @enum {string} */
+        ApiErrorCode: "EMAIL_ALREADY_EXISTS" | "INVALID_CREDENTIALS" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "PENSION_NOT_FOUND" | "ROOM_NOT_FOUND" | "REVIEW_NOT_FOUND" | "ALREADY_REVIEWED" | "ALREADY_FAVORITED" | "FAVORITE_NOT_FOUND" | "VALIDATION_FAILED" | "RATE_LIMIT_EXCEEDED" | "INTERNAL_SERVER_ERROR" | "CONFLICT";
+        ErrorEnvelopeDto: {
+            /** @example false */
+            success: boolean;
+            /** @example 400 */
+            statusCode: number;
+            /** @example 2026-11-02T01:00:00.000Z */
+            timestamp: string;
+            /** @example /api/auth/login */
+            path: string;
+            /** @example Credenciales incorrectas */
+            message: string;
+            /** @example INVALID_CREDENTIALS */
+            errorCode: components["schemas"]["ApiErrorCode"];
+            errors?: Record<string, never> | null;
+        };
+        /** @enum {string} */
+        Role: "STUDENT" | "LANDLORD" | "MODERATOR" | "ADMIN";
+        SanitizedUserResponseDto: {
+            /** @example 6659f8c123456789abcdef01 */
+            id: string;
+            /** @example estudiante.demo@uchile.cl */
+            email: string;
+            /** @example Juan */
+            firstName: string;
+            /** @example Pérez */
+            lastName: string;
+            /** @example +56912345678 */
+            phone?: string | null;
+            /** @example https://example.com/avatar.jpg */
+            avatarUrl?: string | null;
+            /** @example STUDENT */
+            role: components["schemas"]["Role"];
+            /** @example true */
+            isEmailVerified: boolean;
+            /** @example 6659f8c123456789abcdef02 */
+            universityId?: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            updatedAt: string;
+        };
+        AuthResponseDto: {
+            user: components["schemas"]["SanitizedUserResponseDto"];
+            /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
+            accessToken: string;
+        };
+        DetectedUniversityResponseDto: {
+            /** @example 6659f8c123456789abcdef02 */
+            id: string;
+            /** @example Universidad de Chile */
+            name: string;
+            /** @example UCh */
+            shortName?: string | null;
+            /** @example Santiago */
+            city: string;
+        };
+        CheckEmailResponseDto: {
+            /** @example false */
+            exists: boolean;
+            /** @example STUDENT */
+            role?: components["schemas"]["Role"];
+            detectedUniversity?: components["schemas"]["DetectedUniversityResponseDto"] | null;
+        };
+        UniversityResponseDto: {
+            /** @example 6659f8c123456789abcdef02 */
+            id: string;
+            /** @example Universidad de Chile */
+            name: string;
+            /** @example UCh */
+            shortName?: string | null;
+            /** @example Santiago */
+            city: string;
+            /** @example Metropolitana */
+            region?: string | null;
+            /** @example uchile.cl */
+            emailDomain?: string | null;
+            /** @example https://uchile.cl */
+            website?: string | null;
+            /** @example -33.4443 */
+            latitude?: number | null;
+            /** @example -70.6558 */
+            longitude?: number | null;
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            updatedAt: string;
+        };
         GeoCoordinateDto: {
             /** @example -33.496388 */
             latitude: number;
@@ -622,6 +731,472 @@ export interface components {
             universityName: string;
             /** @example Santiago */
             city: string;
+        };
+        DeleteResultResponseDto: {
+            /** @example true */
+            deleted: boolean;
+        };
+        /** @enum {string} */
+        GenderPreference: "ANY" | "FEMALE_ONLY" | "MALE_ONLY";
+        /** @enum {string} */
+        VerificationStatus: "UNVERIFIED" | "COMMUNITY_VERIFIED" | "OFFICIALLY_VERIFIED" | "REJECTED";
+        PensionImageResponseDto: {
+            /** @example img-123 */
+            id: string;
+            /** @example https://example.com/pension.webp */
+            url: string;
+            /** @example https://example.com/pension-thumb.webp */
+            thumbnailUrl: string;
+            /** @example Fachada frontal */
+            caption?: string | null;
+            /** @example true */
+            isFeatured?: boolean;
+        };
+        PensionAmenityResponseDto: {
+            /** @example wifi-alta-velocidad */
+            slug: string;
+            /** @example Wifi Alta Velocidad */
+            name: string;
+        };
+        NearbyUniversityItemDto: {
+            /** @example 6659f8c123456789abcdef02 */
+            id: string;
+            /** @example Universidad de Chile */
+            name: string;
+            /** @example UCh */
+            shortName?: string | null;
+        };
+        PensionNearbyUniversityResponseDto: {
+            /** @example 450 */
+            distanceMeters: number;
+            /** @example 6 */
+            walkingMinutes?: number;
+            university: components["schemas"]["NearbyUniversityItemDto"];
+        };
+        PensionRoomSummaryDto: {
+            /** @example room-123 */
+            id: string;
+            /** @example 101 */
+            roomNumber?: string | null;
+            /** @example Habitación Individual */
+            title: string;
+            /** @example SINGLE */
+            type: string;
+            /** @example 250000 */
+            monthlyPrice: number;
+            /** @example 100000 */
+            deposit?: number | null;
+            /** @example false */
+            hasPrivateBathroom: boolean;
+            /** @example true */
+            isAvailable: boolean;
+        };
+        PensionCountDto: {
+            /** @example 5 */
+            rooms: number;
+            /** @example 12 */
+            reviews: number;
+        };
+        PensionItemResponseDto: {
+            /** @example 6659f8c123456789abcdef01 */
+            id: string;
+            /** @example residencia-universitaria-san-joaquin */
+            slug: string;
+            /** @example Residencia San Joaquín */
+            title: string;
+            /** @example Acogedora pensión universitaria a pasos del campus. */
+            description: string;
+            /** @example Av. Vicuña Mackenna 4860 */
+            address: string;
+            /** @example San Joaquín */
+            neighborhood: string;
+            /** @example Santiago */
+            city: string;
+            /** @example -33.49706 */
+            latitude: number;
+            /** @example -70.61459 */
+            longitude: number;
+            /** @example 250000 */
+            baseMonthlyPrice: number;
+            /** @example 100000 */
+            deposit?: number | null;
+            /** @example CLP */
+            currency: string;
+            /** @example true */
+            waterIncluded: boolean;
+            /** @example true */
+            electricityIncluded: boolean;
+            /** @example true */
+            gasIncluded: boolean;
+            /** @example true */
+            internetIncluded: boolean;
+            /** @example 23:00 */
+            curfewTime?: string | null;
+            /** @example false */
+            guestsAllowed: boolean;
+            /** @example false */
+            smokingAllowed: boolean;
+            /** @example false */
+            petsAllowed: boolean;
+            /** @example ANY */
+            genderPreference: components["schemas"]["GenderPreference"];
+            /** @example OFFICIALLY_VERIFIED */
+            verificationStatus: components["schemas"]["VerificationStatus"];
+            /** @example 4.8 */
+            ratingAverage: number;
+            /** @example 12 */
+            ratingCount: number;
+            /** @example 12 */
+            reviewsCount: number;
+            /** @example 1.2 */
+            distanceKm?: number;
+            /** @example 94.5 */
+            relevanceScore?: number;
+            images: components["schemas"]["PensionImageResponseDto"][];
+            amenities: components["schemas"]["PensionAmenityResponseDto"][];
+            nearbyUniversities: components["schemas"]["PensionNearbyUniversityResponseDto"][];
+            rooms: components["schemas"]["PensionRoomSummaryDto"][];
+            _count: components["schemas"]["PensionCountDto"];
+        };
+        PaginationMetaDto: {
+            /** @example 1 */
+            page: number;
+            /** @example 20 */
+            limit: number;
+            /** @example 45 */
+            total: number;
+            /** @example 3 */
+            totalPages: number;
+            /** @example true */
+            hasMore: boolean;
+        };
+        PriceHistogramBinDto: {
+            /** @example 150000 */
+            min: number;
+            /** @example 180000 */
+            max: number;
+            /** @example 8 */
+            count: number;
+        };
+        PriceHistogramResponseDto: {
+            /** @example 150000 */
+            minPrice?: number | null;
+            /** @example 500000 */
+            maxPrice?: number | null;
+            /** @example CLP */
+            currency: string;
+            /** @example 45 */
+            totalListings: number;
+            bins: components["schemas"]["PriceHistogramBinDto"][];
+        };
+        CitySummaryResponseDto: {
+            /** @example santiago */
+            id: string;
+            /** @example Santiago */
+            name: string;
+            /** @example 38 */
+            pensionsCount: number;
+            /** @example -33.44889 */
+            latitude: number;
+            /** @example -70.669265 */
+            longitude: number;
+        };
+        /** @enum {string} */
+        RoomType: "SINGLE" | "SHARED" | "STUDIO";
+        RoomResponseDto: {
+            /** @example room-123 */
+            id: string;
+            /** @example 6659f8c123456789abcdef01 */
+            pensionId: string;
+            /** @example 101 */
+            roomNumber?: string | null;
+            /** @example Habitación Individual Luminosa */
+            title: string;
+            /** @example Pieza amoblada con clóset y escritorio. */
+            description?: string | null;
+            /** @example SINGLE */
+            type: components["schemas"]["RoomType"];
+            /** @example 250000 */
+            monthlyPrice: number;
+            /** @example 100000 */
+            deposit?: number | null;
+            /** @example false */
+            hasPrivateBathroom: boolean;
+            /** @example 1 */
+            totalBeds: number;
+            /** @example 1 */
+            availableBeds: number;
+            /** @example true */
+            isAvailable: boolean;
+            /**
+             * @example [
+             *       "https://example.com/room1.jpg"
+             *     ]
+             */
+            images: string[];
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            updatedAt: string;
+        };
+        ReviewAuthorDto: {
+            /** @example 6659f8c123456789abcdef01 */
+            id: string;
+            /** @example Carlos */
+            firstName: string;
+            /** @example Gómez */
+            lastName: string;
+            /** @example https://example.com/avatar.jpg */
+            avatarUrl?: string | null;
+            /** @example Universidad de Chile */
+            universityName?: string | null;
+        };
+        ReviewResponseDto: {
+            /** @example rev-123 */
+            id: string;
+            /** @example 6659f8c123456789abcdef01 */
+            pensionId: string;
+            /** @example 6659f8c123456789abcdef02 */
+            userId: string;
+            /** @example 5 */
+            rating: number;
+            /** @example 5 */
+            cleanlinessRating?: number | null;
+            /** @example 4 */
+            ownerRating?: number | null;
+            /** @example 5 */
+            locationRating?: number | null;
+            /** @example 4 */
+            valueRating?: number | null;
+            /** @example Excelente pensión, muy cerca del campus y con excelente ambiente. */
+            comment: string;
+            /** @example La cercanía al metro y la buena onda. */
+            positiveComment?: string | null;
+            /** @example El internet se ralentiza un poco en la noche. */
+            negativeComment?: string | null;
+            /** @example 10 */
+            stayDurationMonths?: number | null;
+            /** @example 2025 */
+            stayYear?: number | null;
+            /** @example SINGLE */
+            roomType?: string | null;
+            /** @example true */
+            isVerifiedStay: boolean;
+            /** @example false */
+            isAnonymous: boolean;
+            /** @example 4 */
+            helpfulCount: number;
+            /**
+             * @example [
+             *       "https://example.com/review1.jpg"
+             *     ]
+             */
+            images: string[];
+            author?: components["schemas"]["ReviewAuthorDto"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            createdAt: string;
+        };
+        StudentStayResponseDto: {
+            /** @example rev-123 */
+            id: string;
+            /** @example 6659f8c123456789abcdef01 */
+            pensionId: string;
+            /** @example Residencia San Joaquín */
+            pensionTitle: string;
+            /** @example residencia-san-joaquin */
+            pensionSlug: string;
+            /** @example Habitación Individual */
+            roomTitle: string;
+            /** @example https://example.com/pension.jpg */
+            featuredImage?: string | null;
+            /** @example Santiago */
+            city: string;
+            /** @example 250000 */
+            monthlyPaidClp: number;
+            /** @example 5 */
+            rating: number;
+            /** @example Excelente estadía. */
+            comment: string;
+            /** @example 10 */
+            stayDurationMonths?: number | null;
+            /** @example 2025 */
+            stayYear?: number | null;
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            createdAt: string;
+        };
+        HelpfulVotesResponseDto: {
+            /**
+             * @example [
+             *       "rev-1",
+             *       "rev-2"
+             *     ]
+             */
+            reviewIds: string[];
+        };
+        VoteHelpfulResultResponseDto: {
+            /** @example 5 */
+            helpfulCount: number;
+            /** @example true */
+            voted: boolean;
+        };
+        /** @enum {string} */
+        ReportStatus: "PENDING" | "UNDER_REVIEW" | "RESOLVED" | "DISMISSED";
+        ReportPensionSummaryDto: {
+            /** @example 6659f8c123456789abcdef01 */
+            id: string;
+            /** @example Residencia San Joaquín */
+            title: string;
+            /** @example residencia-san-joaquin */
+            slug: string;
+        };
+        ReportUserSummaryDto: {
+            /** @example 6659f8c123456789abcdef02 */
+            id: string;
+            /** @example estudiante@uchile.cl */
+            email: string;
+            /** @example Carlos */
+            firstName: string;
+            /** @example Gómez */
+            lastName: string;
+        };
+        ReportResponseDto: {
+            /** @example rep-123 */
+            id: string;
+            /** @example 6659f8c123456789abcdef01 */
+            pensionId: string;
+            /** @example 6659f8c123456789abcdef02 */
+            userId: string;
+            /** @example INCORRECT_INFORMATION */
+            reason: string;
+            /** @example La dirección informada no corresponde a la realidad. */
+            description: string;
+            /** @example PENDING */
+            status: components["schemas"]["ReportStatus"];
+            /** @example Se contactó al dueño y se corrigió. */
+            resolutionNotes?: string | null;
+            pension?: components["schemas"]["ReportPensionSummaryDto"];
+            user?: components["schemas"]["ReportUserSummaryDto"];
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            updatedAt: string;
+        };
+        FavoritePensionSummaryDto: {
+            /** @example 6659f8c123456789abcdef01 */
+            id: string;
+            /** @example residencia-san-joaquin */
+            slug: string;
+            /** @example Residencia San Joaquín */
+            title: string;
+            /** @example Santiago */
+            city: string;
+            /** @example San Joaquín */
+            neighborhood: string;
+            /** @example 250000 */
+            baseMonthlyPrice: number;
+            /** @example 4.8 */
+            ratingAverage: number;
+            /** @example 12 */
+            ratingCount: number;
+            images: components["schemas"]["PensionImageResponseDto"][];
+        };
+        FavoriteItemResponseDto: {
+            /** @example 6659f8c123456789abcdef02 */
+            userId: string;
+            /** @example 6659f8c123456789abcdef01 */
+            pensionId: string;
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            createdAt: string;
+            pension: components["schemas"]["FavoritePensionSummaryDto"];
+        };
+        FavoriteAddedResponseDto: {
+            /** @example true */
+            added: boolean;
+        };
+        FavoriteRemovedResponseDto: {
+            /** @example true */
+            removed: boolean;
+        };
+        /** @enum {string} */
+        ProposalStatus: "PENDING" | "APPROVED" | "REJECTED" | "MODIFIED_AND_APPROVED";
+        ProposalUserDto: {
+            /** @example 6659f8c123456789abcdef01 */
+            id: string;
+            /** @example Carlos */
+            firstName: string;
+            /** @example Gómez */
+            lastName: string;
+            /** @example carlos@uchile.cl */
+            email?: string;
+        };
+        ProposalResponseDto: {
+            /** @example prop-123 */
+            id: string;
+            /** @example 6659f8c123456789abcdef01 */
+            pensionId: string;
+            /** @example 6659f8c123456789abcdef02 */
+            submittedById: string;
+            /** @example PRICE_UPDATE */
+            type: string;
+            /** @example PENDING */
+            status: components["schemas"]["ProposalStatus"];
+            /**
+             * @example {
+             *       "baseMonthlyPrice": 280000
+             *     }
+             */
+            proposedChanges: Record<string, never>;
+            /** @example El dueño actualizó los precios. */
+            submissionNotes?: string | null;
+            /** @example Verificado con el propietario. */
+            reviewNotes?: string | null;
+            submittedBy: components["schemas"]["ProposalUserDto"];
+            reviewedBy?: components["schemas"]["ProposalUserDto"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-03-01T00:00:00.000Z
+             */
+            updatedAt: string;
+        };
+        UploadImageResponseDto: {
+            /** @example /uploads/abcd-1234.webp */
+            url: string;
+            /** @example /uploads/abcd-1234-thumb.webp */
+            thumbnailUrl: string;
+            /** @example 1200 */
+            width: number;
+            /** @example 800 */
+            height: number;
+            /** @example webp */
+            format: string;
+            /** @example 124500 */
+            size: number;
         };
     };
     responses: never;
@@ -663,7 +1238,17 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["HealthCheckResponseDto"];
+                    };
+                };
             };
         };
     };
@@ -681,14 +1266,44 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 201 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["AuthResponseDto"];
+                    };
+                };
             };
-            /** @description Email already registered */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Conflicto con el estado actual del recurso */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -706,27 +1321,61 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["AuthResponseDto"];
+                    };
+                };
             };
-            /** @description Invalid credentials */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Too many requests / verification required */
+            /** @description Demasiadas solicitudes / límite de tasa excedido */
             429: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
     checkEmail: {
         parameters: {
-            query?: never;
+            query: {
+                email: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -738,14 +1387,44 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["CheckEmailResponseDto"];
+                    };
+                };
             };
-            /** @description Too many requests */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Demasiadas solicitudes / límite de tasa excedido */
             429: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -763,14 +1442,35 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["SanitizedUserResponseDto"];
+                    };
+                };
             };
-            /** @description Unauthorized */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -790,7 +1490,26 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["UniversityResponseDto"][];
+                    };
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -808,14 +1527,53 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 201 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["UniversityResponseDto"];
+                    };
+                };
             };
-            /** @description Forbidden */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -836,7 +1594,24 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CampusAreaResponseDto"][];
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["CampusAreaResponseDto"][];
+                    };
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
                 };
             };
         };
@@ -845,7 +1620,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la universidad */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -855,14 +1633,35 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["UniversityResponseDto"];
+                    };
+                };
             };
-            /** @description University not found */
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -870,7 +1669,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la universidad */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -880,14 +1682,53 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["DeleteResultResponseDto"];
+                    };
+                };
             };
-            /** @description Forbidden */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -895,7 +1736,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la universidad */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -905,14 +1749,62 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["UniversityResponseDto"];
+                    };
+                };
             };
-            /** @description Forbidden */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -930,7 +1822,48 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: {
+                            items: components["schemas"]["PensionItemResponseDto"][];
+                            pagination: components["schemas"]["PaginationMetaDto"];
+                            /** @example 45 */
+                            total: number;
+                            /** @example 1 */
+                            page: number;
+                            /** @example 20 */
+                            limit: number;
+                            /** @example 3 */
+                            totalPages: number;
+                            /** @example true */
+                            hasMore?: boolean;
+                        };
+                    };
+                };
+            };
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -948,21 +1881,53 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 201 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["PensionItemResponseDto"];
+                    };
+                };
             };
-            /** @description Unauthorized */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Forbidden - Insufficient permissions */
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -980,7 +1945,35 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["PriceHistogramResponseDto"];
+                    };
+                };
+            };
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -998,21 +1991,44 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["PensionItemResponseDto"][];
+                    };
+                };
             };
-            /** @description Unauthorized */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Forbidden - Insufficient permissions */
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1030,7 +2046,26 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["CitySummaryResponseDto"][];
+                    };
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1038,7 +2073,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Pension ID or friendly URL slug */
+                idOrSlug: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1048,14 +2086,35 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["PensionItemResponseDto"];
+                    };
+                };
             };
-            /** @description Pension not found */
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1063,7 +2122,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Pension ID */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1073,28 +2135,53 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["DeleteResultResponseDto"];
+                    };
+                };
             };
-            /** @description Unauthorized */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Forbidden - You do not own this pension */
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Pension not found */
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1102,7 +2189,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description Pension ID */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1112,28 +2202,62 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["PensionItemResponseDto"];
+                    };
+                };
             };
-            /** @description Unauthorized */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Forbidden - You do not own this pension */
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Pension not found */
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1151,7 +2275,26 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["CitySummaryResponseDto"][];
+                    };
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1159,7 +2302,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la pensión */
+                pensionId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1169,14 +2315,44 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["RoomResponseDto"][];
+                    };
+                };
             };
-            /** @description Unauthorized */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1184,7 +2360,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la pensión */
+                pensionId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1194,21 +2373,62 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 201 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["RoomResponseDto"];
+                    };
+                };
             };
-            /** @description Unauthorized */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Forbidden - You do not own this pension */
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1216,7 +2436,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la habitación */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1226,21 +2449,44 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["RoomResponseDto"];
+                    };
+                };
             };
-            /** @description Unauthorized */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Room not found */
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1248,7 +2494,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la habitación */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1258,28 +2507,53 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["DeleteResultResponseDto"];
+                    };
+                };
             };
-            /** @description Unauthorized */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Forbidden - You do not own this room */
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Room not found */
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1287,7 +2561,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la habitación */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1297,28 +2574,62 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["RoomResponseDto"];
+                    };
+                };
             };
-            /** @description Unauthorized */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Forbidden - You do not own this room */
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Room not found */
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1326,7 +2637,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la pensión */
+                pensionId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1336,7 +2650,57 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: {
+                            items: components["schemas"]["ReviewResponseDto"][];
+                            pagination: components["schemas"]["PaginationMetaDto"];
+                            /** @example 45 */
+                            total: number;
+                            /** @example 1 */
+                            page: number;
+                            /** @example 20 */
+                            limit: number;
+                            /** @example 3 */
+                            totalPages: number;
+                            /** @example true */
+                            hasMore?: boolean;
+                        };
+                    };
+                };
+            };
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1344,7 +2708,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la pensión */
+                pensionId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1354,14 +2721,53 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 201 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["ReviewResponseDto"];
+                    };
+                };
             };
-            /** @description Already reviewed this pension */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Conflicto con el estado actual del recurso */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1379,7 +2785,35 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["StudentStayResponseDto"][];
+                    };
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1387,7 +2821,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la reseña */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1397,14 +2834,53 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["DeleteResultResponseDto"];
+                    };
+                };
             };
-            /** @description Forbidden */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1412,7 +2888,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la reseña */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1422,14 +2901,62 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["ReviewResponseDto"];
+                    };
+                };
             };
-            /** @description Forbidden */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1447,7 +2974,35 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["HelpfulVotesResponseDto"];
+                    };
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1455,7 +3010,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la reseña */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1465,7 +3023,44 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["VoteHelpfulResultResponseDto"];
+                    };
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1485,14 +3080,44 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["ReportResponseDto"][];
+                    };
+                };
             };
-            /** @description Forbidden */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1510,14 +3135,53 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 201 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["ReportResponseDto"];
+                    };
+                };
             };
-            /** @description Pension not found */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1525,7 +3189,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID del reporte */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1535,14 +3202,62 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["ReportResponseDto"];
+                    };
+                };
             };
-            /** @description Forbidden */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1560,7 +3275,35 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["FavoriteItemResponseDto"][];
+                    };
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1568,7 +3311,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la pensión */
+                pensionId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1578,14 +3324,53 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 201 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["FavoriteAddedResponseDto"];
+                    };
+                };
             };
-            /** @description Already favorited */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Conflicto con el estado actual del recurso */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1593,7 +3378,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la pensión */
+                pensionId: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1603,14 +3391,44 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["FavoriteRemovedResponseDto"];
+                    };
+                };
             };
-            /** @description Favorite not found */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1618,7 +3436,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la pensión */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1628,14 +3449,35 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["ProposalResponseDto"][];
+                    };
+                };
             };
-            /** @description Unauthorized */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1643,7 +3485,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la pensión */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1653,21 +3498,53 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 201 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["ProposalResponseDto"];
+                    };
+                };
             };
-            /** @description Unauthorized */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Pension not found */
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1689,14 +3566,57 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: {
+                            items: components["schemas"]["ProposalResponseDto"][];
+                            pagination: components["schemas"]["PaginationMetaDto"];
+                            /** @example 45 */
+                            total: number;
+                            /** @example 1 */
+                            page: number;
+                            /** @example 20 */
+                            limit: number;
+                            /** @example 3 */
+                            totalPages: number;
+                            /** @example true */
+                            hasMore?: boolean;
+                        };
+                    };
+                };
             };
-            /** @description Forbidden */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1704,7 +3624,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la propuesta */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1714,14 +3637,53 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["ProposalResponseDto"];
+                    };
+                };
             };
-            /** @description Proposal not found */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Acceso prohibido / permisos insuficientes */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1729,7 +3691,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la propuesta */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1739,28 +3704,62 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["ProposalResponseDto"];
+                    };
+                };
             };
-            /** @description Invalid review action or notes missing */
+            /** @description Solicitud inválida o error de validación de datos */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Forbidden */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Proposal not found */
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1768,7 +3767,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la reseña */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1778,21 +3780,62 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["ReviewResponseDto"];
+                    };
+                };
             };
-            /** @description Forbidden */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Review not found */
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1800,7 +3843,10 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                /** @description ID de la pensión */
+                id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1810,21 +3856,62 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example true */
+                        success: boolean;
+                        /** @example 200 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["PensionItemResponseDto"];
+                    };
+                };
             };
-            /** @description Forbidden */
+            /** @description Solicitud inválida o error de validación de datos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description No autorizado / credenciales ausentes o incorrectas */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Acceso prohibido / permisos insuficientes */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Pension not found */
+            /** @description Recurso no encontrado */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
+            };
+            /** @description Error interno del servidor */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };
@@ -1854,41 +3941,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @example /uploads/abcd-1234.webp */
-                        url?: string;
-                        /** @example /uploads/abcd-1234-thumb.webp */
-                        thumbnailUrl?: string;
-                        /** @example 1200 */
-                        width?: number;
-                        /** @example 800 */
-                        height?: number;
-                        /** @example webp */
-                        format?: string;
-                        /** @example 124500 */
-                        size?: number;
+                        /** @example true */
+                        success: boolean;
+                        /** @example 201 */
+                        statusCode: number;
+                        /** @example 2026-11-02T01:00:00.000Z */
+                        timestamp: string;
+                        data: components["schemas"]["UploadImageResponseDto"];
                     };
                 };
             };
-            /** @description Invalid image or unsupported format */
+            /** @description Solicitud inválida o error de validación de datos */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description Unauthorized */
+            /** @description No autorizado / credenciales ausentes o incorrectas */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
-            /** @description File size exceeds limit */
-            413: {
+            /** @description Error interno del servidor */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelopeDto"];
+                };
             };
         };
     };

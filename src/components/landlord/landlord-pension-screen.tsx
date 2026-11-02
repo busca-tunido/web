@@ -872,7 +872,12 @@ export function LandlordPensionScreen({
                   maxLength={70}
                   disabled={!form.useCustomContact}
                   value={form.useCustomContact ? form.contactName : defaultContact.name}
-                  onChange={(e) => setForm((prev) => ({ ...prev, contactName: filterAlphabeticName(e.target.value) }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      contactName: filterAlphabeticName(e.target.value),
+                    }))
+                  }
                   placeholder={defaultContact.name || 'Ej: Sra. Carmen Gloria'}
                   className={cn(
                     'min-h-[42px] w-full rounded-lg border border-border/70 px-3 text-xs placeholder:text-muted-foreground focus:border-foreground/40 focus:outline-none transition-colors',

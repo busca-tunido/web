@@ -235,14 +235,18 @@ export function PublishReviewModal({
         errStr.toLowerCase().includes('already reviewed') ||
         errStr.toLowerCase().includes('ya has publicado')
       ) {
-        const errorMsg = 'Ya has publicado una reseña para esta pensión. Puedes editar tu opinión existente desde tu perfil.';
+        const errorMsg =
+          'Ya has publicado una reseña para esta pensión. Puedes editar tu opinión existente desde tu perfil.';
         dispatch({
           type: 'SET_ERROR',
           error: errorMsg,
         });
         toast.error(errorMsg);
       } else {
-        const friendly = translateApiError(err, 'Hubo un error al enviar tu reseña. Inténtalo nuevamente.');
+        const friendly = translateApiError(
+          err,
+          'Hubo un error al enviar tu reseña. Inténtalo nuevamente.',
+        );
         dispatch({
           type: 'SET_ERROR',
           error: friendly,

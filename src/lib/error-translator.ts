@@ -1,8 +1,50 @@
+export type ApiErrorCode =
+  | 'EMAIL_ALREADY_EXISTS'
+  | 'INVALID_CREDENTIALS'
+  | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'NOT_FOUND'
+  | 'PENSION_NOT_FOUND'
+  | 'ROOM_NOT_FOUND'
+  | 'REVIEW_NOT_FOUND'
+  | 'ALREADY_REVIEWED'
+  | 'ALREADY_FAVORITED'
+  | 'RATE_LIMIT_EXCEEDED'
+  | 'VALIDATION_FAILED'
+  | 'CONFLICT'
+  | string;
+
 export function translateApiError(
   error: unknown,
   fallbackMessage = 'Ocurrió un error inesperado. Por favor, reintenta en unos instantes.',
 ): string {
   if (!error) return fallbackMessage;
+
+  const code =
+    typeof error === 'object' && error !== null && 'errorCode' in error
+      ? (error as { errorCode: unknown }).errorCode
+      : undefined;
+
+  switch (code) {
+    case 'EMAIL_ALREADY_EXISTS':
+      return 'Este correo ya ha sido registrado. Si ya tienes una cuenta, puedes iniciar sesión.';
+    case 'INVALID_CREDENTIALS':
+      return 'El correo o la contraseña no coinciden. Por favor revisa los datos e inténtalo de nuevo.';
+    case 'FORBIDDEN':
+      return 'No tienes permisos para realizar esta acción.';
+    case 'PENSION_NOT_FOUND':
+    case 'ROOM_NOT_FOUND':
+    case 'NOT_FOUND':
+      return 'El alojamiento o recurso solicitado ya no está disponible.';
+    case 'ALREADY_REVIEWED':
+      return 'Ya has publicado una reseña para esta pensión.';
+    case 'ALREADY_FAVORITED':
+      return 'Esta pensión ya está en tus favoritos.';
+    case 'RATE_LIMIT_EXCEEDED':
+      return 'Has alcanzado el límite de intentos. Por favor espera unos minutos antes de reintentar.';
+    case 'VALIDATION_FAILED':
+      return 'Los datos ingresados no son válidos. Por favor, revisa la información ingresada.';
+  }
 
   const raw =
     typeof error === 'string'
@@ -15,11 +57,21 @@ export function translateApiError(
 
   const lower = raw.toLowerCase();
 
-  if (lower.includes('unique constraint') || lower.includes('p2002') || lower.includes('already exists')) {
-    return 'Este correo electrónico ya está registrado. Si ya tienes una cuenta, puedes iniciar sesión.';
+  if (
+    lower.includes('unique constraint') ||
+    lower.includes('p2002') ||
+    lower.includes('already exists') ||
+    lower.includes('conflict') ||
+    lower.includes('409')
+  ) {
+    return 'Este correo ya ha sido registrado. Si ya tienes una cuenta, puedes iniciar sesión.';
   }
 
-  if (lower.includes('unauthorized') || lower.includes('invalid credentials') || lower.includes('credenciales')) {
+  if (
+    lower.includes('unauthorized') ||
+    lower.includes('invalid credentials') ||
+    lower.includes('credenciales')
+  ) {
     return 'El correo o la contraseña no coinciden. Por favor revisa los datos e inténtalo de nuevo.';
   }
 
@@ -39,7 +91,11 @@ export function translateApiError(
     return 'El formato de archivo no es compatible. Por favor sube una imagen JPG, PNG o WEBP.';
   }
 
-  if (lower.includes('failed to fetch') || lower.includes('network') || lower.includes('econnrefused')) {
+  if (
+    lower.includes('failed to fetch') ||
+    lower.includes('network') ||
+    lower.includes('econnrefused')
+  ) {
     return 'Parece que perdiste la conexión a internet. Revisa tu red y vuelve a intentar.';
   }
 
