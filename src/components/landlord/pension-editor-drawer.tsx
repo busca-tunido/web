@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { PensionLocationPickerMap } from '@/components/landlord/pension-location-picker-map';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,7 +31,10 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
+import { translateApiError } from '@/lib/error-translator';
+import { clampNumber } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 import {
   findClosestCity,
@@ -210,6 +214,13 @@ export function PensionEditorDrawer({
   const [isReverseGeocoding, setIsReverseGeocoding] = useState<boolean>(false);
   const [isForwardGeocoding, setIsForwardGeocoding] = useState<boolean>(false);
 
+  const { hasDraft, restoreDraft, clearDraft } = useFormDraft<PensionFormState>(
+    'landlord-new-pension',
+    form,
+    INITIAL_FORM_STATE,
+    isOpen,
+  );
+
   const isUpdatingFromMapRef = useRef<boolean>(false);
   const reverseAbortRef = useRef<AbortController | null>(null);
   const forwardAbortRef = useRef<AbortController | null>(null);
@@ -218,6 +229,42 @@ export function PensionEditorDrawer({
     setForm(INITIAL_FORM_STATE);
     setErrorMessage(null);
   }, []);
+
+  const handleRestoreDraft = () => {
+    const draft = restoreDraft();
+    if (draft) {
+      setForm(draft);
+      toast.success('Borrador restaurado');
+    }
+  };
+
+  const handlePriceChange = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    if (!digits) {
+      setForm((prev) => ({ ...prev, baseMonthlyPrice: '' }));
+      return;
+    }
+    const num = Number.parseInt(digits, 10);
+    const clamped = clampNumber(num, 0, 2000000);
+    if (clamped.wasClamped && num > 2000000) {
+      toast.info('El precio base mensual máximo permitido es $2.000.000 CLP.');
+    }
+    setForm((prev) => ({ ...prev, baseMonthlyPrice: clamped.value.toString() }));
+  };
+
+  const handleDepositChange = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    if (!digits) {
+      setForm((prev) => ({ ...prev, deposit: '' }));
+      return;
+    }
+    const num = Number.parseInt(digits, 10);
+    const clamped = clampNumber(num, 0, 1500000);
+    if (clamped.wasClamped && num > 1500000) {
+      toast.info('El mes de garantía máximo permitido es $1.500.000 CLP.');
+    }
+    setForm((prev) => ({ ...prev, deposit: clamped.value.toString() }));
+  };
 
   const handleCityChange = (cityName: string) => {
     const foundCity = CHILEAN_CITIES.find((c) => c.city.toLowerCase() === cityName.toLowerCase());
@@ -476,16 +523,20 @@ export function PensionEditorDrawer({
       const response = await pensionsService.createPension(payload);
 
       if (isApiSuccess(response)) {
+        clearDraft();
         resetForm();
+        toast.success('Pensión registrada exitosamente');
         onSuccess?.(response.data);
         onClose();
       } else {
-        setErrorMessage(response.message || 'No fue posible registrar la pensión.');
+        const friendly = translateApiError(response.message || 'No fue posible registrar la pensión.');
+        setErrorMessage(friendly);
+        toast.error(friendly);
       }
     } catch (err) {
-      setErrorMessage(
-        err instanceof Error ? err.message : 'Ocurrió un error inesperado al publicar la pensión.',
-      );
+      const friendly = translateApiError(err);
+      setErrorMessage(friendly);
+      toast.error(friendly);
     } finally {
       setIsSubmitting(false);
     }
@@ -521,7 +572,7 @@ export function PensionEditorDrawer({
           <div className="w-9" />
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <form onSubmit={handleSubmit} noValidate className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <div className="overflow-y-auto flex-1 px-4 py-4 space-y-6">
             <DrawerHeader className="p-0 text-left">
               <DrawerTitle className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight flex items-center gap-2">
@@ -533,6 +584,28 @@ export function PensionEditorDrawer({
                 solicitudes de estudiantes en BuscaTuNido.
               </DrawerDescription>
             </DrawerHeader>
+
+            {hasDraft && (
+              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs">
+                <span className="text-foreground">Tienes un borrador previo no publicado.</span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleRestoreDraft}
+                    className="px-2.5 py-1 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition cursor-pointer"
+                  >
+                    Restaurar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearDraft}
+                    className="px-2 py-1 rounded-lg border border-border text-muted-foreground hover:bg-muted transition cursor-pointer"
+                  >
+                    Descartar
+                  </button>
+                </div>
+              </div>
+            )}
 
             {errorMessage && (
               <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 flex items-start gap-2.5 text-destructive animate-in fade-in">
@@ -557,7 +630,7 @@ export function PensionEditorDrawer({
                 <input
                   id="pension-title-input"
                   type="text"
-                  required
+                  maxLength={100}
                   placeholder="Ej: Residencia Universitaria Los Leones"
                   value={form.title}
                   onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
@@ -574,8 +647,8 @@ export function PensionEditorDrawer({
                 </label>
                 <textarea
                   id="pension-description-input"
-                  required
                   rows={3}
+                  maxLength={1500}
                   placeholder="Describe el ambiente, cercanía a campus universitarios, servicios cercanos y comodidades para estudiantes..."
                   value={form.description}
                   onChange={(e) =>
@@ -650,7 +723,7 @@ export function PensionEditorDrawer({
                   <input
                     id="pension-neighborhood-input"
                     type="text"
-                    required
+                    maxLength={60}
                     placeholder={
                       selectedCityConfig?.neighborhoodPlaceholder ?? 'Ej: San Joaquín, Centro...'
                     }
@@ -675,7 +748,7 @@ export function PensionEditorDrawer({
                   <input
                     id="pension-address-input"
                     type="text"
-                    required
+                    maxLength={120}
                     placeholder="Ej: Av. Vicuña Mackenna 4860"
                     value={form.address}
                     onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
@@ -733,18 +806,12 @@ export function PensionEditorDrawer({
                     </span>
                     <input
                       id="pension-price-input"
-                      type="number"
-                      required
-                      min={0}
-                      step={5000}
-                      placeholder="250000"
-                      value={form.baseMonthlyPrice}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          baseMonthlyPrice: e.target.value,
-                        }))
-                      }
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="250.000"
+                      value={form.baseMonthlyPrice ? Number(form.baseMonthlyPrice).toLocaleString('es-CL') : ''}
+                      onChange={(e) => handlePriceChange(e.target.value)}
                       className="w-full min-h-12 rounded-xl border border-border bg-background pl-8 pr-3.5 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                     />
                   </div>
@@ -766,17 +833,12 @@ export function PensionEditorDrawer({
                     </span>
                     <input
                       id="pension-deposit-input"
-                      type="number"
-                      min={0}
-                      step={5000}
-                      placeholder="250000 (opcional)"
-                      value={form.deposit}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          deposit: e.target.value,
-                        }))
-                      }
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="250.000 (opcional)"
+                      value={form.deposit ? Number(form.deposit).toLocaleString('es-CL') : ''}
+                      onChange={(e) => handleDepositChange(e.target.value)}
                       className="w-full min-h-12 rounded-xl border border-border bg-background pl-8 pr-3.5 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                     />
                   </div>

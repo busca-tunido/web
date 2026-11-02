@@ -19,6 +19,8 @@ import {
 } from '@/components/ui/drawer';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
+import { translateApiError } from '@/lib/error-translator';
+import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
 import { authService } from '@/services/auth.service';
 
 export type AuthScreenProps = {
@@ -58,11 +60,7 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
         window.location.replace('/landlord');
       }
     } catch (err: unknown) {
-      const message =
-        err instanceof Error && err.message
-          ? err.message
-          : 'Error al autenticar. Verifica las credenciales.';
-      setLandlordError(message);
+      setLandlordError(translateApiError(err, 'Error al autenticar. Verifica las credenciales.'));
     } finally {
       setLandlordLoading(false);
     }
@@ -79,7 +77,7 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
 
     const cleanEmail = landlordEmail.trim().toLowerCase();
     if (!cleanEmail?.includes('@')) {
-      setLandlordError('Ingresa un correo válido');
+      setLandlordError('Ingresa un correo electrónico válido');
       return;
     }
 
@@ -106,6 +104,7 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
         try {
           await login(cleanEmail, landlordPassword);
         } catch {}
+
         setIsDrawerOpen(false);
         onSuccess?.();
         if (typeof window !== 'undefined') {
@@ -114,18 +113,9 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
         return;
       }
 
-      if (res.statusCode === 409) {
-        setLandlordError('Este correo ya se encuentra registrado');
-        return;
-      }
-
-      setLandlordError(res.message || 'Error al registrar la cuenta de propietario');
+      setLandlordError(translateApiError(res.message, 'No fue posible registrar la cuenta.'));
     } catch (err: unknown) {
-      const message =
-        err instanceof Error && err.message
-          ? err.message
-          : 'Error de conexión con el servidor. Reintentar.';
-      setLandlordError(message);
+      setLandlordError(translateApiError(err, 'Error al procesar el registro.'));
     } finally {
       setLandlordLoading(false);
     }
@@ -216,7 +206,7 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                 </DrawerHeader>
 
                 {landlordMode === 'login' ? (
-                  <form onSubmit={handleLandlordSubmit} className="p-4 flex flex-col gap-4">
+                  <form onSubmit={handleLandlordSubmit} noValidate className="p-4 flex flex-col gap-4">
                     <div className="flex flex-col gap-1.5">
                       <label
                         htmlFor="landlord-email"
@@ -228,9 +218,14 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                       <input
                         id="landlord-email"
                         type="email"
-                        required
+                        inputMode="email"
+                        autoComplete="email"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        maxLength={100}
                         value={landlordEmail}
-                        onChange={(e) => setLandlordEmail(e.target.value)}
+                        onChange={(e) => setLandlordEmail(e.target.value.trim())}
                         placeholder="propietario@ejemplo.com"
                         className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />
@@ -247,7 +242,8 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                       <input
                         id="landlord-password"
                         type="password"
-                        required
+                        autoComplete="current-password"
+                        maxLength={64}
                         value={landlordPassword}
                         onChange={(e) => setLandlordPassword(e.target.value)}
                         placeholder="••••••••"
@@ -290,6 +286,7 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                 ) : (
                   <form
                     onSubmit={handleLandlordRegister}
+                    noValidate
                     className="p-4 flex flex-col gap-3.5 overflow-y-auto"
                   >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -304,9 +301,11 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                         <input
                           id="landlord-register-firstname"
                           type="text"
-                          required
+                          autoComplete="given-name"
+                          autoCapitalize="words"
+                          maxLength={50}
                           value={landlordRegisterFirstName}
-                          onChange={(e) => setLandlordRegisterFirstName(e.target.value)}
+                          onChange={(e) => setLandlordRegisterFirstName(filterAlphabeticName(e.target.value))}
                           placeholder="Ej. Roberto"
                           className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                         />
@@ -322,9 +321,11 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                         <input
                           id="landlord-register-lastname"
                           type="text"
-                          required
+                          autoComplete="family-name"
+                          autoCapitalize="words"
+                          maxLength={50}
                           value={landlordRegisterLastName}
-                          onChange={(e) => setLandlordRegisterLastName(e.target.value)}
+                          onChange={(e) => setLandlordRegisterLastName(filterAlphabeticName(e.target.value))}
                           placeholder="Ej. Gómez"
                           className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                         />
@@ -342,9 +343,14 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                       <input
                         id="landlord-register-email"
                         type="email"
-                        required
+                        inputMode="email"
+                        autoComplete="email"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        maxLength={100}
                         value={landlordEmail}
-                        onChange={(e) => setLandlordEmail(e.target.value)}
+                        onChange={(e) => setLandlordEmail(e.target.value.trim())}
                         placeholder="propietario@ejemplo.com"
                         className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />
@@ -361,8 +367,11 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                       <input
                         id="landlord-register-phone"
                         type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        maxLength={16}
                         value={landlordRegisterPhone}
-                        onChange={(e) => setLandlordRegisterPhone(e.target.value)}
+                        onChange={(e) => setLandlordRegisterPhone(formatChileanPhone(e.target.value))}
                         placeholder="+56 9 1234 5678"
                         className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />
@@ -379,8 +388,8 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                       <input
                         id="landlord-register-password"
                         type="password"
-                        required
-                        minLength={8}
+                        autoComplete="new-password"
+                        maxLength={64}
                         value={landlordPassword}
                         onChange={(e) => setLandlordPassword(e.target.value)}
                         placeholder="Mínimo 8 caracteres"

@@ -18,6 +18,7 @@ import {
 import Image from 'next/image';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import type { RoomItem, RoomType } from '@/components/landlord/room-item-card';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,7 +28,10 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
+import { translateApiError } from '@/lib/error-translator';
+import { clampNumber } from '@/lib/format-utils';
 import { cn } from '@/lib/utils';
 import { createPensionRoom, updateRoom } from '@/services/rooms.service';
 import { uploadsService } from '@/services/uploads.service';
@@ -81,6 +85,19 @@ const ROOM_TYPE_OPTIONS: Array<{
   },
 ];
 
+const INITIAL_ROOM_STATE: RoomFormState = {
+  title: '',
+  roomNumber: '',
+  description: '',
+  type: 'SINGLE',
+  monthlyPrice: '',
+  deposit: '',
+  hasPrivateBathroom: false,
+  totalBeds: 1,
+  isAvailable: true,
+  images: [],
+};
+
 export function RoomEditorDrawer({
   isOpen,
   onClose,
@@ -92,23 +109,55 @@ export function RoomEditorDrawer({
   const isEditing = Boolean(roomToEdit);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [form, setForm] = useState<RoomFormState>({
-    title: '',
-    roomNumber: '',
-    description: '',
-    type: 'SINGLE',
-    monthlyPrice: '',
-    deposit: '',
-    hasPrivateBathroom: false,
-    totalBeds: 1,
-    isAvailable: true,
-    images: [],
-  });
+  const [form, setForm] = useState<RoomFormState>(INITIAL_ROOM_STATE);
+
+  const { hasDraft, restoreDraft, clearDraft } = useFormDraft<RoomFormState>(
+    'landlord-new-room',
+    form,
+    INITIAL_ROOM_STATE,
+    isOpen && !isEditing,
+  );
 
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleRestoreDraft = () => {
+    const draft = restoreDraft();
+    if (draft) {
+      setForm(draft);
+      toast.success('Borrador restaurado');
+    }
+  };
+
+  const handleMonthlyPriceChange = (val: string) => {
+    const digits = val.replace(/\D/g, '');
+    if (!digits) {
+      setForm((prev) => ({ ...prev, monthlyPrice: '' }));
+      return;
+    }
+    const num = Number.parseInt(digits, 10);
+    const clamped = clampNumber(num, 0, 1200000);
+    if (clamped.wasClamped && num > 1200000) {
+      toast.info('El precio mensual máximo para una habitación es $1.200.000 CLP.');
+    }
+    setForm((prev) => ({ ...prev, monthlyPrice: clamped.value.toString() }));
+  };
+
+  const handleDepositChange = (val: string) => {
+    const digits = val.replace(/\D/g, '');
+    if (!digits) {
+      setForm((prev) => ({ ...prev, deposit: '' }));
+      return;
+    }
+    const num = Number.parseInt(digits, 10);
+    const clamped = clampNumber(num, 0, 1200000);
+    if (clamped.wasClamped && num > 1200000) {
+      toast.info('La garantía máxima sugerida para una habitación es $1.200.000 CLP.');
+    }
+    setForm((prev) => ({ ...prev, deposit: clamped.value.toString() }));
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -256,7 +305,9 @@ export function RoomEditorDrawer({
 
         const res = await updateRoom(roomToEdit.id, updatePayload);
         if (!isApiSuccess(res)) {
-          setErrorMessage(res.message || 'No fue posible actualizar la habitación.');
+          const friendly = translateApiError(res.message || 'No fue posible actualizar la habitación.');
+          setErrorMessage(friendly);
+          toast.error(friendly);
           setIsSubmitting(false);
           return;
         }
@@ -276,16 +327,22 @@ export function RoomEditorDrawer({
 
         const res = await createPensionRoom(pensionId, createPayload);
         if (!isApiSuccess(res)) {
-          setErrorMessage(res.message || 'No fue posible crear la habitación.');
+          const friendly = translateApiError(res.message || 'No fue posible crear la habitación.');
+          setErrorMessage(friendly);
+          toast.error(friendly);
           setIsSubmitting(false);
           return;
         }
       }
 
+      clearDraft();
+      toast.success(isEditing ? 'Habitación actualizada exitosamente' : 'Habitación creada exitosamente');
       onSuccess();
       onClose();
-    } catch {
-      setErrorMessage('Ocurrió un error inesperado al procesar la solicitud.');
+    } catch (err) {
+      const friendly = translateApiError(err);
+      setErrorMessage(friendly);
+      toast.error(friendly);
     } finally {
       setIsSubmitting(false);
     }
@@ -323,7 +380,7 @@ export function RoomEditorDrawer({
           <div className="w-12" />
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <form onSubmit={handleSubmit} noValidate className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <div className="overflow-y-auto flex-1 px-4 py-4 space-y-5">
             <DrawerHeader className="p-0 text-left">
               <DrawerTitle className="text-lg font-bold text-foreground">
@@ -334,6 +391,28 @@ export function RoomEditorDrawer({
                 arriendo.
               </DrawerDescription>
             </DrawerHeader>
+
+            {hasDraft && !isEditing && (
+              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs">
+                <span className="text-foreground">Tienes un borrador de habitación no guardado.</span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleRestoreDraft}
+                    className="px-2.5 py-1 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition cursor-pointer"
+                  >
+                    Restaurar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearDraft}
+                    className="px-2 py-1 rounded-lg border border-border text-muted-foreground hover:bg-muted transition cursor-pointer"
+                  >
+                    Descartar
+                  </button>
+                </div>
+              </div>
+            )}
 
             {errorMessage && (
               <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 flex items-start gap-2.5 text-rose-600 animate-in fade-in">
@@ -352,7 +431,7 @@ export function RoomEditorDrawer({
               <input
                 id="room-name-input"
                 type="text"
-                required
+                maxLength={80}
                 placeholder="Ej: Habitación 101 - Individual con escritorio"
                 value={form.title}
                 onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
@@ -406,13 +485,12 @@ export function RoomEditorDrawer({
                   </div>
                   <input
                     id="room-price-input"
-                    type="number"
-                    min="0"
-                    step="1000"
-                    required
-                    placeholder="260000"
-                    value={form.monthlyPrice}
-                    onChange={(e) => setForm((prev) => ({ ...prev, monthlyPrice: e.target.value }))}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder="260.000"
+                    value={form.monthlyPrice ? Number(form.monthlyPrice).toLocaleString('es-CL') : ''}
+                    onChange={(e) => handleMonthlyPriceChange(e.target.value)}
                     className="w-full min-h-12 pl-9 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                   />
                 </div>
@@ -437,12 +515,12 @@ export function RoomEditorDrawer({
                   </div>
                   <input
                     id="room-deposit-input"
-                    type="number"
-                    min="0"
-                    step="1000"
-                    placeholder="Ej: 150000"
-                    value={form.deposit}
-                    onChange={(e) => setForm((prev) => ({ ...prev, deposit: e.target.value }))}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder="150.000"
+                    value={form.deposit ? Number(form.deposit).toLocaleString('es-CL') : ''}
+                    onChange={(e) => handleDepositChange(e.target.value)}
                     className="w-full min-h-12 pl-9 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                   />
                 </div>

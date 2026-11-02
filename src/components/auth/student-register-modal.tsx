@@ -17,6 +17,8 @@ import { FormField } from '@/components/ui/form-field';
 import { useFormValidation } from '@/hooks/use-form-validation';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
+import { translateApiError } from '@/lib/error-translator';
+import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
 import { type StudentRegisterInput, studentRegisterSchema } from '@/lib/validations/auth.schema';
 import { authService } from '@/services/auth.service';
 import type { DetectedUniversityDto } from '@/types/api-contracts';
@@ -113,11 +115,11 @@ export function StudentRegisterModal({
       }
 
       if (response.statusCode === 409) {
-        setServerError('Este correo ya ha sido registrado');
+        setServerError('Este correo electrónico ya está registrado. Puedes iniciar sesión en su lugar.');
         return;
       }
 
-      setServerError(response.message ?? 'Error de conexión con el servidor. Reintentar.');
+      setServerError(translateApiError(response.message, 'Error de conexión con el servidor. Reintentar.'));
     } catch {
       setServerError('Error de conexión con el servidor. Reintentar.');
     } finally {
@@ -147,7 +149,9 @@ export function StudentRegisterModal({
         </DrawerHeader>
 
         <form
+          id="student-register-modal-form"
           onSubmit={handleFormSubmit}
+          noValidate
           className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4 text-left"
         >
           {serverError && (
@@ -185,9 +189,11 @@ export function StudentRegisterModal({
               <input
                 id="register-student-firstname"
                 type="text"
-                required
+                autoComplete="given-name"
+                autoCapitalize="words"
+                maxLength={40}
                 value={values.firstName}
-                onChange={(e) => handleChange('firstName', e.target.value)}
+                onChange={(e) => handleChange('firstName', filterAlphabeticName(e.target.value))}
                 onBlur={() => handleBlur('firstName')}
                 placeholder="Juan"
                 className="min-h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
@@ -203,9 +209,11 @@ export function StudentRegisterModal({
               <input
                 id="register-student-lastname"
                 type="text"
-                required
+                autoComplete="family-name"
+                autoCapitalize="words"
+                maxLength={40}
                 value={values.lastName}
-                onChange={(e) => handleChange('lastName', e.target.value)}
+                onChange={(e) => handleChange('lastName', filterAlphabeticName(e.target.value))}
                 onBlur={() => handleBlur('lastName')}
                 placeholder="Pérez"
                 className="min-h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
@@ -227,7 +235,8 @@ export function StudentRegisterModal({
                   aria-invalid={injected['aria-invalid']}
                   aria-describedby={injected['aria-describedby']}
                   type={showPassword ? 'text' : 'password'}
-                  required
+                  autoComplete="new-password"
+                  maxLength={64}
                   value={values.password}
                   onChange={(e) => handleChange('password', e.target.value)}
                   onBlur={() => handleBlur('password')}
@@ -289,10 +298,13 @@ export function StudentRegisterModal({
             <input
               id="register-student-phone"
               type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              maxLength={16}
               value={values.phone}
-              onChange={(e) => handleChange('phone', e.target.value)}
+              onChange={(e) => handleChange('phone', formatChileanPhone(e.target.value))}
               onBlur={() => handleBlur('phone')}
-              placeholder="+56912345678"
+              placeholder="+56 9 1234 5678"
               className="min-h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
             />
           </FormField>
@@ -305,7 +317,6 @@ export function StudentRegisterModal({
               <input
                 id="register-student-terms"
                 type="checkbox"
-                required
                 checked={values.termsAccepted === true}
                 onChange={(e) => handleChange('termsAccepted', e.target.checked)}
                 className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary/30"

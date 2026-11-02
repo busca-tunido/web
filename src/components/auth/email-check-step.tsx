@@ -5,6 +5,7 @@ import type React from 'react';
 import { StudentRegisterModal } from '@/components/auth/student-register-modal';
 import { Button } from '@/components/ui/button';
 import { useAuthFlow } from '@/hooks/use-auth-flow';
+import { translateApiError } from '@/lib/error-translator';
 
 export type EmailCheckStepProps = {
   className?: string;
@@ -53,7 +54,7 @@ export function EmailCheckStep({ className, onSuccess, initialEmail }: EmailChec
         <h2 className="text-base font-semibold text-foreground">Soy estudiante</h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <label htmlFor="student-email" className="text-xs font-medium text-muted-foreground">
@@ -74,11 +75,16 @@ export function EmailCheckStep({ className, onSuccess, initialEmail }: EmailChec
             <input
               id="student-email"
               type="email"
-              required
+              inputMode="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              maxLength={100}
               readOnly={step === 'password'}
               disabled={isCheckingEmail || isSubmittingLogin}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value.trim())}
               placeholder="ejemplo@alumnos.uchile.cl"
               className={`min-h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors ${
                 step === 'password' ? 'opacity-80 bg-muted/50 cursor-not-allowed' : ''
@@ -86,8 +92,8 @@ export function EmailCheckStep({ className, onSuccess, initialEmail }: EmailChec
             />
           </div>
           {email && isEduEmail && step === 'email' && (
-            <div className="flex items-center gap-1.5 text-[11px] text-primary mt-1">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-1.5 text-[11px] text-sage-foreground mt-1">
+              <CheckCircle2 className="h-3.5 w-3.5 text-sage-foreground" />
               <span>Dominio institucional detectado</span>
             </div>
           )}
@@ -101,7 +107,8 @@ export function EmailCheckStep({ className, onSuccess, initialEmail }: EmailChec
             <input
               id="student-password"
               type="password"
-              required
+              autoComplete="current-password"
+              maxLength={64}
               disabled={isSubmittingLogin}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -113,7 +120,7 @@ export function EmailCheckStep({ className, onSuccess, initialEmail }: EmailChec
 
         {error && (
           <p id="student-auth-error" className="text-xs text-destructive font-medium">
-            {error}
+            {translateApiError(error)}
           </p>
         )}
 
