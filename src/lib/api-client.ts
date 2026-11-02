@@ -348,6 +348,35 @@ export async function fetchUniversities(city?: string): Promise<UniversityInfo[]
   return [];
 }
 
+export function mapReviewDtoToPensionReview(
+  raw: components['schemas']['ReviewResponseDto'],
+): PensionReview {
+  return {
+    id: raw.id,
+    pensionId: raw.pensionId,
+    overallRating: raw.rating,
+    rating: raw.rating,
+    cleanlinessRating: raw.cleanlinessRating ?? undefined,
+    landlordRating: raw.ownerRating ?? undefined,
+    quietnessRating: undefined,
+    wifiRating: undefined,
+    comment: raw.comment,
+    pros: raw.positiveComment ?? undefined,
+    cons: raw.negativeComment ?? undefined,
+    isResidentVerified: raw.isVerifiedStay,
+    isVerifiedStudent: raw.isVerifiedStay,
+    helpfulCount: raw.helpfulCount,
+    images: raw.images,
+    createdAt: raw.createdAt,
+    user: {
+      id: raw.author?.id ?? raw.userId,
+      firstName: raw.author?.firstName ?? 'Estudiante',
+      lastName: raw.author?.lastName ?? '',
+      university: raw.author?.universityName ? { name: raw.author.universityName } : undefined,
+    },
+  };
+}
+
 export async function fetchPensionReviews(pensionId: string): Promise<PensionReview[]> {
   try {
     const { data, response } = await apiClient.GET('/pensions/{pensionId}/reviews', {
@@ -357,12 +386,9 @@ export async function fetchPensionReviews(pensionId: string): Promise<PensionRev
     });
 
     if (response.ok && data) {
-      const envelope = data as ApiResponseEnvelope<PensionReview[]>;
-      if (envelope?.data && Array.isArray(envelope.data)) {
-        return envelope.data;
-      }
-      if (Array.isArray(data)) {
-        return data as unknown as PensionReview[];
+      const items = data.data.items;
+      if (Array.isArray(items)) {
+        return items.map(mapReviewDtoToPensionReview);
       }
     }
   } catch {}
@@ -413,8 +439,7 @@ export async function submitPensionReview(
   });
 
   if (response.ok && data) {
-    const envelope = data as ApiResponseEnvelope<PensionReview>;
-    return envelope.data;
+    return mapReviewDtoToPensionReview(data.data);
   }
   const errMessage =
     typeof error === 'object' && error !== null && 'message' in error

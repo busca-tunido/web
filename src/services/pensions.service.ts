@@ -1,7 +1,7 @@
 import { mapRawPensionToPensionItem } from '@/lib/api-client';
 import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
-import type { operations } from '@/lib/api-schema';
+import type { paths } from '@/lib/api-schema';
 import type { PensionItem, PriceBinItem, PriceHistogramResponse } from '@/lib/types';
 import { normalizeImageUrl } from '@/lib/utils';
 import type {
@@ -16,7 +16,7 @@ import type {
 import { mapRoomDto } from './rooms.service';
 
 export type PensionFilterParams = Omit<
-  NonNullable<operations['PensionsController_findAll']['parameters']['query']>,
+  NonNullable<paths['/pensions']['get']['parameters']['query']>,
   'genderPreference'
 > & {
   genderPreference?: 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY' | 'MIXED';
