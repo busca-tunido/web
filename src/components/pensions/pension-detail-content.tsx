@@ -231,13 +231,13 @@ export function PensionDetailContent({
           <div
             className={`flex items-center gap-2 rounded-lg border p-2.5 ${
               pension.includesWifi
-                ? 'border-primary/30 bg-muted/40 text-foreground'
+                ? 'border-sage/25 bg-sage/8 text-foreground'
                 : 'border-border text-muted-foreground line-through opacity-50'
             }`}
           >
             <Wifi
               className={`h-4 w-4 shrink-0 ${
-                pension.includesWifi ? 'text-primary' : 'text-muted-foreground/60'
+                pension.includesWifi ? 'text-sage-foreground' : 'text-muted-foreground/60'
               }`}
             />
             <span>WiFi Alta Velocidad</span>
@@ -245,13 +245,13 @@ export function PensionDetailContent({
           <div
             className={`flex items-center gap-2 rounded-lg border p-2.5 ${
               pension.includesMeals
-                ? 'border-primary/30 bg-muted/40 text-foreground'
+                ? 'border-sage/25 bg-sage/8 text-foreground'
                 : 'border-border text-muted-foreground opacity-50'
             }`}
           >
             <Utensils
               className={`h-4 w-4 shrink-0 ${
-                pension.includesMeals ? 'text-primary' : 'text-muted-foreground/60'
+                pension.includesMeals ? 'text-sage-foreground' : 'text-muted-foreground/60'
               }`}
             />
             <span>{pension.includesMeals ? 'Cocina equipada' : 'Sin cocina'}</span>
@@ -259,13 +259,13 @@ export function PensionDetailContent({
           <div
             className={`flex items-center gap-2 rounded-lg border p-2.5 ${
               pension.includesStudyRoom
-                ? 'border-primary/30 bg-muted/40 text-foreground'
+                ? 'border-sage/25 bg-sage/8 text-foreground'
                 : 'border-border text-muted-foreground opacity-50'
             }`}
           >
             <BookOpen
               className={`h-4 w-4 shrink-0 ${
-                pension.includesStudyRoom ? 'text-primary' : 'text-muted-foreground/60'
+                pension.includesStudyRoom ? 'text-sage-foreground' : 'text-muted-foreground/60'
               }`}
             />
             <span>Sala de Estudio</span>
@@ -273,13 +273,13 @@ export function PensionDetailContent({
           <div
             className={`flex items-center gap-2 rounded-lg border p-2.5 ${
               pension.includesLaundry
-                ? 'border-primary/30 bg-muted/40 text-foreground'
+                ? 'border-sage/25 bg-sage/8 text-foreground'
                 : 'border-border text-muted-foreground opacity-50'
             }`}
           >
             <Wind
               className={`h-4 w-4 shrink-0 ${
-                pension.includesLaundry ? 'text-primary' : 'text-muted-foreground/60'
+                pension.includesLaundry ? 'text-sage-foreground' : 'text-muted-foreground/60'
               }`}
             />
             <span>Lavandería</span>

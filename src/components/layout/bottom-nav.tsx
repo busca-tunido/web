@@ -53,14 +53,14 @@ export function BottomNav({ activeTab, onTabChange, onOpenAuthModal }: BottomNav
               }}
               className={`group relative flex min-h-[48px] min-w-[56px] flex-1 flex-col items-center justify-center rounded-xl py-1 text-xs font-medium transition-all duration-150 active:scale-95 touch-manipulation ${
                 isActive
-                  ? 'text-primary font-semibold'
+                  ? 'text-sage-foreground font-semibold bg-sage/10'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <div className="relative">
                 <Icon
                   className={`h-5 w-5 transition-transform duration-200 ${
-                    isActive ? 'scale-110 text-primary stroke-[2.2]' : 'stroke-[1.75]'
+                    isActive ? 'scale-110 text-sage-foreground stroke-[2.2]' : 'stroke-[1.75]'
                   }`}
                 />
                 {item.badge !== undefined && item.badge > 0 && (
@@ -71,7 +71,7 @@ export function BottomNav({ activeTab, onTabChange, onOpenAuthModal }: BottomNav
               </div>
               <span className="mt-1 text-[11px] tracking-tight">{item.label}</span>
               {isActive && (
-                <span className="absolute bottom-0 h-1 w-6 rounded-full bg-primary transition-all duration-200" />
+                <span className="absolute bottom-0 h-1 w-6 rounded-full bg-sage transition-all duration-200" />
               )}
             </button>
           );

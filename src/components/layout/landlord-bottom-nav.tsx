@@ -98,7 +98,7 @@ export function LandlordBottomNav({
               className={cn(
                 'group relative flex min-h-[48px] min-w-[56px] flex-1 flex-col items-center justify-center rounded-xl py-1 text-xs font-medium transition-colors cursor-pointer',
                 isActive
-                  ? 'text-primary font-semibold'
+                  ? 'text-sage-foreground font-semibold bg-sage/10'
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
@@ -106,7 +106,7 @@ export function LandlordBottomNav({
                 <Icon
                   className={cn(
                     'h-5 w-5 transition-transform duration-200',
-                    isActive ? 'scale-110 text-primary stroke-[2.2]' : 'stroke-[1.75]',
+                    isActive ? 'scale-110 text-sage-foreground stroke-[2.2]' : 'stroke-[1.75]',
                   )}
                 />
                 {item.badge !== undefined && (
@@ -120,7 +120,7 @@ export function LandlordBottomNav({
                 <motion.span
                   layoutId="active-landlord-bottom-nav-indicator"
                   transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                  className="absolute bottom-0 h-1 w-6 rounded-full bg-primary"
+                  className="absolute bottom-0 h-1 w-6 rounded-full bg-sage"
                 />
               )}
             </motion.button>

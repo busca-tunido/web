@@ -61,7 +61,7 @@ export function RoomOccupancyBar({
         ) : (
           <Badge
             variant="outline"
-            className="text-[10px] font-medium py-0 shrink-0 text-muted-foreground border-border/80"
+            className="text-[10px] font-semibold py-0 shrink-0 text-sage-foreground bg-sage/10 border-sage/30"
           >
             {availableRooms} {availableRooms === 1 ? 'habitación libre' : 'habitaciones libres'}
           </Badge>

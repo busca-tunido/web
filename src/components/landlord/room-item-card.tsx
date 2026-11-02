@@ -142,9 +142,9 @@ export function RoomItemCard({
               {resolvedType === 'SINGLE' && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
+                  className="gap-1 border-sage/25 bg-sage/5 text-sage-foreground text-[11px] font-medium"
                 >
-                  <User className="h-3 w-3 text-muted-foreground" />
+                  <User className="h-3 w-3 text-sage-foreground" />
                   Individual
                 </Badge>
               )}
@@ -152,9 +152,9 @@ export function RoomItemCard({
               {resolvedType === 'SHARED' && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
+                  className="gap-1 border-sage/25 bg-sage/5 text-sage-foreground text-[11px] font-medium"
                 >
-                  <Users className="h-3 w-3 text-muted-foreground" />
+                  <Users className="h-3 w-3 text-sage-foreground" />
                   Compartida ({beds} {beds === 1 ? 'cama' : 'camas'})
                 </Badge>
               )}
@@ -162,9 +162,9 @@ export function RoomItemCard({
               {resolvedType === 'STUDIO' && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
+                  className="gap-1 border-sage/25 bg-sage/5 text-sage-foreground text-[11px] font-medium"
                 >
-                  <Home className="h-3 w-3 text-muted-foreground" />
+                  <Home className="h-3 w-3 text-sage-foreground" />
                   Estudio
                 </Badge>
               )}
@@ -172,9 +172,9 @@ export function RoomItemCard({
               {isPrivateBath ? (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-border/80 text-foreground text-[11px] font-normal"
+                  className="gap-1 border-sage/25 bg-sage/5 text-sage-foreground text-[11px] font-medium"
                 >
-                  <Bath className="h-3 w-3 text-muted-foreground" />
+                  <Bath className="h-3 w-3 text-sage-foreground" />
                   Baño privado
                 </Badge>
               ) : (

@@ -50,7 +50,7 @@ export function TopSearchBar({
               value={filters.query}
               onChange={(e) => onFilterChange({ ...filters, query: e.target.value })}
               placeholder="Buscar pensión, universidad o barrio..."
-              className="h-11 w-full rounded-full border border-border bg-card/90 pl-11 pr-9 text-sm text-foreground placeholder:text-muted-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+              className="h-11 w-full rounded-full border border-sage/25 bg-card/90 pl-11 pr-9 text-sm text-foreground placeholder:text-muted-foreground shadow-sm focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage/20 transition-colors"
             />
             {filters.query && (
               <button
@@ -69,14 +69,14 @@ export function TopSearchBar({
             onClick={onOpenFilterDrawer}
             className={`relative flex h-11 min-w-[44px] items-center justify-center rounded-full border px-3 transition-colors ${
               activeFiltersCount > 0
-                ? 'border-primary/50 bg-primary/10 text-primary font-medium'
-                : 'border-border bg-card/90 text-foreground hover:bg-secondary'
+                ? 'border-sage/40 bg-sage/15 text-sage-foreground font-semibold'
+                : 'border-sage/25 bg-sage/8 text-sage-foreground hover:bg-sage/15'
             }`}
             aria-label="Abrir filtros"
           >
             <Filter className="h-4 w-4" />
             {activeFiltersCount > 0 && (
-              <span className="ml-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+              <span className="ml-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-sage px-1 text-[10px] font-bold text-white">
                 {activeFiltersCount}
               </span>
             )}
@@ -94,7 +94,7 @@ export function TopSearchBar({
                 className={`flex h-7.5 items-center justify-center rounded-full border px-3 text-xs shrink-0 cursor-pointer select-none transition-colors ${
                   active
                     ? (chip.activeColorClass ??
-                      'border-border/90 bg-secondary/80 text-foreground font-medium')
+                      'border-sage/40 bg-sage/15 text-sage-foreground font-semibold ring-1 ring-sage/30')
                     : (chip.textColorClass ??
                       'border-border/60 bg-card/60 text-muted-foreground hover:text-foreground hover:border-border font-medium')
                 }`}

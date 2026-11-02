@@ -92,7 +92,7 @@ export function DesktopNavbar({
         </div>
 
         <div className="flex flex-1 items-center justify-center gap-2 lg:gap-3 mx-2 min-w-0">
-          <nav className="flex items-center gap-1 shrink-0">
+          <nav className="flex items-center gap-1 shrink-0 p-1 rounded-full bg-sage/10 border border-sage/20 backdrop-blur-md shadow-xs">
             {navLinks.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -109,13 +109,13 @@ export function DesktopNavbar({
                   }}
                   title={item.label}
                   aria-label={item.label}
-                  className={`relative flex items-center gap-2 rounded-xl px-2.5 xl:px-3 py-2 text-xs font-semibold transition-colors cursor-pointer ${
+                  className={`relative flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                      ? 'bg-sage/20 text-sage-foreground shadow-xs'
+                      : 'text-muted-foreground hover:bg-sage/10 hover:text-foreground'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-primary' : ''}`} />
+                  <Icon className={`h-4 w-4 ${isActive ? 'text-sage-foreground' : ''}`} />
                   <span className="hidden xl:inline">{item.label}</span>
                   {item.badge !== undefined && item.badge > 0 && (
                     <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
@@ -126,7 +126,7 @@ export function DesktopNavbar({
                     <motion.span
                       layoutId="active-desktop-nav-indicator"
                       transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                      className="absolute inset-0 rounded-xl border border-primary/30"
+                      className="absolute inset-0 rounded-full border border-sage/35 pointer-events-none"
                     />
                   )}
                 </button>
@@ -147,7 +147,7 @@ export function DesktopNavbar({
                 }
               }}
               placeholder="Buscar pensión, ciudad, U..."
-              className="h-10 w-full rounded-full border border-border/90 bg-card/90 pl-4 pr-16 text-xs text-foreground placeholder:text-muted-foreground shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+              className="h-10 w-full rounded-full border border-sage/25 bg-card/90 pl-4 pr-16 text-xs text-foreground placeholder:text-muted-foreground shadow-xs focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage/20 transition-colors"
             />
             <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
               {filters.query && (
@@ -163,7 +163,7 @@ export function DesktopNavbar({
               <button
                 type="button"
                 onClick={handleExecuteSearch}
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:border-primary/50 transition-colors cursor-pointer shadow-xs"
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-sage/30 bg-sage/15 text-sage-foreground hover:bg-sage/25 transition-colors cursor-pointer shadow-xs"
                 title="Buscar"
                 aria-label="Buscar"
               >
@@ -262,13 +262,15 @@ export function DesktopNavbar({
             id="desktop-filter-button"
             type="button"
             onClick={onOpenFilterModal}
-            className="relative flex h-8 items-center gap-1.5 rounded-full border border-border/80 bg-card px-3 text-xs font-medium text-foreground hover:bg-secondary transition-colors shrink-0 cursor-pointer"
+            className="relative flex h-8 items-center gap-1.5 rounded-full border border-sage/30 bg-sage/8 px-3 text-xs font-semibold text-sage-foreground hover:bg-sage/15 transition-colors shrink-0 cursor-pointer"
             aria-label="Filtros avanzados"
           >
-            <Filter className="h-3.5 w-3.5" />
+            <Filter className="h-3.5 w-3.5 text-sage-foreground" />
             <span>Filtros</span>
             {activeFiltersCount > 0 && (
-              <span className="text-xs font-semibold text-white">{activeFiltersCount}</span>
+              <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-sage text-[10px] font-bold text-white px-1">
+                {activeFiltersCount}
+              </span>
             )}
           </button>
 
@@ -292,7 +294,7 @@ export function DesktopNavbar({
                   className={`flex h-7.5 items-center justify-center rounded-full border px-3 text-xs shrink-0 cursor-pointer select-none transition-colors ${
                     active
                       ? (chip.activeColorClass ??
-                        'border-border/90 bg-secondary/80 text-foreground font-medium')
+                        'border-sage/40 bg-sage/15 text-sage-foreground font-semibold ring-1 ring-sage/30')
                       : (chip.textColorClass ??
                         'border-border/60 bg-transparent text-muted-foreground hover:text-foreground hover:border-border hover:bg-card/50 font-medium')
                   }`}

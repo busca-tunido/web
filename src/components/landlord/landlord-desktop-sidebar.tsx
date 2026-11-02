@@ -155,7 +155,7 @@ export function LandlordDesktopSidebar({
 
           <div
             ref={triggerRef}
-            className="relative flex w-full min-h-[56px] items-center justify-between gap-1.5 rounded-xl border border-border/80 bg-background/80 p-2 transition hover:border-primary/40 focus-within:ring-2 focus-within:ring-ring shadow-2xs"
+            className="relative flex w-full min-h-[56px] items-center justify-between gap-1.5 rounded-xl border border-sage/25 bg-sage/5 p-2 transition hover:border-sage/40 focus-within:ring-2 focus-within:ring-sage/30 shadow-2xs"
           >
             <button
               type="button"
@@ -165,7 +165,7 @@ export function LandlordDesktopSidebar({
               aria-controls={propertyListboxId}
               className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer focus-visible:outline-none rounded-lg p-1 transition hover:bg-secondary/40"
             >
-              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage/15 text-sage-foreground">
                 <Building2 className="h-4.5 w-4.5" />
                 <span
                   className={cn(
@@ -238,14 +238,14 @@ export function LandlordDesktopSidebar({
                 className={cn(
                   'group relative flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition cursor-pointer',
                   isActive
-                    ? 'bg-primary/10 text-primary font-semibold'
-                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+                    ? 'bg-sage/15 text-sage-foreground font-semibold border border-sage/25 shadow-xs'
+                    : 'text-muted-foreground hover:bg-sage/8 hover:text-foreground',
                 )}
               >
                 <Icon
                   className={cn(
                     'h-4.5 w-4.5 shrink-0 transition-transform duration-200',
-                    isActive ? 'text-primary stroke-[2.2]' : 'stroke-[1.75]',
+                    isActive ? 'text-sage-foreground stroke-[2.2]' : 'stroke-[1.75]',
                   )}
                 />
                 <span className="flex-1 text-left">{item.label}</span>
@@ -260,7 +260,7 @@ export function LandlordDesktopSidebar({
                   <motion.div
                     layoutId="active-landlord-desktop-sidebar-indicator"
                     transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                    className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-primary"
+                    className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-sage"
                   />
                 )}
               </button>
@@ -275,14 +275,14 @@ export function LandlordDesktopSidebar({
             className={cn(
               'group relative flex min-h-[42px] w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition cursor-pointer',
               activeTab === 'pensions'
-                ? 'bg-primary/10 text-primary font-semibold'
-                : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+                ? 'bg-sage/15 text-sage-foreground font-semibold border border-sage/25 shadow-xs'
+                : 'text-muted-foreground hover:bg-sage/8 hover:text-foreground',
             )}
           >
             <Building2
               className={cn(
                 'h-4.5 w-4.5 shrink-0 transition-transform duration-200',
-                activeTab === 'pensions' ? 'text-primary stroke-[2.2]' : 'stroke-[1.75]',
+                activeTab === 'pensions' ? 'text-sage-foreground stroke-[2.2]' : 'stroke-[1.75]',
               )}
             />
             <span className="flex-1 text-left">Mis Pensiones</span>
@@ -293,7 +293,7 @@ export function LandlordDesktopSidebar({
               <motion.div
                 layoutId="active-landlord-desktop-sidebar-indicator"
                 transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-primary"
+                className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-sage"
               />
             )}
           </button>

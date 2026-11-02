@@ -43,6 +43,8 @@
   --color-primary: var(--primary);
   --color-trust-foreground: var(--trust-foreground);
   --color-trust: var(--trust);
+  --color-sage-foreground: var(--sage-foreground);
+  --color-sage: var(--sage);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -74,6 +76,8 @@
   --destructive: #c52222;
   --trust: #1a5b66;
   --trust-foreground: #ffffff;
+  --sage: #537563;
+  --sage-foreground: #273b30;
   --border: #ece6de;
   --input: #ece6de;
   --ring: #bc5e40;
@@ -111,6 +115,8 @@
   --destructive: #f87171;
   --trust: #4bb5b8;
   --trust-foreground: #1c1a17;
+  --sage: #7ea38d;
+  --sage-foreground: #e1ede5;
   --border: #36322d;
   --input: #36322d;
   --ring: #e59a7d;
