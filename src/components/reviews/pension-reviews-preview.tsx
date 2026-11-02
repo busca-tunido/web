@@ -120,7 +120,7 @@ export function PensionReviewsPreview({
                             {review.user?.lastName ? `${review.user.lastName.charAt(0)}.` : ''}
                           </span>
                           {(review.isResidentVerified || review.isVerifiedStudent) && (
-                            <CheckCircle2 className="h-3 w-3 text-trust shrink-0" />
+                            <CheckCircle2 className="h-3 w-3 text-sage-foreground shrink-0" />
                           )}
                         </div>
                         <span className="text-[10px] text-muted-foreground">

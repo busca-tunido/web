@@ -92,7 +92,7 @@ export function ReviewCard({
               {review.isResidentVerified && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-trust/30 bg-trust/10 text-trust text-[10px] py-0 px-1.5 font-semibold"
+                  className="gap-1 border-sage/30 bg-sage/10 text-sage-foreground text-[10px] py-0 px-1.5 font-semibold"
                 >
                   <CheckCircle2 className="h-3 w-3" />
                   <span>Estudiante verificado</span>

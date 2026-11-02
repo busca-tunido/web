@@ -163,7 +163,7 @@ function FavoritesGrid({
 
               {pension.isVerified && (
                 <div className="absolute bottom-3 left-3">
-                  <span className="flex items-center gap-1 rounded-full bg-trust/90 px-2.5 py-0.5 text-[11px] font-semibold text-trust-foreground backdrop-blur-md shadow-sm">
+                  <span className="flex items-center gap-1 rounded-full bg-sage/90 px-2.5 py-0.5 text-[11px] font-semibold text-white dark:text-zinc-950 backdrop-blur-md shadow-sm">
                     <ShieldCheck className="h-3 w-3" />
                     Verificada
                   </span>

@@ -277,8 +277,8 @@ function ensureCampusSvgPatterns(map: import('leaflet').Map) {
     svg.prepend(defs);
   }
 
-  defs.appendChild(createSvgPattern('campus-stripes-light', '#1a5b66', '0.25'));
-  defs.appendChild(createSvgPattern('campus-stripes-dark', '#4bb5b8', '0.25'));
+  defs.appendChild(createSvgPattern('campus-stripes-light', '#537563', '0.25'));
+  defs.appendChild(createSvgPattern('campus-stripes-dark', '#7ea38d', '0.25'));
 }
 
 function updateCampusMask(
@@ -690,7 +690,7 @@ export function MapScreen({
     const bounds = map.getBounds();
     const currentTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
     const patternUrl = `url(#campus-stripes-${currentTheme})`;
-    const strokeColor = currentTheme === 'dark' ? '#4bb5b8' : '#1a5b66';
+    const strokeColor = currentTheme === 'dark' ? '#7ea38d' : '#537563';
 
     const nextCampusesMap = new Map<
       string,
@@ -1406,7 +1406,7 @@ function MapDrawerPensionList({
 
                 {pension.isVerified && (
                   <div className="absolute bottom-3 left-3">
-                    <span className="flex items-center gap-1 rounded-full bg-trust/90 px-2.5 py-0.5 text-[11px] font-semibold text-trust-foreground backdrop-blur-md shadow-sm">
+                    <span className="flex items-center gap-1 rounded-full bg-sage/90 px-2.5 py-0.5 text-[11px] font-semibold text-white dark:text-zinc-950 backdrop-blur-md shadow-sm">
                       <ShieldCheck className="h-3 w-3" />
                       Verificada
                     </span>

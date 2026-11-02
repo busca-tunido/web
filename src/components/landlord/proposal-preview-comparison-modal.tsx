@@ -176,14 +176,14 @@ export function ProposalPreviewComparisonModal({
       <Card
         className={cn(
           'flex flex-col overflow-hidden rounded-xl border bg-card shadow-none transition-all',
-          isAfter ? 'border-trust/50 ring-1 ring-trust/20' : 'border-border/70',
+          isAfter ? 'border-sage/50 ring-1 ring-sage/20' : 'border-border/70',
         )}
       >
         <div
           className={cn(
             'flex items-center justify-between px-4 py-2.5 border-b text-xs font-semibold',
             isAfter
-              ? 'bg-trust/10 border-trust/20 text-trust'
+              ? 'bg-sage/10 border-sage/20 text-sage-foreground'
               : 'bg-muted/40 border-border/60 text-muted-foreground',
           )}
         >
@@ -191,7 +191,7 @@ export function ProposalPreviewComparisonModal({
             <span
               className={cn(
                 'h-2 w-2 rounded-full',
-                isAfter ? 'bg-trust animate-pulse' : 'bg-muted-foreground/60',
+                isAfter ? 'bg-sage animate-pulse' : 'bg-muted-foreground/60',
               )}
             />
             <span>{isAfter ? 'Después (Sugerencia Aplicada)' : 'Antes (Estado Actual)'}</span>
@@ -200,7 +200,9 @@ export function ProposalPreviewComparisonModal({
             variant={isAfter ? 'default' : 'outline'}
             className={cn(
               'text-[10px] py-0 px-2 font-medium',
-              isAfter ? 'bg-trust text-trust-foreground' : 'border-border/80 text-muted-foreground',
+              isAfter
+                ? 'bg-sage text-white dark:text-zinc-950 font-semibold'
+                : 'border-border/80 text-muted-foreground',
             )}
           >
             {isAfter ? 'Vista propuesta' : 'Publicación en vivo'}
@@ -230,13 +232,13 @@ export function ProposalPreviewComparisonModal({
               <h3
                 className={cn(
                   'text-base font-bold text-foreground leading-snug transition-colors',
-                  isTitleChanged && 'text-trust',
+                  isTitleChanged && 'text-sage-foreground',
                 )}
               >
                 {data.title}
               </h3>
               {isTitleChanged && (
-                <Badge className="bg-trust/15 text-trust border-trust/30 text-[9px] shrink-0 font-semibold">
+                <Badge className="bg-sage/15 text-sage-foreground border-sage/30 text-[9px] shrink-0 font-semibold">
                   Modificado
                 </Badge>
               )}
@@ -245,7 +247,7 @@ export function ProposalPreviewComparisonModal({
             <div
               className={cn(
                 'flex items-center gap-1.5 text-xs text-muted-foreground',
-                isAddressChanged && 'text-trust font-medium',
+                isAddressChanged && 'text-sage-foreground font-medium',
               )}
             >
               <MapPin className="h-3.5 w-3.5 shrink-0" />
@@ -261,7 +263,7 @@ export function ProposalPreviewComparisonModal({
             className={cn(
               'rounded-lg border p-3 flex items-center justify-between gap-2',
               isPriceChanged || isDepositChanged
-                ? 'border-trust/40 bg-trust/5'
+                ? 'border-sage/40 bg-sage/5'
                 : 'border-border/60 bg-muted/20',
             )}
           >
@@ -272,7 +274,7 @@ export function ProposalPreviewComparisonModal({
               <span
                 className={cn(
                   'text-base font-extrabold text-foreground',
-                  isPriceChanged && 'text-trust',
+                  isPriceChanged && 'text-sage-foreground',
                 )}
               >
                 {formatCurrency(data.monthlyPrice)}
@@ -286,7 +288,7 @@ export function ProposalPreviewComparisonModal({
               <span
                 className={cn(
                   'text-xs font-semibold text-foreground',
-                  isDepositChanged && 'text-trust',
+                  isDepositChanged && 'text-sage-foreground',
                 )}
               >
                 {data.deposit > 0 ? formatCurrency(data.deposit) : 'Sin garantía'}
@@ -300,7 +302,7 @@ export function ProposalPreviewComparisonModal({
                 Servicios Básicos
               </span>
               {isUtilitiesChanged && (
-                <Badge className="bg-trust/15 text-trust border-trust/30 text-[9px] font-semibold">
+                <Badge className="bg-sage/15 text-sage-foreground border-sage/30 text-[9px] font-semibold">
                   Cambios
                 </Badge>
               )}
@@ -309,10 +311,12 @@ export function ProposalPreviewComparisonModal({
               <div
                 className={cn(
                   'flex items-center gap-1.5 p-2 rounded-md border border-border/50 bg-background',
-                  isAfter && changedKeys.has('waterIncluded') && 'border-trust/40 bg-trust/5',
+                  isAfter && changedKeys.has('waterIncluded') && 'border-sage/40 bg-sage/5',
                 )}
               >
-                <span className={data.waterIncluded ? 'text-trust' : 'text-muted-foreground'}>
+                <span
+                  className={data.waterIncluded ? 'text-sage-foreground' : 'text-muted-foreground'}
+                >
                   {data.waterIncluded ? '✓' : '✗'}
                 </span>
                 <span className="text-foreground">
@@ -323,10 +327,14 @@ export function ProposalPreviewComparisonModal({
               <div
                 className={cn(
                   'flex items-center gap-1.5 p-2 rounded-md border border-border/50 bg-background',
-                  isAfter && changedKeys.has('electricityIncluded') && 'border-trust/40 bg-trust/5',
+                  isAfter && changedKeys.has('electricityIncluded') && 'border-sage/40 bg-sage/5',
                 )}
               >
-                <span className={data.electricityIncluded ? 'text-trust' : 'text-muted-foreground'}>
+                <span
+                  className={
+                    data.electricityIncluded ? 'text-sage-foreground' : 'text-muted-foreground'
+                  }
+                >
                   {data.electricityIncluded ? '✓' : '✗'}
                 </span>
                 <span className="text-foreground">
@@ -337,10 +345,12 @@ export function ProposalPreviewComparisonModal({
               <div
                 className={cn(
                   'flex items-center gap-1.5 p-2 rounded-md border border-border/50 bg-background',
-                  isAfter && changedKeys.has('gasIncluded') && 'border-trust/40 bg-trust/5',
+                  isAfter && changedKeys.has('gasIncluded') && 'border-sage/40 bg-sage/5',
                 )}
               >
-                <span className={data.gasIncluded ? 'text-trust' : 'text-muted-foreground'}>
+                <span
+                  className={data.gasIncluded ? 'text-sage-foreground' : 'text-muted-foreground'}
+                >
                   {data.gasIncluded ? '✓' : '✗'}
                 </span>
                 <span className="text-foreground">
@@ -351,10 +361,14 @@ export function ProposalPreviewComparisonModal({
               <div
                 className={cn(
                   'flex items-center gap-1.5 p-2 rounded-md border border-border/50 bg-background',
-                  isAfter && changedKeys.has('internetIncluded') && 'border-trust/40 bg-trust/5',
+                  isAfter && changedKeys.has('internetIncluded') && 'border-sage/40 bg-sage/5',
                 )}
               >
-                <span className={data.internetIncluded ? 'text-trust' : 'text-muted-foreground'}>
+                <span
+                  className={
+                    data.internetIncluded ? 'text-sage-foreground' : 'text-muted-foreground'
+                  }
+                >
                   {data.internetIncluded ? '✓' : '✗'}
                 </span>
                 <span className="text-foreground">
@@ -370,7 +384,7 @@ export function ProposalPreviewComparisonModal({
                 Reglas y Convivencia
               </span>
               {(isCurfewChanged || isRulesChanged) && (
-                <Badge className="bg-trust/15 text-trust border-trust/30 text-[9px] font-semibold">
+                <Badge className="bg-sage/15 text-sage-foreground border-sage/30 text-[9px] font-semibold">
                   Cambios
                 </Badge>
               )}
@@ -378,7 +392,9 @@ export function ProposalPreviewComparisonModal({
             <div className="space-y-1.5 text-xs text-foreground bg-muted/20 p-2.5 rounded-lg border border-border/50">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Horario de llegada:</span>
-                <span className={cn('font-medium', isCurfewChanged && 'text-trust font-bold')}>
+                <span
+                  className={cn('font-medium', isCurfewChanged && 'text-sage-foreground font-bold')}
+                >
                   {data.curfewTime}
                 </span>
               </div>
@@ -387,7 +403,7 @@ export function ProposalPreviewComparisonModal({
                 <span
                   className={cn(
                     'font-medium',
-                    isAfter && changedKeys.has('guestsAllowed') && 'text-trust font-bold',
+                    isAfter && changedKeys.has('guestsAllowed') && 'text-sage-foreground font-bold',
                   )}
                 >
                   {data.guestsAllowed ? 'Permitidas' : 'No permitidas'}
@@ -398,7 +414,7 @@ export function ProposalPreviewComparisonModal({
                 <span
                   className={cn(
                     'font-medium',
-                    isAfter && changedKeys.has('petsAllowed') && 'text-trust font-bold',
+                    isAfter && changedKeys.has('petsAllowed') && 'text-sage-foreground font-bold',
                   )}
                 >
                   {data.petsAllowed ? 'Permitidas' : 'No permitidas'}
@@ -409,7 +425,9 @@ export function ProposalPreviewComparisonModal({
                 <span
                   className={cn(
                     'font-medium',
-                    isAfter && changedKeys.has('smokingAllowed') && 'text-trust font-bold',
+                    isAfter &&
+                      changedKeys.has('smokingAllowed') &&
+                      'text-sage-foreground font-bold',
                   )}
                 >
                   {data.smokingAllowed ? 'Permitido' : 'Prohibido'}
@@ -484,7 +502,7 @@ export function ProposalPreviewComparisonModal({
               className={cn(
                 'flex-1 py-1.5 text-xs font-semibold rounded-md transition text-center cursor-pointer',
                 mobileActiveTab === 'AFTER'
-                  ? 'bg-background text-trust shadow-xs'
+                  ? 'bg-background text-sage-foreground shadow-xs font-bold'
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
@@ -536,7 +554,7 @@ export function ProposalPreviewComparisonModal({
                   await onApprove(proposal.id);
                   onClose();
                 }}
-                className="flex-1 sm:flex-initial text-xs font-semibold bg-trust hover:bg-trust/90 text-trust-foreground shadow-none cursor-pointer"
+                className="flex-1 sm:flex-initial text-xs font-semibold bg-sage hover:bg-sage/90 text-white dark:text-zinc-950 shadow-none cursor-pointer"
               >
                 {isProcessing ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
