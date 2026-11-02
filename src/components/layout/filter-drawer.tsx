@@ -158,7 +158,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
           </ResponsiveModalDescription>
         </div>
 
-        <div className="flex-1 max-h-[82vh] overflow-y-auto pr-1 p-4 md:p-6 flex flex-col gap-6 divide-y divide-border">
+        <div className="flex-1 max-h-[82vh] overflow-y-auto scrollbar-subtle pr-2 p-4 md:p-6 flex flex-col gap-6 divide-y divide-border">
           <div className="flex flex-col gap-4 pb-2">
             <div>
               <h3 className="text-base font-semibold text-foreground">Rango de Precios</h3>

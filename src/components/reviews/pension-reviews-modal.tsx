@@ -158,7 +158,7 @@ export function PensionReviewsModal({
             <DrawerDescription>Comentarios y calificaciones de estudiantes</DrawerDescription>
           </DrawerHeader>
 
-          <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-6">
+          <div className="flex-1 overflow-y-auto scrollbar-subtle px-5 py-4 flex flex-col gap-6">
             <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 p-5 text-center">
               <div className="flex items-center gap-3">
                 <span className="text-4xl font-black tracking-tight text-foreground">

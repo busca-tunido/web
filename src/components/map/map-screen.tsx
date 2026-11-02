@@ -1204,7 +1204,10 @@ export function MapScreen({
           )}
         </div>
 
-        <div ref={desktopListRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
+        <div
+          ref={desktopListRef}
+          className="flex-1 overflow-y-auto scrollbar-sage p-4 flex flex-col gap-5"
+        >
           <Suspense fallback={<MapDrawerSkeleton />}>
             <MapDrawerPensionList
               displayedPensions={displayedPensions}
@@ -1310,7 +1313,7 @@ export function MapScreen({
 
           <div
             ref={cardListRef}
-            className="relative flex-1 overflow-y-auto px-5 pb-24 pt-2 flex flex-col gap-6"
+            className="relative flex-1 overflow-y-auto scrollbar-subtle px-5 pb-24 pt-2 flex flex-col gap-6"
           >
             <Suspense fallback={<MapDrawerSkeleton />}>
               <MapDrawerPensionList

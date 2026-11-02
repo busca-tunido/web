@@ -268,7 +268,7 @@ export function UniversitySearchSelect({
             ref={listRef}
             id={listboxId}
             role="listbox"
-            className="max-h-56 overflow-y-auto flex flex-col gap-1 p-0.5 select-none"
+            className="max-h-56 overflow-y-auto scrollbar-thin pr-1 flex flex-col gap-1 p-0.5 select-none"
           >
             {filteredUniversities.length === 0 ? (
               <div className="py-6 px-3 text-center flex flex-col items-center gap-1.5 text-muted-foreground">

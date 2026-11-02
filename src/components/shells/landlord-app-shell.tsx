@@ -96,7 +96,7 @@ function LandlordAppShellContent() {
   return (
     <div className="min-h-screen md:h-screen md:overflow-hidden bg-background flex flex-col md:flex-row text-foreground">
       <LandlordDesktopSidebar className="hidden md:flex" />
-      <div className="flex-1 flex flex-col min-w-0 md:h-screen md:overflow-y-auto overscroll-y-contain">
+      <div className="flex-1 flex flex-col min-w-0 md:h-screen md:overflow-y-auto overscroll-y-contain scrollbar-sage">
         <LandlordMobileHeader
           className="md:hidden"
           properties={propertySummaries}

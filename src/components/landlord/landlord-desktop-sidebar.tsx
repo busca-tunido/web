@@ -140,7 +140,7 @@ export function LandlordDesktopSidebar({
       <aside
         id="landlord-desktop-sidebar"
         className={cn(
-          'hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r border-border/60 bg-card/60 backdrop-blur h-full md:h-screen overflow-y-auto overscroll-y-contain transition-colors z-30',
+          'hidden md:flex flex-col w-64 lg:w-72 shrink-0 border-r border-border/60 bg-card/60 backdrop-blur h-full md:h-screen overflow-y-auto overscroll-y-contain scrollbar-sage transition-colors z-30',
           className,
         )}
       >
@@ -396,7 +396,7 @@ export function LandlordDesktopSidebar({
                   transition={{ duration: 0.15 }}
                   className="z-50 w-[360px] max-w-[calc(100vw-32px)] rounded-2xl border border-border bg-popover/95 backdrop-blur-md p-2 text-popover-foreground shadow-2xl"
                 >
-                  <div className="max-h-72 overflow-y-auto space-y-1.5">
+                  <div className="max-h-72 overflow-y-auto scrollbar-thin pr-1 space-y-1.5">
                     {pensions.length > 0 ? (
                       pensions.map((prop) => {
                         const isSelected = prop.id === selectedPension?.id;
