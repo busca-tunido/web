@@ -1,7 +1,7 @@
 import { mapRawPensionToPensionItem } from '@/lib/api-client';
 import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
-import type { paths } from '@/lib/api-schema';
+import type { components, paths } from '@/lib/api-schema';
 import type { PensionItem, PriceBinItem, PriceHistogramResponse } from '@/lib/types';
 import { normalizeImageUrl } from '@/lib/utils';
 import type {
@@ -10,10 +10,8 @@ import type {
   PensionDetailDto,
   PensionItemDto,
   ReviewItemDto,
-  RoomDto,
   UpdatePensionDto,
 } from '@/types/api-contracts';
-import { mapRoomDto } from './rooms.service';
 
 export type PensionFilterParams = Omit<
   NonNullable<paths['/pensions']['get']['parameters']['query']>,
@@ -109,7 +107,9 @@ export function mapReviewItemDto(raw: Record<string, unknown>): ReviewItemDto {
     stayDuration: typeof raw.stayDuration === 'string' ? raw.stayDuration : undefined,
     images: Array.isArray(raw.images)
       ? (raw.images as string[]).map(normalizeImageUrl).filter(Boolean)
-      : undefined,
+      : [],
+    isVerifiedStay: Boolean(raw.isVerifiedStay ?? raw.isResidentVerified),
+    isAnonymous: Boolean(raw.isAnonymous),
     helpfulCount,
     userVoted: typeof raw.userVoted === 'boolean' ? raw.userVoted : undefined,
     createdAt: String(raw.createdAt ?? new Date().toISOString()),
@@ -123,21 +123,37 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
       return {
         id: `img-${index}`,
         url: normalizeImageUrl(img),
-        order: index,
-        isMain: index === 0,
+        thumbnailUrl: normalizeImageUrl(img),
+        caption: null,
+        isFeatured: index === 0,
       };
     }
     const imgObj = img as Record<string, unknown>;
+    const url = normalizeImageUrl(String(imgObj.url ?? ''));
     return {
       id: String(imgObj.id ?? `img-${index}`),
-      url: normalizeImageUrl(String(imgObj.url ?? '')),
-      order: Number(imgObj.order ?? imgObj.sortOrder ?? index),
-      isMain: Boolean(imgObj.isMain ?? imgObj.isFeatured ?? index === 0),
+      url,
+      thumbnailUrl: normalizeImageUrl(String(imgObj.thumbnailUrl ?? url)),
+      caption: typeof imgObj.caption === 'string' ? imgObj.caption : null,
+      isFeatured: Boolean(imgObj.isFeatured ?? imgObj.isMain ?? index === 0),
     };
   });
 
+  const pensionId = String(raw.id ?? '');
   const rawRooms = Array.isArray(raw.rooms) ? raw.rooms : [];
-  const rooms: RoomDto[] = rawRooms.map((r) => mapRoomDto(r as Record<string, unknown>));
+  const rooms = rawRooms.map((r) => {
+    const rObj = r as Record<string, unknown>;
+    return {
+      id: String(rObj.id ?? ''),
+      pensionId: String(rObj.pensionId ?? pensionId),
+      roomNumber: typeof rObj.roomNumber === 'string' ? rObj.roomNumber : null,
+      title: String(rObj.title ?? rObj.name ?? 'Habitación'),
+      type: (rObj.type as components['schemas']['RoomType']) ?? 'SINGLE',
+      monthlyPrice: Number(rObj.monthlyPrice ?? 0),
+      isAvailable: typeof rObj.isAvailable === 'boolean' ? rObj.isAvailable : true,
+      hasPrivateBathroom: Boolean(rObj.hasPrivateBathroom ?? rObj.bathType === 'PRIVATE'),
+    };
+  });
 
   const rawReviews = Array.isArray(raw.reviews) ? raw.reviews : [];
   const reviews: ReviewItemDto[] = rawReviews.map((rev) =>
@@ -145,78 +161,53 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
   );
 
   const rawAmenities = Array.isArray(raw.amenities) ? raw.amenities : [];
-  const amenities = rawAmenities.map((item) => {
+  const amenities = rawAmenities.map((item, idx) => {
     if (typeof item === 'string') {
-      return { slug: item, name: item };
+      return { id: `amenity-${idx}`, slug: item, name: item };
     }
-    const obj = item as { slug?: string; name?: string };
+    const obj = item as { id?: string; slug?: string; name?: string };
     return {
+      id: String(obj.id ?? `amenity-${idx}`),
       slug: String(obj.slug ?? ''),
       name: String(obj.name ?? obj.slug ?? ''),
     };
   });
 
   return {
-    id: String(raw.id ?? ''),
-    slug: typeof raw.slug === 'string' ? raw.slug : undefined,
+    id: pensionId,
+    slug: String(raw.slug ?? `pension-${pensionId}`),
     title: String(raw.title ?? ''),
-    description: typeof raw.description === 'string' ? raw.description : undefined,
-    address: typeof raw.address === 'string' ? raw.address : undefined,
-    neighborhood: typeof raw.neighborhood === 'string' ? raw.neighborhood : undefined,
+    description: String(raw.description ?? ''),
+    address: String(raw.address ?? ''),
+    neighborhood: String(raw.neighborhood ?? ''),
     city: String(raw.city ?? ''),
-    latitude:
-      raw.latitude !== undefined && raw.latitude !== null ? Number(raw.latitude) : undefined,
-    longitude:
-      raw.longitude !== undefined && raw.longitude !== null ? Number(raw.longitude) : undefined,
-    baseMonthlyPrice:
-      raw.baseMonthlyPrice !== undefined && raw.baseMonthlyPrice !== null
-        ? Number(raw.baseMonthlyPrice)
-        : undefined,
-    currency: typeof raw.currency === 'string' ? raw.currency : undefined,
+    latitude: Number(raw.latitude ?? 0),
+    longitude: Number(raw.longitude ?? 0),
+    baseMonthlyPrice: Number(raw.baseMonthlyPrice ?? 0),
+    currency: String(raw.currency ?? 'CLP'),
     deposit: raw.deposit !== undefined && raw.deposit !== null ? Number(raw.deposit) : null,
-    waterIncluded: typeof raw.waterIncluded === 'boolean' ? raw.waterIncluded : undefined,
-    electricityIncluded:
-      typeof raw.electricityIncluded === 'boolean' ? raw.electricityIncluded : undefined,
-    gasIncluded: typeof raw.gasIncluded === 'boolean' ? raw.gasIncluded : undefined,
-    internetIncluded: typeof raw.internetIncluded === 'boolean' ? raw.internetIncluded : undefined,
+    waterIncluded: Boolean(raw.waterIncluded),
+    electricityIncluded: Boolean(raw.electricityIncluded),
+    gasIncluded: Boolean(raw.gasIncluded),
+    internetIncluded: raw.internetIncluded !== undefined ? Boolean(raw.internetIncluded) : true,
     curfewTime: typeof raw.curfewTime === 'string' ? raw.curfewTime : null,
-    guestsAllowed: typeof raw.guestsAllowed === 'boolean' ? raw.guestsAllowed : undefined,
-    smokingAllowed: typeof raw.smokingAllowed === 'boolean' ? raw.smokingAllowed : undefined,
-    petsAllowed: typeof raw.petsAllowed === 'boolean' ? raw.petsAllowed : undefined,
-    genderPreference: raw.genderPreference as PensionItemDto['genderPreference'],
+    guestsAllowed: Boolean(raw.guestsAllowed),
+    smokingAllowed: Boolean(raw.smokingAllowed),
+    petsAllowed: Boolean(raw.petsAllowed),
+    genderPreference: (raw.genderPreference as components['schemas']['GenderPreference']) ?? 'ANY',
     quietHoursStart: typeof raw.quietHoursStart === 'string' ? raw.quietHoursStart : null,
     quietHoursEnd: typeof raw.quietHoursEnd === 'string' ? raw.quietHoursEnd : null,
     verificationStatus:
-      typeof raw.verificationStatus === 'string' ? raw.verificationStatus : undefined,
-    isActive: typeof raw.isActive === 'boolean' ? raw.isActive : undefined,
-    images: images.length > 0 ? images : undefined,
-    rooms: rooms.length > 0 ? rooms : undefined,
-    reviews: reviews.length > 0 ? reviews : undefined,
-    amenities: amenities.length > 0 ? amenities : undefined,
-    averageRating:
-      raw.averageRating !== undefined && raw.averageRating !== null
-        ? Number(raw.averageRating)
-        : raw.ratingAverage !== undefined && raw.ratingAverage !== null
-          ? Number(raw.ratingAverage)
-          : undefined,
-    ratingAverage:
-      raw.ratingAverage !== undefined && raw.ratingAverage !== null
-        ? Number(raw.ratingAverage)
-        : raw.averageRating !== undefined && raw.averageRating !== null
-          ? Number(raw.averageRating)
-          : undefined,
-    reviewsCount:
-      raw.reviewsCount !== undefined && raw.reviewsCount !== null
-        ? Number(raw.reviewsCount)
-        : raw.ratingCount !== undefined && raw.ratingCount !== null
-          ? Number(raw.ratingCount)
-          : undefined,
-    ratingCount:
-      raw.ratingCount !== undefined && raw.ratingCount !== null
-        ? Number(raw.ratingCount)
-        : raw.reviewsCount !== undefined && raw.reviewsCount !== null
-          ? Number(raw.reviewsCount)
-          : undefined,
+      (raw.verificationStatus as components['schemas']['VerificationStatus']) ?? 'UNVERIFIED',
+    isActive: typeof raw.isActive === 'boolean' ? raw.isActive : true,
+    images,
+    rooms,
+    reviews,
+    amenities,
+    ratingAverage: Number(raw.ratingAverage ?? raw.averageRating ?? 0),
+    averageRating: Number(raw.ratingAverage ?? raw.averageRating ?? 0),
+    reviewsCount: Number(raw.reviewsCount ?? raw.ratingCount ?? 0),
+    ratingCount: Number(raw.ratingCount ?? raw.reviewsCount ?? 0),
   };
 }
 

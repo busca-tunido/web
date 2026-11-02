@@ -4,16 +4,30 @@ import type { CreateRoomDto, RoomDto, UpdateRoomDto } from '@/types/api-contract
 
 export function mapRoomDto(raw: Record<string, unknown>): RoomDto {
   const hasPrivateBath = Boolean(raw.hasPrivateBathroom ?? raw.bathType === 'PRIVATE');
+  const images = Array.isArray(raw.images)
+    ? (raw.images as string[])
+    : Array.isArray(raw.photos)
+      ? (raw.photos as string[])
+      : [];
   return {
     id: String(raw.id ?? ''),
     pensionId: String(raw.pensionId ?? ''),
+    title: String(raw.title ?? raw.name ?? raw.roomNumber ?? 'Habitación'),
     name: String(raw.title ?? raw.name ?? raw.roomNumber ?? 'Habitación'),
     description: typeof raw.description === 'string' ? raw.description : null,
+    type: (raw.type as RoomDto['type']) ?? 'SINGLE',
     monthlyPrice: Number(raw.monthlyPrice ?? 0),
+    deposit: raw.deposit !== undefined && raw.deposit !== null ? Number(raw.deposit) : null,
+    totalBeds: Number(raw.totalBeds ?? 1),
+    availableBeds: Number(raw.availableBeds ?? 1),
     isAvailable: typeof raw.isAvailable === 'boolean' ? raw.isAvailable : true,
+    hasPrivateBathroom: hasPrivateBath,
     bathType: hasPrivateBath ? 'PRIVATE' : 'SHARED',
     availableFrom: typeof raw.availableFrom === 'string' ? raw.availableFrom : null,
-    images: Array.isArray(raw.images) ? (raw.images as string[]) : [],
+    images,
+    photos: images,
+    createdAt: String(raw.createdAt ?? new Date().toISOString()),
+    updatedAt: String(raw.updatedAt ?? new Date().toISOString()),
   };
 }
 

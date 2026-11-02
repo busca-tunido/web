@@ -35,7 +35,7 @@ export type LandlordReviewsScreenProps = {
 
 type ReviewFilterType = 'ALL' | 'WITH_PHOTOS' | '5_STARS' | '4_PLUS' | 'LOW_RATING' | 'LONG_STAY';
 
-function formatStayDuration(cat?: string): string {
+function formatStayDuration(cat?: string | null): string {
   switch (cat) {
     case 'FEW_DAYS':
       return 'Estadía de unos días';

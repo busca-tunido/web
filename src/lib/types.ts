@@ -6,10 +6,10 @@ export type UserProfile = {
   firstName: string;
   lastName: string;
   role: UserRole;
-  phone?: string;
-  universityName?: string;
+  phone?: string | null;
+  universityName?: string | null;
   isForeignStudent?: boolean;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
 };
 
 export type CityInfo = {
@@ -161,15 +161,15 @@ export type PensionReview = {
   pensionId: string;
   overallRating: number;
   rating?: number;
-  cleanlinessRating?: number;
-  landlordRating?: number;
-  quietnessRating?: number;
-  wifiRating?: number;
+  cleanlinessRating?: number | null;
+  landlordRating?: number | null;
+  quietnessRating?: number | null;
+  wifiRating?: number | null;
   comment: string;
-  pros?: string;
-  cons?: string;
-  stayDurationCategory?: string;
-  stayDuration?: StayDurationCategory | string;
+  pros?: string | null;
+  cons?: string | null;
+  stayDurationCategory?: string | null;
+  stayDuration?: StayDurationCategory | string | null;
   isResidentVerified?: boolean;
   isVerifiedStudent?: boolean;
   helpfulCount?: number;

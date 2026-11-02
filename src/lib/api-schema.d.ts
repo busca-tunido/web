@@ -916,6 +916,10 @@ export interface components {
       internetIncluded: boolean;
       /** @example 23:00 */
       curfewTime?: string | null;
+      /** @example 23:00 */
+      quietHoursStart?: string | null;
+      /** @example 07:00 */
+      quietHoursEnd?: string | null;
       /** @example false */
       guestsAllowed: boolean;
       /** @example false */
@@ -1178,6 +1182,8 @@ export interface components {
       availableBeds: number;
       /** @example true */
       isAvailable: boolean;
+      /** @example 2026-03-01 */
+      availableFrom?: string | null;
       /**
        * @example [
        *       "https://example.com/room1.jpg"
@@ -1582,7 +1588,9 @@ export interface components {
        *       "baseMonthlyPrice": 280000
        *     }
        */
-      proposedChanges: Record<string, never>;
+      proposedChanges: {
+        [key: string]: unknown;
+      };
       /** @example El dueño actualizó los precios. */
       submissionNotes?: string | null;
       /** @example Verificado con el propietario. */
@@ -1617,7 +1625,9 @@ export interface components {
        *       "amenitiesToRemove": []
        *     }
        */
-      proposedChanges: Record<string, never>;
+      proposedChanges: {
+        [key: string]: unknown;
+      };
       /** @example Actualización tras consulta presencial. */
       submissionNotes?: string;
     };

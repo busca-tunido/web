@@ -151,7 +151,7 @@ export function usePensionReviews(
         helpfulCount: r.helpfulCount ?? 0,
         userVoted: isVoted,
         images: r.images ?? [],
-        createdAt: r.createdAt,
+        createdAt: r.createdAt || new Date().toISOString(),
         user: {
           id: r.user?.id || r.userId,
           firstName,

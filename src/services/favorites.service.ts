@@ -1,68 +1,53 @@
 import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
+import type { components } from '@/lib/api-schema';
 import type { PensionItemDto } from '@/types/api-contracts';
 
-type RawFavoritePension = Partial<PensionItemDto> & {
-  ratingAverage?: number;
-  ratingCount?: number;
-  images?: Array<{ url: string; sortOrder?: number; isMain?: boolean } | string>;
-};
+export type FavoriteItemDto = components['schemas']['FavoriteItemResponseDto'];
 
-type RawFavoriteRecord = {
-  id?: string;
-  userId?: string;
-  pensionId?: string;
-  createdAt?: string;
-  pension?: RawFavoritePension;
-};
-
-function normalizePensionItem(raw: Partial<PensionItemDto> | RawFavoriteRecord): PensionItemDto {
-  if ('pension' in raw && raw.pension) {
-    const p = raw.pension;
-    const images = Array.isArray(p.images)
-      ? p.images.map((img, idx) =>
-          typeof img === 'string'
-            ? { id: `img-${idx}`, url: img, order: idx, isMain: idx === 0 }
-            : {
-                id: (img as { id?: string }).id ?? `img-${idx}`,
-                url: img.url,
-                order:
-                  (img as { sortOrder?: number; order?: number }).sortOrder ??
-                  (img as { order?: number }).order ??
-                  idx,
-                isMain: (img as { isMain?: boolean }).isMain ?? idx === 0,
-              },
-        )
-      : [];
-
+function normalizePensionItem(raw: FavoriteItemDto | Record<string, unknown>): PensionItemDto {
+  const p = ('pension' in raw && raw.pension ? raw.pension : raw) as Record<string, unknown>;
+  const rawImages = Array.isArray(p.images) ? p.images : [];
+  const images = rawImages.map((img: unknown, idx: number) => {
+    const obj = img as Record<string, unknown>;
+    const url = typeof obj === 'object' && obj ? String(obj.url ?? '') : String(img);
     return {
-      id: p.id ?? raw.pensionId ?? '',
-      slug: p.slug,
-      title: p.title ?? '',
-      city: p.city ?? '',
-      neighborhood: p.neighborhood,
-      address: p.address,
-      description: p.description,
-      baseMonthlyPrice: p.baseMonthlyPrice,
-      averageRating: p.averageRating ?? p.ratingAverage,
-      reviewsCount: p.reviewsCount ?? p.ratingCount,
-      images,
-      verificationStatus: p.verificationStatus,
-      isActive: p.isActive,
+      id: typeof obj === 'object' && obj?.id ? String(obj.id) : `img-${idx}`,
+      url,
+      thumbnailUrl: typeof obj === 'object' && obj?.thumbnailUrl ? String(obj.thumbnailUrl) : url,
+      caption: typeof obj === 'object' && typeof obj?.caption === 'string' ? obj.caption : null,
+      isFeatured: typeof obj === 'object' && Boolean(obj?.isFeatured ?? idx === 0),
     };
-  }
+  });
 
-  const item = raw as PensionItemDto;
   return {
-    ...item,
-    id: item.id ?? '',
-    title: item.title ?? '',
-    city: item.city ?? '',
+    id: String(p.id ?? ''),
+    slug: String(p.slug ?? `pension-${p.id}`),
+    title: String(p.title ?? ''),
+    city: String(p.city ?? ''),
+    neighborhood: typeof p.neighborhood === 'string' ? p.neighborhood : undefined,
+    baseMonthlyPrice: Number(p.baseMonthlyPrice ?? 0),
+    ratingAverage: Number(p.ratingAverage ?? 0),
+    ratingCount: Number(p.ratingCount ?? 0),
+    reviewsCount: Number(p.reviewsCount ?? p.ratingCount ?? 0),
+    averageRating: Number(p.averageRating ?? p.ratingAverage ?? 0),
+    images,
+    verificationStatus: 'OFFICIALLY_VERIFIED',
+    isActive: true,
+    waterIncluded: false,
+    electricityIncluded: false,
+    gasIncluded: false,
+    internetIncluded: true,
+    guestsAllowed: true,
+    smokingAllowed: false,
+    petsAllowed: false,
+    genderPreference: 'ANY',
+    currency: 'CLP',
   };
 }
 
 export async function fetchStudentFavorites(): Promise<ApiResponse<PensionItemDto[]>> {
-  const response = await apiFetch<Array<RawFavoriteRecord | PensionItemDto>>('/favorites', {
+  const response = await apiFetch<FavoriteItemDto[]>('/favorites', {
     method: 'GET',
   });
 

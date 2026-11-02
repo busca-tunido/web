@@ -1,5 +1,6 @@
 import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
+import type { paths } from '@/lib/api-schema';
 import { getUniversityImageUrl } from '@/lib/location-images';
 import type {
   CampusAreaDto,
@@ -7,6 +8,10 @@ import type {
   UniversityDto,
   UpdateUniversityDto,
 } from '@/types/api-contracts';
+
+export type UniversitiesFilterQuery = NonNullable<
+  paths['/universities']['get']['parameters']['query']
+>;
 
 export function mapUniversityDto(raw: Record<string, unknown>): UniversityDto {
   const name = String(raw.name ?? '');
@@ -28,12 +33,14 @@ export function mapUniversityDto(raw: Record<string, unknown>): UniversityDto {
     longitude: Number(raw.longitude ?? 0),
     imageUrl: rawImage ?? getUniversityImageUrl(name, acronym),
     campuses: Array.isArray(raw.campuses) ? (raw.campuses as CampusAreaDto[]) : undefined,
+    createdAt: String(raw.createdAt ?? new Date().toISOString()),
+    updatedAt: String(raw.updatedAt ?? new Date().toISOString()),
   };
 }
 
-export async function fetchUniversities(params?: {
-  city?: string;
-}): Promise<ApiResponse<UniversityDto[]>> {
+export async function fetchUniversities(
+  params?: UniversitiesFilterQuery,
+): Promise<ApiResponse<UniversityDto[]>> {
   const query = params?.city ? `?city=${encodeURIComponent(params.city)}` : '';
   const response = await apiFetch<Array<Record<string, unknown>>>(`/universities${query}`, {
     method: 'GET',

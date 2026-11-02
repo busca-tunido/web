@@ -5171,6 +5171,16 @@
             "nullable": true,
             "example": "23:00"
           },
+          "quietHoursStart": {
+            "type": "string",
+            "nullable": true,
+            "example": "23:00"
+          },
+          "quietHoursEnd": {
+            "type": "string",
+            "nullable": true,
+            "example": "07:00"
+          },
           "guestsAllowed": {
             "type": "boolean",
             "example": false
@@ -5679,6 +5689,11 @@
           "isAvailable": {
             "type": "boolean",
             "example": true
+          },
+          "availableFrom": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-03-01"
           },
           "images": {
             "example": ["https://example.com/room1.jpg"],
@@ -6471,6 +6486,7 @@
           },
           "proposedChanges": {
             "type": "object",
+            "additionalProperties": true,
             "example": {
               "baseMonthlyPrice": 280000
             }
@@ -6530,6 +6546,7 @@
           },
           "proposedChanges": {
             "type": "object",
+            "additionalProperties": true,
             "example": {
               "curfewTime": "23:30",
               "quietHoursStart": "22:00",
