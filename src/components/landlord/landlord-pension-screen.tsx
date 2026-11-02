@@ -198,8 +198,8 @@ export function LandlordPensionScreen({
         electricityIncluded: isPensionItemDto ? Boolean(p.electricityIncluded ?? true) : true,
         gasIncluded: isPensionItemDto ? Boolean(p.gasIncluded ?? true) : true,
         internetIncluded: isPensionItemDto
-          ? Boolean(p.internetIncluded ?? true)
-          : Boolean((p as PensionItem).includesWifi ?? true),
+          ? Boolean(p.internetIncluded)
+          : Boolean((p as PensionItem).includesWifi),
         guestsAllowed: isPensionItemDto ? Boolean(p.guestsAllowed) : false,
         smokingAllowed: isPensionItemDto ? Boolean(p.smokingAllowed) : false,
         petsAllowed: isPensionItemDto ? Boolean(p.petsAllowed) : false,

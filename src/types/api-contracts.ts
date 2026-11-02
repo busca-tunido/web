@@ -99,6 +99,7 @@ export type PensionItemDto = Partial<components['schemas']['PensionItemResponseD
   amenities?: Array<
     components['schemas']['PensionAmenityResponseDto'] | { id?: string; slug: string; name: string }
   >;
+  includesWifi?: boolean;
 };
 
 export type PensionDetailDto = PensionItemDto;

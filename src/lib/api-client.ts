@@ -165,7 +165,14 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
     includesMeals: Boolean(
       amenitiesSlugs.has('cocina-equipada') || amenitiesSlugs.has('comida-incluida'),
     ),
-    includesWifi: Boolean(amenitiesSlugs.has('wifi-alta-velocidad') || amenitiesSlugs.has('wifi')),
+    includesWifi:
+      raw.internetIncluded === false
+        ? false
+        : Boolean(
+            raw.internetIncluded ||
+              amenitiesSlugs.has('wifi-alta-velocidad') ||
+              amenitiesSlugs.has('wifi'),
+          ),
     includesLaundry: Boolean(
       amenitiesSlugs.has('lavadora-secadora') || amenitiesSlugs.has('lavanderia'),
     ),

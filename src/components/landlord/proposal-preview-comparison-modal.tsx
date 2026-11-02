@@ -88,7 +88,7 @@ function resolvePensionData(
   const waterIncluded = Boolean(c.waterIncluded ?? p?.waterIncluded ?? false);
   const electricityIncluded = Boolean(c.electricityIncluded ?? p?.electricityIncluded ?? false);
   const gasIncluded = Boolean(c.gasIncluded ?? p?.gasIncluded ?? false);
-  const internetIncluded = Boolean(c.internetIncluded ?? p?.internetIncluded ?? true);
+  const internetIncluded = Boolean(c.internetIncluded ?? p?.internetIncluded ?? false);
 
   const curfewTime = String(
     c.curfewTime ?? c.curfewText ?? p?.curfewTime ?? 'Sin horario estricto',

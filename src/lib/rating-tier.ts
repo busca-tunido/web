@@ -22,22 +22,24 @@ export type MarkerThemeStyle = {
   opacity: number;
 };
 
-export function classifyPensionRating(
-  pension: PensionItem | Partial<PensionItem>,
-): RatingClassification;
+export type RatingOptions = Partial<PensionItem> & {
+  internetIncluded?: boolean;
+};
+
+export function classifyPensionRating(pension: RatingOptions): RatingClassification;
 export function classifyPensionRating(
   ratingAverage?: number | null,
   reviewsCount?: number | null,
-  extraOptions?: Partial<PensionItem>,
+  extraOptions?: RatingOptions,
 ): RatingClassification;
 export function classifyPensionRating(
-  arg1?: number | null | Partial<PensionItem>,
+  arg1?: number | null | RatingOptions,
   arg2?: number | null,
-  arg3?: Partial<PensionItem>,
+  arg3?: RatingOptions,
 ): RatingClassification {
   let ratingAverage: number | null | undefined;
   let reviewsCount: number | null | undefined;
-  let options: Partial<PensionItem> = {};
+  let options: RatingOptions = {};
 
   if (typeof arg1 === 'object' && arg1 !== null) {
     ratingAverage = arg1.ratingAverage;
@@ -72,7 +74,12 @@ export function classifyPensionRating(
     (confidenceInertia / (count + confidenceInertia)) * priorMean;
 
   const isVerified = options.isVerified === true;
-  const hasWifi = options.includesWifi ?? true;
+  const hasWifi =
+    typeof options.includesWifi === 'boolean'
+      ? options.includesWifi
+      : typeof options.internetIncluded === 'boolean'
+        ? options.internetIncluded
+        : true;
   const hasStudyRoom = options.includesStudyRoom === true;
   const hasProximity =
     typeof options.distanceToUniversityMeters === 'number' &&

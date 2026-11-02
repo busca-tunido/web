@@ -189,7 +189,14 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
     waterIncluded: Boolean(raw.waterIncluded),
     electricityIncluded: Boolean(raw.electricityIncluded),
     gasIncluded: Boolean(raw.gasIncluded),
-    internetIncluded: raw.internetIncluded !== undefined ? Boolean(raw.internetIncluded) : true,
+    internetIncluded: Boolean(raw.internetIncluded),
+    includesWifi:
+      raw.internetIncluded === false
+        ? false
+        : Boolean(
+            raw.internetIncluded ||
+              amenities.some((a) => a.slug === 'wifi-alta-velocidad' || a.slug === 'wifi'),
+          ),
     curfewTime: typeof raw.curfewTime === 'string' ? raw.curfewTime : null,
     guestsAllowed: Boolean(raw.guestsAllowed),
     smokingAllowed: Boolean(raw.smokingAllowed),
