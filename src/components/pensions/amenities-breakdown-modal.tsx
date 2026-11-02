@@ -204,10 +204,12 @@ export function AmenitiesBreakdownModal({
                       : 'Espacio de estudio independiente en cada dormitorio'}
                   </span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>Cobertura de Wi-Fi de alta velocidad en todos los ambientes</span>
-                </li>
+                {pension.includesWifi && (
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                    <span>Cobertura de Wi-Fi de alta velocidad en todos los ambientes</span>
+                  </li>
+                )}
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Iluminación LED natural y adecuada para lectura nocturna</span>
