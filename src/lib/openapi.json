@@ -3,365 +3,71 @@
   "paths": {
     "/": {
       "get": {
-        "operationId": "getHello",
+        "operationId": "AppController_getHello",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
-        "tags": [
-          "App"
-        ]
-      }
-    },
-    "/health": {
-      "get": {
-        "operationId": "getHealth",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Health check result",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/HealthCheckResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "summary": "Check API and database health",
-        "tags": [
-          "App"
-        ]
+        "tags": ["App"]
       }
     },
     "/auth/register": {
       "post": {
-        "operationId": "register",
+        "operationId": "AuthController_register",
         "parameters": [],
         "responses": {
           "201": {
-            "description": "User successfully created and token issued",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 201
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/AuthResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "User successfully created and token issued"
           },
           "409": {
-            "description": "Conflicto con el estado actual del recurso",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Email already registered"
           }
         },
         "summary": "Register a new user account",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/auth/login": {
       "post": {
-        "operationId": "login",
+        "operationId": "AuthController_login",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Authentication successful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/AuthResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Authentication successful"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Demasiadas solicitudes / límite de tasa excedido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Invalid credentials"
           }
         },
         "summary": "Log in with email and password",
-        "tags": [
-          "Auth"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/auth/check-email": {
       "get": {
-        "operationId": "checkEmail",
-        "parameters": [
-          {
-            "name": "email",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "example": "estudiante.demo@uchile.cl",
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "AuthController_checkEmail",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Check email status and detected university returned",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/CheckEmailResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Demasiadas solicitudes / límite de tasa excedido",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Check email status returned"
           }
         },
-        "summary": "Check if an email address is already registered and auto-detect university",
-        "tags": [
-          "Auth"
-        ]
+        "summary": "Check if an email address is already registered",
+        "tags": ["Auth"]
       }
     },
     "/auth/me": {
       "get": {
-        "operationId": "getProfile",
+        "operationId": "AuthController_getProfile",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Profile returned",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/SanitizedUserResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
+            "description": "Profile returned"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           }
         },
         "security": [
@@ -370,693 +76,33 @@
           }
         ],
         "summary": "Get current authenticated user profile",
-        "tags": [
-          "Auth"
-        ]
-      }
-    },
-    "/universities": {
-      "get": {
-        "operationId": "findAll",
-        "parameters": [
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of universities",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/UniversityResponseDto"
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "List all universities with optional city filter",
-        "tags": [
-          "Universities"
-        ]
-      },
-      "post": {
-        "operationId": "create",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "University created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 201
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/UniversityResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new university (Admin only)",
-        "tags": [
-          "Universities"
-        ]
-      }
-    },
-    "/universities/campuses": {
-      "get": {
-        "operationId": "findCampusAreas",
-        "parameters": [
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of campus areas with polygons",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/CampusAreaResponseDto"
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "List all university campus areas with perimeter polygons",
-        "tags": [
-          "Universities"
-        ]
-      }
-    },
-    "/universities/{id}": {
-      "get": {
-        "operationId": "findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la universidad",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "University details",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/UniversityResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Get university by ID",
-        "tags": [
-          "Universities"
-        ]
-      },
-      "patch": {
-        "operationId": "update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la universidad",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "University updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/UniversityResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update university (Admin only)",
-        "tags": [
-          "Universities"
-        ]
-      },
-      "delete": {
-        "operationId": "delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la universidad",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "University deleted",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/DeleteResultResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Soft delete university (Admin only)",
-        "tags": [
-          "Universities"
-        ]
+        "tags": ["Auth"]
       }
     },
     "/pensions": {
       "get": {
-        "operationId": "findAll",
+        "operationId": "PensionsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Paginated list of pensions",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/PensionItemResponseDto"
-                          }
-                        },
-                        "pagination": {
-                          "$ref": "#/components/schemas/PaginationMetaDto"
-                        },
-                        "total": {
-                          "type": "number",
-                          "example": 45
-                        },
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 20
-                        },
-                        "totalPages": {
-                          "type": "number",
-                          "example": 3
-                        },
-                        "hasMore": {
-                          "type": "boolean",
-                          "example": true
-                        }
-                      },
-                      "required": [
-                        "items",
-                        "pagination",
-                        "total",
-                        "page",
-                        "limit",
-                        "totalPages"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Paginated list of pensions"
           }
         },
         "summary": "List pensions with filtering and pagination",
-        "tags": [
-          "Pensions"
-        ]
+        "tags": ["Pensions"]
       },
       "post": {
-        "operationId": "create",
+        "operationId": "PensionsController_create",
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Pension created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 201
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/PensionItemResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Pension created successfully"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden - Insufficient permissions"
           }
         },
         "security": [
@@ -1065,146 +111,35 @@
           }
         ],
         "summary": "Create a new pension (Landlord or Admin)",
-        "tags": [
-          "Pensions"
-        ]
+        "tags": ["Pensions"]
       }
     },
     "/pensions/price-histogram": {
       "get": {
-        "operationId": "getPriceHistogram",
+        "operationId": "PensionsController_getPriceHistogram",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Price distribution histogram with 28 bins",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/PriceHistogramResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Price distribution histogram with 28 bins"
           }
         },
         "summary": "Get price distribution histogram for pensions",
-        "tags": [
-          "Pensions"
-        ]
+        "tags": ["Pensions"]
       }
     },
     "/pensions/mine": {
       "get": {
-        "operationId": "getMine",
+        "operationId": "PensionsController_getMine",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "List of pensions owned by landlord",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/PensionItemResponseDto"
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
+            "description": "List of pensions owned by landlord"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden - Insufficient permissions"
           }
         },
         "security": [
@@ -1213,241 +148,41 @@
           }
         ],
         "summary": "List pensions owned by authenticated landlord",
-        "tags": [
-          "Pensions"
-        ]
-      }
-    },
-    "/pensions/cities": {
-      "get": {
-        "operationId": "getCities",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "List of cities with absolute pension counts",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/CitySummaryResponseDto"
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "List all cities with absolute pension counts and coordinates",
-        "tags": [
-          "Pensions"
-        ]
+        "tags": ["Pensions"]
       }
     },
     "/pensions/{idOrSlug}": {
       "get": {
-        "operationId": "findOne",
-        "parameters": [
-          {
-            "name": "idOrSlug",
-            "required": true,
-            "in": "path",
-            "description": "Pension ID or friendly URL slug",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "PensionsController_findOne",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Pension detailed information",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/PensionItemResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
+            "description": "Pension detailed information"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Pension not found"
           }
         },
         "summary": "Get pension detail by ID or Slug",
-        "tags": [
-          "Pensions"
-        ]
+        "tags": ["Pensions"]
       }
     },
     "/pensions/{id}": {
       "patch": {
-        "operationId": "update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "Pension ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "PensionsController_update",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Pension updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/PensionItemResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Pension updated successfully"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden - You do not own this pension"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Pension not found"
           }
         },
         "security": [
@@ -1456,96 +191,23 @@
           }
         ],
         "summary": "Update pension details (Owner or Admin)",
-        "tags": [
-          "Pensions"
-        ]
+        "tags": ["Pensions"]
       },
       "delete": {
-        "operationId": "delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "Pension ID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "PensionsController_delete",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Pension deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/DeleteResultResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
+            "description": "Pension deleted successfully"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden - You do not own this pension"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Pension not found"
           }
         },
         "security": [
@@ -1554,149 +216,19 @@
           }
         ],
         "summary": "Soft delete pension (Owner or Admin)",
-        "tags": [
-          "Pensions"
-        ]
-      }
-    },
-    "/cities": {
-      "get": {
-        "operationId": "findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "List of cities with absolute pension counts",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/CitySummaryResponseDto"
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          }
-        },
-        "summary": "List all cities with absolute pension counts and coordinates",
-        "tags": [
-          "Cities"
-        ]
+        "tags": ["Pensions"]
       }
     },
     "/pensions/{pensionId}/rooms": {
       "get": {
-        "operationId": "findByPension",
-        "parameters": [
-          {
-            "name": "pensionId",
-            "required": true,
-            "in": "path",
-            "description": "ID de la pensión",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "RoomsController_findByPension",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "List of rooms",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/RoomResponseDto"
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
+            "description": "List of rooms"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           }
         },
         "security": [
@@ -1705,106 +237,20 @@
           }
         ],
         "summary": "List rooms for a specific pension",
-        "tags": [
-          "Rooms"
-        ]
+        "tags": ["Rooms"]
       },
       "post": {
-        "operationId": "create",
-        "parameters": [
-          {
-            "name": "pensionId",
-            "required": true,
-            "in": "path",
-            "description": "ID de la pensión",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "RoomsController_create",
+        "parameters": [],
         "responses": {
           "201": {
-            "description": "Room created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 201
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/RoomResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Room created successfully"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden - You do not own this pension"
           }
         },
         "security": [
@@ -1813,88 +259,22 @@
           }
         ],
         "summary": "Add a new room to a pension (Owner or Admin)",
-        "tags": [
-          "Rooms"
-        ]
+        "tags": ["Rooms"]
       }
     },
     "/rooms/{id}": {
       "get": {
-        "operationId": "findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la habitación",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "RoomsController_findOne",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Room details",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/RoomResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
+            "description": "Room details"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Room not found"
           }
         },
         "security": [
@@ -1903,106 +283,23 @@
           }
         ],
         "summary": "Get room by ID",
-        "tags": [
-          "Rooms"
-        ]
+        "tags": ["Rooms"]
       },
       "patch": {
-        "operationId": "update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la habitación",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "RoomsController_update",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Room updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/RoomResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Room updated successfully"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden - You do not own this room"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Room not found"
           }
         },
         "security": [
@@ -2011,96 +308,23 @@
           }
         ],
         "summary": "Update room details (Owner or Admin)",
-        "tags": [
-          "Rooms"
-        ]
+        "tags": ["Rooms"]
       },
       "delete": {
-        "operationId": "delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la habitación",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "RoomsController_delete",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Room deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/DeleteResultResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
+            "description": "Room deleted successfully"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden - You do not own this room"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Room not found"
           }
         },
         "security": [
@@ -2109,20 +333,17 @@
           }
         ],
         "summary": "Soft delete room (Owner or Admin)",
-        "tags": [
-          "Rooms"
-        ]
+        "tags": ["Rooms"]
       }
     },
-    "/pensions/{pensionId}/reviews": {
+    "/universities": {
       "get": {
-        "operationId": "findByPension",
+        "operationId": "UniversitiesController_findAll",
         "parameters": [
           {
-            "name": "pensionId",
-            "required": true,
-            "in": "path",
-            "description": "ID de la pensión",
+            "name": "city",
+            "required": false,
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -2130,199 +351,115 @@
         ],
         "responses": {
           "200": {
-            "description": "Paginated reviews response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/ReviewResponseDto"
-                          }
-                        },
-                        "pagination": {
-                          "$ref": "#/components/schemas/PaginationMetaDto"
-                        },
-                        "total": {
-                          "type": "number",
-                          "example": 45
-                        },
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 20
-                        },
-                        "totalPages": {
-                          "type": "number",
-                          "example": 3
-                        },
-                        "hasMore": {
-                          "type": "boolean",
-                          "example": true
-                        }
-                      },
-                      "required": [
-                        "items",
-                        "pagination",
-                        "total",
-                        "page",
-                        "limit",
-                        "totalPages"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "List of universities"
           }
         },
-        "summary": "Get paginated reviews for a pension with optional rating filter and sorting",
-        "tags": [
-          "Reviews"
-        ]
+        "summary": "List all universities with optional city filter",
+        "tags": ["Universities"]
       },
       "post": {
-        "operationId": "create",
-        "parameters": [
-          {
-            "name": "pensionId",
-            "required": true,
-            "in": "path",
-            "description": "ID de la pensión",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "UniversitiesController_create",
+        "parameters": [],
         "responses": {
           "201": {
-            "description": "Review posted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 201
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/ReviewResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
+            "description": "University created"
           },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a new university (Admin only)",
+        "tags": ["Universities"]
+      }
+    },
+    "/universities/{id}": {
+      "get": {
+        "operationId": "UniversitiesController_findOne",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "University details"
+          },
+          "404": {
+            "description": "University not found"
+          }
+        },
+        "summary": "Get university by ID",
+        "tags": ["Universities"]
+      },
+      "patch": {
+        "operationId": "UniversitiesController_update",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "University updated"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update university (Admin only)",
+        "tags": ["Universities"]
+      },
+      "delete": {
+        "operationId": "UniversitiesController_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "University deleted"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Soft delete university (Admin only)",
+        "tags": ["Universities"]
+      }
+    },
+    "/pensions/{pensionId}/reviews": {
+      "get": {
+        "operationId": "ReviewsController_findByPension",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Paginated reviews response"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get paginated reviews for a pension with optional rating filter and sorting",
+        "tags": ["Reviews"]
+      },
+      "post": {
+        "operationId": "ReviewsController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Review posted successfully"
           },
           "409": {
-            "description": "Conflicto con el estado actual del recurso",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Already reviewed this pension"
           }
         },
         "security": [
@@ -2331,71 +468,16 @@
           }
         ],
         "summary": "Post a review for a pension (Authenticated students)",
-        "tags": [
-          "Reviews"
-        ]
+        "tags": ["Reviews"]
       }
     },
     "/stays": {
       "get": {
-        "operationId": "findUserStays",
+        "operationId": "ReviewsController_findUserStays",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "List of student stays",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/StudentStayResponseDto"
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "List of student stays"
           }
         },
         "security": [
@@ -2404,108 +486,19 @@
           }
         ],
         "summary": "Get stay history for current authenticated student based on their reviews",
-        "tags": [
-          "Reviews"
-        ]
+        "tags": ["Reviews"]
       }
     },
     "/reviews/{id}": {
       "patch": {
-        "operationId": "update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la reseña",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "ReviewsController_update",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Review updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/ReviewResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Review updated successfully"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -2514,96 +507,17 @@
           }
         ],
         "summary": "Update your review (Owner or Admin)",
-        "tags": [
-          "Reviews"
-        ]
+        "tags": ["Reviews"]
       },
       "delete": {
-        "operationId": "delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la reseña",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "ReviewsController_delete",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Review deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/DeleteResultResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Review deleted successfully"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -2612,68 +526,16 @@
           }
         ],
         "summary": "Delete your review (Owner or Admin)",
-        "tags": [
-          "Reviews"
-        ]
+        "tags": ["Reviews"]
       }
     },
     "/reviews/helpful/voted": {
       "get": {
-        "operationId": "findUserHelpfulVotes",
+        "operationId": "ReviewsController_findUserHelpfulVotes",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "List of review IDs voted helpful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/HelpfulVotesResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "List of review IDs voted helpful"
           }
         },
         "security": [
@@ -2682,88 +544,16 @@
           }
         ],
         "summary": "List review IDs the current user has voted as helpful",
-        "tags": [
-          "Reviews"
-        ]
+        "tags": ["Reviews"]
       }
     },
     "/reviews/{id}/helpful": {
       "post": {
-        "operationId": "voteHelpful",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la reseña",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "ReviewsController_voteHelpful",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Review vote toggled successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/VoteHelpfulResultResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Review vote toggled successfully"
           }
         },
         "security": [
@@ -2772,96 +562,29 @@
           }
         ],
         "summary": "Vote a review as helpful (toggle)",
-        "tags": [
-          "Reviews"
-        ]
+        "tags": ["Reviews"]
       }
     },
     "/reports": {
       "get": {
-        "operationId": "findAll",
+        "operationId": "ReportsController_findAll",
         "parameters": [
           {
             "name": "status",
             "required": false,
             "in": "query",
             "schema": {
-              "enum": [
-                "PENDING",
-                "UNDER_REVIEW",
-                "RESOLVED",
-                "DISMISSED"
-              ],
+              "enum": ["PENDING", "UNDER_REVIEW", "RESOLVED", "DISMISSED"],
               "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "List of reports",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/ReportResponseDto"
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "List of reports"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -2870,86 +593,17 @@
           }
         ],
         "summary": "List all reports (Admin and Moderator only)",
-        "tags": [
-          "Reports"
-        ]
+        "tags": ["Reports"]
       },
       "post": {
-        "operationId": "create",
+        "operationId": "ReportsController_create",
         "parameters": [],
         "responses": {
           "201": {
-            "description": "Report submitted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 201
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/ReportResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Report submitted successfully"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Pension not found"
           }
         },
         "security": [
@@ -2958,108 +612,19 @@
           }
         ],
         "summary": "Submit an infraction report for a pension",
-        "tags": [
-          "Reports"
-        ]
+        "tags": ["Reports"]
       }
     },
     "/reports/{id}": {
       "patch": {
-        "operationId": "update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID del reporte",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "ReportsController_update",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Report status updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/ReportResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Report status updated"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -3068,71 +633,16 @@
           }
         ],
         "summary": "Update report resolution status (Admin or Moderator only)",
-        "tags": [
-          "Reports"
-        ]
+        "tags": ["Reports"]
       }
     },
     "/favorites": {
       "get": {
-        "operationId": "findAll",
+        "operationId": "FavoritesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "List of user favorites",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/FavoriteItemResponseDto"
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "List of user favorites"
           }
         },
         "security": [
@@ -3141,98 +651,19 @@
           }
         ],
         "summary": "List all favorite pensions for the current user",
-        "tags": [
-          "Favorites"
-        ]
+        "tags": ["Favorites"]
       }
     },
     "/favorites/{pensionId}": {
       "post": {
-        "operationId": "add",
-        "parameters": [
-          {
-            "name": "pensionId",
-            "required": true,
-            "in": "path",
-            "description": "ID de la pensión",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "FavoritesController_add",
+        "parameters": [],
         "responses": {
           "201": {
-            "description": "Favorite added successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 201
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/FavoriteAddedResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Favorite added successfully"
           },
           "409": {
-            "description": "Conflicto con el estado actual del recurso",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Already favorited"
           }
         },
         "security": [
@@ -3241,86 +672,17 @@
           }
         ],
         "summary": "Add a pension to favorites",
-        "tags": [
-          "Favorites"
-        ]
+        "tags": ["Favorites"]
       },
       "delete": {
-        "operationId": "remove",
-        "parameters": [
-          {
-            "name": "pensionId",
-            "required": true,
-            "in": "path",
-            "description": "ID de la pensión",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "FavoritesController_remove",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Favorite removed successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/FavoriteRemovedResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Favorite removed successfully"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Favorite not found"
           }
         },
         "security": [
@@ -3329,98 +691,22 @@
           }
         ],
         "summary": "Remove a pension from favorites",
-        "tags": [
-          "Favorites"
-        ]
+        "tags": ["Favorites"]
       }
     },
     "/pensions/{id}/proposals": {
       "post": {
-        "operationId": "create",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la pensión",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "ProposalsController_create",
+        "parameters": [],
         "responses": {
           "201": {
-            "description": "Proposal submitted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 201
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/ProposalResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Proposal submitted successfully"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Pension not found"
           }
         },
         "security": [
@@ -3429,79 +715,17 @@
           }
         ],
         "summary": "Submit a change proposal for a pension listing",
-        "tags": [
-          "Proposals"
-        ]
+        "tags": ["Proposals"]
       },
       "get": {
-        "operationId": "findByPension",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la pensión",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "ProposalsController_findByPension",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "List of proposals",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/ProposalResponseDto"
-                      }
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
+            "description": "List of proposals"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           }
         },
         "security": [
@@ -3510,14 +734,12 @@
           }
         ],
         "summary": "Get proposal history for a specific pension",
-        "tags": [
-          "Proposals"
-        ]
+        "tags": ["Proposals"]
       }
     },
     "/moderation/proposals": {
       "get": {
-        "operationId": "findModerationProposals",
+        "operationId": "ProposalsController_findModerationProposals",
         "parameters": [
           {
             "name": "limit",
@@ -3540,118 +762,17 @@
             "required": false,
             "in": "query",
             "schema": {
-              "enum": [
-                "PENDING",
-                "APPROVED",
-                "REJECTED",
-                "MODIFIED_AND_APPROVED"
-              ],
+              "enum": ["PENDING", "APPROVED", "REJECTED", "MODIFIED_AND_APPROVED"],
               "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Paginated proposals for moderation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/ProposalResponseDto"
-                          }
-                        },
-                        "pagination": {
-                          "$ref": "#/components/schemas/PaginationMetaDto"
-                        },
-                        "total": {
-                          "type": "number",
-                          "example": 45
-                        },
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 20
-                        },
-                        "totalPages": {
-                          "type": "number",
-                          "example": 3
-                        },
-                        "hasMore": {
-                          "type": "boolean",
-                          "example": true
-                        }
-                      },
-                      "required": [
-                        "items",
-                        "pagination",
-                        "total",
-                        "page",
-                        "limit",
-                        "totalPages"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Paginated proposals for moderation"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden"
           }
         },
         "security": [
@@ -3660,98 +781,19 @@
           }
         ],
         "summary": "List proposals for moderation review (Moderator or Admin only)",
-        "tags": [
-          "Proposals"
-        ]
+        "tags": ["Proposals"]
       }
     },
     "/moderation/proposals/{id}": {
       "get": {
-        "operationId": "findProposalWithDiff",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la propuesta",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "ProposalsController_findProposalWithDiff",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Proposal and diff against active pension",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/ProposalResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Proposal and diff against active pension"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Proposal not found"
           }
         },
         "security": [
@@ -3760,108 +802,25 @@
           }
         ],
         "summary": "Inspect proposal diff and context (Moderator or Admin only)",
-        "tags": [
-          "Proposals"
-        ]
+        "tags": ["Proposals"]
       }
     },
     "/moderation/proposals/{id}/review": {
       "patch": {
-        "operationId": "review",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la propuesta",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "ProposalsController_review",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Proposal reviewed and merged",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/ProposalResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
+            "description": "Proposal reviewed and merged"
           },
           "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Invalid review action or notes missing"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Proposal not found"
           }
         },
         "security": [
@@ -3870,108 +829,22 @@
           }
         ],
         "summary": "Approve, reject, or modify and merge proposal (Moderator, Admin, or Landlord)",
-        "tags": [
-          "Proposals"
-        ]
+        "tags": ["Proposals"]
       }
     },
     "/moderation/reviews/{id}/visibility": {
       "patch": {
-        "operationId": "updateReviewVisibility",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la reseña",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "ModerationController_updateReviewVisibility",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Review visibility updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/ReviewResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Review visibility updated"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Review not found"
           }
         },
         "security": [
@@ -3980,108 +853,22 @@
           }
         ],
         "summary": "Hide or unhide a review (Moderator or Admin only)",
-        "tags": [
-          "Moderation"
-        ]
+        "tags": ["Moderation"]
       }
     },
     "/moderation/pensions/{id}/status": {
       "patch": {
-        "operationId": "updatePensionStatus",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "ID de la pensión",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "ModerationController_updatePensionStatus",
+        "parameters": [],
         "responses": {
           "200": {
-            "description": "Pension status updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/PensionItemResponseDto"
-                    }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Pension status updated"
           },
           "403": {
-            "description": "Acceso prohibido / permisos insuficientes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Forbidden"
           },
           "404": {
-            "description": "Recurso no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Pension not found"
           }
         },
         "security": [
@@ -4090,14 +877,12 @@
           }
         ],
         "summary": "Update pension verification status or active flag (Moderator or Admin only)",
-        "tags": [
-          "Moderation"
-        ]
+        "tags": ["Moderation"]
       }
     },
     "/uploads/images": {
       "post": {
-        "operationId": "uploadImage",
+        "operationId": "UploadsController_uploadImage",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4112,9 +897,7 @@
                     "description": "Image file (JPEG, PNG, WebP, AVIF, HEIF, GIF - max 8MB)"
                   }
                 },
-                "required": [
-                  "file"
-                ]
+                "required": ["file"]
               }
             }
           }
@@ -4127,61 +910,43 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "statusCode": {
-                      "type": "number",
-                      "example": 201
-                    },
-                    "timestamp": {
+                    "url": {
                       "type": "string",
-                      "example": "2026-11-02T01:00:00.000Z"
+                      "example": "/uploads/abcd-1234.webp"
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/UploadImageResponseDto"
+                    "thumbnailUrl": {
+                      "type": "string",
+                      "example": "/uploads/abcd-1234-thumb.webp"
+                    },
+                    "width": {
+                      "type": "number",
+                      "example": 1200
+                    },
+                    "height": {
+                      "type": "number",
+                      "example": 800
+                    },
+                    "format": {
+                      "type": "string",
+                      "example": "webp"
+                    },
+                    "size": {
+                      "type": "number",
+                      "example": 124500
                     }
-                  },
-                  "required": [
-                    "success",
-                    "statusCode",
-                    "timestamp",
-                    "data"
-                  ]
+                  }
                 }
               }
             }
           },
           "400": {
-            "description": "Solicitud inválida o error de validación de datos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Invalid image or unsupported format"
           },
           "401": {
-            "description": "No autorizado / credenciales ausentes o incorrectas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+            "description": "Unauthorized"
           },
-          "500": {
-            "description": "Error interno del servidor",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
-                }
-              }
-            }
+          "413": {
+            "description": "File size exceeds limit"
           }
         },
         "security": [
@@ -4190,9 +955,7 @@
           }
         ],
         "summary": "Upload and process image to WebP with responsive variants",
-        "tags": [
-          "Uploads"
-        ]
+        "tags": ["Uploads"]
       }
     }
   },
@@ -4212,1595 +975,6 @@
         "type": "http"
       }
     },
-    "schemas": {
-      "HealthCheckResponseDto": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "example": "ok"
-          },
-          "database": {
-            "type": "string",
-            "example": "connected"
-          },
-          "details": {
-            "type": "string",
-            "example": "OK"
-          }
-        },
-        "required": [
-          "status",
-          "database"
-        ]
-      },
-      "ApiErrorCode": {
-        "type": "string",
-        "enum": [
-          "EMAIL_ALREADY_EXISTS",
-          "INVALID_CREDENTIALS",
-          "UNAUTHORIZED",
-          "FORBIDDEN",
-          "NOT_FOUND",
-          "PENSION_NOT_FOUND",
-          "ROOM_NOT_FOUND",
-          "REVIEW_NOT_FOUND",
-          "ALREADY_REVIEWED",
-          "ALREADY_FAVORITED",
-          "FAVORITE_NOT_FOUND",
-          "VALIDATION_FAILED",
-          "RATE_LIMIT_EXCEEDED",
-          "INTERNAL_SERVER_ERROR",
-          "CONFLICT"
-        ]
-      },
-      "ErrorEnvelopeDto": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "example": false
-          },
-          "statusCode": {
-            "type": "number",
-            "example": 400
-          },
-          "timestamp": {
-            "type": "string",
-            "example": "2026-11-02T01:00:00.000Z"
-          },
-          "path": {
-            "type": "string",
-            "example": "/api/auth/login"
-          },
-          "message": {
-            "type": "string",
-            "example": "Credenciales incorrectas"
-          },
-          "errorCode": {
-            "example": "INVALID_CREDENTIALS",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ApiErrorCode"
-              }
-            ]
-          },
-          "errors": {
-            "type": "object",
-            "nullable": true
-          }
-        },
-        "required": [
-          "success",
-          "statusCode",
-          "timestamp",
-          "path",
-          "message",
-          "errorCode"
-        ]
-      },
-      "Role": {
-        "type": "string",
-        "enum": [
-          "STUDENT",
-          "LANDLORD",
-          "MODERATOR",
-          "ADMIN"
-        ]
-      },
-      "SanitizedUserResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef01"
-          },
-          "email": {
-            "type": "string",
-            "example": "estudiante.demo@uchile.cl"
-          },
-          "firstName": {
-            "type": "string",
-            "example": "Juan"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Pérez"
-          },
-          "phone": {
-            "type": "string",
-            "nullable": true,
-            "example": "+56912345678"
-          },
-          "avatarUrl": {
-            "type": "string",
-            "nullable": true,
-            "example": "https://example.com/avatar.jpg"
-          },
-          "role": {
-            "example": "STUDENT",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Role"
-              }
-            ]
-          },
-          "isEmailVerified": {
-            "type": "boolean",
-            "example": true
-          },
-          "universityId": {
-            "type": "string",
-            "nullable": true,
-            "example": "6659f8c123456789abcdef02"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "firstName",
-          "lastName",
-          "role",
-          "isEmailVerified",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "AuthResponseDto": {
-        "type": "object",
-        "properties": {
-          "user": {
-            "$ref": "#/components/schemas/SanitizedUserResponseDto"
-          },
-          "accessToken": {
-            "type": "string",
-            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-          }
-        },
-        "required": [
-          "user",
-          "accessToken"
-        ]
-      },
-      "DetectedUniversityResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef02"
-          },
-          "name": {
-            "type": "string",
-            "example": "Universidad de Chile"
-          },
-          "shortName": {
-            "type": "string",
-            "nullable": true,
-            "example": "UCh"
-          },
-          "city": {
-            "type": "string",
-            "example": "Santiago"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "city"
-        ]
-      },
-      "CheckEmailResponseDto": {
-        "type": "object",
-        "properties": {
-          "exists": {
-            "type": "boolean",
-            "example": false
-          },
-          "role": {
-            "example": "STUDENT",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Role"
-              }
-            ]
-          },
-          "detectedUniversity": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DetectedUniversityResponseDto"
-              }
-            ]
-          }
-        },
-        "required": [
-          "exists"
-        ]
-      },
-      "UniversityResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef02"
-          },
-          "name": {
-            "type": "string",
-            "example": "Universidad de Chile"
-          },
-          "shortName": {
-            "type": "string",
-            "nullable": true,
-            "example": "UCh"
-          },
-          "city": {
-            "type": "string",
-            "example": "Santiago"
-          },
-          "region": {
-            "type": "string",
-            "nullable": true,
-            "example": "Metropolitana"
-          },
-          "emailDomain": {
-            "type": "string",
-            "nullable": true,
-            "example": "uchile.cl"
-          },
-          "website": {
-            "type": "string",
-            "nullable": true,
-            "example": "https://uchile.cl"
-          },
-          "latitude": {
-            "type": "number",
-            "nullable": true,
-            "example": -33.4443
-          },
-          "longitude": {
-            "type": "number",
-            "nullable": true,
-            "example": -70.6558
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "city",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "GeoCoordinateDto": {
-        "type": "object",
-        "properties": {
-          "latitude": {
-            "type": "number",
-            "example": -33.496388
-          },
-          "longitude": {
-            "type": "number",
-            "example": -70.616067
-          }
-        },
-        "required": [
-          "latitude",
-          "longitude"
-        ]
-      },
-      "CampusAreaResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "cuid-12345"
-          },
-          "name": {
-            "type": "string",
-            "example": "Campus San Joaquín"
-          },
-          "acronym": {
-            "type": "string",
-            "example": "San Joaquín"
-          },
-          "centerLat": {
-            "type": "number",
-            "example": -33.49706
-          },
-          "centerLng": {
-            "type": "number",
-            "example": -70.61459
-          },
-          "polygon": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GeoCoordinateDto"
-            }
-          },
-          "universityId": {
-            "type": "string",
-            "example": "6acbfe8bac0ea03feffc1e7a"
-          },
-          "universityName": {
-            "type": "string",
-            "example": "Pontificia Universidad Católica de Chile"
-          },
-          "city": {
-            "type": "string",
-            "example": "Santiago"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "acronym",
-          "centerLat",
-          "centerLng",
-          "polygon",
-          "universityId",
-          "universityName",
-          "city"
-        ]
-      },
-      "DeleteResultResponseDto": {
-        "type": "object",
-        "properties": {
-          "deleted": {
-            "type": "boolean",
-            "example": true
-          }
-        },
-        "required": [
-          "deleted"
-        ]
-      },
-      "GenderPreference": {
-        "type": "string",
-        "enum": [
-          "ANY",
-          "FEMALE_ONLY",
-          "MALE_ONLY"
-        ]
-      },
-      "VerificationStatus": {
-        "type": "string",
-        "enum": [
-          "UNVERIFIED",
-          "COMMUNITY_VERIFIED",
-          "OFFICIALLY_VERIFIED",
-          "REJECTED"
-        ]
-      },
-      "PensionImageResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "img-123"
-          },
-          "url": {
-            "type": "string",
-            "example": "https://example.com/pension.webp"
-          },
-          "thumbnailUrl": {
-            "type": "string",
-            "example": "https://example.com/pension-thumb.webp"
-          },
-          "caption": {
-            "type": "string",
-            "nullable": true,
-            "example": "Fachada frontal"
-          },
-          "isFeatured": {
-            "type": "boolean",
-            "example": true
-          }
-        },
-        "required": [
-          "id",
-          "url",
-          "thumbnailUrl"
-        ]
-      },
-      "PensionAmenityResponseDto": {
-        "type": "object",
-        "properties": {
-          "slug": {
-            "type": "string",
-            "example": "wifi-alta-velocidad"
-          },
-          "name": {
-            "type": "string",
-            "example": "Wifi Alta Velocidad"
-          }
-        },
-        "required": [
-          "slug",
-          "name"
-        ]
-      },
-      "NearbyUniversityItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef02"
-          },
-          "name": {
-            "type": "string",
-            "example": "Universidad de Chile"
-          },
-          "shortName": {
-            "type": "string",
-            "nullable": true,
-            "example": "UCh"
-          }
-        },
-        "required": [
-          "id",
-          "name"
-        ]
-      },
-      "PensionNearbyUniversityResponseDto": {
-        "type": "object",
-        "properties": {
-          "distanceMeters": {
-            "type": "number",
-            "example": 450
-          },
-          "walkingMinutes": {
-            "type": "number",
-            "example": 6
-          },
-          "university": {
-            "$ref": "#/components/schemas/NearbyUniversityItemDto"
-          }
-        },
-        "required": [
-          "distanceMeters",
-          "university"
-        ]
-      },
-      "PensionRoomSummaryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "room-123"
-          },
-          "roomNumber": {
-            "type": "string",
-            "nullable": true,
-            "example": "101"
-          },
-          "title": {
-            "type": "string",
-            "example": "Habitación Individual"
-          },
-          "type": {
-            "type": "string",
-            "example": "SINGLE"
-          },
-          "monthlyPrice": {
-            "type": "number",
-            "example": 250000
-          },
-          "deposit": {
-            "type": "number",
-            "nullable": true,
-            "example": 100000
-          },
-          "hasPrivateBathroom": {
-            "type": "boolean",
-            "example": false
-          },
-          "isAvailable": {
-            "type": "boolean",
-            "example": true
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "type",
-          "monthlyPrice",
-          "hasPrivateBathroom",
-          "isAvailable"
-        ]
-      },
-      "PensionCountDto": {
-        "type": "object",
-        "properties": {
-          "rooms": {
-            "type": "number",
-            "example": 5
-          },
-          "reviews": {
-            "type": "number",
-            "example": 12
-          }
-        },
-        "required": [
-          "rooms",
-          "reviews"
-        ]
-      },
-      "PensionItemResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef01"
-          },
-          "slug": {
-            "type": "string",
-            "example": "residencia-universitaria-san-joaquin"
-          },
-          "title": {
-            "type": "string",
-            "example": "Residencia San Joaquín"
-          },
-          "description": {
-            "type": "string",
-            "example": "Acogedora pensión universitaria a pasos del campus."
-          },
-          "address": {
-            "type": "string",
-            "example": "Av. Vicuña Mackenna 4860"
-          },
-          "neighborhood": {
-            "type": "string",
-            "example": "San Joaquín"
-          },
-          "city": {
-            "type": "string",
-            "example": "Santiago"
-          },
-          "latitude": {
-            "type": "number",
-            "example": -33.49706
-          },
-          "longitude": {
-            "type": "number",
-            "example": -70.61459
-          },
-          "baseMonthlyPrice": {
-            "type": "number",
-            "example": 250000
-          },
-          "deposit": {
-            "type": "number",
-            "nullable": true,
-            "example": 100000
-          },
-          "currency": {
-            "type": "string",
-            "example": "CLP"
-          },
-          "waterIncluded": {
-            "type": "boolean",
-            "example": true
-          },
-          "electricityIncluded": {
-            "type": "boolean",
-            "example": true
-          },
-          "gasIncluded": {
-            "type": "boolean",
-            "example": true
-          },
-          "internetIncluded": {
-            "type": "boolean",
-            "example": true
-          },
-          "curfewTime": {
-            "type": "string",
-            "nullable": true,
-            "example": "23:00"
-          },
-          "guestsAllowed": {
-            "type": "boolean",
-            "example": false
-          },
-          "smokingAllowed": {
-            "type": "boolean",
-            "example": false
-          },
-          "petsAllowed": {
-            "type": "boolean",
-            "example": false
-          },
-          "genderPreference": {
-            "example": "ANY",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/GenderPreference"
-              }
-            ]
-          },
-          "verificationStatus": {
-            "example": "OFFICIALLY_VERIFIED",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/VerificationStatus"
-              }
-            ]
-          },
-          "ratingAverage": {
-            "type": "number",
-            "example": 4.8
-          },
-          "ratingCount": {
-            "type": "number",
-            "example": 12
-          },
-          "reviewsCount": {
-            "type": "number",
-            "example": 12
-          },
-          "distanceKm": {
-            "type": "number",
-            "example": 1.2
-          },
-          "relevanceScore": {
-            "type": "number",
-            "example": 94.5
-          },
-          "images": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PensionImageResponseDto"
-            }
-          },
-          "amenities": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PensionAmenityResponseDto"
-            }
-          },
-          "nearbyUniversities": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PensionNearbyUniversityResponseDto"
-            }
-          },
-          "rooms": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PensionRoomSummaryDto"
-            }
-          },
-          "_count": {
-            "$ref": "#/components/schemas/PensionCountDto"
-          }
-        },
-        "required": [
-          "id",
-          "slug",
-          "title",
-          "description",
-          "address",
-          "neighborhood",
-          "city",
-          "latitude",
-          "longitude",
-          "baseMonthlyPrice",
-          "currency",
-          "waterIncluded",
-          "electricityIncluded",
-          "gasIncluded",
-          "internetIncluded",
-          "guestsAllowed",
-          "smokingAllowed",
-          "petsAllowed",
-          "genderPreference",
-          "verificationStatus",
-          "ratingAverage",
-          "ratingCount",
-          "reviewsCount",
-          "images",
-          "amenities",
-          "nearbyUniversities",
-          "rooms",
-          "_count"
-        ]
-      },
-      "PaginationMetaDto": {
-        "type": "object",
-        "properties": {
-          "page": {
-            "type": "number",
-            "example": 1
-          },
-          "limit": {
-            "type": "number",
-            "example": 20
-          },
-          "total": {
-            "type": "number",
-            "example": 45
-          },
-          "totalPages": {
-            "type": "number",
-            "example": 3
-          },
-          "hasMore": {
-            "type": "boolean",
-            "example": true
-          }
-        },
-        "required": [
-          "page",
-          "limit",
-          "total",
-          "totalPages",
-          "hasMore"
-        ]
-      },
-      "PriceHistogramBinDto": {
-        "type": "object",
-        "properties": {
-          "min": {
-            "type": "number",
-            "example": 150000
-          },
-          "max": {
-            "type": "number",
-            "example": 180000
-          },
-          "count": {
-            "type": "number",
-            "example": 8
-          }
-        },
-        "required": [
-          "min",
-          "max",
-          "count"
-        ]
-      },
-      "PriceHistogramResponseDto": {
-        "type": "object",
-        "properties": {
-          "minPrice": {
-            "type": "number",
-            "nullable": true,
-            "example": 150000
-          },
-          "maxPrice": {
-            "type": "number",
-            "nullable": true,
-            "example": 500000
-          },
-          "currency": {
-            "type": "string",
-            "example": "CLP"
-          },
-          "totalListings": {
-            "type": "number",
-            "example": 45
-          },
-          "bins": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PriceHistogramBinDto"
-            }
-          }
-        },
-        "required": [
-          "currency",
-          "totalListings",
-          "bins"
-        ]
-      },
-      "CitySummaryResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "santiago"
-          },
-          "name": {
-            "type": "string",
-            "example": "Santiago"
-          },
-          "pensionsCount": {
-            "type": "number",
-            "example": 38
-          },
-          "latitude": {
-            "type": "number",
-            "example": -33.44889
-          },
-          "longitude": {
-            "type": "number",
-            "example": -70.669265
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "pensionsCount",
-          "latitude",
-          "longitude"
-        ]
-      },
-      "RoomType": {
-        "type": "string",
-        "enum": [
-          "SINGLE",
-          "SHARED",
-          "STUDIO"
-        ]
-      },
-      "RoomResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "room-123"
-          },
-          "pensionId": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef01"
-          },
-          "roomNumber": {
-            "type": "string",
-            "nullable": true,
-            "example": "101"
-          },
-          "title": {
-            "type": "string",
-            "example": "Habitación Individual Luminosa"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true,
-            "example": "Pieza amoblada con clóset y escritorio."
-          },
-          "type": {
-            "example": "SINGLE",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RoomType"
-              }
-            ]
-          },
-          "monthlyPrice": {
-            "type": "number",
-            "example": 250000
-          },
-          "deposit": {
-            "type": "number",
-            "nullable": true,
-            "example": 100000
-          },
-          "hasPrivateBathroom": {
-            "type": "boolean",
-            "example": false
-          },
-          "totalBeds": {
-            "type": "number",
-            "example": 1
-          },
-          "availableBeds": {
-            "type": "number",
-            "example": 1
-          },
-          "isAvailable": {
-            "type": "boolean",
-            "example": true
-          },
-          "images": {
-            "example": [
-              "https://example.com/room1.jpg"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          }
-        },
-        "required": [
-          "id",
-          "pensionId",
-          "title",
-          "type",
-          "monthlyPrice",
-          "hasPrivateBathroom",
-          "totalBeds",
-          "availableBeds",
-          "isAvailable",
-          "images",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "ReviewAuthorDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef01"
-          },
-          "firstName": {
-            "type": "string",
-            "example": "Carlos"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Gómez"
-          },
-          "avatarUrl": {
-            "type": "string",
-            "nullable": true,
-            "example": "https://example.com/avatar.jpg"
-          },
-          "universityName": {
-            "type": "string",
-            "nullable": true,
-            "example": "Universidad de Chile"
-          }
-        },
-        "required": [
-          "id",
-          "firstName",
-          "lastName"
-        ]
-      },
-      "ReviewResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "rev-123"
-          },
-          "pensionId": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef01"
-          },
-          "userId": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef02"
-          },
-          "rating": {
-            "type": "number",
-            "example": 5
-          },
-          "cleanlinessRating": {
-            "type": "number",
-            "nullable": true,
-            "example": 5
-          },
-          "ownerRating": {
-            "type": "number",
-            "nullable": true,
-            "example": 4
-          },
-          "locationRating": {
-            "type": "number",
-            "nullable": true,
-            "example": 5
-          },
-          "valueRating": {
-            "type": "number",
-            "nullable": true,
-            "example": 4
-          },
-          "comment": {
-            "type": "string",
-            "example": "Excelente pensión, muy cerca del campus y con excelente ambiente."
-          },
-          "positiveComment": {
-            "type": "string",
-            "nullable": true,
-            "example": "La cercanía al metro y la buena onda."
-          },
-          "negativeComment": {
-            "type": "string",
-            "nullable": true,
-            "example": "El internet se ralentiza un poco en la noche."
-          },
-          "stayDurationMonths": {
-            "type": "number",
-            "nullable": true,
-            "example": 10
-          },
-          "stayYear": {
-            "type": "number",
-            "nullable": true,
-            "example": 2025
-          },
-          "roomType": {
-            "type": "string",
-            "nullable": true,
-            "example": "SINGLE"
-          },
-          "isVerifiedStay": {
-            "type": "boolean",
-            "example": true
-          },
-          "isAnonymous": {
-            "type": "boolean",
-            "example": false
-          },
-          "helpfulCount": {
-            "type": "number",
-            "example": 4
-          },
-          "images": {
-            "example": [
-              "https://example.com/review1.jpg"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "author": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ReviewAuthorDto"
-              }
-            ]
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          }
-        },
-        "required": [
-          "id",
-          "pensionId",
-          "userId",
-          "rating",
-          "comment",
-          "isVerifiedStay",
-          "isAnonymous",
-          "helpfulCount",
-          "images",
-          "createdAt"
-        ]
-      },
-      "StudentStayResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "rev-123"
-          },
-          "pensionId": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef01"
-          },
-          "pensionTitle": {
-            "type": "string",
-            "example": "Residencia San Joaquín"
-          },
-          "pensionSlug": {
-            "type": "string",
-            "example": "residencia-san-joaquin"
-          },
-          "roomTitle": {
-            "type": "string",
-            "example": "Habitación Individual"
-          },
-          "featuredImage": {
-            "type": "string",
-            "nullable": true,
-            "example": "https://example.com/pension.jpg"
-          },
-          "city": {
-            "type": "string",
-            "example": "Santiago"
-          },
-          "monthlyPaidClp": {
-            "type": "number",
-            "example": 250000
-          },
-          "rating": {
-            "type": "number",
-            "example": 5
-          },
-          "comment": {
-            "type": "string",
-            "example": "Excelente estadía."
-          },
-          "stayDurationMonths": {
-            "type": "number",
-            "nullable": true,
-            "example": 10
-          },
-          "stayYear": {
-            "type": "number",
-            "nullable": true,
-            "example": 2025
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          }
-        },
-        "required": [
-          "id",
-          "pensionId",
-          "pensionTitle",
-          "pensionSlug",
-          "roomTitle",
-          "city",
-          "monthlyPaidClp",
-          "rating",
-          "comment",
-          "createdAt"
-        ]
-      },
-      "HelpfulVotesResponseDto": {
-        "type": "object",
-        "properties": {
-          "reviewIds": {
-            "example": [
-              "rev-1",
-              "rev-2"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "reviewIds"
-        ]
-      },
-      "VoteHelpfulResultResponseDto": {
-        "type": "object",
-        "properties": {
-          "helpfulCount": {
-            "type": "number",
-            "example": 5
-          },
-          "voted": {
-            "type": "boolean",
-            "example": true
-          }
-        },
-        "required": [
-          "helpfulCount",
-          "voted"
-        ]
-      },
-      "ReportStatus": {
-        "type": "string",
-        "enum": [
-          "PENDING",
-          "UNDER_REVIEW",
-          "RESOLVED",
-          "DISMISSED"
-        ]
-      },
-      "ReportPensionSummaryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef01"
-          },
-          "title": {
-            "type": "string",
-            "example": "Residencia San Joaquín"
-          },
-          "slug": {
-            "type": "string",
-            "example": "residencia-san-joaquin"
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "slug"
-        ]
-      },
-      "ReportUserSummaryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef02"
-          },
-          "email": {
-            "type": "string",
-            "example": "estudiante@uchile.cl"
-          },
-          "firstName": {
-            "type": "string",
-            "example": "Carlos"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Gómez"
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "firstName",
-          "lastName"
-        ]
-      },
-      "ReportResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "rep-123"
-          },
-          "pensionId": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef01"
-          },
-          "userId": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef02"
-          },
-          "reason": {
-            "type": "string",
-            "example": "INCORRECT_INFORMATION"
-          },
-          "description": {
-            "type": "string",
-            "example": "La dirección informada no corresponde a la realidad."
-          },
-          "status": {
-            "example": "PENDING",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ReportStatus"
-              }
-            ]
-          },
-          "resolutionNotes": {
-            "type": "string",
-            "nullable": true,
-            "example": "Se contactó al dueño y se corrigió."
-          },
-          "pension": {
-            "$ref": "#/components/schemas/ReportPensionSummaryDto"
-          },
-          "user": {
-            "$ref": "#/components/schemas/ReportUserSummaryDto"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          }
-        },
-        "required": [
-          "id",
-          "pensionId",
-          "userId",
-          "reason",
-          "description",
-          "status",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "FavoritePensionSummaryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef01"
-          },
-          "slug": {
-            "type": "string",
-            "example": "residencia-san-joaquin"
-          },
-          "title": {
-            "type": "string",
-            "example": "Residencia San Joaquín"
-          },
-          "city": {
-            "type": "string",
-            "example": "Santiago"
-          },
-          "neighborhood": {
-            "type": "string",
-            "example": "San Joaquín"
-          },
-          "baseMonthlyPrice": {
-            "type": "number",
-            "example": 250000
-          },
-          "ratingAverage": {
-            "type": "number",
-            "example": 4.8
-          },
-          "ratingCount": {
-            "type": "number",
-            "example": 12
-          },
-          "images": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PensionImageResponseDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "slug",
-          "title",
-          "city",
-          "neighborhood",
-          "baseMonthlyPrice",
-          "ratingAverage",
-          "ratingCount",
-          "images"
-        ]
-      },
-      "FavoriteItemResponseDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef02"
-          },
-          "pensionId": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef01"
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          },
-          "pension": {
-            "$ref": "#/components/schemas/FavoritePensionSummaryDto"
-          }
-        },
-        "required": [
-          "userId",
-          "pensionId",
-          "createdAt",
-          "pension"
-        ]
-      },
-      "FavoriteAddedResponseDto": {
-        "type": "object",
-        "properties": {
-          "added": {
-            "type": "boolean",
-            "example": true
-          }
-        },
-        "required": [
-          "added"
-        ]
-      },
-      "FavoriteRemovedResponseDto": {
-        "type": "object",
-        "properties": {
-          "removed": {
-            "type": "boolean",
-            "example": true
-          }
-        },
-        "required": [
-          "removed"
-        ]
-      },
-      "ProposalStatus": {
-        "type": "string",
-        "enum": [
-          "PENDING",
-          "APPROVED",
-          "REJECTED",
-          "MODIFIED_AND_APPROVED"
-        ]
-      },
-      "ProposalUserDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef01"
-          },
-          "firstName": {
-            "type": "string",
-            "example": "Carlos"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Gómez"
-          },
-          "email": {
-            "type": "string",
-            "example": "carlos@uchile.cl"
-          }
-        },
-        "required": [
-          "id",
-          "firstName",
-          "lastName"
-        ]
-      },
-      "ProposalResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "prop-123"
-          },
-          "pensionId": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef01"
-          },
-          "submittedById": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef02"
-          },
-          "type": {
-            "type": "string",
-            "example": "PRICE_UPDATE"
-          },
-          "status": {
-            "example": "PENDING",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ProposalStatus"
-              }
-            ]
-          },
-          "proposedChanges": {
-            "type": "object",
-            "example": {
-              "baseMonthlyPrice": 280000
-            }
-          },
-          "submissionNotes": {
-            "type": "string",
-            "nullable": true,
-            "example": "El dueño actualizó los precios."
-          },
-          "reviewNotes": {
-            "type": "string",
-            "nullable": true,
-            "example": "Verificado con el propietario."
-          },
-          "submittedBy": {
-            "$ref": "#/components/schemas/ProposalUserDto"
-          },
-          "reviewedBy": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ProposalUserDto"
-              }
-            ]
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          }
-        },
-        "required": [
-          "id",
-          "pensionId",
-          "submittedById",
-          "type",
-          "status",
-          "proposedChanges",
-          "submittedBy",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "UploadImageResponseDto": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "example": "/uploads/abcd-1234.webp"
-          },
-          "thumbnailUrl": {
-            "type": "string",
-            "example": "/uploads/abcd-1234-thumb.webp"
-          },
-          "width": {
-            "type": "number",
-            "example": 1200
-          },
-          "height": {
-            "type": "number",
-            "example": 800
-          },
-          "format": {
-            "type": "string",
-            "example": "webp"
-          },
-          "size": {
-            "type": "number",
-            "example": 124500
-          }
-        },
-        "required": [
-          "url",
-          "thumbnailUrl",
-          "width",
-          "height",
-          "format",
-          "size"
-        ]
-      }
-    }
+    "schemas": {}
   }
 }
