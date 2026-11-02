@@ -44,6 +44,7 @@ import {
 import { useLandlord } from '@/contexts/landlord-context';
 import { mapRawPensionToPensionItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
+import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
 import type { PensionItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { pensionsService } from '@/services/pensions.service';
@@ -287,7 +288,7 @@ export function LandlordPensionScreen({
   const handlePhoneChange = (value: string) => {
     setForm((prev) => ({
       ...prev,
-      contactPhone: value,
+      contactPhone: formatChileanPhone(value),
     }));
   };
 
@@ -868,9 +869,15 @@ export function LandlordPensionScreen({
                 <input
                   id="landlord-contact-name"
                   type="text"
+                  maxLength={70}
                   disabled={!form.useCustomContact}
                   value={form.useCustomContact ? form.contactName : defaultContact.name}
-                  onChange={(e) => setForm((prev) => ({ ...prev, contactName: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      contactName: filterAlphabeticName(e.target.value),
+                    }))
+                  }
                   placeholder={defaultContact.name || 'Ej: Sra. Carmen Gloria'}
                   className={cn(
                     'min-h-[42px] w-full rounded-lg border border-border/70 px-3 text-xs placeholder:text-muted-foreground focus:border-foreground/40 focus:outline-none transition-colors',
@@ -900,6 +907,8 @@ export function LandlordPensionScreen({
                   <input
                     id="landlord-contact-whatsapp"
                     type="tel"
+                    inputMode="tel"
+                    maxLength={16}
                     disabled={!form.useCustomContact}
                     value={
                       form.useCustomContact

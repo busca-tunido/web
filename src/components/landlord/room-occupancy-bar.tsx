@@ -90,7 +90,7 @@ export function RoomOccupancyBar({
                     ? isFullyOccupied
                       ? 'bg-rose-500'
                       : 'bg-zinc-700 dark:bg-zinc-300'
-                    : 'bg-muted/70 dark:bg-muted/30 border border-border/40',
+                    : 'bg-sage/25 border border-sage/40',
                 )}
               />
             );

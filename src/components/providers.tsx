@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { Toaster } from 'sonner';
 import { AuthProvider } from '@/lib/auth-context';
 import { ThemeProvider } from '@/lib/theme-context';
 
@@ -22,7 +23,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeProvider>
-      <AuthProvider>{children}</AuthProvider>
+      <AuthProvider>
+        {children}
+        <Toaster position="top-right" richColors closeButton />
+      </AuthProvider>
     </ThemeProvider>
   );
 }
