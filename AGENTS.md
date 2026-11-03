@@ -58,6 +58,11 @@ BuscaTuNido Web is a mobile-first web application built with [Next.js](https://n
    - Hardcoded values, dummy/mock items, synthetic card fallbacks, and hardcoded external storage URLs are strictly prohibited across components, hooks, and services unless explicitly requested by the user.
    - If initial or sample data is needed for local development, testing, or demonstrations, it must be seeded in the backend database via the corresponding seed file (`api/prisma/seed.ts`, `seed-utils.ts`) or structured in dedicated test fixture files (`tests/**`).
    - UI views must always consume real backend API responses, handle loading and error states gracefully, and render clean empty states when no data is returned.
+1. **100% OpenAPI-Generated Types & Backend-First Feature Flow**:
+   - The frontend must exclusively consume types generated from OpenAPI (`src/lib/types.ts` derived from `src/lib/api-schema.d.ts`).
+   - Inventing, duplicating, or reimplementing backend domain types or DTO contracts in frontend code is strictly prohibited.
+   - Synthetic fallbacks, fallback properties, mock records, or hardcoded dummy structures are strictly prohibited across components, hooks, and services.
+   - Backend-First Requirement: If a new UI feature or view requires data, fields, or operations that do not yet exist, it is strictly forbidden to invent frontend types or mock data. The capability must first be implemented and exposed in the backend API, synchronized into OpenAPI and client types via `just openapi`, and only then integrated into the frontend.
 
 ---
 
