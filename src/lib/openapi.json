@@ -5137,6 +5137,10 @@
           "isAvailable": {
             "type": "boolean",
             "example": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
           }
         },
         "required": ["id", "title", "type", "monthlyPrice", "hasPrivateBathroom", "isAvailable"]
@@ -5845,6 +5849,11 @@
             "type": "boolean",
             "example": true
           },
+          "isActive": {
+            "type": "boolean",
+            "example": true,
+            "default": true
+          },
           "availableFrom": {
             "type": "string",
             "nullable": true,
@@ -5943,6 +5952,10 @@
             "example": true,
             "default": true
           },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
           "images": {
             "example": ["https://example.com/room1.jpg"],
             "maxItems": 5,
@@ -6013,6 +6026,10 @@
             "type": "boolean",
             "example": true,
             "default": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
           },
           "images": {
             "example": ["https://example.com/room1.jpg"],

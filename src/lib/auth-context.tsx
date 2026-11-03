@@ -64,11 +64,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setToken(savedToken);
             setIsLoading(false);
           }
-          return;
         }
 
         const meRes = await authService.getCurrentUserProfile();
-        if (isMounted && isApiSuccess(meRes) && meRes.data?.id) {
+        if (!isMounted) return;
+
+        if (isApiSuccess(meRes) && meRes.data?.id) {
           const raw = meRes.data as unknown as Record<string, unknown>;
           const userProfile: UserProfile = {
             id: String(raw.id),
@@ -79,6 +80,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
           const resolvedToken = (raw.token as string) ?? savedToken ?? '';
           setSession(userProfile, resolvedToken);
+        } else if (meRes.statusCode === 401 && savedToken) {
+          setUser(null);
+          setToken(null);
+          try {
+            localStorage.removeItem('tunido_token');
+            localStorage.removeItem('tunido_user');
+            localStorage.removeItem('tunido_favs');
+          } catch {}
         }
       } catch {
       } finally {
@@ -90,8 +99,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     void initAuth();
 
+    const handleUnauthorized = () => {
+      if (isMounted) {
+        setUser(null);
+        setToken(null);
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('tunido_auth_unauthorized', handleUnauthorized);
+    }
+
     return () => {
       isMounted = false;
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('tunido_auth_unauthorized', handleUnauthorized);
+      }
     };
   }, [setSession]);
 

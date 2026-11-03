@@ -301,6 +301,7 @@ export function RoomEditorDrawer({
           totalBeds: form.type === 'SHARED' ? form.totalBeds : 1,
           availableBeds: form.type === 'SHARED' ? form.totalBeds : 1,
           isAvailable: form.isAvailable,
+          isActive: roomToEdit.isActive ?? true,
         };
 
         const res = await updateRoom(roomToEdit.id, updatePayload);
@@ -325,6 +326,7 @@ export function RoomEditorDrawer({
           totalBeds: form.type === 'SHARED' ? form.totalBeds : 1,
           availableBeds: form.type === 'SHARED' ? form.totalBeds : 1,
           isAvailable: form.isAvailable,
+          isActive: true,
         };
 
         const res = await createPensionRoom(pensionId, createPayload);

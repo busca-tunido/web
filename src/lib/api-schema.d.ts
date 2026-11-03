@@ -884,6 +884,8 @@ export interface components {
       hasPrivateBathroom: boolean;
       /** @example true */
       isAvailable: boolean;
+      /** @example true */
+      isActive?: boolean;
     };
     PensionCountDto: {
       /** @example 5 */
@@ -1224,6 +1226,11 @@ export interface components {
       availableBeds: number;
       /** @example true */
       isAvailable: boolean;
+      /**
+       * @default true
+       * @example true
+       */
+      isActive: boolean;
       /** @example 2026-03-01 */
       availableFrom?: string | null;
       /**
@@ -1279,6 +1286,8 @@ export interface components {
        * @example true
        */
       isAvailable: boolean;
+      /** @example true */
+      isActive?: boolean;
       /**
        * @example [
        *       "https://example.com/room1.jpg"
@@ -1322,6 +1331,8 @@ export interface components {
        * @example true
        */
       isAvailable: boolean;
+      /** @example true */
+      isActive?: boolean;
       /**
        * @example [
        *       "https://example.com/room1.jpg"

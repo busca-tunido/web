@@ -139,6 +139,14 @@ export async function apiFetch<T>(
         errorType = 'VALIDATION_ERROR';
       } else if (statusCode === 401) {
         errorType = 'UNAUTHORIZED';
+        if (token && !isSessionEndpoint && typeof window !== 'undefined') {
+          try {
+            localStorage.removeItem('tunido_token');
+            localStorage.removeItem('tunido_user');
+            localStorage.removeItem('tunido_favs');
+            window.dispatchEvent(new CustomEvent('tunido_auth_unauthorized'));
+          } catch {}
+        }
       } else if (statusCode === 403) {
         errorType = 'FORBIDDEN';
       } else if (statusCode === 404) {

@@ -158,6 +158,7 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
       type: (rObj.type as components['schemas']['RoomType']) ?? 'SINGLE',
       monthlyPrice: Number(rObj.monthlyPrice ?? 0),
       isAvailable: typeof rObj.isAvailable === 'boolean' ? rObj.isAvailable : true,
+      isActive: typeof rObj.isActive === 'boolean' ? rObj.isActive : true,
       hasPrivateBathroom: Boolean(rObj.hasPrivateBathroom ?? rObj.bathType === 'PRIVATE'),
     };
   });

@@ -69,6 +69,25 @@ function getPathnameForLandlordTab(tab: LandlordTab): string {
   return `/landlord/${tab}`;
 }
 
+function extractCustomContactsFromPensions(
+  items: PensionItem[],
+): Record<string, PensionCustomContact> {
+  const contacts: Record<string, PensionCustomContact> = {};
+  for (const p of items) {
+    const raw = p as unknown as { contactName?: string | null; contactPhone?: string | null };
+    const hasName = Boolean(raw.contactName && raw.contactName.trim().length > 0);
+    const hasPhone = Boolean(raw.contactPhone && raw.contactPhone.trim().length > 0);
+    if (hasName || hasPhone) {
+      contacts[p.id] = {
+        enabled: true,
+        name: raw.contactName ?? '',
+        phone: raw.contactPhone ?? '',
+      };
+    }
+  }
+  return contacts;
+}
+
 export function LandlordProvider({ children, initialTab = 'pension' }: LandlordProviderProps) {
   const [pensions, setPensions] = useState<PensionItem[]>([]);
   const [selectedPension, setSelectedPension] = useState<PensionItem | null>(null);
@@ -109,43 +128,36 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
   const [isCreatePensionOpen, setIsCreatePensionOpen] = useState(false);
   const { user } = useAuth();
   const [defaultContact, setDefaultContactState] = useState<LandlordDefaultContact>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('buscatunido_landlord_default_contact');
-        if (saved) return JSON.parse(saved);
-      } catch {
-        // ignore
-      }
-    }
+    if (!user) return { name: '', phone: '' };
     return {
-      name: '',
-      phone: '',
+      name: `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim(),
+      phone: user.phone ?? '',
     };
   });
 
   useEffect(() => {
-    if (user && (!defaultContact.name || !defaultContact.phone)) {
+    if (user) {
       setDefaultContactState((prev) => {
-        const updatedName = prev.name || `${user.firstName} ${user.lastName}`.trim();
-        const updatedPhone = prev.phone || user.phone || '';
-        if (updatedName !== prev.name || updatedPhone !== prev.phone) {
-          return { name: updatedName, phone: updatedPhone };
-        }
-        return prev;
+        const fallbackName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
+        const fallbackPhone = user.phone ?? '';
+        return {
+          name: prev.name || fallbackName,
+          phone: prev.phone || fallbackPhone,
+        };
       });
     }
-  }, [user, defaultContact.name, defaultContact.phone]);
-  const [customContacts, setCustomContacts] = useState<Record<string, PensionCustomContact>>(() => {
+  }, [user]);
+
+  const [customContacts, setCustomContacts] = useState<Record<string, PensionCustomContact>>({});
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem('buscatunido_landlord_pension_custom_contacts');
-        if (saved) return JSON.parse(saved);
-      } catch {
-        // ignore
-      }
+        localStorage.removeItem('buscatunido_landlord_default_contact');
+        localStorage.removeItem('buscatunido_landlord_pension_custom_contacts');
+      } catch {}
     }
-    return {};
-  });
+  }, []);
 
   const [pendingProposalsCount, setPendingProposalsCount] = useState<number>(0);
 
@@ -170,35 +182,18 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
   }, [refetchProposals]);
 
   const updateDefaultContact = useCallback((partial: Partial<LandlordDefaultContact>) => {
-    setDefaultContactState((prev) => {
-      const updated = { ...prev, ...partial };
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem('buscatunido_landlord_default_contact', JSON.stringify(updated));
-        } catch {
-          // ignore
-        }
-      }
-      return updated;
-    });
+    setDefaultContactState((prev) => ({
+      ...prev,
+      ...partial,
+    }));
   }, []);
 
   const updatePensionCustomContact = useCallback(
     (pensionId: string, custom: PensionCustomContact) => {
-      setCustomContacts((prev) => {
-        const updated = { ...prev, [pensionId]: custom };
-        if (typeof window !== 'undefined') {
-          try {
-            localStorage.setItem(
-              'buscatunido_landlord_pension_custom_contacts',
-              JSON.stringify(updated),
-            );
-          } catch {
-            // ignore
-          }
-        }
-        return updated;
-      });
+      setCustomContacts((prev) => ({
+        ...prev,
+        [pensionId]: custom,
+      }));
     },
     [],
   );
@@ -238,6 +233,7 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       if (isApiSuccess(response)) {
         const items = response.data;
         setPensions(items);
+        setCustomContacts(extractCustomContactsFromPensions(items));
         setSelectedPension((current) => {
           if (selectPensionId) {
             const target = items.find((p) => p.id === selectPensionId);
@@ -271,6 +267,7 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
         if (isApiSuccess(response)) {
           const items = response.data;
           setPensions(items);
+          setCustomContacts(extractCustomContactsFromPensions(items));
           setSelectedPension(items[0] ?? null);
         } else {
           setError(response.message || 'Error al cargar las pensiones');

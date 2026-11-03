@@ -21,6 +21,7 @@ export function mapRoomDto(raw: Record<string, unknown>): RoomDto {
     totalBeds: Number(raw.totalBeds ?? 1),
     availableBeds: Number(raw.availableBeds ?? 1),
     isAvailable: typeof raw.isAvailable === 'boolean' ? raw.isAvailable : true,
+    isActive: typeof raw.isActive === 'boolean' ? raw.isActive : true,
     hasPrivateBathroom: hasPrivateBath,
     bathType: hasPrivateBath ? 'PRIVATE' : 'SHARED',
     availableFrom: typeof raw.availableFrom === 'string' ? raw.availableFrom : null,

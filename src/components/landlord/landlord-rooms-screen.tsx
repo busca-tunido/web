@@ -32,7 +32,7 @@ export type LandlordRoomsScreenProps = {
   className?: string;
 };
 
-function mapDtoToRoomItem(dto: RoomDto, isInactive = false): RoomItem {
+function mapDtoToRoomItem(dto: RoomDto): RoomItem {
   return {
     id: dto.id,
     pensionId: dto.pensionId,
@@ -42,7 +42,7 @@ function mapDtoToRoomItem(dto: RoomDto, isInactive = false): RoomItem {
     monthlyPrice: dto.monthlyPrice,
     priceMonthlyClp: dto.monthlyPrice,
     isAvailable: dto.isAvailable,
-    isActive: !isInactive,
+    isActive: dto.isActive !== false,
     bathType: dto.bathType,
     hasPrivateBathroom: dto.bathType === 'PRIVATE',
     availableFrom: dto.availableFrom,
@@ -63,26 +63,6 @@ export function LandlordRoomsScreen({
   const [isLoadingRooms, setIsLoadingRooms] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const [inactiveRoomIds, setInactiveRoomIds] = useState<Set<string>>(() => {
-    if (typeof window === 'undefined') return new Set();
-    try {
-      const stored = localStorage.getItem(`landlord_inactive_rooms_${effectivePensionId}`);
-      return stored ? new Set(JSON.parse(stored)) : new Set();
-    } catch {
-      return new Set();
-    }
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !effectivePensionId) return;
-    try {
-      const stored = localStorage.getItem(`landlord_inactive_rooms_${effectivePensionId}`);
-      setInactiveRoomIds(stored ? new Set(JSON.parse(stored)) : new Set());
-    } catch {
-      setInactiveRoomIds(new Set());
-    }
-  }, [effectivePensionId]);
-
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [editingRoom, setEditingRoom] = useState<RoomItem | null>(null);
 
@@ -100,7 +80,7 @@ export function LandlordRoomsScreen({
       const response = await fetchPensionRooms(effectivePensionId);
       if (isApiSuccess(response)) {
         const rawItems = Array.isArray(response.data) ? response.data : [];
-        setRooms(rawItems.map((dto) => mapDtoToRoomItem(dto, inactiveRoomIds.has(dto.id))));
+        setRooms(rawItems.map((dto) => mapDtoToRoomItem(dto)));
       } else {
         setErrorMessage(response.message || 'No fue posible cargar las habitaciones.');
       }
@@ -109,7 +89,7 @@ export function LandlordRoomsScreen({
     } finally {
       setIsLoadingRooms(false);
     }
-  }, [effectivePensionId, inactiveRoomIds]);
+  }, [effectivePensionId]);
 
   useEffect(() => {
     loadRooms();
@@ -146,26 +126,18 @@ export function LandlordRoomsScreen({
     }
   };
 
-  const handleToggleActive = (roomId: string, nextActive: boolean) => {
-    setInactiveRoomIds((prev) => {
-      const next = new Set(prev);
-      if (nextActive) {
-        next.delete(roomId);
-      } else {
-        next.add(roomId);
-      }
-      try {
-        localStorage.setItem(
-          `landlord_inactive_rooms_${effectivePensionId}`,
-          JSON.stringify(Array.from(next)),
-        );
-      } catch {}
-      return next;
-    });
-
+  const handleToggleActive = async (roomId: string, nextActive: boolean) => {
     setRooms((prev) =>
       prev.map((room) => (room.id === roomId ? { ...room, isActive: nextActive } : room)),
     );
+
+    const response = await updateRoom(roomId, { isActive: nextActive });
+    if (!isApiSuccess(response)) {
+      setRooms((prev) =>
+        prev.map((room) => (room.id === roomId ? { ...room, isActive: !nextActive } : room)),
+      );
+      throw new Error(response.message || 'No fue posible actualizar el estado de la habitación.');
+    }
   };
 
   const totalRooms = rooms.length;
