@@ -358,10 +358,13 @@ function removeCampusMask(map: import('leaflet').Map, campusId: string) {
 
 function isCampusInBounds(campus: CampusAreaDto, bounds: import('leaflet').LatLngBounds): boolean {
   if (bounds.contains([campus.centerLat, campus.centerLng])) return true;
-  for (const pt of campus.polygon) {
-    if (bounds.contains([pt.latitude, pt.longitude])) return true;
+  if (Array.isArray(campus.polygon)) {
+    for (const pt of campus.polygon) {
+      if (bounds.contains([pt.latitude, pt.longitude])) return true;
+    }
   }
   const center = bounds.getCenter();
+  if (!campus.polygon || campus.polygon.length === 0) return false;
   const minLat = Math.min(...campus.polygon.map((p) => p.latitude));
   const maxLat = Math.max(...campus.polygon.map((p) => p.latitude));
   const minLng = Math.min(...campus.polygon.map((p) => p.longitude));
@@ -736,7 +739,8 @@ export function MapScreen({
 
     for (const campus of inBoundsCampuses) {
       const point = map.latLngToLayerPoint([campus.centerLat, campus.centerLng]);
-      const boxWidth = Math.max(38, campus.acronym.length * 9 + 20) + 24;
+      const acronymText = campus.acronym || campus.name || '';
+      const boxWidth = Math.max(38, acronymText.length * 9 + 20) + 24;
       const boxHeight = 24 + 16;
 
       const minX = point.x - boxWidth / 2;
@@ -780,15 +784,22 @@ export function MapScreen({
     }
 
     for (const campus of acceptedCampuses) {
-      const cacheKey = `${campus.id}:${currentTheme}`;
+      const campusUniqueId = campus.id || `${campus.universityId}-${campus.name}`;
+      const cacheKey = `${campusUniqueId}:${currentTheme}`;
       const existing = currentCampusesMap.get(cacheKey);
 
-      updateCampusMask(map, campus.id, campus.centerLat, campus.centerLng, campus.acronym.length);
+      updateCampusMask(
+        map,
+        campusUniqueId,
+        campus.centerLat,
+        campus.centerLng,
+        (campus.acronym ?? '').length,
+      );
 
       if (existing) {
         const pathEl = existing.polygon.getElement();
         if (pathEl && !pathEl.getAttribute('mask')) {
-          pathEl.setAttribute('mask', `url(#campus-mask-${campus.id})`);
+          pathEl.setAttribute('mask', `url(#campus-mask-${campusUniqueId})`);
         }
         nextCampusesMap.set(cacheKey, existing);
         currentCampusesMap.delete(cacheKey);
@@ -830,7 +841,7 @@ export function MapScreen({
 
         const acronymIcon = L.divIcon({
           className: 'custom-div-icon',
-          html: `<div style="transform: translate(-50%, -50%); pointer-events: none;" class="flex items-center justify-center select-none"><span class="text-[11px] font-bold tracking-wider uppercase text-slate-600 dark:text-slate-300 transition-colors [text-shadow:_0_0_5px_rgba(255,255,255,0.95),_0_0_10px_rgba(255,255,255,0.8)] dark:[text-shadow:_0_0_5px_rgba(0,0,0,0.95),_0_0_10px_rgba(0,0,0,0.8)]">${campus.acronym}</span></div>`,
+          html: `<div style="transform: translate(-50%, -50%); pointer-events: none;" class="flex items-center justify-center select-none"><span class="text-[11px] font-bold tracking-wider uppercase text-slate-600 dark:text-slate-300 transition-colors [text-shadow:_0_0_5px_rgba(255,255,255,0.95),_0_0_10px_rgba(255,255,255,0.8)] dark:[text-shadow:_0_0_5px_rgba(0,0,0,0.95),_0_0_10px_rgba(0,0,0,0.8)]">${campus.acronym || campus.name}</span></div>`,
           iconSize: [0, 0],
           iconAnchor: [0, 0],
         });
@@ -846,10 +857,10 @@ export function MapScreen({
 
         const pathEl = polygon.getElement();
         if (pathEl) {
-          pathEl.setAttribute('mask', `url(#campus-mask-${campus.id})`);
+          pathEl.setAttribute('mask', `url(#campus-mask-${campusUniqueId})`);
         }
 
-        nextCampusesMap.set(cacheKey, { polygon, marker, campusId: campus.id });
+        nextCampusesMap.set(cacheKey, { polygon, marker, campusId: campusUniqueId });
       }
     }
 
