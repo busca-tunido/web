@@ -101,40 +101,18 @@ export function sortCitiesByCoordinates(
 
 export async function fetchCities(): Promise<ApiResponse<CityInfo[]>> {
   const citiesRes = await apiFetch<CitySummaryDto[]>('/cities', { method: 'GET' });
-  if (isApiSuccess(citiesRes) && Array.isArray(citiesRes.data) && citiesRes.data.length > 0) {
+  if (isApiSuccess(citiesRes) && Array.isArray(citiesRes.data)) {
     const cities: CityInfo[] = citiesRes.data.map((c) => ({
       id: c.id,
       name: c.name,
       pensionsCount: Number(c.pensionsCount ?? 0),
-      imageUrl: getCityImageUrl(c.name),
+      imageUrl: c.imageUrl ?? getCityImageUrl(c.name),
       latitude: Number(c.latitude ?? 0),
       longitude: Number(c.longitude ?? 0),
     }));
     return createSuccess(cities, citiesRes.statusCode);
   }
 
-  const uniRes = await apiFetchUniversities();
-  if (isApiSuccess(uniRes) && Array.isArray(uniRes.data)) {
-    const cityMap = new Map<string, { lat: number; lng: number }>();
-    for (const u of uniRes.data) {
-      if (u.city) {
-        const existing = cityMap.get(u.city) ?? {
-          lat: Number(u.latitude) || 0,
-          lng: Number(u.longitude) || 0,
-        };
-        cityMap.set(u.city, existing);
-      }
-    }
-    const cities: CityInfo[] = Array.from(cityMap.entries()).map(([cityName, data]) => ({
-      id: cityName.toLowerCase().replace(/\s+/g, '-'),
-      name: cityName,
-      pensionsCount: 0,
-      imageUrl: getCityImageUrl(cityName),
-      latitude: data.lat,
-      longitude: data.lng,
-    }));
-    return createSuccess(cities);
-  }
   return createSuccess<CityInfo[]>([]);
 }
 

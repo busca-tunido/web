@@ -190,6 +190,9 @@ describe('Two-step Auth Flow & Student Register Modal', () => {
           firstName: 'Carlos',
           lastName: 'Mendoza',
           role: 'STUDENT',
+          isEmailVerified: true,
+          createdAt: '2026-03-01T00:00:00.000Z',
+          updatedAt: '2026-03-01T00:00:00.000Z',
         },
       },
     });

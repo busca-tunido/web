@@ -79,21 +79,22 @@ function buildQueryString(params?: PensionFilterParams): string {
 
 export function mapReviewItemDto(raw: Record<string, unknown>): ReviewItemDto {
   const user = (raw.user ?? {}) as Record<string, unknown>;
-  const userName =
-    typeof raw.userName === 'string'
-      ? raw.userName
-      : user.firstName
-        ? `${user.firstName} ${user.lastName ?? ''}`.trim()
-        : undefined;
-
   const rawCount = (raw._count as { helpfulVotes?: number } | undefined)?.helpfulVotes;
   const helpfulCount = typeof rawCount === 'number' ? rawCount : Number(raw.helpfulCount ?? 0);
+
+  const userDto = raw.user
+    ? {
+        id: String(user.id ?? raw.userId ?? ''),
+        firstName: String(user.firstName ?? ''),
+        lastName: String(user.lastName ?? ''),
+        avatarUrl: typeof user.avatarUrl === 'string' ? user.avatarUrl : null,
+      }
+    : undefined;
 
   return {
     id: String(raw.id ?? ''),
     pensionId: String(raw.pensionId ?? ''),
     userId: String(raw.userId ?? user.id ?? ''),
-    userName,
     rating: Number(raw.rating ?? raw.overallRating ?? 0),
     overallRating: Number(raw.overallRating ?? raw.rating ?? 0),
     cleanlinessRating:
@@ -118,7 +119,7 @@ export function mapReviewItemDto(raw: Record<string, unknown>): ReviewItemDto {
     isResidentVerified: Boolean(raw.isResidentVerified ?? raw.isVerifiedStay),
     isAnonymous: Boolean(raw.isAnonymous),
     helpfulCount,
-    userVoted: typeof raw.userVoted === 'boolean' ? raw.userVoted : undefined,
+    user: userDto,
     createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : '',
   };
 }
@@ -163,23 +164,38 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
     };
   });
 
-  const rawReviews = Array.isArray(raw.reviews) ? raw.reviews : [];
-  const reviews: ReviewItemDto[] = rawReviews.map((rev) =>
-    mapReviewItemDto(rev as Record<string, unknown>),
-  );
-
   const rawAmenities = Array.isArray(raw.amenities) ? raw.amenities : [];
-  const amenities = rawAmenities.map((item, idx) => {
+  const amenities = rawAmenities.map((item) => {
     if (typeof item === 'string') {
-      return { id: `amenity-${idx}`, slug: item, name: item };
+      return { slug: item, name: item };
     }
-    const obj = item as { id?: string; slug?: string; name?: string };
+    const obj = item as { slug?: string; name?: string };
     return {
-      id: String(obj.id ?? `amenity-${idx}`),
       slug: String(obj.slug ?? ''),
       name: String(obj.name ?? obj.slug ?? ''),
     };
   });
+
+  const rawNearby = Array.isArray(raw.nearbyUniversities) ? raw.nearbyUniversities : [];
+  const nearbyUniversities = rawNearby.map((nu) => {
+    const obj = nu as Record<string, unknown>;
+    const uni = (obj.university || {}) as Record<string, unknown>;
+    return {
+      distanceMeters: Number(obj.distanceMeters ?? 0),
+      walkingMinutes: typeof obj.walkingMinutes === 'number' ? obj.walkingMinutes : undefined,
+      university: {
+        id: String(uni.id ?? obj.universityId ?? ''),
+        name: String(uni.name ?? ''),
+        shortName: typeof uni.shortName === 'string' ? uni.shortName : null,
+      },
+    };
+  });
+
+  const countObj = (raw._count || {}) as Record<string, unknown>;
+  const count = {
+    rooms: Number(countObj.rooms ?? rooms.length),
+    reviews: Number(countObj.reviews ?? raw.reviewsCount ?? 0),
+  };
 
   return {
     id: pensionId,
@@ -198,13 +214,6 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
     electricityIncluded: Boolean(raw.electricityIncluded),
     gasIncluded: Boolean(raw.gasIncluded),
     internetIncluded: Boolean(raw.internetIncluded),
-    includesWifi:
-      raw.internetIncluded === false
-        ? false
-        : Boolean(
-            raw.internetIncluded ||
-              amenities.some((a) => a.slug === 'wifi-alta-velocidad' || a.slug === 'wifi'),
-          ),
     curfewTime: typeof raw.curfewTime === 'string' ? raw.curfewTime : null,
     guestsAllowed: Boolean(raw.guestsAllowed),
     smokingAllowed: Boolean(raw.smokingAllowed),
@@ -221,8 +230,9 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
     isActive: typeof raw.isActive === 'boolean' ? raw.isActive : true,
     images,
     rooms,
-    reviews,
     amenities,
+    nearbyUniversities,
+    _count: count,
     ratingAverage: Number(raw.ratingAverage ?? raw.averageRating ?? 0),
     averageRating: Number(raw.ratingAverage ?? raw.averageRating ?? 0),
     reviewsCount: Number(raw.reviewsCount ?? raw.ratingCount ?? 0),

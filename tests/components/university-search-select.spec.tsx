@@ -14,6 +14,8 @@ const mockUniversities: UniversityDto[] = [
     city: 'Santiago',
     latitude: -33.4442,
     longitude: -70.6517,
+    createdAt: '',
+    updatedAt: '',
   },
   {
     id: 'uni-2',
@@ -22,6 +24,8 @@ const mockUniversities: UniversityDto[] = [
     city: 'Santiago',
     latitude: -33.4975,
     longitude: -70.6128,
+    createdAt: '',
+    updatedAt: '',
   },
   {
     id: 'uni-3',
@@ -30,6 +34,8 @@ const mockUniversities: UniversityDto[] = [
     city: 'Concepción',
     latitude: -36.8298,
     longitude: -73.0366,
+    createdAt: '',
+    updatedAt: '',
   },
   {
     id: 'uni-4',
@@ -38,6 +44,8 @@ const mockUniversities: UniversityDto[] = [
     city: 'Valparaíso',
     latitude: -33.0355,
     longitude: -71.595,
+    createdAt: '',
+    updatedAt: '',
   },
 ];
 

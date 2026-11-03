@@ -26,7 +26,6 @@ function mapRawReviewToItem(
         university?: { name?: string; shortName?: string | null } | null;
       }
     | undefined;
-  const userName = user ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() : undefined;
   const helpfulCount = typeof raw.helpfulCount === 'number' ? raw.helpfulCount : 0;
   const overall = Number(raw.overallRating ?? raw.rating ?? 0);
   const isVerifiedStay = Boolean(raw.isVerifiedStay ?? raw.isResidentVerified);
@@ -35,7 +34,6 @@ function mapRawReviewToItem(
     id: String(raw.id ?? ''),
     pensionId: String(raw.pensionId ?? ''),
     userId: String(raw.userId ?? ''),
-    userName,
     rating: overall,
     overallRating: overall,
     cleanlinessRating:
@@ -68,10 +66,6 @@ function mapRawReviewToItem(
     isResidentVerified: isVerifiedStay,
     isAnonymous: Boolean(raw.isAnonymous),
     helpfulCount,
-    userVoted:
-      typeof (raw as Record<string, unknown>).userVoted === 'boolean'
-        ? ((raw as Record<string, unknown>).userVoted as boolean)
-        : undefined,
     createdAt: raw.createdAt
       ? raw.createdAt instanceof Date
         ? raw.createdAt.toISOString()
@@ -117,13 +111,24 @@ export async function fetchPensionReviews(
       const startIndex = (page - 1) * limit;
       const paginatedItems = allMapped.slice(startIndex, startIndex + limit);
 
+      const totalPages = Math.ceil(allMapped.length / limit) || 1;
+      const hasMore = startIndex + limit < allMapped.length;
+
       return createSuccess<PaginatedReviewsResponse>(
         {
           items: paginatedItems,
           total: allMapped.length,
           page,
           limit,
-          hasMore: startIndex + limit < allMapped.length,
+          totalPages,
+          hasMore,
+          pagination: {
+            page,
+            limit,
+            total: allMapped.length,
+            totalPages,
+            hasMore,
+          },
         },
         response.statusCode,
       );
@@ -139,6 +144,7 @@ export async function fetchPensionReviews(
         ? rawData.limit
         : (query?.limit ?? (rawItems.length || 10));
     const total = typeof rawData?.total === 'number' ? rawData.total : rawItems.length;
+    const totalPages = Math.ceil(total / limit) || 1;
     const hasMore = typeof rawData?.hasMore === 'boolean' ? rawData.hasMore : page * limit < total;
 
     return createSuccess<PaginatedReviewsResponse>(
@@ -147,7 +153,15 @@ export async function fetchPensionReviews(
         total,
         page,
         limit,
+        totalPages,
         hasMore,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasMore,
+        },
       },
       response.statusCode,
     );

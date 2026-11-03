@@ -72,11 +72,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (isApiSuccess(meRes) && meRes.data?.id) {
           const raw = meRes.data as unknown as Record<string, unknown>;
           const userProfile: UserProfile = {
+            ...meRes.data,
             id: String(raw.id),
             email: String(raw.email),
             firstName: String(raw.firstName ?? ''),
             lastName: String(raw.lastName ?? ''),
             role: (raw.role as UserProfile['role']) ?? 'STUDENT',
+            isEmailVerified: Boolean(raw.isEmailVerified),
+            createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : new Date().toISOString(),
+            updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : new Date().toISOString(),
           };
           const resolvedToken = (raw.token as string) ?? savedToken ?? '';
           setSession(userProfile, resolvedToken);
@@ -173,11 +177,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const profile: UserProfile = {
+      ...user,
       id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
+      isEmailVerified: Boolean(user.isEmailVerified),
+      createdAt: user.createdAt || new Date().toISOString(),
+      updatedAt: user.updatedAt || new Date().toISOString(),
     };
     setSession(profile, token);
   };

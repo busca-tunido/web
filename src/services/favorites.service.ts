@@ -1,51 +1,14 @@
 import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
 import type { components } from '@/lib/api-schema';
+import { mapPensionItemDto } from '@/services/pensions.service';
 import type { PensionItemDto } from '@/types/api-contracts';
 
 export type FavoriteItemDto = components['schemas']['FavoriteItemResponseDto'];
 
 function normalizePensionItem(raw: FavoriteItemDto | Record<string, unknown>): PensionItemDto {
   const p = ('pension' in raw && raw.pension ? raw.pension : raw) as Record<string, unknown>;
-  const rawImages = Array.isArray(p.images) ? p.images : [];
-  const images = rawImages.map((img: unknown, idx: number) => {
-    const obj = img as Record<string, unknown>;
-    const url = typeof obj === 'object' && obj ? String(obj.url ?? '') : String(img);
-    return {
-      id: typeof obj === 'object' && obj?.id ? String(obj.id) : `img-${idx}`,
-      url,
-      thumbnailUrl: typeof obj === 'object' && obj?.thumbnailUrl ? String(obj.thumbnailUrl) : url,
-      caption: typeof obj === 'object' && typeof obj?.caption === 'string' ? obj.caption : null,
-      isFeatured: typeof obj === 'object' && Boolean(obj?.isFeatured ?? idx === 0),
-    };
-  });
-
-  return {
-    id: String(p.id ?? ''),
-    slug: String(p.slug ?? `pension-${p.id}`),
-    title: String(p.title ?? ''),
-    city: String(p.city ?? ''),
-    neighborhood: typeof p.neighborhood === 'string' ? p.neighborhood : undefined,
-    baseMonthlyPrice: Number(p.baseMonthlyPrice ?? 0),
-    ratingAverage: Number(p.ratingAverage ?? 0),
-    ratingCount: Number(p.ratingCount ?? 0),
-    reviewsCount: Number(p.reviewsCount ?? p.ratingCount ?? 0),
-    averageRating: Number(p.averageRating ?? p.ratingAverage ?? 0),
-    images,
-    verificationStatus:
-      (p.verificationStatus as components['schemas']['VerificationStatus']) ?? 'UNVERIFIED',
-    isActive: typeof p.isActive === 'boolean' ? p.isActive : true,
-    waterIncluded: Boolean(p.waterIncluded),
-    electricityIncluded: Boolean(p.electricityIncluded),
-    gasIncluded: Boolean(p.gasIncluded),
-    internetIncluded: Boolean(p.internetIncluded),
-    includesWifi: Boolean(p.includesWifi),
-    guestsAllowed: Boolean(p.guestsAllowed),
-    smokingAllowed: Boolean(p.smokingAllowed),
-    petsAllowed: Boolean(p.petsAllowed),
-    genderPreference: (p.genderPreference as components['schemas']['GenderPreference']) ?? 'ANY',
-    currency: String(p.currency ?? 'CLP'),
-  };
+  return mapPensionItemDto(p);
 }
 
 export async function fetchStudentFavorites(): Promise<ApiResponse<PensionItemDto[]>> {

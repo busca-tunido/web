@@ -35,8 +35,10 @@ import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
 import { translateApiError } from '@/lib/error-translator';
 import { clampNumber } from '@/lib/format-utils';
+import type { CityInfo } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import {
+  fetchCities,
   findClosestCity,
   forwardGeocode,
   normalizeCityName,
@@ -53,64 +55,6 @@ export type PensionEditorDrawerProps = {
 };
 
 type GenderPref = 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY';
-
-type CityCoordinate = {
-  city: string;
-  lat: number;
-  lng: number;
-  neighborhoodPlaceholder: string;
-};
-
-const CHILEAN_CITIES: readonly CityCoordinate[] = [
-  {
-    city: 'Santiago',
-    lat: -33.4489,
-    lng: -70.6693,
-    neighborhoodPlaceholder: 'San Joaquín, Providencia, Barrio Universitario...',
-  },
-  {
-    city: 'Valparaíso',
-    lat: -33.0472,
-    lng: -71.6127,
-    neighborhoodPlaceholder: 'Cerro Alegre, Playa Ancha, Centro...',
-  },
-  {
-    city: 'Viña del Mar',
-    lat: -33.0245,
-    lng: -71.5518,
-    neighborhoodPlaceholder: 'Recreo, Miraflores, Centro...',
-  },
-  {
-    city: 'Concepción',
-    lat: -36.827,
-    lng: -73.0503,
-    neighborhoodPlaceholder: 'Barrio Universitario, Plaza Perú, Lomas de San Andrés...',
-  },
-  {
-    city: 'Valdivia',
-    lat: -39.8142,
-    lng: -73.2459,
-    neighborhoodPlaceholder: 'Isla Teja, Regional, Centro...',
-  },
-  {
-    city: 'Temuco',
-    lat: -38.7359,
-    lng: -72.5904,
-    neighborhoodPlaceholder: 'Avenida Alemania, Centro...',
-  },
-  {
-    city: 'Antofagasta',
-    lat: -23.6509,
-    lng: -70.3975,
-    neighborhoodPlaceholder: 'Sector Sur, Playa Blanca...',
-  },
-  {
-    city: 'La Serena',
-    lat: -29.9027,
-    lng: -71.2519,
-    neighborhoodPlaceholder: 'Colina El Pino, Centro...',
-  },
-];
 
 const GENDER_OPTIONS: ReadonlyArray<{
   value: GenderPref;
@@ -213,6 +157,21 @@ export function PensionEditorDrawer({
   const [isLocating, setIsLocating] = useState<boolean>(false);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState<boolean>(false);
   const [isForwardGeocoding, setIsForwardGeocoding] = useState<boolean>(false);
+  const [cities, setCities] = useState<CityInfo[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCities() {
+      const res = await fetchCities();
+      if (isMounted && isApiSuccess(res) && res.data.length > 0) {
+        setCities(res.data);
+      }
+    }
+    void loadCities();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const { hasDraft, restoreDraft, clearDraft } = useFormDraft<PensionFormState>(
     'landlord-new-pension',
@@ -267,55 +226,64 @@ export function PensionEditorDrawer({
   };
 
   const handleCityChange = (cityName: string) => {
-    const foundCity = CHILEAN_CITIES.find((c) => c.city.toLowerCase() === cityName.toLowerCase());
+    const foundCity = cities.find((c) => c.name.toLowerCase() === cityName.toLowerCase());
     setForm((prev) => ({
       ...prev,
       city: cityName,
-      latitude: foundCity ? foundCity.lat : prev.latitude,
-      longitude: foundCity ? foundCity.lng : prev.longitude,
+      latitude: foundCity ? foundCity.latitude : prev.latitude,
+      longitude: foundCity ? foundCity.longitude : prev.longitude,
     }));
   };
 
-  const handleLocationChange = useCallback(async (lat: number, lng: number) => {
-    isUpdatingFromMapRef.current = true;
-    setForm((prev) => ({
-      ...prev,
-      latitude: lat,
-      longitude: lng,
-    }));
+  const handleLocationChange = useCallback(
+    async (lat: number, lng: number) => {
+      isUpdatingFromMapRef.current = true;
+      setForm((prev) => ({
+        ...prev,
+        latitude: lat,
+        longitude: lng,
+      }));
 
-    if (reverseAbortRef.current) {
-      reverseAbortRef.current.abort();
-    }
-    const controller = new AbortController();
-    reverseAbortRef.current = controller;
-
-    setIsReverseGeocoding(true);
-    try {
-      const result = await reverseGeocode(lat, lng, controller.signal);
-      if (result && !controller.signal.aborted) {
-        const matchedCity = CHILEAN_CITIES.find(
-          (c) => normalizeCityName(c.city) === normalizeCityName(result.city),
-        );
-        const resolvedCity = matchedCity
-          ? matchedCity.city
-          : findClosestCity(lat, lng, CHILEAN_CITIES).city;
-
-        setForm((prev) => ({
-          ...prev,
-          latitude: lat,
-          longitude: lng,
-          city: resolvedCity,
-          neighborhood: result.neighborhood || prev.neighborhood,
-          address: result.address || prev.address,
-        }));
+      if (reverseAbortRef.current) {
+        reverseAbortRef.current.abort();
       }
-    } finally {
-      if (!controller.signal.aborted) {
-        setIsReverseGeocoding(false);
+      const controller = new AbortController();
+      reverseAbortRef.current = controller;
+
+      setIsReverseGeocoding(true);
+      try {
+        const result = await reverseGeocode(lat, lng, controller.signal);
+        if (result && !controller.signal.aborted) {
+          const matchedCity = cities.find(
+            (c) => normalizeCityName(c.name) === normalizeCityName(result.city),
+          );
+          const resolvedCity = matchedCity
+            ? matchedCity.name
+            : cities.length > 0
+              ? findClosestCity(
+                  lat,
+                  lng,
+                  cities.map((c) => ({ lat: c.latitude, lng: c.longitude, name: c.name })),
+                ).name
+              : result.city;
+
+          setForm((prev) => ({
+            ...prev,
+            latitude: lat,
+            longitude: lng,
+            city: resolvedCity,
+            neighborhood: result.neighborhood || prev.neighborhood,
+            address: result.address || prev.address,
+          }));
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsReverseGeocoding(false);
+        }
       }
-    }
-  }, []);
+    },
+    [cities],
+  );
 
   useEffect(() => {
     if (isUpdatingFromMapRef.current) {
@@ -404,12 +372,18 @@ export function PensionEditorDrawer({
         try {
           const result = await reverseGeocode(lat, lng);
           if (result) {
-            const matchedCity = CHILEAN_CITIES.find(
-              (c) => normalizeCityName(c.city) === normalizeCityName(result.city),
+            const matchedCity = cities.find(
+              (c) => normalizeCityName(c.name) === normalizeCityName(result.city),
             );
             const resolvedCity = matchedCity
-              ? matchedCity.city
-              : findClosestCity(lat, lng, CHILEAN_CITIES).city;
+              ? matchedCity.name
+              : cities.length > 0
+                ? findClosestCity(
+                    lat,
+                    lng,
+                    cities.map((c) => ({ lat: c.latitude, lng: c.longitude, name: c.name })),
+                  ).name
+                : result.city;
 
             setForm((prev) => ({
               ...prev,
@@ -543,10 +517,6 @@ export function PensionEditorDrawer({
       setIsSubmitting(false);
     }
   };
-
-  const selectedCityConfig = CHILEAN_CITIES.find(
-    (c) => c.city.toLowerCase() === form.city.toLowerCase(),
-  );
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -697,13 +667,13 @@ export function PensionEditorDrawer({
                   Ciudad <span className="text-destructive">*</span>
                 </label>
                 <div className="flex flex-wrap gap-1.5">
-                  {CHILEAN_CITIES.map((c) => {
-                    const isSelected = form.city.toLowerCase() === c.city.toLowerCase();
+                  {cities.map((c) => {
+                    const isSelected = form.city.toLowerCase() === c.name.toLowerCase();
                     return (
                       <button
-                        key={c.city}
+                        key={c.id || c.name}
                         type="button"
-                        onClick={() => handleCityChange(c.city)}
+                        onClick={() => handleCityChange(c.name)}
                         className={cn(
                           'px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer',
                           isSelected
@@ -711,7 +681,7 @@ export function PensionEditorDrawer({
                             : 'bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/50',
                         )}
                       >
-                        {c.city}
+                        {c.name}
                       </button>
                     );
                   })}
@@ -730,9 +700,7 @@ export function PensionEditorDrawer({
                     id="pension-neighborhood-input"
                     type="text"
                     maxLength={60}
-                    placeholder={
-                      selectedCityConfig?.neighborhoodPlaceholder ?? 'Ej: San Joaquín, Centro...'
-                    }
+                    placeholder="Ej: San Joaquín, Centro..."
                     value={form.neighborhood}
                     onChange={(e) =>
                       setForm((prev) => ({

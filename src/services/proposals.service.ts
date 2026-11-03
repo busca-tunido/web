@@ -18,26 +18,27 @@ type RawProposal = {
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | string;
   reviewNotes?: string | null;
   createdAt: string;
+  submittedBy?: ProposalDto['submittedBy'];
 };
 
 function normalizeProposal(raw: RawProposal): ProposalDto {
+  const user = raw.submittedBy || {
+    id: raw.submittedById ?? raw.userId ?? '',
+    firstName: '',
+    lastName: '',
+  };
   return {
     id: raw.id,
     pensionId: raw.pensionId,
-    userId: raw.userId ?? raw.submittedById ?? '',
     submittedById: raw.submittedById ?? raw.userId ?? '',
     type: raw.type,
     proposedChanges: (raw.proposedChanges as Record<string, unknown>) ?? {},
-    submissionNotes: raw.submissionNotes ?? undefined,
+    submissionNotes: raw.submissionNotes ?? null,
     status: (raw.status as ProposalDto['status']) ?? 'PENDING',
-    reviewNotes: raw.reviewNotes ?? undefined,
+    reviewNotes: raw.reviewNotes ?? null,
     createdAt: String(raw.createdAt),
     updatedAt: String(raw.createdAt),
-    submittedBy: {
-      id: raw.userId ?? raw.submittedById ?? '',
-      firstName: 'Estudiante',
-      lastName: '',
-    },
+    submittedBy: user,
   };
 }
 

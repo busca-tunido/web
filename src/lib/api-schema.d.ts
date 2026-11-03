@@ -721,40 +721,6 @@ export interface components {
       role?: components['schemas']['Role'];
       detectedUniversity?: components['schemas']['DetectedUniversityResponseDto'] | null;
     };
-    UniversityResponseDto: {
-      /** @example 6659f8c123456789abcdef02 */
-      id: string;
-      /** @example Universidad de Chile */
-      name: string;
-      /** @example UCh */
-      shortName?: string | null;
-      /** @example UCh */
-      acronym?: string | null;
-      /** @example Santiago */
-      city: string;
-      /** @example Metropolitana */
-      region?: string | null;
-      /** @example uchile.cl */
-      emailDomain?: string | null;
-      /** @example https://uchile.cl */
-      website?: string | null;
-      /** @example https://example.com/uchile.webp */
-      imageUrl?: string | null;
-      /** @example -33.4443 */
-      latitude: number;
-      /** @example -70.6558 */
-      longitude: number;
-      /**
-       * Format: date-time
-       * @example 2026-03-01T00:00:00.000Z
-       */
-      createdAt: string;
-      /**
-       * Format: date-time
-       * @example 2026-03-01T00:00:00.000Z
-       */
-      updatedAt: string;
-    };
     GeoCoordinateDto: {
       /** @example -33.496388 */
       latitude: number;
@@ -779,6 +745,58 @@ export interface components {
       universityName: string;
       /** @example Santiago */
       city: string;
+    };
+    UniversityCountDto: {
+      /** @example 120 */
+      students: number;
+      /** @example 15 */
+      nearbyPensions: number;
+    };
+    UniversityResponseDto: {
+      /** @example 6659f8c123456789abcdef02 */
+      id: string;
+      /** @example Universidad de Chile */
+      name: string;
+      /** @example UCh */
+      shortName?: string | null;
+      /** @example UCh */
+      acronym?: string | null;
+      /** @example Santiago */
+      city: string;
+      /** @example Metropolitana */
+      region?: string | null;
+      /** @example Av. Libertador Bernardo O Higgins 1058 */
+      address?: string;
+      /** @example uchile.cl */
+      emailDomain?: string | null;
+      /**
+       * @example [
+       *       "uchile.cl"
+       *     ]
+       */
+      emailDomains?: string[];
+      /** @example https://uchile.cl */
+      website?: string | null;
+      /** @example https://example.com/uchile.webp */
+      imageUrl?: string | null;
+      /** @example https://example.com/logo.webp */
+      logoUrl?: string | null;
+      /** @example -33.4443 */
+      latitude: number;
+      /** @example -70.6558 */
+      longitude: number;
+      campuses?: components['schemas']['CampusAreaResponseDto'][];
+      _count?: components['schemas']['UniversityCountDto'];
+      /**
+       * Format: date-time
+       * @example 2026-03-01T00:00:00.000Z
+       */
+      createdAt: string;
+      /**
+       * Format: date-time
+       * @example 2026-03-01T00:00:00.000Z
+       */
+      updatedAt: string;
     };
     CreateUniversityDto: {
       /** @example Universidad de Chile */
@@ -863,6 +881,8 @@ export interface components {
       walkingMinutes?: number;
       university: components['schemas']['NearbyUniversityItemDto'];
     };
+    /** @enum {string} */
+    BathType: 'PRIVATE' | 'SHARED';
     PensionRoomSummaryDto: {
       /** @example room-123 */
       id: string;
@@ -882,6 +902,8 @@ export interface components {
       deposit?: number | null;
       /** @example false */
       hasPrivateBathroom: boolean;
+      /** @example PRIVATE */
+      bathType?: components['schemas']['BathType'];
       /** @example true */
       isAvailable: boolean;
       /** @example true */
@@ -982,6 +1004,14 @@ export interface components {
       /** @example true */
       hasMore: boolean;
     };
+    NearbyCityCountDto: {
+      /** @example Valparaíso */
+      city: string;
+      /** @example 15 */
+      count: number;
+      /** @example 110.5 */
+      distanceKm?: number;
+    };
     PriceHistogramBinDto: {
       /** @example 150000 */
       min: number;
@@ -1012,6 +1042,8 @@ export interface components {
       latitude: number;
       /** @example -70.669265 */
       longitude: number;
+      /** @example https://example.com/santiago.webp */
+      imageUrl?: string | null;
     };
     CreatePensionDto: {
       /** @example Residencia San Joaquín */
@@ -1220,6 +1252,8 @@ export interface components {
       deposit?: number | null;
       /** @example false */
       hasPrivateBathroom: boolean;
+      /** @example PRIVATE */
+      bathType?: components['schemas']['BathType'];
       /** @example 1 */
       totalBeds: number;
       /** @example 1 */
@@ -1271,6 +1305,8 @@ export interface components {
        * @example false
        */
       hasPrivateBathroom: boolean;
+      /** @example PRIVATE */
+      bathType?: components['schemas']['BathType'];
       /**
        * @default 1
        * @example 1
@@ -1316,6 +1352,8 @@ export interface components {
        * @example false
        */
       hasPrivateBathroom: boolean;
+      /** @example PRIVATE */
+      bathType?: components['schemas']['BathType'];
       /**
        * @default 1
        * @example 1
@@ -2480,6 +2518,7 @@ export interface operations {
               totalPages: number;
               /** @example true */
               hasMore?: boolean;
+              nearbyCityCounts?: components['schemas']['NearbyCityCountDto'][];
             };
           };
         };
@@ -3363,6 +3402,7 @@ export interface operations {
               totalPages: number;
               /** @example true */
               hasMore?: boolean;
+              nearbyCityCounts?: components['schemas']['NearbyCityCountDto'][];
             };
           };
         };
@@ -4299,6 +4339,7 @@ export interface operations {
               totalPages: number;
               /** @example true */
               hasMore?: boolean;
+              nearbyCityCounts?: components['schemas']['NearbyCityCountDto'][];
             };
           };
         };

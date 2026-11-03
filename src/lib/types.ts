@@ -1,5 +1,7 @@
 import type {
   CitySummaryDto,
+  NearbyCityCount,
+  PaginationMeta,
   PensionItemDto,
   ReviewItemDto,
   RoomDto,
@@ -14,23 +16,17 @@ export type UserProfile = UserProfileDto;
 
 export type CityInfo = CitySummaryDto & {
   region?: string;
-  foreignStudentRate?: number;
-  averagePriceClp?: number;
-  imageUrl?: string;
   isCurrentCity?: boolean;
 };
 
 export type UniversityInfo = UniversityDto & {
   domains?: string[];
-  foreignStudentRate?: number;
   pensionsNearbyCount?: number;
-  logoUrl?: string;
 };
 
 export type RoomInfo = RoomDto & {
-  roomType?: 'SINGLE' | 'SHARED' | 'STUDIO';
-  type?: string;
-  priceMonthlyClp?: number;
+  roomType?: components['schemas']['RoomType'];
+  photos?: string[];
 };
 
 export type PensionItem = Omit<PensionItemDto, 'genderPreference' | 'rooms' | 'amenities'> & {
@@ -57,12 +53,7 @@ export type PensionItem = Omit<PensionItemDto, 'genderPreference' | 'rooms' | 'a
   amenities?: string[];
 };
 
-export type NearbyCityCount = {
-  city: string;
-  count: number;
-  distanceKm?: number;
-};
-export type PaginationMeta = components['schemas']['PaginationMetaDto'];
+export type { NearbyCityCount, PaginationMeta };
 
 export type PaginatedPensionsResponse = {
   items: PensionItem[];
@@ -99,6 +90,7 @@ export type PensionReview = ReviewItemDto & {
   cons?: string | null;
   isResidentVerified?: boolean;
   isVerifiedStudent?: boolean;
+  userVoted?: boolean;
 };
 
 export type StayHistoryItem = StudentStayDto & {

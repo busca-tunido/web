@@ -18,9 +18,7 @@ const mockCities: CityInfo[] = [
     latitude: -33.4489,
     longitude: -70.6693,
     pensionsCount: 45,
-    averagePriceClp: 320000,
     imageUrl: 'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/v1/shared/cities/city-mock.webp',
-    foreignStudentRate: 0.12,
   },
   {
     id: 'city-2',
@@ -29,9 +27,7 @@ const mockCities: CityInfo[] = [
     latitude: -33.0472,
     longitude: -71.6127,
     pensionsCount: 20,
-    averagePriceClp: 280000,
     imageUrl: 'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/v1/shared/cities/city-mock.webp',
-    foreignStudentRate: 0.08,
   },
   {
     id: 'city-3',
@@ -40,9 +36,7 @@ const mockCities: CityInfo[] = [
     latitude: -36.827,
     longitude: -73.0503,
     pensionsCount: 15,
-    averagePriceClp: 250000,
     imageUrl: 'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/cities/city-mock.webp',
-    foreignStudentRate: 0.05,
   },
 ];
 

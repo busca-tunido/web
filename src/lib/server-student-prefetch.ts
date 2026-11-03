@@ -66,7 +66,7 @@ export async function fetchInitialPensions(
 
 export async function fetchInitialCities(baseUrl: string): Promise<CityInfo[]> {
   try {
-    const res = await fetch(`${baseUrl}/universities`, {
+    const res = await fetch(`${baseUrl}/cities`, {
       next: { revalidate: 300 },
       signal: AbortSignal.timeout(4000),
     });
@@ -75,41 +75,23 @@ export async function fetchInitialCities(baseUrl: string): Promise<CityInfo[]> {
     }
     const json = (await res.json()) as {
       data?: Array<{
-        city?: string;
+        id?: string;
+        name?: string;
+        pensionsCount?: number;
         latitude?: number | string;
         longitude?: number | string;
+        imageUrl?: string | null;
       }>;
     };
-    const rawList = Array.isArray(json.data)
-      ? json.data
-      : Array.isArray(json)
-        ? (json as Array<{
-            city?: string;
-            latitude?: number | string;
-            longitude?: number | string;
-          }>)
-        : [];
-    const cityMap = new Map<string, { lat: number; lng: number; count: number }>();
-    for (const u of rawList) {
-      if (u.city && typeof u.city === 'string' && u.city.trim().length > 0) {
-        const cityName = u.city.trim();
-        const existing = cityMap.get(cityName) ?? {
-          lat: Number(u.latitude) || 0,
-          lng: Number(u.longitude) || 0,
-          count: 0,
-        };
-        existing.count += 1;
-        cityMap.set(cityName, existing);
-      }
-    }
-    return Array.from(cityMap.entries()).map(([cityName, data]) => ({
-      id: cityName.toLowerCase().replace(/\s+/g, '-'),
-      name: cityName,
+    const rawList = Array.isArray(json.data) ? json.data : [];
+    return rawList.map((c) => ({
+      id: c.id ?? (c.name ? c.name.toLowerCase().replace(/\s+/g, '-') : ''),
+      name: c.name ?? '',
       region: 'Chile',
-      pensionsCount: 0,
-      imageUrl: getCityImageUrl(cityName),
-      latitude: data.lat,
-      longitude: data.lng,
+      pensionsCount: Number(c.pensionsCount ?? 0),
+      imageUrl: c.imageUrl ?? (c.name ? getCityImageUrl(c.name) : undefined),
+      latitude: Number(c.latitude) || 0,
+      longitude: Number(c.longitude) || 0,
     }));
   } catch {
     return [];
@@ -188,6 +170,14 @@ export async function fetchInitialUniversities(baseUrl: string): Promise<Univers
         imageUrl: rawImage ?? getUniversityImageUrl(name, acronym),
         latitude: Number(u.latitude) || 0,
         longitude: Number(u.longitude) || 0,
+        createdAt:
+          typeof (u as Record<string, unknown>).createdAt === 'string'
+            ? ((u as Record<string, unknown>).createdAt as string)
+            : '',
+        updatedAt:
+          typeof (u as Record<string, unknown>).updatedAt === 'string'
+            ? ((u as Record<string, unknown>).updatedAt as string)
+            : '',
       };
     });
   } catch {

@@ -26,7 +26,6 @@ export function mapRoomDto(raw: Record<string, unknown>): RoomDto {
     bathType: hasPrivateBath ? 'PRIVATE' : 'SHARED',
     availableFrom: typeof raw.availableFrom === 'string' ? raw.availableFrom : null,
     images,
-    photos: images,
     createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : '',
     updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : '',
   };

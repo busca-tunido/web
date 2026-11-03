@@ -122,8 +122,8 @@ export function usePensionReviews(
 
   const reviews: PensionReview[] = useMemo(() => {
     return rawItems.map((r) => {
-      const firstName = r.user?.firstName || r.userName?.split(' ')[0] || 'Estudiante';
-      const lastName = r.user?.lastName || r.userName?.split(' ').slice(1).join(' ') || '';
+      const firstName = r.user?.firstName || r.author?.firstName || '';
+      const lastName = r.user?.lastName || r.author?.lastName || '';
 
       const rawOverall = (r as unknown as { overallRating?: number }).overallRating;
       const score =
@@ -131,29 +131,33 @@ export function usePensionReviews(
           ? r.rating
           : typeof rawOverall === 'number' && !Number.isNaN(rawOverall)
             ? rawOverall
-            : 5;
+            : 0;
 
-      const isVoted = userVotes[r.id] !== undefined ? userVotes[r.id] : Boolean(r.userVoted);
+      const isVoted = Boolean(userVotes[r.id]);
 
       return {
+        ...r,
         id: r.id,
         pensionId: r.pensionId,
+        userId: r.userId,
         overallRating: score,
         rating: score,
         cleanlinessRating: r.cleanlinessRating,
         landlordRating: r.landlordRating,
-        quietnessRating: r.locationRating,
-        wifiRating: undefined,
+        quietnessRating: r.quietnessRating ?? r.locationRating,
+        wifiRating: r.wifiRating,
         comment: r.comment,
         stayDurationCategory: r.stayDurationCategory ?? undefined,
         stayDuration: r.stayDuration,
-        isResidentVerified: true,
+        isVerifiedStay: r.isVerifiedStay,
+        isResidentVerified: r.isResidentVerified,
+        isAnonymous: r.isAnonymous,
         helpfulCount: r.helpfulCount ?? 0,
         userVoted: isVoted,
         images: r.images ?? [],
         createdAt: r.createdAt || new Date().toISOString(),
         user: {
-          id: String(r.user?.id || r.userId || 'usr-anon'),
+          id: String(r.user?.id || r.userId),
           firstName,
           lastName,
           avatarUrl: r.user?.avatarUrl ?? undefined,
@@ -246,8 +250,7 @@ export function usePensionReviews(
   const voteReviewHelpful = useCallback(
     async (reviewId: string): Promise<boolean> => {
       const currentItem = rawItems.find((r) => r.id === reviewId);
-      const previousVoted =
-        userVotes[reviewId] !== undefined ? userVotes[reviewId] : Boolean(currentItem?.userVoted);
+      const previousVoted = Boolean(userVotes[reviewId]);
       const nextVoted = !previousVoted;
       const previousCount = currentItem?.helpfulCount ?? 0;
       const optimisticCount = Math.max(0, previousCount + (nextVoted ? 1 : -1));
@@ -259,7 +262,6 @@ export function usePensionReviews(
             ? {
                 ...r,
                 helpfulCount: optimisticCount,
-                userVoted: nextVoted,
               }
             : r,
         ),
@@ -275,7 +277,6 @@ export function usePensionReviews(
                 ? {
                     ...r,
                     helpfulCount: previousCount,
-                    userVoted: previousVoted,
                   }
                 : r,
             ),
@@ -292,7 +293,6 @@ export function usePensionReviews(
               ? {
                   ...r,
                   helpfulCount: serverCount,
-                  userVoted: serverVoted,
                 }
               : r,
           ),
@@ -306,7 +306,6 @@ export function usePensionReviews(
               ? {
                   ...r,
                   helpfulCount: previousCount,
-                  userVoted: previousVoted,
                 }
               : r,
           ),

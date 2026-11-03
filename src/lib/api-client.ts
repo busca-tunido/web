@@ -73,6 +73,7 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
                 : 'SINGLE';
           return {
             id: r.id ? String(r.id) : `room-${String(raw.id ?? 'pension')}-${idx + 1}`,
+            pensionId: String(raw.id ?? ''),
             title: String(r.title ?? `Habitación ${idx + 1}`),
             type: roomTypeVal,
             roomType: roomTypeVal,
@@ -82,12 +83,22 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
             priceMonthlyClp: Number(
               r.priceMonthlyClp || r.monthlyPrice || r.priceMonthly || raw.baseMonthlyPrice || 0,
             ),
+            totalBeds: Number(r.totalBeds ?? 1),
+            availableBeds: Number(r.availableBeds ?? 1),
+            isActive: r.isActive !== false,
             hasPrivateBathroom: Boolean(r.hasPrivateBathroom),
             isAvailable: r.isAvailable !== false,
+            images: Array.isArray(r.images)
+              ? (r.images as unknown[]).map(String)
+              : Array.isArray(r.photos)
+                ? (r.photos as unknown[]).map(String)
+                : [],
             photos:
               Array.isArray(r.photos) && r.photos.length > 0
                 ? (r.photos as unknown[]).map((p) => normalizeImageUrl(String(p))).filter(Boolean)
                 : photos,
+            createdAt: typeof r.createdAt === 'string' ? r.createdAt : '',
+            updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : '',
           };
         })
       : [];
@@ -167,6 +178,34 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
     rooms,
     curfewDescription: raw.curfewTime ? `Toque de queda ${raw.curfewTime}` : undefined,
     visitsPolicy: raw.guestsAllowed ? 'Visitas permitidas' : 'Sin visitas',
+    baseMonthlyPrice: Number(raw.baseMonthlyPrice) || 0,
+    currency: typeof raw.currency === 'string' ? raw.currency : 'CLP',
+    verificationStatus:
+      (raw.verificationStatus as components['schemas']['VerificationStatus']) ?? 'UNVERIFIED',
+    isActive: typeof raw.isActive === 'boolean' ? raw.isActive : true,
+    ratingCount:
+      typeof raw.ratingCount === 'number'
+        ? raw.ratingCount
+        : typeof raw.reviewsCount === 'number'
+          ? raw.reviewsCount
+          : 0,
+    images: Array.isArray(raw.images)
+      ? (raw.images as components['schemas']['PensionImageResponseDto'][])
+      : photos.map((url, i) => ({
+          id: `img-${i}`,
+          url,
+          thumbnailUrl: url,
+          caption: null,
+          isFeatured: i === 0,
+        })),
+    nearbyUniversities: Array.isArray(raw.nearbyUniversities)
+      ? (raw.nearbyUniversities as components['schemas']['PensionNearbyUniversityResponseDto'][])
+      : [],
+    _count: (raw._count as components['schemas']['PensionCountDto']) ?? {
+      reviews: 0,
+      rooms: rooms.length,
+      favorites: 0,
+    },
   };
 }
 
@@ -258,29 +297,27 @@ export async function fetchPensions(filters?: SearchFilters): Promise<PensionIte
 
 export async function fetchCities(): Promise<CityInfo[]> {
   try {
-    const { response } = await apiClient.GET('/universities');
+    const { response } = await apiClient.GET('/cities');
     if (response.ok) {
       const json = (await response.json()) as ApiResponseEnvelope<
-        Array<{ city: string; latitude?: number | string; longitude?: number | string }>
+        Array<{
+          id: string;
+          name: string;
+          pensionsCount: number;
+          latitude: number;
+          longitude: number;
+          imageUrl?: string | null;
+        }>
       >;
       if (json?.data && Array.isArray(json.data)) {
-        const cityMap = new Map<string, { lat: number; lng: number }>();
-        for (const u of json.data) {
-          if (u.city && !cityMap.has(u.city)) {
-            cityMap.set(u.city, {
-              lat: Number(u.latitude) || 0,
-              lng: Number(u.longitude) || 0,
-            });
-          }
-        }
-        return Array.from(cityMap.entries()).map(([cityName, coords]) => ({
-          id: cityName.toLowerCase().replace(/\s+/g, '-'),
-          name: cityName,
+        return json.data.map((c) => ({
+          id: c.id,
+          name: c.name,
           region: 'Chile',
-          pensionsCount: 0,
-          imageUrl: getCityImageUrl(cityName),
-          latitude: coords.lat,
-          longitude: coords.lng,
+          pensionsCount: c.pensionsCount,
+          imageUrl: c.imageUrl ?? getCityImageUrl(c.name),
+          latitude: c.latitude,
+          longitude: c.longitude,
         }));
       }
     }
@@ -324,6 +361,14 @@ export async function fetchUniversities(city?: string): Promise<UniversityInfo[]
           imageUrl: u.campusImageUrl || getUniversityImageUrl(u.name, u.shortName),
           latitude: Number(u.latitude) || 0,
           longitude: Number(u.longitude) || 0,
+          createdAt:
+            typeof (u as Record<string, unknown>).createdAt === 'string'
+              ? ((u as Record<string, unknown>).createdAt as string)
+              : '',
+          updatedAt:
+            typeof (u as Record<string, unknown>).updatedAt === 'string'
+              ? ((u as Record<string, unknown>).updatedAt as string)
+              : '',
         }));
       }
     }
@@ -336,28 +381,15 @@ export function mapReviewDtoToPensionReview(
   raw: components['schemas']['ReviewResponseDto'],
 ): PensionReview {
   return {
-    id: raw.id,
-    pensionId: raw.pensionId,
-    overallRating: raw.rating,
-    rating: raw.rating,
+    ...raw,
+    overallRating: raw.overallRating ?? raw.rating,
+    rating: raw.rating ?? raw.overallRating,
     cleanlinessRating: raw.cleanlinessRating ?? undefined,
-    landlordRating: raw.ownerRating ?? undefined,
-    quietnessRating: undefined,
-    wifiRating: undefined,
-    comment: raw.comment,
+    landlordRating: raw.ownerRating ?? raw.landlordRating ?? undefined,
     pros: raw.positiveComment ?? undefined,
     cons: raw.negativeComment ?? undefined,
-    isResidentVerified: raw.isVerifiedStay,
+    isResidentVerified: raw.isResidentVerified ?? raw.isVerifiedStay,
     isVerifiedStudent: raw.isVerifiedStay,
-    helpfulCount: raw.helpfulCount,
-    images: raw.images,
-    createdAt: raw.createdAt,
-    user: {
-      id: raw.author?.id ?? raw.userId,
-      firstName: raw.author?.firstName ?? 'Estudiante',
-      lastName: raw.author?.lastName ?? '',
-      university: raw.author?.universityName ? { name: raw.author.universityName } : undefined,
-    },
   };
 }
 

@@ -193,6 +193,7 @@ export function PublishReviewModal({
       const createdReview: PensionReview = {
         id: serverReview.id || `rev-${Date.now()}`,
         pensionId: pension.id,
+        userId: user?.id || serverReview.userId || '',
         rating: serverReview.rating ?? state.overallRating,
         overallRating: serverReview.rating ?? state.overallRating,
         cleanlinessRating: serverReview.cleanlinessRating ?? state.cleanlinessRating ?? undefined,
@@ -201,7 +202,10 @@ export function PublishReviewModal({
         wifiRating: state.wifiRating ?? undefined,
         comment: serverReview.comment ?? state.comment.trim(),
         stayDurationCategory: state.stayDuration,
+        isVerifiedStay: serverReview.isVerifiedStay ?? true,
         isResidentVerified: true,
+        isAnonymous: false,
+        helpfulCount: serverReview.helpfulCount ?? 0,
         createdAt: serverReview.createdAt ?? new Date().toISOString(),
         images: uploadedUrls,
         user: {

@@ -1113,6 +1113,12 @@
                         "hasMore": {
                           "type": "boolean",
                           "example": true
+                        },
+                        "nearbyCityCounts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/NearbyCityCountDto"
+                          }
                         }
                       },
                       "required": ["items", "pagination", "total", "page", "limit", "totalPages"]
@@ -2559,6 +2565,12 @@
                         "hasMore": {
                           "type": "boolean",
                           "example": true
+                        },
+                        "nearbyCityCounts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/NearbyCityCountDto"
+                          }
                         }
                       },
                       "required": ["items", "pagination", "total", "page", "limit", "totalPages"]
@@ -3909,6 +3921,12 @@
                         "hasMore": {
                           "type": "boolean",
                           "example": true
+                        },
+                        "nearbyCityCounts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/NearbyCityCountDto"
+                          }
                         }
                       },
                       "required": ["items", "pagination", "total", "page", "limit", "totalPages"]
@@ -4780,72 +4798,6 @@
         },
         "required": ["exists"]
       },
-      "UniversityResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "6659f8c123456789abcdef02"
-          },
-          "name": {
-            "type": "string",
-            "example": "Universidad de Chile"
-          },
-          "shortName": {
-            "type": "string",
-            "nullable": true,
-            "example": "UCh"
-          },
-          "acronym": {
-            "type": "string",
-            "nullable": true,
-            "example": "UCh"
-          },
-          "city": {
-            "type": "string",
-            "example": "Santiago"
-          },
-          "region": {
-            "type": "string",
-            "nullable": true,
-            "example": "Metropolitana"
-          },
-          "emailDomain": {
-            "type": "string",
-            "nullable": true,
-            "example": "uchile.cl"
-          },
-          "website": {
-            "type": "string",
-            "nullable": true,
-            "example": "https://uchile.cl"
-          },
-          "imageUrl": {
-            "type": "string",
-            "nullable": true,
-            "example": "https://example.com/uchile.webp"
-          },
-          "latitude": {
-            "type": "number",
-            "example": -33.4443
-          },
-          "longitude": {
-            "type": "number",
-            "example": -70.6558
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string",
-            "example": "2026-03-01T00:00:00.000Z"
-          }
-        },
-        "required": ["id", "name", "city", "latitude", "longitude", "createdAt", "updatedAt"]
-      },
       "GeoCoordinateDto": {
         "type": "object",
         "properties": {
@@ -4913,6 +4865,111 @@
           "universityName",
           "city"
         ]
+      },
+      "UniversityCountDto": {
+        "type": "object",
+        "properties": {
+          "students": {
+            "type": "number",
+            "example": 120
+          },
+          "nearbyPensions": {
+            "type": "number",
+            "example": 15
+          }
+        },
+        "required": ["students", "nearbyPensions"]
+      },
+      "UniversityResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "6659f8c123456789abcdef02"
+          },
+          "name": {
+            "type": "string",
+            "example": "Universidad de Chile"
+          },
+          "shortName": {
+            "type": "string",
+            "nullable": true,
+            "example": "UCh"
+          },
+          "acronym": {
+            "type": "string",
+            "nullable": true,
+            "example": "UCh"
+          },
+          "city": {
+            "type": "string",
+            "example": "Santiago"
+          },
+          "region": {
+            "type": "string",
+            "nullable": true,
+            "example": "Metropolitana"
+          },
+          "address": {
+            "type": "string",
+            "example": "Av. Libertador Bernardo O Higgins 1058"
+          },
+          "emailDomain": {
+            "type": "string",
+            "nullable": true,
+            "example": "uchile.cl"
+          },
+          "emailDomains": {
+            "example": ["uchile.cl"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "website": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://uchile.cl"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://example.com/uchile.webp"
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://example.com/logo.webp"
+          },
+          "latitude": {
+            "type": "number",
+            "example": -33.4443
+          },
+          "longitude": {
+            "type": "number",
+            "example": -70.6558
+          },
+          "campuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CampusAreaResponseDto"
+            }
+          },
+          "_count": {
+            "$ref": "#/components/schemas/UniversityCountDto"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-01T00:00:00.000Z"
+          }
+        },
+        "required": ["id", "name", "city", "latitude", "longitude", "createdAt", "updatedAt"]
       },
       "CreateUniversityDto": {
         "type": "object",
@@ -5092,6 +5149,10 @@
         },
         "required": ["distanceMeters", "university"]
       },
+      "BathType": {
+        "type": "string",
+        "enum": ["PRIVATE", "SHARED"]
+      },
       "PensionRoomSummaryDto": {
         "type": "object",
         "properties": {
@@ -5133,6 +5194,14 @@
           "hasPrivateBathroom": {
             "type": "boolean",
             "example": false
+          },
+          "bathType": {
+            "example": "PRIVATE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BathType"
+              }
+            ]
           },
           "isAvailable": {
             "type": "boolean",
@@ -5404,6 +5473,24 @@
         },
         "required": ["page", "limit", "total", "totalPages", "hasMore"]
       },
+      "NearbyCityCountDto": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "example": "Valparaíso"
+          },
+          "count": {
+            "type": "number",
+            "example": 15
+          },
+          "distanceKm": {
+            "type": "number",
+            "example": 110.5
+          }
+        },
+        "required": ["city", "count"]
+      },
       "PriceHistogramBinDto": {
         "type": "object",
         "properties": {
@@ -5474,6 +5561,11 @@
           "longitude": {
             "type": "number",
             "example": -70.669265
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://example.com/santiago.webp"
           }
         },
         "required": ["id", "name", "pensionsCount", "latitude", "longitude"]
@@ -5837,6 +5929,14 @@
             "type": "boolean",
             "example": false
           },
+          "bathType": {
+            "example": "PRIVATE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BathType"
+              }
+            ]
+          },
           "totalBeds": {
             "type": "number",
             "example": 1
@@ -5933,6 +6033,14 @@
             "example": false,
             "default": false
           },
+          "bathType": {
+            "example": "PRIVATE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BathType"
+              }
+            ]
+          },
           "totalBeds": {
             "type": "number",
             "example": 1,
@@ -6007,6 +6115,14 @@
             "type": "boolean",
             "example": false,
             "default": false
+          },
+          "bathType": {
+            "example": "PRIVATE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BathType"
+              }
+            ]
           },
           "totalBeds": {
             "type": "number",

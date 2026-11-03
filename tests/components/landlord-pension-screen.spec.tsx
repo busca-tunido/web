@@ -21,7 +21,6 @@ const mockPension: PensionDetailDto = {
   electricityIncluded: true,
   gasIncluded: true,
   internetIncluded: true,
-  includesWifi: true,
   curfewTime: '23:00',
   guestsAllowed: false,
   smokingAllowed: false,
@@ -33,10 +32,13 @@ const mockPension: PensionDetailDto = {
   contactPhone: '+56 9 1234 5678',
   images: [],
   rooms: [],
-  reviews: [],
   amenities: [],
   ratingAverage: 4.5,
+  ratingCount: 8,
   reviewsCount: 8,
+  verificationStatus: 'OFFICIALLY_VERIFIED',
+  nearbyUniversities: [],
+  _count: { reviews: 8, rooms: 0 },
   isActive: true,
 };
 

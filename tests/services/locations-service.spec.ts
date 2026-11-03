@@ -52,33 +52,14 @@ describe('locationsService.fetchCities', () => {
     }
   });
 
-  it('should fallback to universities when /cities returns empty or fails', async () => {
+  it('should return clean empty state when /cities fails without synthetic fallback', async () => {
     vi.spyOn(apiClient, 'apiFetch').mockResolvedValue(createError('Not found', 404));
-    vi.spyOn(universitiesService, 'fetchUniversities').mockResolvedValue(
-      createSuccess([
-        {
-          id: 'uni-1',
-          name: 'Universidad de Chile',
-          shortName: 'UCHILE',
-          acronym: 'UCHILE',
-          city: 'Santiago',
-          latitude: -33.45,
-          longitude: -70.66,
-          imageUrl: 'https://example.com/uchile.webp',
-          createdAt: '2026-01-01T00:00:00.000Z',
-          updatedAt: '2026-01-01T00:00:00.000Z',
-        },
-      ]),
-    );
 
     const result = await locationsService.fetchCities();
 
-    expect(universitiesService.fetchUniversities).toHaveBeenCalled();
     expect(isApiSuccess(result)).toBe(true);
     if (isApiSuccess(result)) {
-      expect(result.data).toHaveLength(1);
-      expect(result.data[0].name).toBe('Santiago');
-      expect(result.data[0].pensionsCount).toBe(0);
+      expect(result.data).toEqual([]);
     }
   });
 });

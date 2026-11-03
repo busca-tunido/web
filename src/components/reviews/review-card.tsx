@@ -54,7 +54,7 @@ export function ReviewCard({
   showHelpfulButton = true,
   isVoting = false,
 }: ReviewCardProps) {
-  const rating = review.overallRating ?? review.rating ?? 5;
+  const rating = review.overallRating ?? review.rating ?? 0;
   const photos = review.images?.slice(0, 3) || [];
   const calculatedLikes =
     likesCount !== undefined

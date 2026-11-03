@@ -90,6 +90,9 @@ describe('StudentRegisterModal - Auto-Detect University Affiliation', () => {
           firstName: 'Ana',
           lastName: 'Silva',
           role: 'STUDENT',
+          isEmailVerified: true,
+          createdAt: '2026-03-01T00:00:00.000Z',
+          updatedAt: '2026-03-01T00:00:00.000Z',
         },
       },
     });

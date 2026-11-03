@@ -28,7 +28,6 @@ export function mapUniversityDto(raw: Record<string, unknown>): UniversityDto {
     name,
     acronym,
     city: String(raw.city ?? ''),
-    campus: typeof raw.campus === 'string' ? raw.campus : undefined,
     latitude: Number(raw.latitude ?? 0),
     longitude: Number(raw.longitude ?? 0),
     imageUrl: rawImage ?? getUniversityImageUrl(name, acronym),

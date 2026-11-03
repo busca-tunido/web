@@ -66,9 +66,7 @@ describe('ExploreScreen Skeletons', () => {
         name: 'Santiago',
         region: 'Región Metropolitana',
         pensionsCount: 42,
-        averagePriceClp: 350000,
         imageUrl: 'https://example.com/santiago.webp',
-        foreignStudentRate: 0.8,
         latitude: -33.4489,
         longitude: -70.6693,
       },
@@ -81,11 +79,12 @@ describe('ExploreScreen Skeletons', () => {
         acronym: 'UCH',
         city: 'Santiago',
         domains: ['uchile.cl'],
-        foreignStudentRate: 0.9,
         pensionsNearbyCount: 25,
         imageUrl: 'https://example.com/uchile.webp',
         latitude: -33.444,
         longitude: -70.655,
+        createdAt: '',
+        updatedAt: '',
       },
     ];
 

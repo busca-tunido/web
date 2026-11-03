@@ -15,9 +15,34 @@ import { staysService } from '@/services/stays.service';
 
 const mockPension: PensionItemDto = {
   id: 'pen-1',
+  slug: 'residencia-alameda-central',
   title: 'Residencia Alameda Central',
+  description: 'Descripción pensión',
+  address: 'Alameda 100',
+  neighborhood: 'Centro',
   city: 'Santiago',
+  latitude: -33.45,
+  longitude: -70.65,
   baseMonthlyPrice: 280000,
+  currency: 'CLP',
+  waterIncluded: true,
+  electricityIncluded: true,
+  gasIncluded: true,
+  internetIncluded: true,
+  guestsAllowed: true,
+  smokingAllowed: false,
+  petsAllowed: false,
+  genderPreference: 'ANY',
+  verificationStatus: 'OFFICIALLY_VERIFIED',
+  isActive: true,
+  ratingAverage: 4.5,
+  ratingCount: 5,
+  reviewsCount: 5,
+  images: [],
+  amenities: [],
+  nearbyUniversities: [],
+  rooms: [],
+  _count: { reviews: 5, rooms: 2 },
 };
 
 describe('useStudentFavorites', () => {
@@ -140,6 +165,7 @@ describe('useStayHistory and Date Formatting', () => {
         endDate: '2024-12-15',
         hasReview: false,
         monthlyPaidClp: 280000,
+        ratingGiven: 0,
         imageUrl: '/test.jpg',
       },
       {
@@ -152,6 +178,7 @@ describe('useStayHistory and Date Formatting', () => {
         endDate: '2023-12-15',
         hasReview: true,
         monthlyPaidClp: 250000,
+        ratingGiven: 5,
         imageUrl: '/test2.jpg',
       },
     ];
@@ -234,7 +261,15 @@ describe('usePensionReviews & createReviewSchema', () => {
         total: 1,
         page: 1,
         limit: 10,
+        totalPages: 1,
         hasMore: false,
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: 1,
+          totalPages: 1,
+          hasMore: false,
+        },
       }),
     );
     const voteSpy = vi
@@ -287,7 +322,15 @@ describe('usePensionReviews & createReviewSchema', () => {
         total: 1,
         page: 1,
         limit: 10,
+        totalPages: 1,
         hasMore: false,
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: 1,
+          totalPages: 1,
+          hasMore: false,
+        },
       }),
     );
     vi.spyOn(reviewsService, 'voteReviewHelpful').mockResolvedValue(

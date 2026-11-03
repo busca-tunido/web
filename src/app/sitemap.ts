@@ -5,17 +5,6 @@ import { fetchInitialCities, fetchInitialPensions } from '@/lib/server-student-p
 
 const LAST_MODIFIED_DATE = '2026-09-14T00:00:00.000Z';
 
-const KNOWN_CITIES = [
-  'Valparaíso',
-  'Viña del Mar',
-  'Santiago',
-  'Concepción',
-  'Antofagasta',
-  'Temuco',
-  'Valdivia',
-  'La Serena',
-];
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '');
   const internalApiUrl = env.API_INTERNAL_URL.replace(/\/+$/, '');
@@ -68,7 +57,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       fetchInitialPensions(internalApiUrl, { limit: 100 }),
     ]);
 
-    const resolvedCityNames = cities.length > 0 ? cities.map((c) => c.name) : KNOWN_CITIES;
+    const resolvedCityNames = cities.map((c) => c.name).filter(Boolean);
     const uniqueSlugs = Array.from(new Set(resolvedCityNames.map(cityNameToSlug)));
 
     cityRoutes = uniqueSlugs.map((slug) => ({
@@ -84,14 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.8,
     }));
-  } catch {
-    cityRoutes = KNOWN_CITIES.map(cityNameToSlug).map((slug) => ({
-      url: `${baseUrl}/cities/${slug}`,
-      lastModified: LAST_MODIFIED_DATE,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    }));
-  }
+  } catch {}
 
   return [...staticRoutes, ...cityRoutes, ...pensionRoutes];
 }
