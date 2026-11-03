@@ -231,20 +231,30 @@ export function PensionDetailContent({
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-          <div
-            className={`flex items-center gap-2 rounded-lg border p-2.5 ${
-              pension.internetIncluded
-                ? 'border-sage/25 bg-sage/8 text-foreground'
-                : 'border-border text-muted-foreground line-through opacity-50'
-            }`}
-          >
-            <Wifi
-              className={`h-4 w-4 shrink-0 ${
-                pension.internetIncluded ? 'text-sage-foreground' : 'text-muted-foreground/60'
-              }`}
-            />
-            <span>WiFi Alta Velocidad</span>
-          </div>
+          {(() => {
+            const hasWifi = Boolean(
+              pension.amenitySlugs?.includes('wifi-alta-velocidad') ||
+                pension.amenities?.some(
+                  (a) => (typeof a === 'string' ? a : a.slug) === 'wifi-alta-velocidad',
+                ),
+            );
+            return (
+              <div
+                className={`flex items-center gap-2 rounded-lg border p-2.5 ${
+                  hasWifi
+                    ? 'border-sage/25 bg-sage/8 text-foreground'
+                    : 'border-border text-muted-foreground opacity-50'
+                }`}
+              >
+                <Wifi
+                  className={`h-4 w-4 shrink-0 ${
+                    hasWifi ? 'text-sage-foreground' : 'text-muted-foreground/60'
+                  }`}
+                />
+                <span>{hasWifi ? 'WiFi Alta Velocidad' : 'Sin WiFi'}</span>
+              </div>
+            );
+          })()}
           {(() => {
             const hasMeals =
               pension.amenitySlugs?.includes('comida-incluida') ||

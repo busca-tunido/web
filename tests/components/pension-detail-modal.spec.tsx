@@ -79,8 +79,8 @@ vi.mock('@/lib/auth-context', () => ({
 }));
 
 vi.mock('@/hooks/use-pension-detail', () => ({
-  usePensionDetail: () => ({
-    activePension: mockPension,
+  usePensionDetail: (_id: string | null, initial?: PensionItem | null) => ({
+    activePension: initial ?? mockPension,
     isLoading: false,
     error: null,
     refetch: vi.fn(),
@@ -121,6 +121,27 @@ describe('PensionDetailModal without NavigationProvider', () => {
     }).not.toThrow();
 
     expect(screen.getByText('Pensión Bellavista')).toBeDefined();
+    expect(screen.getByText('WiFi Alta Velocidad')).toBeDefined();
+  });
+
+  it('renders "Sin WiFi" when wifi-alta-velocidad amenity is not included', () => {
+    const pensionWithoutWifi: PensionItem = {
+      ...mockPension,
+      amenitySlugs: ['sala-estudio-cowork'],
+      amenities: [],
+    };
+
+    render(
+      <PensionDetailModal
+        isOpen={true}
+        onClose={vi.fn()}
+        pension={pensionWithoutWifi}
+        pensionId={pensionWithoutWifi.id}
+      />,
+    );
+
+    expect(screen.getByText('Sin WiFi')).toBeDefined();
+    expect(screen.queryByText('WiFi Alta Velocidad')).toBeNull();
   });
 
   it('renders safely when closed without NavigationProvider', () => {

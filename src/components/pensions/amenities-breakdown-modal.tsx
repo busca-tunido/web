@@ -47,6 +47,13 @@ export function AmenitiesBreakdownModal({
         ? 'Alojamiento Exclusivo Hombres'
         : 'Alojamiento Mixto';
 
+  const hasWifi = Boolean(
+    pension.amenitySlugs?.includes('wifi-alta-velocidad') ||
+      pension.amenities?.some(
+        (a) => (typeof a === 'string' ? a : a.slug) === 'wifi-alta-velocidad',
+      ),
+  );
+
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent
@@ -116,17 +123,17 @@ export function AmenitiesBreakdownModal({
               <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
                 <Wifi
                   className={`h-4 w-4 shrink-0 ${
-                    pension.internetIncluded ? 'text-primary' : 'text-muted-foreground'
+                    hasWifi ? 'text-primary' : 'text-muted-foreground'
                   }`}
                 />
                 <div>
                   <p className="text-xs font-semibold text-foreground">Internet Fibra Óptica</p>
                   <p
                     className={`text-[10px] font-medium ${
-                      pension.internetIncluded ? 'text-primary' : 'text-muted-foreground'
+                      hasWifi ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
-                    {pension.internetIncluded ? 'Alta velocidad libre' : 'No incluido'}
+                    {hasWifi ? 'Alta velocidad libre' : 'No incluido'}
                   </p>
                 </div>
               </div>
@@ -210,7 +217,7 @@ export function AmenitiesBreakdownModal({
                       : 'Espacio de estudio independiente en cada dormitorio'}
                   </span>
                 </li>
-                {pension.internetIncluded && (
+                {hasWifi && (
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                     <span>Cobertura de Wi-Fi de alta velocidad en todos los ambientes</span>
