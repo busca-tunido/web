@@ -158,7 +158,7 @@ export function PensionReviewsPreview({
                   </p>
                 </div>
 
-                {review.user.university?.shortName && (
+                {review.user?.university?.shortName && (
                   <div className="mt-3 flex items-center gap-1 text-[10px] font-medium text-muted-foreground pt-2 border-t border-border/60">
                     <GraduationCap className="h-3 w-3 text-primary" />
                     <span>{review.user.university.shortName}</span>

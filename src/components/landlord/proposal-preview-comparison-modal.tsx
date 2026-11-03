@@ -79,11 +79,11 @@ function resolvePensionData(
     (p?.depositClp as number) ??
     0;
 
-  const title = String(c.title ?? p?.title ?? 'Pensión Universitaria');
+  const title = String(c.title ?? p?.title ?? '');
   const description = String(c.description ?? p?.description ?? '');
   const address = String(c.address ?? p?.address ?? '');
   const neighborhood = String(c.neighborhood ?? p?.neighborhood ?? '');
-  const city = String(c.city ?? p?.city ?? 'Chile');
+  const city = String(c.city ?? p?.city ?? '');
 
   const waterIncluded = Boolean(c.waterIncluded ?? p?.waterIncluded ?? false);
   const electricityIncluded = Boolean(c.electricityIncluded ?? p?.electricityIncluded ?? false);
@@ -93,7 +93,7 @@ function resolvePensionData(
   const curfewTime = String(
     c.curfewTime ?? c.curfewText ?? p?.curfewTime ?? 'Sin horario estricto',
   );
-  const guestsAllowed = Boolean(c.guestsAllowed ?? p?.guestsAllowed ?? true);
+  const guestsAllowed = Boolean(c.guestsAllowed ?? p?.guestsAllowed ?? false);
   const petsAllowed = Boolean(c.petsAllowed ?? p?.petsAllowed ?? false);
   const smokingAllowed = Boolean(c.smokingAllowed ?? p?.smokingAllowed ?? false);
 

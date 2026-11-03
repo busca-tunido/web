@@ -59,11 +59,14 @@ describe('locationsService.fetchCities', () => {
         {
           id: 'uni-1',
           name: 'Universidad de Chile',
+          shortName: 'UCHILE',
           acronym: 'UCHILE',
           city: 'Santiago',
           latitude: -33.45,
           longitude: -70.66,
           imageUrl: 'https://example.com/uchile.webp',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
         },
       ]),
     );

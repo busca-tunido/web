@@ -60,6 +60,11 @@ function buildQueryString(params?: PensionFilterParams): string {
     if (value === undefined || value === null || value === '') {
       continue;
     }
+    if (key === 'genderPreference') {
+      const val = value === 'MIXED' ? 'ANY' : String(value);
+      searchParams.set(key, val);
+      continue;
+    }
     if (Array.isArray(value)) {
       if (value.length > 0) {
         searchParams.set(key, value.join(','));
@@ -89,7 +94,8 @@ export function mapReviewItemDto(raw: Record<string, unknown>): ReviewItemDto {
     pensionId: String(raw.pensionId ?? ''),
     userId: String(raw.userId ?? user.id ?? ''),
     userName,
-    rating: Number(raw.rating ?? raw.overallRating ?? 5),
+    rating: Number(raw.rating ?? raw.overallRating ?? 0),
+    overallRating: Number(raw.overallRating ?? raw.rating ?? 0),
     cleanlinessRating:
       raw.cleanlinessRating !== undefined && raw.cleanlinessRating !== null
         ? Number(raw.cleanlinessRating)
@@ -109,10 +115,11 @@ export function mapReviewItemDto(raw: Record<string, unknown>): ReviewItemDto {
       ? (raw.images as string[]).map(normalizeImageUrl).filter(Boolean)
       : [],
     isVerifiedStay: Boolean(raw.isVerifiedStay ?? raw.isResidentVerified),
+    isResidentVerified: Boolean(raw.isResidentVerified ?? raw.isVerifiedStay),
     isAnonymous: Boolean(raw.isAnonymous),
     helpfulCount,
     userVoted: typeof raw.userVoted === 'boolean' ? raw.userVoted : undefined,
-    createdAt: String(raw.createdAt ?? new Date().toISOString()),
+    createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : '',
   };
 }
 

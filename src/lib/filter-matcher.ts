@@ -51,7 +51,11 @@ export function matchesSearchFilters(
   }
 
   if (filters.genderPreference && filters.genderPreference !== 'ALL') {
-    if (pension.genderPreference !== filters.genderPreference) {
+    const filterGen =
+      (filters.genderPreference as string) === 'MIXED' ? 'ANY' : filters.genderPreference;
+    const pensionGen =
+      (pension.genderPreference as string) === 'MIXED' ? 'ANY' : pension.genderPreference;
+    if (pensionGen !== filterGen) {
       return false;
     }
   }
@@ -59,8 +63,8 @@ export function matchesSearchFilters(
   if (filters.roomType) {
     const hasMatchingRoom =
       pension.rooms && pension.rooms.length > 0
-        ? pension.rooms.some((r) => r.roomType === filters.roomType)
-        : true;
+        ? pension.rooms.some((r) => r.roomType === filters.roomType || r.type === filters.roomType)
+        : false;
     if (!hasMatchingRoom) {
       return false;
     }

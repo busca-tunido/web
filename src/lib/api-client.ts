@@ -36,61 +36,8 @@ export type ApiResponseEnvelope<T> = {
 export type CreateProposalInput = components['schemas']['CreateProposalDto'];
 export type CreateReviewInput = components['schemas']['CreateReviewDto'];
 
-export type ApiPensionPayload = {
-  id?: string;
-  slug?: string;
-  title?: string;
-  description?: string;
-  address?: string;
-  neighborhood?: string;
-  city?: string;
-  latitude?: number | string;
-  longitude?: number | string;
-  baseMonthlyPrice?: number | string;
-  deposit?: number | string | null;
-  currency?: string;
-  waterIncluded?: boolean;
-  electricityIncluded?: boolean;
-  gasIncluded?: boolean;
-  internetIncluded?: boolean;
-  curfewTime?: string | null;
-  guestsAllowed?: boolean;
-  smokingAllowed?: boolean;
-  petsAllowed?: boolean;
-  genderPreference?: 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY';
-  quietHoursStart?: string | null;
-  quietHoursEnd?: string | null;
-  verificationStatus?: string;
-  ratingAverage?: number | string;
-  averageRating?: number | string;
-  ratingCount?: number;
-  reviewsCount?: number;
-  distanceKm?: number;
-  relevanceScore?: number;
-  images?: Array<{ url: string; caption?: string; isFeatured?: boolean } | string>;
-  amenities?: Array<{ slug: string; name?: string }>;
-  nearbyUniversities?: Array<{
-    distanceMeters?: number;
-    walkingMinutes?: number;
-    university?: {
-      name?: string;
-      shortName?: string;
-    };
-  }>;
-  rooms?: Array<{
-    id: string;
-    title?: string;
-    roomType?: 'SINGLE' | 'SHARED';
-    priceMonthly?: number | string;
-    hasPrivateBathroom?: boolean;
-    isAvailable?: boolean;
-    photos?: string[];
-  }>;
-  _count?: {
-    reviews?: number;
-    rooms?: number;
-  };
-};
+export type ApiPensionPayload = Partial<components['schemas']['PensionItemResponseDto']> &
+  Record<string, unknown>;
 
 export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem {
   const images = Array.isArray(raw.images)
@@ -113,18 +60,36 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
 
   const rooms: RoomInfo[] =
     Array.isArray(raw.rooms) && raw.rooms.length > 0
-      ? raw.rooms.map((r, idx) => ({
-          id: r.id ? String(r.id) : `room-${String(raw.id ?? 'pension')}-${idx + 1}`,
-          title: r.title ?? `Habitación ${idx + 1}`,
-          roomType: r.roomType === 'SHARED' ? 'SHARED' : 'SINGLE',
-          priceMonthlyClp: Number(r.priceMonthly) || Number(raw.baseMonthlyPrice) || 0,
-          hasPrivateBathroom: Boolean(r.hasPrivateBathroom),
-          isAvailable: r.isAvailable ?? true,
-          photos:
-            Array.isArray(r.photos) && r.photos.length > 0
-              ? r.photos.map(normalizeImageUrl).filter(Boolean)
-              : photos,
-        }))
+      ? raw.rooms.map((roomRaw, idx) => {
+          const r = (roomRaw && typeof roomRaw === 'object' ? roomRaw : {}) as Record<
+            string,
+            unknown
+          >;
+          const roomTypeVal =
+            r.roomType === 'SHARED' || r.type === 'SHARED'
+              ? 'SHARED'
+              : r.roomType === 'STUDIO' || r.type === 'STUDIO'
+                ? 'STUDIO'
+                : 'SINGLE';
+          return {
+            id: r.id ? String(r.id) : `room-${String(raw.id ?? 'pension')}-${idx + 1}`,
+            title: String(r.title ?? `Habitación ${idx + 1}`),
+            type: roomTypeVal,
+            roomType: roomTypeVal,
+            monthlyPrice: Number(
+              r.monthlyPrice || r.priceMonthly || r.priceMonthlyClp || raw.baseMonthlyPrice || 0,
+            ),
+            priceMonthlyClp: Number(
+              r.priceMonthlyClp || r.monthlyPrice || r.priceMonthly || raw.baseMonthlyPrice || 0,
+            ),
+            hasPrivateBathroom: Boolean(r.hasPrivateBathroom),
+            isAvailable: r.isAvailable !== false,
+            photos:
+              Array.isArray(r.photos) && r.photos.length > 0
+                ? (r.photos as unknown[]).map((p) => normalizeImageUrl(String(p))).filter(Boolean)
+                : photos,
+          };
+        })
       : [];
 
   const pensionId = String(raw.id ?? '');
@@ -161,9 +126,13 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
         ? 'MALE_ONLY'
         : raw.genderPreference === 'FEMALE_ONLY'
           ? 'FEMALE_ONLY'
-          : 'MIXED',
+          : 'ANY',
     includesMeals: Boolean(
-      amenitiesSlugs.has('cocina-equipada') || amenitiesSlugs.has('comida-incluida'),
+      amenitiesSlugs.has('comida-incluida') ||
+        amenitiesSlugs.has('pension-completa') ||
+        amenitiesSlugs.has('media-pension') ||
+        amenitiesSlugs.has('alimentacion-incluida') ||
+        amenitiesSlugs.has('desayuno-incluido'),
     ),
     includesWifi:
       raw.internetIncluded === false
@@ -179,6 +148,14 @@ export function mapRawPensionToPensionItem(raw: ApiPensionPayload): PensionItem 
     includesStudyRoom: Boolean(
       amenitiesSlugs.has('sala-estudio-cowork') || amenitiesSlugs.has('sala-estudio'),
     ),
+    waterIncluded: Boolean(raw.waterIncluded),
+    electricityIncluded: Boolean(raw.electricityIncluded),
+    gasIncluded: Boolean(raw.gasIncluded),
+    internetIncluded: Boolean(raw.internetIncluded),
+    guestsAllowed: Boolean(raw.guestsAllowed),
+    smokingAllowed: Boolean(raw.smokingAllowed),
+    petsAllowed: Boolean(raw.petsAllowed),
+    curfewTime: typeof raw.curfewTime === 'string' ? raw.curfewTime : null,
     amenities: amenitiesList,
     nearestUniversityName: nearestUniName,
     distanceToUniversityMeters: distanceMeters,

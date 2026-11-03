@@ -194,19 +194,19 @@ export function LandlordPensionScreen({
       const resolvedPhone = isCustomContact ? contactConfig.phone : defaultContact.phone;
 
       setForm({
-        waterIncluded: isPensionItemDto ? Boolean(p.waterIncluded ?? true) : true,
-        electricityIncluded: isPensionItemDto ? Boolean(p.electricityIncluded ?? true) : true,
-        gasIncluded: isPensionItemDto ? Boolean(p.gasIncluded ?? true) : true,
+        waterIncluded: Boolean(p.waterIncluded),
+        electricityIncluded: Boolean(p.electricityIncluded),
+        gasIncluded: Boolean(p.gasIncluded),
         internetIncluded: isPensionItemDto
           ? Boolean(p.internetIncluded)
           : Boolean((p as PensionItem).includesWifi),
-        guestsAllowed: isPensionItemDto ? Boolean(p.guestsAllowed) : false,
-        smokingAllowed: isPensionItemDto ? Boolean(p.smokingAllowed) : false,
-        petsAllowed: isPensionItemDto ? Boolean(p.petsAllowed) : false,
+        guestsAllowed: Boolean(p.guestsAllowed),
+        smokingAllowed: Boolean(p.smokingAllowed),
+        petsAllowed: Boolean(p.petsAllowed),
         curfewTime: curfewVal,
         hasCurfew: Boolean(curfewVal && curfewVal.trim().length > 0),
-        quietHoursStart: (isPensionItemDto && p.quietHoursStart) || '22:00',
-        quietHoursEnd: (isPensionItemDto && p.quietHoursEnd) || '08:00',
+        quietHoursStart: (isPensionItemDto && p.quietHoursStart) || '',
+        quietHoursEnd: (isPensionItemDto && p.quietHoursEnd) || '',
         genderPreference: normalizedGender,
         useCustomContact: isCustomContact,
         contactName: resolvedName,
@@ -349,7 +349,7 @@ export function LandlordPensionScreen({
     const mapped = mapRawPensionToPensionItem(activePension as Record<string, unknown>);
     return {
       ...mapped,
-      genderPreference: form.genderPreference === 'ANY' ? 'MIXED' : form.genderPreference,
+      genderPreference: form.genderPreference,
       includesWifi: form.internetIncluded,
       curfewDescription:
         form.hasCurfew && form.curfewTime

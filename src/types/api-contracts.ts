@@ -6,9 +6,7 @@ export type ApiOperations = operations;
 export type RegisterDto = components['schemas']['RegisterDto'];
 export type LoginDto = components['schemas']['LoginDto'];
 export type CreatePensionDto = components['schemas']['CreatePensionDto'];
-export type UpdatePensionDto = Partial<components['schemas']['UpdatePensionDto']> & {
-  isActive?: boolean;
-};
+export type UpdatePensionDto = Partial<components['schemas']['UpdatePensionDto']>;
 export type CreateRoomDto = components['schemas']['CreateRoomDto'];
 export type UpdateRoomDto = components['schemas']['UpdateRoomDto'];
 export type CreateUniversityDto = components['schemas']['CreateUniversityDto'];
@@ -26,6 +24,7 @@ export type DetectedUniversityDto = components['schemas']['DetectedUniversityRes
 export type CitySummaryDto = components['schemas']['CitySummaryResponseDto'];
 export type CheckEmailResponseDto = components['schemas']['CheckEmailResponseDto'];
 
+export type AuthResponseDto = components['schemas']['AuthResponseDto'];
 export type AuthSessionDto = {
   token: string;
   accessToken?: string;
@@ -38,43 +37,37 @@ export type AuthSessionDto = {
   };
 };
 
-export type UserProfileDto = components['schemas']['SanitizedUserResponseDto'];
+export type UserProfileDto = Partial<components['schemas']['SanitizedUserResponseDto']> & {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: components['schemas']['Role'];
+};
 
 export type RoomDto = Partial<components['schemas']['RoomResponseDto']> & {
   id: string;
-  pensionId: string;
+  title: string;
   monthlyPrice: number;
   isAvailable: boolean;
-  name?: string;
+  type?: string;
+  roomType?: 'SINGLE' | 'SHARED' | 'STUDIO';
+  name?: string | null;
+  priceMonthlyClp?: number;
   bathType?: 'PRIVATE' | 'SHARED';
-  availableFrom?: string | null;
-  images?: string[];
   photos?: string[];
+  bedCount?: number;
 };
 
 export type ReviewItemDto = Partial<components['schemas']['ReviewResponseDto']> & {
   id: string;
   pensionId: string;
-  userId: string;
   rating: number;
   comment: string;
-  helpfulCount: number;
-  userName?: string;
   overallRating?: number;
-  landlordRating?: number;
-  stayDuration?: string;
+  userName?: string;
   userVoted?: boolean;
-  images?: string[];
-  user?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    avatarUrl?: string | null;
-    university?: {
-      shortName?: string | null;
-      name?: string;
-    } | null;
-  };
+  user?: components['schemas']['ReviewUserDto'] | null;
 };
 
 export type PensionItemDto = Partial<components['schemas']['PensionItemResponseDto']> & {
@@ -88,21 +81,24 @@ export type PensionItemDto = Partial<components['schemas']['PensionItemResponseD
   ratingCount?: number;
   verificationStatus?: components['schemas']['VerificationStatus'];
   isActive?: boolean;
-  quietHoursStart?: string | null;
-  quietHoursEnd?: string | null;
-  images?: Array<
-    | components['schemas']['PensionImageResponseDto']
-    | { id: string; url: string; order?: number; isMain?: boolean }
-  >;
   rooms?: RoomDto[];
   reviews?: ReviewItemDto[];
-  amenities?: Array<
-    components['schemas']['PensionAmenityResponseDto'] | { id?: string; slug: string; name: string }
-  >;
+  amenities?: Array<components['schemas']['PensionAmenityResponseDto'] | string>;
   includesWifi?: boolean;
 };
 
 export type PensionDetailDto = PensionItemDto;
+export type StudentStayDto = Partial<components['schemas']['StudentStayResponseDto']> & {
+  id: string;
+  pensionId: string;
+  pensionTitle: string;
+  pensionCity: string;
+  roomTitle: string;
+  monthlyPaidClp: number;
+  hasReview: boolean;
+};
+export type FavoriteItemDto = components['schemas']['FavoriteItemResponseDto'];
+export type FavoritePensionSummaryDto = components['schemas']['FavoritePensionSummaryDto'];
 
 export type PaginationMeta = components['schemas']['PaginationMetaDto'];
 
@@ -114,11 +110,7 @@ export type PaginatedResponse<T> = {
   limit?: number;
   totalPages?: number;
   hasMore?: boolean;
-  nearbyCityCounts?: Array<{
-    city: string;
-    count: number;
-    distanceKm?: number;
-  }>;
+  nearbyCityCounts?: Array<{ city: string; count: number; distanceKm?: number }>;
 };
 
 export type PaginatedPensionsResponse = PaginatedResponse<PensionItemDto>;
@@ -126,16 +118,15 @@ export type PaginatedReviewsResponse = PaginatedResponse<ReviewItemDto>;
 
 export type GeoCoordinateDto = components['schemas']['GeoCoordinateDto'];
 export type CampusAreaDto = components['schemas']['CampusAreaResponseDto'];
-
 export type UniversityDto = Partial<components['schemas']['UniversityResponseDto']> & {
   id: string;
   name: string;
-  acronym: string;
   city: string;
   latitude: number;
   longitude: number;
+  acronym?: string | null;
   campus?: string;
-  imageUrl?: string;
+  imageUrl?: string | null;
   campuses?: CampusAreaDto[];
 };
 

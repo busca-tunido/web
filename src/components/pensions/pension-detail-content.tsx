@@ -254,7 +254,7 @@ export function PensionDetailContent({
                 pension.includesMeals ? 'text-sage-foreground' : 'text-muted-foreground/60'
               }`}
             />
-            <span>{pension.includesMeals ? 'Cocina equipada' : 'Sin cocina'}</span>
+            <span>{pension.includesMeals ? 'Comida incluida' : 'Sin alimentación'}</span>
           </div>
           <div
             className={`flex items-center gap-2 rounded-lg border p-2.5 ${
@@ -332,7 +332,7 @@ export function PensionDetailContent({
               </div>
               <div className="text-right">
                 <span className="text-xs font-bold text-primary">
-                  ${room.priceMonthlyClp.toLocaleString('es-CL')}
+                  ${(room.priceMonthlyClp ?? room.monthlyPrice ?? 0).toLocaleString('es-CL')}
                 </span>
                 <span className="block text-[10px] text-muted-foreground">CLP / mes</span>
               </div>

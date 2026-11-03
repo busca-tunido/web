@@ -218,8 +218,13 @@ describe('usePensionReviews & createReviewSchema', () => {
       pensionId: 'pen-1',
       userId: 'usr-1',
       rating: 5,
+      overallRating: 5,
       comment: 'Excelente lugar para estudiar y descansar tranquilo.',
       helpfulCount: 2,
+      isVerifiedStay: true,
+      isResidentVerified: true,
+      isAnonymous: false,
+      images: [],
       createdAt: '2024-05-10T12:00:00Z',
     };
 
@@ -266,8 +271,13 @@ describe('usePensionReviews & createReviewSchema', () => {
       pensionId: 'pen-1',
       userId: 'usr-2',
       rating: 4,
+      overallRating: 4,
       comment: 'Muy buena experiencia durante el año académico.',
       helpfulCount: 5,
+      isVerifiedStay: true,
+      isResidentVerified: true,
+      isAnonymous: false,
+      images: [],
       createdAt: '2024-05-10T12:00:00Z',
     };
 

@@ -58,14 +58,19 @@ const FIELD_LABELS: Record<string, string> = {
 
 const AMENITY_LABELS: Record<string, string> = {
   'wifi-alta-velocidad': 'WiFi Alta Velocidad',
-  'comida-incluida': 'Comida Incluida',
+  'cocina-equipada': 'Cocina Equipada',
+  'lavadora-secadora': 'Lavandería (lavadora y secadora)',
   lavanderia: 'Lavandería',
+  'sala-estudio-cowork': 'Sala de Estudio y Cowork',
   'sala-estudio': 'Sala de Estudio',
   'bano-privado': 'Baño Privado',
-  'cocina-equipada': 'Cocina Equipada',
   calefaccion: 'Calefacción',
-  estacionamiento: 'Estacionamiento',
-  'limpieza-incluida': 'Aseo / Limpieza',
+  'agua-caliente': 'Agua Caliente',
+  'luz-incluida': 'Luz Incluida',
+  'gas-incluido': 'Gas Incluido',
+  'camaras-seguridad': 'Cámaras de Seguridad',
+  'conserjeria-24-7': 'Conserjería 24/7',
+  'cerradura-digital': 'Cerradura Digital',
 };
 
 function getAmenityLabel(slug: string): string {

@@ -7,11 +7,12 @@ export async function fetchStudentStays(): Promise<ApiResponse<StayHistoryItem[]
     method: 'GET',
   });
 
-  if (isApiSuccess(response) && Array.isArray(response.data)) {
+  if (!isApiSuccess(response)) {
     return response;
   }
 
-  return createSuccess<StayHistoryItem[]>([], 200);
+  const list = Array.isArray(response.data) ? response.data : [];
+  return createSuccess<StayHistoryItem[]>(list, response.statusCode);
 }
 
 export const staysService = {

@@ -58,7 +58,7 @@ function normalizeText(text: string): string {
 
 function scoreUniversity(uni: UniversityDto, queryTokens: string[]): number {
   const normName = normalizeText(uni.name);
-  const normAcronym = normalizeText(uni.acronym);
+  const normAcronym = normalizeText(uni.shortName || uni.acronym || '');
   let score = 0;
 
   for (const token of queryTokens) {
@@ -84,9 +84,10 @@ export function filterUniversities(
 
   return universities
     .filter((uni) => {
-      const aliasWords = UNIVERSITY_ALIASES[uni.acronym] || [];
+      const acronym = uni.shortName || uni.acronym || '';
+      const aliasWords = (acronym ? UNIVERSITY_ALIASES[acronym] : undefined) || [];
       const searchableCorpus = normalizeText(
-        `${uni.name} ${uni.acronym} ${uni.city || ''} ${aliasWords.join(' ')}`,
+        `${uni.name} ${acronym} ${uni.city || ''} ${aliasWords.join(' ')}`,
       );
 
       return queryTokens.every((token) => searchableCorpus.includes(token));
@@ -220,7 +221,7 @@ export function UniversitySearchSelect({
                 variant="secondary"
                 className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 uppercase"
               >
-                {selectedUniversity.acronym}
+                {selectedUniversity.shortName || selectedUniversity.acronym || ''}
               </Badge>
             </div>
           ) : (
@@ -313,7 +314,7 @@ export function UniversitySearchSelect({
                           variant="outline"
                           className="shrink-0 text-[9px] font-bold px-1.5 py-0 uppercase bg-muted/60"
                         >
-                          {uni.acronym}
+                          {uni.shortName || uni.acronym || ''}
                         </Badge>
                       </div>
                       {uni.city && (

@@ -35,6 +35,7 @@ const MOCK_TEST_UNIVERSITIES: UniversityInfo[] = [
   {
     id: 'u1',
     name: 'Universidad de Chile',
+    shortName: 'UCHILE',
     acronym: 'UCHILE',
     city: 'Santiago',
     domains: ['uchile.cl'],
@@ -43,6 +44,8 @@ const MOCK_TEST_UNIVERSITIES: UniversityInfo[] = [
     imageUrl: 'https://img.test/uchile.jpg',
     latitude: -33.444,
     longitude: -70.655,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
   },
 ];
 

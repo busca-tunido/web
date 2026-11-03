@@ -752,7 +752,10 @@ export function LandlordReviewsScreen({
                     {photos.length > 0 && (
                       <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar shrink-0">
                         {photos.map((img, photoIdx) => {
-                          const rawUrl = typeof img === 'string' ? img : img?.url || '';
+                          const rawUrl =
+                            typeof img === 'string'
+                              ? img
+                              : (img as unknown as { url?: string })?.url || '';
                           const photoUrl = normalizeImageUrl(rawUrl);
                           if (!photoUrl) return null;
 

@@ -4626,6 +4626,11 @@
             "nullable": true,
             "example": "6659f8c123456789abcdef02"
           },
+          "universityName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Universidad de Chile"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string",
@@ -4791,6 +4796,11 @@
             "nullable": true,
             "example": "UCh"
           },
+          "acronym": {
+            "type": "string",
+            "nullable": true,
+            "example": "UCh"
+          },
           "city": {
             "type": "string",
             "example": "Santiago"
@@ -4810,14 +4820,17 @@
             "nullable": true,
             "example": "https://uchile.cl"
           },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://example.com/uchile.webp"
+          },
           "latitude": {
             "type": "number",
-            "nullable": true,
             "example": -33.4443
           },
           "longitude": {
             "type": "number",
-            "nullable": true,
             "example": -70.6558
           },
           "createdAt": {
@@ -4831,7 +4844,7 @@
             "example": "2026-03-01T00:00:00.000Z"
           }
         },
-        "required": ["id", "name", "city", "createdAt", "updatedAt"]
+        "required": ["id", "name", "city", "latitude", "longitude", "createdAt", "updatedAt"]
       },
       "GeoCoordinateDto": {
         "type": "object",
@@ -5095,11 +5108,20 @@
             "type": "string",
             "example": "Habitación Individual"
           },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Habitación Individual"
+          },
           "type": {
             "type": "string",
             "example": "SINGLE"
           },
           "monthlyPrice": {
+            "type": "number",
+            "example": 250000
+          },
+          "priceMonthlyClp": {
             "type": "number",
             "example": 250000
           },
@@ -5244,7 +5266,15 @@
               }
             ]
           },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          },
           "ratingAverage": {
+            "type": "number",
+            "example": 4.8
+          },
+          "averageRating": {
             "type": "number",
             "example": 4.8
           },
@@ -5313,6 +5343,7 @@
           "petsAllowed",
           "genderPreference",
           "verificationStatus",
+          "isActive",
           "ratingAverage",
           "ratingCount",
           "reviewsCount",
@@ -5707,6 +5738,11 @@
             "type": "string",
             "example": "Habitación Individual Luminosa"
           },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Habitación Individual Luminosa"
+          },
           "description": {
             "type": "string",
             "nullable": true,
@@ -5721,6 +5757,10 @@
             ]
           },
           "monthlyPrice": {
+            "type": "number",
+            "example": 250000
+          },
+          "priceMonthlyClp": {
             "type": "number",
             "example": 250000
           },
@@ -5924,6 +5964,10 @@
           }
         }
       },
+      "StayDurationCategory": {
+        "type": "string",
+        "enum": ["FEW_DAYS", "FEW_WEEKS", "ONE_SEMESTER", "ONE_YEAR", "MORE_THAN_A_YEAR"]
+      },
       "ReviewAuthorDto": {
         "type": "object",
         "properties": {
@@ -5952,6 +5996,53 @@
         },
         "required": ["id", "firstName", "lastName"]
       },
+      "ReviewUserUniversityDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "example": "Universidad de Chile"
+          },
+          "shortName": {
+            "type": "string",
+            "nullable": true,
+            "example": "UCh"
+          }
+        }
+      },
+      "ReviewUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "6659f8c123456789abcdef01"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Carlos"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Gómez"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://example.com/avatar.jpg"
+          },
+          "university": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewUserUniversityDto"
+              }
+            ]
+          }
+        },
+        "required": ["id", "firstName", "lastName"]
+      },
       "ReviewResponseDto": {
         "type": "object",
         "properties": {
@@ -5971,6 +6062,10 @@
             "type": "number",
             "example": 5
           },
+          "overallRating": {
+            "type": "number",
+            "example": 5
+          },
           "cleanlinessRating": {
             "type": "number",
             "nullable": true,
@@ -5981,7 +6076,22 @@
             "nullable": true,
             "example": 4
           },
+          "landlordRating": {
+            "type": "number",
+            "nullable": true,
+            "example": 4
+          },
           "locationRating": {
+            "type": "number",
+            "nullable": true,
+            "example": 5
+          },
+          "quietnessRating": {
+            "type": "number",
+            "nullable": true,
+            "example": 5
+          },
+          "wifiRating": {
             "type": "number",
             "nullable": true,
             "example": 5
@@ -6015,12 +6125,25 @@
             "nullable": true,
             "example": 2025
           },
+          "stayDurationCategory": {
+            "nullable": true,
+            "example": "ONE_SEMESTER",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StayDurationCategory"
+              }
+            ]
+          },
           "roomType": {
             "type": "string",
             "nullable": true,
             "example": "SINGLE"
           },
           "isVerifiedStay": {
+            "type": "boolean",
+            "example": true
+          },
+          "isResidentVerified": {
             "type": "boolean",
             "example": true
           },
@@ -6048,6 +6171,20 @@
               }
             ]
           },
+          "user": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewUserDto"
+              }
+            ]
+          },
+          "stayDuration": {
+            "type": "string",
+            "nullable": true,
+            "example": "ONE_SEMESTER"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string",
@@ -6059,8 +6196,10 @@
           "pensionId",
           "userId",
           "rating",
+          "overallRating",
           "comment",
           "isVerifiedStay",
+          "isResidentVerified",
           "isAnonymous",
           "helpfulCount",
           "images",
@@ -6072,7 +6211,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "example": "rev-123"
+            "example": "stay-rev-123"
           },
           "pensionId": {
             "type": "string",
@@ -6082,6 +6221,10 @@
             "type": "string",
             "example": "Residencia San Joaquín"
           },
+          "pensionCity": {
+            "type": "string",
+            "example": "Santiago"
+          },
           "pensionSlug": {
             "type": "string",
             "example": "residencia-san-joaquin"
@@ -6089,6 +6232,11 @@
           "roomTitle": {
             "type": "string",
             "example": "Habitación Individual"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://example.com/pension.jpg"
           },
           "featuredImage": {
             "type": "string",
@@ -6103,13 +6251,39 @@
             "type": "number",
             "example": 250000
           },
+          "ratingGiven": {
+            "type": "number",
+            "example": 5
+          },
           "rating": {
             "type": "number",
             "example": 5
           },
+          "hasReview": {
+            "type": "boolean",
+            "example": true
+          },
           "comment": {
             "type": "string",
             "example": "Excelente estadía."
+          },
+          "stayDurationCategory": {
+            "nullable": true,
+            "example": "ONE_SEMESTER",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StayDurationCategory"
+              }
+            ]
+          },
+          "review": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewResponseDto"
+              }
+            ]
           },
           "stayDurationMonths": {
             "type": "number",
@@ -6131,13 +6305,11 @@
           "id",
           "pensionId",
           "pensionTitle",
-          "pensionSlug",
+          "pensionCity",
           "roomTitle",
-          "city",
           "monthlyPaidClp",
-          "rating",
-          "comment",
-          "createdAt"
+          "ratingGiven",
+          "hasReview"
         ]
       },
       "CreateReviewDto": {
@@ -6464,6 +6636,14 @@
             "items": {
               "$ref": "#/components/schemas/PensionImageResponseDto"
             }
+          },
+          "verificationStatus": {
+            "example": "OFFICIALLY_VERIFIED",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VerificationStatus"
+              }
+            ]
           }
         },
         "required": [

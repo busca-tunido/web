@@ -18,7 +18,7 @@ describe('matchesSearchFilters', () => {
     ratingAverage: 4.5,
     reviewsCount: 12,
     isVerified: true,
-    genderPreference: 'MIXED',
+    genderPreference: 'ANY',
     includesMeals: true,
     includesWifi: true,
     includesLaundry: true,
@@ -30,7 +30,9 @@ describe('matchesSearchFilters', () => {
       {
         id: 'r1',
         title: 'Pieza Individual con Baño',
+        type: 'SINGLE',
         roomType: 'SINGLE',
+        monthlyPrice: 280000,
         priceMonthlyClp: 280000,
         hasPrivateBathroom: true,
         isAvailable: true,
@@ -86,7 +88,9 @@ describe('matchesSearchFilters', () => {
         {
           id: 'r2',
           title: 'Pieza Compartida',
+          type: 'SHARED',
           roomType: 'SHARED',
+          monthlyPrice: 180000,
           priceMonthlyClp: 180000,
           hasPrivateBathroom: false,
           isAvailable: true,

@@ -36,9 +36,9 @@ function mapDtoToRoomItem(dto: RoomDto, isInactive = false): RoomItem {
   return {
     id: dto.id,
     pensionId: dto.pensionId,
-    title: dto.name,
-    name: dto.name,
-    description: dto.description,
+    title: dto.title ?? dto.name ?? '',
+    name: dto.name ?? dto.title ?? '',
+    description: dto.description ?? undefined,
     monthlyPrice: dto.monthlyPrice,
     priceMonthlyClp: dto.monthlyPrice,
     isAvailable: dto.isAvailable,

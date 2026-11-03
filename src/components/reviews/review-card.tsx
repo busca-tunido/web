@@ -68,10 +68,10 @@ export function ReviewCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted border border-border">
-            {review.user.avatarUrl ? (
+            {review.user?.avatarUrl ? (
               <Image
                 src={normalizeImageUrl(review.user.avatarUrl)}
-                alt={review.user.firstName}
+                alt={review.user?.firstName || 'Usuario'}
                 fill
                 sizes="40px"
                 unoptimized
@@ -79,7 +79,7 @@ export function ReviewCard({
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center font-bold text-sm text-muted-foreground">
-                {review.user.firstName.charAt(0)}
+                {review.user?.firstName?.charAt(0) || 'U'}
               </div>
             )}
           </div>
@@ -87,7 +87,7 @@ export function ReviewCard({
           <div>
             <div className="flex items-center gap-1.5">
               <h5 className="text-xs font-bold text-foreground">
-                {review.user.firstName} {review.user.lastName}
+                {review.user?.firstName || 'Usuario'} {review.user?.lastName || ''}
               </h5>
               {review.isResidentVerified && (
                 <Badge
@@ -102,7 +102,7 @@ export function ReviewCard({
 
             <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
               <span>{formatStayDuration(review.stayDurationCategory || review.stayDuration)}</span>
-              {review.user.university?.name && (
+              {review.user?.university?.name && (
                 <>
                   <span>•</span>
                   <span className="font-medium text-foreground/80">
@@ -136,10 +136,13 @@ export function ReviewCard({
       {photos.length > 0 && (
         <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar shrink-0">
           {photos.map((img, photoIdx) => {
-            const rawUrl = typeof img === 'string' ? img : img?.url || '';
+            const rawUrl =
+              typeof img === 'string' ? img : (img as unknown as { url?: string })?.url || '';
             const photoUrl = normalizeImageUrl(rawUrl);
             const caption =
-              typeof img === 'string' ? 'Foto de la pensión' : img?.caption || 'Foto de la pensión';
+              typeof img === 'string'
+                ? 'Foto de la pensión'
+                : (img as unknown as { caption?: string })?.caption || 'Foto de la pensión';
             if (!photoUrl) return null;
 
             return (

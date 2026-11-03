@@ -33,8 +33,8 @@ export function mapUniversityDto(raw: Record<string, unknown>): UniversityDto {
     longitude: Number(raw.longitude ?? 0),
     imageUrl: rawImage ?? getUniversityImageUrl(name, acronym),
     campuses: Array.isArray(raw.campuses) ? (raw.campuses as CampusAreaDto[]) : undefined,
-    createdAt: String(raw.createdAt ?? new Date().toISOString()),
-    updatedAt: String(raw.updatedAt ?? new Date().toISOString()),
+    createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : '',
+    updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : '',
   };
 }
 

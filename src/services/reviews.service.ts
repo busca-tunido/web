@@ -1,5 +1,6 @@
 import { apiFetch } from '@/lib/api-client-base';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
+import type { components } from '@/lib/api-schema';
 import type {
   CreateReviewDto,
   PaginatedReviewsResponse,
@@ -13,74 +14,80 @@ export type PaginationQuery = {
   limit?: number;
 };
 
-type RawReviewResponse = {
-  id: string;
-  pensionId: string;
-  userId: string;
-  overallRating: number;
-  cleanlinessRating?: number | null;
-  landlordRating?: number | null;
-  quietnessRating?: number | null;
-  wifiRating?: number | null;
-  comment: string;
-  images?: string[];
-  stayDurationCategory?: string | null;
-  isResidentVerified?: boolean;
-  isHidden?: boolean;
-  helpfulCount?: number | null;
-  userVoted?: boolean | null;
-  _count?: {
-    helpfulVotes?: number;
-  } | null;
-  createdAt: string;
-  updatedAt?: string;
-  user?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    avatarUrl?: string | null;
-    university?: {
-      shortName?: string | null;
-      name?: string;
-    } | null;
-  };
-};
-
-function mapRawReviewToItem(raw: RawReviewResponse): ReviewItemDto {
-  const userName = raw.user ? `${raw.user.firstName} ${raw.user.lastName}`.trim() : undefined;
-  const rawCount = raw._count?.helpfulVotes;
-  const helpfulCount = typeof rawCount === 'number' ? rawCount : Number(raw.helpfulCount ?? 0);
+function mapRawReviewToItem(
+  raw: components['schemas']['ReviewResponseDto'] | Record<string, unknown>,
+): ReviewItemDto {
+  const user = ('user' in raw && raw.user ? raw.user : undefined) as
+    | {
+        id?: string;
+        firstName?: string;
+        lastName?: string;
+        avatarUrl?: string | null;
+        university?: { name?: string; shortName?: string | null } | null;
+      }
+    | undefined;
+  const userName = user ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() : undefined;
+  const helpfulCount = typeof raw.helpfulCount === 'number' ? raw.helpfulCount : 0;
+  const overall = Number(raw.overallRating ?? raw.rating ?? 0);
+  const isVerifiedStay = Boolean(raw.isVerifiedStay ?? raw.isResidentVerified);
 
   return {
-    id: raw.id,
-    pensionId: raw.pensionId,
-    userId: raw.userId,
+    id: String(raw.id ?? ''),
+    pensionId: String(raw.pensionId ?? ''),
+    userId: String(raw.userId ?? ''),
     userName,
-    rating: raw.overallRating,
-    overallRating: raw.overallRating,
-    cleanlinessRating: raw.cleanlinessRating ?? undefined,
-    landlordRating: raw.landlordRating ?? undefined,
-    locationRating: raw.quietnessRating ?? undefined,
-    comment: raw.comment,
-    stayDuration: raw.stayDurationCategory ?? undefined,
-    images: Array.isArray(raw.images) ? raw.images : [],
-    isVerifiedStay: Boolean(raw.isResidentVerified),
-    isAnonymous: false,
+    rating: overall,
+    overallRating: overall,
+    cleanlinessRating:
+      raw.cleanlinessRating !== undefined && raw.cleanlinessRating !== null
+        ? Number(raw.cleanlinessRating)
+        : undefined,
+    landlordRating:
+      raw.landlordRating !== undefined && raw.landlordRating !== null
+        ? Number(raw.landlordRating)
+        : undefined,
+    ownerRating:
+      raw.landlordRating !== undefined && raw.landlordRating !== null
+        ? Number(raw.landlordRating)
+        : undefined,
+    locationRating:
+      raw.locationRating !== undefined && raw.locationRating !== null
+        ? Number(raw.locationRating)
+        : undefined,
+    quietnessRating:
+      raw.quietnessRating !== undefined && raw.quietnessRating !== null
+        ? Number(raw.quietnessRating)
+        : undefined,
+    wifiRating:
+      raw.wifiRating !== undefined && raw.wifiRating !== null ? Number(raw.wifiRating) : undefined,
+    comment: String(raw.comment ?? ''),
+    stayDurationCategory:
+      (raw.stayDurationCategory as components['schemas']['StayDurationCategory']) ?? undefined,
+    images: Array.isArray(raw.images) ? (raw.images as string[]) : [],
+    isVerifiedStay,
+    isResidentVerified: isVerifiedStay,
+    isAnonymous: Boolean(raw.isAnonymous),
     helpfulCount,
-    userVoted: typeof raw.userVoted === 'boolean' ? raw.userVoted : undefined,
-    createdAt: raw.createdAt,
-    user: raw.user ?? undefined,
+    userVoted:
+      typeof (raw as Record<string, unknown>).userVoted === 'boolean'
+        ? ((raw as Record<string, unknown>).userVoted as boolean)
+        : undefined,
+    createdAt: raw.createdAt
+      ? raw.createdAt instanceof Date
+        ? raw.createdAt.toISOString()
+        : String(raw.createdAt)
+      : '',
+    user: user
+      ? {
+          id: String(user.id ?? raw.userId ?? ''),
+          firstName: user.firstName ?? '',
+          lastName: user.lastName ?? '',
+          avatarUrl: user.avatarUrl ?? null,
+          university: user.university ?? null,
+        }
+      : undefined,
   };
 }
-
-type RawPaginatedReviewsResponse = {
-  items?: RawReviewResponse[];
-  total?: number;
-  page?: number;
-  limit?: number;
-  totalPages?: number;
-  hasMore?: boolean;
-};
 
 export async function fetchPensionReviews(
   pensionId: string,
@@ -96,7 +103,9 @@ export async function fetchPensionReviews(
   const queryString = queryParams.toString();
   const endpoint = `/pensions/${encodeURIComponent(pensionId)}/reviews${queryString ? `?${queryString}` : ''}`;
 
-  const response = await apiFetch<RawReviewResponse[] | RawPaginatedReviewsResponse>(endpoint, {
+  const response = await apiFetch<
+    components['schemas']['ReviewResponseDto'][] | Record<string, unknown>
+  >(endpoint, {
     method: 'GET',
   });
 
@@ -120,11 +129,17 @@ export async function fetchPensionReviews(
       );
     }
 
-    const rawData = response.data;
-    const rawItems = Array.isArray(rawData?.items) ? rawData.items : [];
-    const page = rawData?.page ?? query?.page ?? 1;
-    const limit = rawData?.limit ?? query?.limit ?? (rawItems.length || 10);
-    const total = rawData?.total ?? rawItems.length;
+    const rawData = response.data as Record<string, unknown>;
+    const rawItems = Array.isArray(rawData?.items)
+      ? (rawData.items as components['schemas']['ReviewResponseDto'][])
+      : [];
+    const page = typeof rawData?.page === 'number' ? rawData.page : (query?.page ?? 1);
+    const limit =
+      typeof rawData?.limit === 'number'
+        ? rawData.limit
+        : (query?.limit ?? (rawItems.length || 10));
+    const total = typeof rawData?.total === 'number' ? rawData.total : rawItems.length;
+    const hasMore = typeof rawData?.hasMore === 'boolean' ? rawData.hasMore : page * limit < total;
 
     return createSuccess<PaginatedReviewsResponse>(
       {
@@ -132,7 +147,7 @@ export async function fetchPensionReviews(
         total,
         page,
         limit,
-        hasMore: rawData?.hasMore ?? page * limit < total,
+        hasMore,
       },
       response.statusCode,
     );
@@ -145,7 +160,7 @@ export async function createPensionReview(
   pensionId: string,
   payload: CreateReviewDto,
 ): Promise<ApiResponse<ReviewItemDto>> {
-  const response = await apiFetch<RawReviewResponse>(
+  const response = await apiFetch<components['schemas']['ReviewResponseDto']>(
     `/pensions/${encodeURIComponent(pensionId)}/reviews`,
     {
       method: 'POST',
@@ -164,10 +179,13 @@ export async function updateReview(
   reviewId: string,
   payload: UpdateReviewDto,
 ): Promise<ApiResponse<ReviewItemDto>> {
-  const response = await apiFetch<RawReviewResponse>(`/reviews/${encodeURIComponent(reviewId)}`, {
-    method: 'PATCH',
-    body: JSON.stringify(payload),
-  });
+  const response = await apiFetch<components['schemas']['ReviewResponseDto']>(
+    `/reviews/${encodeURIComponent(reviewId)}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    },
+  );
 
   if (isApiSuccess(response)) {
     return createSuccess<ReviewItemDto>(mapRawReviewToItem(response.data), response.statusCode);

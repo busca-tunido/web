@@ -659,6 +659,8 @@ export interface components {
       isEmailVerified: boolean;
       /** @example 6659f8c123456789abcdef02 */
       universityId?: string | null;
+      /** @example Universidad de Chile */
+      universityName?: string | null;
       /**
        * Format: date-time
        * @example 2026-03-01T00:00:00.000Z
@@ -726,6 +728,8 @@ export interface components {
       name: string;
       /** @example UCh */
       shortName?: string | null;
+      /** @example UCh */
+      acronym?: string | null;
       /** @example Santiago */
       city: string;
       /** @example Metropolitana */
@@ -734,10 +738,12 @@ export interface components {
       emailDomain?: string | null;
       /** @example https://uchile.cl */
       website?: string | null;
+      /** @example https://example.com/uchile.webp */
+      imageUrl?: string | null;
       /** @example -33.4443 */
-      latitude?: number | null;
+      latitude: number;
       /** @example -70.6558 */
-      longitude?: number | null;
+      longitude: number;
       /**
        * Format: date-time
        * @example 2026-03-01T00:00:00.000Z
@@ -864,10 +870,14 @@ export interface components {
       roomNumber?: string | null;
       /** @example Habitación Individual */
       title: string;
+      /** @example Habitación Individual */
+      name?: string | null;
       /** @example SINGLE */
       type: string;
       /** @example 250000 */
       monthlyPrice: number;
+      /** @example 250000 */
+      priceMonthlyClp?: number;
       /** @example 100000 */
       deposit?: number | null;
       /** @example false */
@@ -930,8 +940,12 @@ export interface components {
       genderPreference: components['schemas']['GenderPreference'];
       /** @example OFFICIALLY_VERIFIED */
       verificationStatus: components['schemas']['VerificationStatus'];
+      /** @example true */
+      isActive: boolean;
       /** @example 4.8 */
       ratingAverage: number;
+      /** @example 4.8 */
+      averageRating?: number;
       /** @example 12 */
       ratingCount: number;
       /** @example 12 */
@@ -1166,12 +1180,16 @@ export interface components {
       roomNumber?: string | null;
       /** @example Habitación Individual Luminosa */
       title: string;
+      /** @example Habitación Individual Luminosa */
+      name?: string | null;
       /** @example Pieza amoblada con clóset y escritorio. */
       description?: string | null;
       /** @example SINGLE */
       type: components['schemas']['RoomType'];
       /** @example 250000 */
       monthlyPrice: number;
+      /** @example 250000 */
+      priceMonthlyClp?: number;
       /** @example 100000 */
       deposit?: number | null;
       /** @example false */
@@ -1287,6 +1305,13 @@ export interface components {
        */
       images?: string[];
     };
+    /** @enum {string} */
+    StayDurationCategory:
+      | 'FEW_DAYS'
+      | 'FEW_WEEKS'
+      | 'ONE_SEMESTER'
+      | 'ONE_YEAR'
+      | 'MORE_THAN_A_YEAR';
     ReviewAuthorDto: {
       /** @example 6659f8c123456789abcdef01 */
       id: string;
@@ -1299,6 +1324,23 @@ export interface components {
       /** @example Universidad de Chile */
       universityName?: string | null;
     };
+    ReviewUserUniversityDto: {
+      /** @example Universidad de Chile */
+      name?: string | null;
+      /** @example UCh */
+      shortName?: string | null;
+    };
+    ReviewUserDto: {
+      /** @example 6659f8c123456789abcdef01 */
+      id: string;
+      /** @example Carlos */
+      firstName: string;
+      /** @example Gómez */
+      lastName: string;
+      /** @example https://example.com/avatar.jpg */
+      avatarUrl?: string | null;
+      university?: components['schemas']['ReviewUserUniversityDto'] | null;
+    };
     ReviewResponseDto: {
       /** @example rev-123 */
       id: string;
@@ -1309,11 +1351,19 @@ export interface components {
       /** @example 5 */
       rating: number;
       /** @example 5 */
+      overallRating: number;
+      /** @example 5 */
       cleanlinessRating?: number | null;
       /** @example 4 */
       ownerRating?: number | null;
+      /** @example 4 */
+      landlordRating?: number | null;
       /** @example 5 */
       locationRating?: number | null;
+      /** @example 5 */
+      quietnessRating?: number | null;
+      /** @example 5 */
+      wifiRating?: number | null;
       /** @example 4 */
       valueRating?: number | null;
       /** @example Excelente pensión, muy cerca del campus y con excelente ambiente. */
@@ -1326,10 +1376,14 @@ export interface components {
       stayDurationMonths?: number | null;
       /** @example 2025 */
       stayYear?: number | null;
+      /** @example ONE_SEMESTER */
+      stayDurationCategory?: components['schemas']['StayDurationCategory'] | null;
       /** @example SINGLE */
       roomType?: string | null;
       /** @example true */
       isVerifiedStay: boolean;
+      /** @example true */
+      isResidentVerified: boolean;
       /** @example false */
       isAnonymous: boolean;
       /** @example 4 */
@@ -1341,6 +1395,9 @@ export interface components {
        */
       images: string[];
       author?: components['schemas']['ReviewAuthorDto'] | null;
+      user?: components['schemas']['ReviewUserDto'] | null;
+      /** @example ONE_SEMESTER */
+      stayDuration?: string | null;
       /**
        * Format: date-time
        * @example 2026-03-01T00:00:00.000Z
@@ -1348,26 +1405,37 @@ export interface components {
       createdAt: string;
     };
     StudentStayResponseDto: {
-      /** @example rev-123 */
+      /** @example stay-rev-123 */
       id: string;
       /** @example 6659f8c123456789abcdef01 */
       pensionId: string;
       /** @example Residencia San Joaquín */
       pensionTitle: string;
+      /** @example Santiago */
+      pensionCity: string;
       /** @example residencia-san-joaquin */
-      pensionSlug: string;
+      pensionSlug?: string;
       /** @example Habitación Individual */
       roomTitle: string;
       /** @example https://example.com/pension.jpg */
+      imageUrl?: string | null;
+      /** @example https://example.com/pension.jpg */
       featuredImage?: string | null;
       /** @example Santiago */
-      city: string;
+      city?: string;
       /** @example 250000 */
       monthlyPaidClp: number;
       /** @example 5 */
-      rating: number;
+      ratingGiven: number;
+      /** @example 5 */
+      rating?: number;
+      /** @example true */
+      hasReview: boolean;
       /** @example Excelente estadía. */
-      comment: string;
+      comment?: string;
+      /** @example ONE_SEMESTER */
+      stayDurationCategory?: components['schemas']['StayDurationCategory'] | null;
+      review?: components['schemas']['ReviewResponseDto'] | null;
       /** @example 10 */
       stayDurationMonths?: number | null;
       /** @example 2025 */
@@ -1376,7 +1444,7 @@ export interface components {
        * Format: date-time
        * @example 2026-03-01T00:00:00.000Z
        */
-      createdAt: string;
+      createdAt?: string;
     };
     CreateReviewDto: {
       /** @example 5 */
@@ -1539,6 +1607,8 @@ export interface components {
       /** @example 12 */
       ratingCount: number;
       images: components['schemas']['PensionImageResponseDto'][];
+      /** @example OFFICIALLY_VERIFIED */
+      verificationStatus?: components['schemas']['VerificationStatus'];
     };
     FavoriteItemResponseDto: {
       /** @example 6659f8c123456789abcdef02 */

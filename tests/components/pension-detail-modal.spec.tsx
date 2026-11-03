@@ -16,7 +16,7 @@ const mockPension: PensionItem = {
   priceMonthlyClp: 310000,
   depositClp: 150000,
   isVerified: true,
-  genderPreference: 'MIXED',
+  genderPreference: 'ANY',
   ratingAverage: 4.8,
   reviewsCount: 12,
   nearestUniversityName: 'Universidad de Chile',

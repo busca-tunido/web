@@ -58,18 +58,18 @@ export function createInitialSuggestEditState(pension: PensionItem): EditDraftSt
     activeAmenities,
     monthlyPrice: pension.priceMonthlyClp,
     deposit: pension.depositClp,
-    waterIncluded: true,
-    electricityIncluded: true,
-    gasIncluded: true,
-    internetIncluded: pension.includesWifi,
-    curfewText: pension.curfewDescription || '',
-    guestsAllowed: pension.visitsPolicy?.toLowerCase().includes('permitidas') ?? false,
-    petsAllowed: false,
-    smokingAllowed: false,
+    waterIncluded: Boolean(pension.waterIncluded),
+    electricityIncluded: Boolean(pension.electricityIncluded),
+    gasIncluded: Boolean(pension.gasIncluded),
+    internetIncluded: Boolean(pension.internetIncluded ?? pension.includesWifi),
+    curfewText: pension.curfewTime || '',
+    guestsAllowed: Boolean(pension.guestsAllowed),
+    petsAllowed: Boolean(pension.petsAllowed),
+    smokingAllowed: Boolean(pension.smokingAllowed),
     title: pension.title,
-    description: pension.description,
-    address: pension.address,
-    neighborhood: pension.neighborhood,
+    description: pension.description || '',
+    address: pension.address || '',
+    neighborhood: pension.neighborhood || '',
     city: pension.city,
     submissionNotes: '',
   };
@@ -157,13 +157,27 @@ export function calculateProposedDiff(
     changes.deposit = current.deposit;
   }
 
-  changes.waterIncluded = current.waterIncluded;
-  changes.electricityIncluded = current.electricityIncluded;
-  changes.gasIncluded = current.gasIncluded;
-  changes.internetIncluded = current.internetIncluded;
-  changes.guestsAllowed = current.guestsAllowed;
-  changes.petsAllowed = current.petsAllowed;
-  changes.smokingAllowed = current.smokingAllowed;
+  if (current.waterIncluded !== Boolean(original.waterIncluded)) {
+    changes.waterIncluded = current.waterIncluded;
+  }
+  if (current.electricityIncluded !== Boolean(original.electricityIncluded)) {
+    changes.electricityIncluded = current.electricityIncluded;
+  }
+  if (current.gasIncluded !== Boolean(original.gasIncluded)) {
+    changes.gasIncluded = current.gasIncluded;
+  }
+  if (current.internetIncluded !== Boolean(original.internetIncluded ?? original.includesWifi)) {
+    changes.internetIncluded = current.internetIncluded;
+  }
+  if (current.guestsAllowed !== Boolean(original.guestsAllowed)) {
+    changes.guestsAllowed = current.guestsAllowed;
+  }
+  if (current.petsAllowed !== Boolean(original.petsAllowed)) {
+    changes.petsAllowed = current.petsAllowed;
+  }
+  if (current.smokingAllowed !== Boolean(original.smokingAllowed)) {
+    changes.smokingAllowed = current.smokingAllowed;
+  }
 
   if (current.curfewText.trim()) {
     changes.curfewTime = current.curfewText.trim();

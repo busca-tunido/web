@@ -145,7 +145,7 @@ export function usePensionReviews(
         quietnessRating: r.locationRating,
         wifiRating: undefined,
         comment: r.comment,
-        stayDurationCategory: r.stayDuration,
+        stayDurationCategory: r.stayDurationCategory ?? undefined,
         stayDuration: r.stayDuration,
         isResidentVerified: true,
         helpfulCount: r.helpfulCount ?? 0,
@@ -153,7 +153,7 @@ export function usePensionReviews(
         images: r.images ?? [],
         createdAt: r.createdAt || new Date().toISOString(),
         user: {
-          id: r.user?.id || r.userId,
+          id: String(r.user?.id || r.userId || 'usr-anon'),
           firstName,
           lastName,
           avatarUrl: r.user?.avatarUrl ?? undefined,

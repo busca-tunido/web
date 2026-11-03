@@ -105,7 +105,6 @@ export async function fetchCities(): Promise<ApiResponse<CityInfo[]>> {
     const cities: CityInfo[] = citiesRes.data.map((c) => ({
       id: c.id,
       name: c.name,
-      region: 'Chile',
       pensionsCount: Number(c.pensionsCount ?? 0),
       imageUrl: getCityImageUrl(c.name),
       latitude: Number(c.latitude ?? 0),
@@ -129,7 +128,6 @@ export async function fetchCities(): Promise<ApiResponse<CityInfo[]>> {
     const cities: CityInfo[] = Array.from(cityMap.entries()).map(([cityName, data]) => ({
       id: cityName.toLowerCase().replace(/\s+/g, '-'),
       name: cityName,
-      region: 'Chile',
       pensionsCount: 0,
       imageUrl: getCityImageUrl(cityName),
       latitude: data.lat,

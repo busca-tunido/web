@@ -193,6 +193,7 @@ export function PublishReviewModal({
       const createdReview: PensionReview = {
         id: serverReview.id || `rev-${Date.now()}`,
         pensionId: pension.id,
+        rating: serverReview.rating ?? state.overallRating,
         overallRating: serverReview.rating ?? state.overallRating,
         cleanlinessRating: serverReview.cleanlinessRating ?? state.cleanlinessRating ?? undefined,
         landlordRating: serverReview.landlordRating ?? state.landlordRating ?? undefined,
@@ -202,7 +203,7 @@ export function PublishReviewModal({
         stayDurationCategory: state.stayDuration,
         isResidentVerified: true,
         createdAt: serverReview.createdAt ?? new Date().toISOString(),
-        images: uploadedUrls.map((url, i) => ({ id: `img-${i}`, url })),
+        images: uploadedUrls,
         user: {
           id: user?.id || '',
           firstName: user?.firstName || '',

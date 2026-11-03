@@ -1,99 +1,68 @@
-export type UserRole = 'STUDENT' | 'LANDLORD' | 'ADMIN' | 'MODERATOR';
+import type {
+  CitySummaryDto,
+  PensionItemDto,
+  ReviewItemDto,
+  RoomDto,
+  StudentStayDto,
+  UniversityDto,
+  UserProfileDto,
+} from '@/types/api-contracts';
+import type { components } from './api-schema';
 
-export type UserProfile = {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  phone?: string | null;
-  universityName?: string | null;
-  isForeignStudent?: boolean;
-  avatarUrl?: string | null;
-};
+export type UserRole = components['schemas']['Role'];
+export type UserProfile = UserProfileDto;
 
-export type CityInfo = {
-  id: string;
-  name: string;
-  region: string;
+export type CityInfo = CitySummaryDto & {
+  region?: string;
   foreignStudentRate?: number;
-  pensionsCount: number;
   averagePriceClp?: number;
-  imageUrl: string;
+  imageUrl?: string;
   isCurrentCity?: boolean;
-  latitude: number;
-  longitude: number;
 };
 
-export type UniversityInfo = {
-  id: string;
-  name: string;
-  acronym: string;
-  city: string;
-  domains: string[];
+export type UniversityInfo = UniversityDto & {
+  domains?: string[];
   foreignStudentRate?: number;
-  pensionsNearbyCount: number;
+  pensionsNearbyCount?: number;
   logoUrl?: string;
-  imageUrl: string;
-  latitude: number;
-  longitude: number;
 };
 
-export type RoomInfo = {
-  id: string;
-  title: string;
-  roomType: 'SINGLE' | 'SHARED';
-  priceMonthlyClp: number;
-  hasPrivateBathroom: boolean;
-  isAvailable: boolean;
-  photos: string[];
+export type RoomInfo = RoomDto & {
+  roomType?: 'SINGLE' | 'SHARED' | 'STUDIO';
+  type?: string;
+  priceMonthlyClp?: number;
 };
 
-export type PensionItem = {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  address: string;
-  neighborhood: string;
-  city: string;
+export type PensionItem = Omit<PensionItemDto, 'genderPreference' | 'rooms' | 'amenities'> & {
   latitude: number;
   longitude: number;
-  priceMonthlyClp: number;
-  depositClp: number;
   ratingAverage: number;
   reviewsCount: number;
+  priceMonthlyClp: number;
+  depositClp: number;
   isVerified: boolean;
-  genderPreference: 'MIXED' | 'FEMALE_ONLY' | 'MALE_ONLY';
+  genderPreference: 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY' | 'MIXED';
   includesMeals: boolean;
   includesWifi: boolean;
   includesLaundry: boolean;
   includesStudyRoom: boolean;
-  amenities?: string[];
   nearestUniversityName: string;
   distanceToUniversityMeters: number;
-  distanceKm?: number;
-  relevanceScore?: number;
   photos: string[];
   rooms: RoomInfo[];
   curfewDescription?: string;
   visitsPolicy?: string;
-  isActive?: boolean;
+  distanceKm?: number;
+  relevanceScore?: number;
+  amenities?: string[];
 };
 
 export type NearbyCityCount = {
   city: string;
   count: number;
-  distanceKm: number;
+  distanceKm?: number;
 };
-
-export type PaginationMeta = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasMore: boolean;
-};
+export type PaginationMeta = components['schemas']['PaginationMetaDto'];
 
 export type PaginatedPensionsResponse = {
   items: PensionItem[];
@@ -101,19 +70,8 @@ export type PaginatedPensionsResponse = {
   nearbyCityCounts: NearbyCityCount[];
 };
 
-export type PriceBinItem = {
-  min: number;
-  max: number;
-  count: number;
-};
-
-export type PriceHistogramResponse = {
-  minPrice: number | null;
-  maxPrice: number | null;
-  currency: string;
-  totalListings: number;
-  bins: PriceBinItem[];
-};
+export type PriceBinItem = components['schemas']['PriceHistogramBinDto'];
+export type PriceHistogramResponse = components['schemas']['PriceHistogramResponseDto'];
 
 export type RatingTier = 'high' | 'medium' | 'low';
 
@@ -127,63 +85,24 @@ export type SearchFilters = {
   hasPrivateBathroom?: boolean;
   includesMeals?: boolean;
   minBeds?: number;
-  genderPreference?: 'MIXED' | 'FEMALE_ONLY' | 'MALE_ONLY' | 'ALL';
+  genderPreference?: 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY' | 'MIXED' | 'ALL';
   sortBy?: 'relevance' | 'distance' | 'price_asc' | 'price_desc' | 'rating';
   ratingTier?: RatingTier;
 };
 
 export type NavTab = 'explore' | 'favorites' | 'map' | 'history' | 'account';
 
-export type StayHistoryItem = {
-  id: string;
-  pensionId: string;
-  pensionTitle: string;
-  pensionCity: string;
-  roomTitle: string;
-  startDate?: string | null;
-  endDate?: string | null;
-  ratingGiven?: number;
-  hasReview: boolean;
-  monthlyPaidClp: number;
-  imageUrl?: string | null;
-  review?: PensionReview;
-};
+export type StayDurationCategory = components['schemas']['StayDurationCategory'];
 
-export type StayDurationCategory =
-  | 'FEW_DAYS'
-  | 'FEW_WEEKS'
-  | 'ONE_SEMESTER'
-  | 'ONE_YEAR'
-  | 'MORE_THAN_A_YEAR';
-
-export type PensionReview = {
-  id: string;
-  pensionId: string;
-  overallRating: number;
-  rating?: number;
-  cleanlinessRating?: number | null;
-  landlordRating?: number | null;
-  quietnessRating?: number | null;
-  wifiRating?: number | null;
-  comment: string;
+export type PensionReview = ReviewItemDto & {
   pros?: string | null;
   cons?: string | null;
-  stayDurationCategory?: string | null;
-  stayDuration?: StayDurationCategory | string | null;
   isResidentVerified?: boolean;
   isVerifiedStudent?: boolean;
-  helpfulCount?: number;
-  userVoted?: boolean;
-  images?: Array<string | { id?: string; url: string; caption?: string }>;
-  createdAt: string;
-  user: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    avatarUrl?: string;
-    university?: {
-      name?: string;
-      shortName?: string;
-    };
-  };
+};
+
+export type StayHistoryItem = StudentStayDto & {
+  startDate?: string | null;
+  endDate?: string | null;
+  review?: PensionReview | null;
 };

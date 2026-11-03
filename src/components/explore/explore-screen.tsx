@@ -213,7 +213,7 @@ export function ExploreScreen({
                 const uniImg =
                   uni.imageUrl && uni.imageUrl.trim().length > 0
                     ? uni.imageUrl
-                    : getUniversityImageUrl(uni.name, uni.acronym);
+                    : getUniversityImageUrl(uni.name, uni.shortName ?? uni.acronym ?? undefined);
 
                 const isDesktopHidden = !isExpandedUniversities && index >= 5;
 

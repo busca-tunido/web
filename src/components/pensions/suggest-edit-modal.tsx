@@ -42,14 +42,14 @@ type AmenityCatalogItem = {
 
 const AMENITY_CATALOG: AmenityCatalogItem[] = [
   { slug: 'wifi-alta-velocidad', label: 'WiFi Alta Velocidad' },
-  { slug: 'comida-incluida', label: 'Comida Incluida' },
-  { slug: 'lavanderia', label: 'Lavandería' },
-  { slug: 'sala-estudio', label: 'Sala de Estudio' },
-  { slug: 'bano-privado', label: 'Baño Privado' },
   { slug: 'cocina-equipada', label: 'Cocina Equipada' },
+  { slug: 'lavadora-secadora', label: 'Lavandería' },
+  { slug: 'sala-estudio-cowork', label: 'Sala de Estudio y Cowork' },
   { slug: 'calefaccion', label: 'Calefacción' },
-  { slug: 'estacionamiento', label: 'Estacionamiento' },
-  { slug: 'limpieza-incluida', label: 'Aseo / Limpieza' },
+  { slug: 'agua-caliente', label: 'Agua Caliente' },
+  { slug: 'camaras-seguridad', label: 'Cámaras de Seguridad' },
+  { slug: 'conserjeria-24-7', label: 'Conserjería 24/7' },
+  { slug: 'cerradura-digital', label: 'Cerradura Digital' },
 ];
 
 export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalProps) {
