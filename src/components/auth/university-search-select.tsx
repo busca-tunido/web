@@ -3,7 +3,7 @@
 import { Check, ChevronsUpDown, GraduationCap, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import type { UniversityDto } from '@/types/api-contracts';
+import type { UniversityDto } from '@/lib/types';
 
 export type UniversitySearchSelectProps = {
   id?: string;

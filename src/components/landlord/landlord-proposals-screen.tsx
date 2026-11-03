@@ -19,10 +19,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLandlord } from '@/contexts/landlord-context';
 import { isApiSuccess } from '@/lib/api-response';
-import type { PensionItem } from '@/lib/types';
+import type { PensionDetailDto, PensionItem, ProposalDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { proposalsService } from '@/services/proposals.service';
-import type { PensionDetailDto, ProposalDto } from '@/types/api-contracts';
 
 export type LandlordProposalsScreenProps = {
   pensionId?: string;

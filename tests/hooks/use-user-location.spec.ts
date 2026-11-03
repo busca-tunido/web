@@ -14,7 +14,6 @@ const mockCities: CityInfo[] = [
   {
     id: 'city-1',
     name: 'Santiago',
-    region: 'Región Metropolitana',
     latitude: -33.4489,
     longitude: -70.6693,
     pensionsCount: 45,
@@ -23,7 +22,6 @@ const mockCities: CityInfo[] = [
   {
     id: 'city-2',
     name: 'Valparaíso',
-    region: 'Región de Valparaíso',
     latitude: -33.0472,
     longitude: -71.6127,
     pensionsCount: 20,
@@ -32,7 +30,6 @@ const mockCities: CityInfo[] = [
   {
     id: 'city-3',
     name: 'Concepción',
-    region: 'Región del Biobío',
     latitude: -36.827,
     longitude: -73.0503,
     pensionsCount: 15,

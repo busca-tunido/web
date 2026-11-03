@@ -16,9 +16,9 @@ export function matchesSearchFilters(
       : false;
     const addressMatch = pension.address ? pension.address.toLowerCase().includes(q) : false;
     const descMatch = pension.description ? pension.description.toLowerCase().includes(q) : false;
-    const uniMatch = pension.nearestUniversityName
-      ? pension.nearestUniversityName.toLowerCase().includes(q)
-      : false;
+    const uniName = pension.nearestUniversity?.name?.toLowerCase();
+    const uniShort = pension.nearestUniversity?.shortName?.toLowerCase();
+    const uniMatch = uniName?.includes(q) || uniShort?.includes(q);
 
     if (
       !titleMatch &&
@@ -39,13 +39,13 @@ export function matchesSearchFilters(
   }
 
   if (filters.minPriceClp !== undefined && filters.minPriceClp > 0) {
-    if (pension.priceMonthlyClp < filters.minPriceClp) {
+    if (pension.baseMonthlyPrice < filters.minPriceClp) {
       return false;
     }
   }
 
   if (filters.maxPriceClp !== undefined && filters.maxPriceClp > 0) {
-    if (pension.priceMonthlyClp > filters.maxPriceClp) {
+    if (pension.baseMonthlyPrice > filters.maxPriceClp) {
       return false;
     }
   }
@@ -63,7 +63,7 @@ export function matchesSearchFilters(
   if (filters.roomType) {
     const hasMatchingRoom =
       pension.rooms && pension.rooms.length > 0
-        ? pension.rooms.some((r) => r.roomType === filters.roomType || r.type === filters.roomType)
+        ? pension.rooms.some((r) => r.type === filters.roomType)
         : false;
     if (!hasMatchingRoom) {
       return false;
@@ -81,7 +81,10 @@ export function matchesSearchFilters(
   }
 
   if (filters.includesMeals) {
-    if (!pension.includesMeals) {
+    const includesMeals =
+      pension.amenitySlugs?.includes('comida-incluida') ||
+      pension.amenities?.some((a) => (typeof a === 'string' ? a : a.slug) === 'comida-incluida');
+    if (!includesMeals) {
       return false;
     }
   }

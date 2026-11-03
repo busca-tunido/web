@@ -35,7 +35,7 @@ import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
 import { translateApiError } from '@/lib/error-translator';
 import { clampNumber } from '@/lib/format-utils';
-import type { CityInfo } from '@/lib/types';
+import type { CityInfo, CreatePensionDto, PensionDetailDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import {
   fetchCities,
@@ -45,7 +45,6 @@ import {
   reverseGeocode,
 } from '@/services/locations.service';
 import { pensionsService } from '@/services/pensions.service';
-import type { CreatePensionDto, PensionDetailDto } from '@/types/api-contracts';
 
 export type PensionEditorDrawerProps = {
   isOpen: boolean;

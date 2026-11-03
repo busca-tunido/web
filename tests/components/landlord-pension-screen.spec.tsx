@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LandlordPensionScreen } from '@/components/landlord/landlord-pension-screen';
-import type { PensionDetailDto } from '@/types/api-contracts';
+import type { PensionDetailDto } from '@/lib/types';
 import { createSuccess } from '@/lib/api-response';
 import { pensionsService } from '@/services/pensions.service';
 

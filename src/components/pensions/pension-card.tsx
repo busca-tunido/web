@@ -18,7 +18,7 @@ function areEqual(prev: PensionCardProps, next: PensionCardProps): boolean {
     prev.pension.id === next.pension.id &&
     prev.isFavorite === next.isFavorite &&
     prev.pension.ratingAverage === next.pension.ratingAverage &&
-    prev.pension.priceMonthlyClp === next.pension.priceMonthlyClp
+    prev.pension.baseMonthlyPrice === next.pension.baseMonthlyPrice
   );
 }
 
@@ -45,9 +45,9 @@ function PensionCardComponent({
         aria-label={`Ver detalles de ${pension.title}`}
       >
         <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm flex items-center justify-center">
-          {pension.photos[0] ? (
+          {pension.images?.[0]?.url ? (
             <Image
-              src={pension.photos[0]}
+              src={pension.images[0].url}
               alt={pension.title}
               fill
               unoptimized
@@ -60,7 +60,8 @@ function PensionCardComponent({
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
 
           <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
-            {pension.isVerified && (
+            {(pension.verificationStatus === 'OFFICIALLY_VERIFIED' ||
+              pension.verificationStatus === 'COMMUNITY_VERIFIED') && (
               <span className="flex items-center gap-1 rounded-full bg-sage/90 px-2.5 py-0.5 text-[11px] font-semibold text-white dark:text-zinc-950 backdrop-blur-md shadow-sm">
                 <ShieldCheck className="h-3 w-3" />
                 Verificada
@@ -111,7 +112,7 @@ function PensionCardComponent({
 
           <div className="mt-0.5 flex items-baseline gap-1">
             <span className="text-base font-bold text-foreground">
-              ${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP
+              ${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP
             </span>
             <span className="text-xs text-muted-foreground">/ mes</span>
           </div>

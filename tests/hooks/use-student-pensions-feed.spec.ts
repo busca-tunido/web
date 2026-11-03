@@ -10,7 +10,6 @@ const MOCK_TEST_CITIES: CityInfo[] = [
   {
     id: 'c1',
     name: 'Santiago',
-    region: 'Metropolitana',
     pensionsCount: 45,
     imageUrl: 'https://img.test/santiago.jpg',
     latitude: -33.4489,
@@ -19,7 +18,6 @@ const MOCK_TEST_CITIES: CityInfo[] = [
   {
     id: 'c2',
     name: 'Viña del Mar',
-    region: 'Valparaíso',
     pensionsCount: 38,
     imageUrl: 'https://img.test/vina.jpg',
     latitude: -33.0245,
@@ -34,8 +32,8 @@ const MOCK_TEST_UNIVERSITIES: UniversityInfo[] = [
     shortName: 'UCHILE',
     acronym: 'UCHILE',
     city: 'Santiago',
-    domains: ['uchile.cl'],
-    pensionsNearbyCount: 20,
+    emailDomains: ['uchile.cl'],
+    _count: { nearbyPensions: 20, students: 50 },
     imageUrl: 'https://img.test/uchile.jpg',
     latitude: -33.444,
     longitude: -70.655,

@@ -4,9 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
-import type { PensionReview } from '@/lib/types';
+import type { PensionReview, ReviewItemDto } from '@/lib/types';
 import { reviewsService } from '@/services/reviews.service';
-import type { ReviewItemDto } from '@/types/api-contracts';
 
 export const createReviewSchema = z
   .object({

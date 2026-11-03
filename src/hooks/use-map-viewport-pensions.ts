@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { mapRawPensionToItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
 import { matchesSearchFilters } from '@/lib/filter-matcher';
 import { filterPensionsByRatingTier } from '@/lib/rating-tier';
@@ -129,9 +128,7 @@ export function useMapViewportPensions(options: {
         });
 
         if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
-          const rawItems = res.data.items.map((dto) =>
-            mapRawPensionToItem(dto as unknown as Record<string, unknown>),
-          );
+          const rawItems = res.data.items;
           const filteredByRating = filters?.ratingTier
             ? filterPensionsByRatingTier(rawItems, filters.ratingTier)
             : rawItems;
@@ -189,9 +186,7 @@ export function useMapViewportPensions(options: {
         });
 
         if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
-          const rawItems = res.data.items.map((dto) =>
-            mapRawPensionToItem(dto as unknown as Record<string, unknown>),
-          );
+          const rawItems = res.data.items;
           const filteredByRating = filters?.ratingTier
             ? filterPensionsByRatingTier(rawItems, filters.ratingTier)
             : rawItems;
@@ -246,9 +241,7 @@ export function useMapViewportPensions(options: {
         });
 
         if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
-          const rawItems = res.data.items.map((dto) =>
-            mapRawPensionToItem(dto as unknown as Record<string, unknown>),
-          );
+          const rawItems = res.data.items;
           const filteredByRating = filters?.ratingTier
             ? filterPensionsByRatingTier(rawItems, filters.ratingTier)
             : rawItems;

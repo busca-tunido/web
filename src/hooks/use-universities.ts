@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isApiSuccess } from '@/lib/api-response';
+import type { UniversityDto } from '@/lib/types';
 import { fetchUniversities } from '@/services/universities.service';
-import type { UniversityDto } from '@/types/api-contracts';
 
 export function useUniversities(): {
   universities: UniversityDto[];

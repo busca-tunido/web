@@ -1,7 +1,6 @@
 import { headers } from 'next/headers';
 import type { InitialPrefetchData } from '@/components/shells/role-router';
 import { env } from '@/env';
-import { type ApiPensionPayload, mapRawPensionToPensionItem } from '@/lib/api-client';
 import { getCityImageUrl, getUniversityImageUrl } from '@/lib/location-images';
 import { extractServerGeoLocation } from '@/lib/server-geo';
 import type { CityInfo, PensionItem, UniversityInfo } from '@/lib/types';
@@ -35,14 +34,14 @@ export async function fetchInitialPensions(
     const json = (await res.json()) as {
       data?:
         | {
-            items?: ApiPensionPayload[];
+            items?: PensionItem[];
             total?: number;
           }
-        | ApiPensionPayload[];
-      items?: ApiPensionPayload[];
+        | PensionItem[];
+      items?: PensionItem[];
       total?: number;
     };
-    let rawItems: ApiPensionPayload[] = [];
+    let rawItems: PensionItem[] = [];
     let total: number | undefined;
     if (json.data) {
       if (Array.isArray(json.data)) {
@@ -56,7 +55,7 @@ export async function fetchInitialPensions(
       total = typeof json.total === 'number' ? json.total : undefined;
     }
     return {
-      items: rawItems.map(mapRawPensionToPensionItem),
+      items: rawItems,
       total,
     };
   } catch {

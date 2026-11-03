@@ -14,9 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import type { PensionItem } from '@/lib/types';
+import type { PensionDetailDto, PensionItem, ProposalDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import type { PensionDetailDto, ProposalDto } from '@/types/api-contracts';
 
 export type ProposalPreviewComparisonModalProps = {
   isOpen: boolean;
@@ -67,17 +66,10 @@ function resolvePensionData(
   const basePrice =
     (c.baseMonthlyPrice as number) ??
     (c.monthlyPrice as number) ??
-    (c.priceMonthlyClp as number) ??
     (p?.baseMonthlyPrice as number) ??
-    (p?.priceMonthlyClp as number) ??
     0;
 
-  const deposit =
-    (c.deposit as number) ??
-    (c.depositClp as number) ??
-    (p?.deposit as number) ??
-    (p?.depositClp as number) ??
-    0;
+  const deposit = (c.deposit as number) ?? (p?.deposit as number) ?? 0;
 
   const title = String(c.title ?? p?.title ?? '');
   const description = String(c.description ?? p?.description ?? '');
@@ -147,12 +139,8 @@ export function ProposalPreviewComparisonModal({
 
   const renderPensionPreviewCard = (data: PreviewPensionData, isAfter: boolean) => {
     const isPriceChanged =
-      isAfter &&
-      (changedKeys.has('baseMonthlyPrice') ||
-        changedKeys.has('monthlyPrice') ||
-        changedKeys.has('priceMonthlyClp'));
-    const isDepositChanged =
-      isAfter && (changedKeys.has('deposit') || changedKeys.has('depositClp'));
+      isAfter && (changedKeys.has('baseMonthlyPrice') || changedKeys.has('monthlyPrice'));
+    const isDepositChanged = isAfter && changedKeys.has('deposit');
     const isTitleChanged = isAfter && changedKeys.has('title');
     const isDescriptionChanged = isAfter && changedKeys.has('description');
     const isAddressChanged =

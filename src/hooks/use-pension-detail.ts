@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { mapRawPensionToItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
 import type { PensionItem } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
@@ -48,8 +47,7 @@ export function usePensionDetail(
       if (requestId !== activeRequestIdRef.current || !isMountedRef.current) return;
 
       if (isApiSuccess(res)) {
-        const mapped = mapRawPensionToItem(res.data as unknown as Record<string, unknown>);
-        setLivePension(mapped);
+        setLivePension(res.data);
       } else {
         setError(res.message || 'Error al cargar pensión');
       }

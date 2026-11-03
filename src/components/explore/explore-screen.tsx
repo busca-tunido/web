@@ -70,13 +70,15 @@ export function ExploreScreen({
     (isLoadingUniversities ?? isLoadingMetadata) && universities.length === 0;
 
   const sortedCities = [...cities].sort((a, b) => {
-    if (a.isCurrentCity) return -1;
-    if (b.isCurrentCity) return 1;
+    const aIsCurrent = Boolean(selectedCity && a.name.toLowerCase() === selectedCity.toLowerCase());
+    const bIsCurrent = Boolean(selectedCity && b.name.toLowerCase() === selectedCity.toLowerCase());
+    if (aIsCurrent) return -1;
+    if (bIsCurrent) return 1;
     return (b.pensionsCount ?? 0) - (a.pensionsCount ?? 0);
   });
 
   const sortedUniversities = [...universities].sort(
-    (a, b) => (b.pensionsNearbyCount ?? 0) - (a.pensionsNearbyCount ?? 0),
+    (a, b) => (b._count?.nearbyPensions ?? 0) - (a._count?.nearbyPensions ?? 0),
   );
 
   return (
@@ -145,7 +147,9 @@ export function ExploreScreen({
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-                    {city.isCurrentCity && (
+                    {Boolean(
+                      selectedCity && city.name.toLowerCase() === selectedCity.toLowerCase(),
+                    ) && (
                       <div className="absolute top-2.5 left-2.5">
                         <Badge className="bg-primary text-primary-foreground font-bold text-[9px] px-2 py-0.5 shadow">
                           Actual

@@ -45,23 +45,20 @@ export type SuggestEditAction =
 
 export function createInitialSuggestEditState(pension: PensionItem): EditDraftState {
   const activeAmenities: string[] =
-    pension.amenities && pension.amenities.length > 0 ? [...pension.amenities] : [];
-
-  if (activeAmenities.length === 0) {
-    if (pension.includesWifi) activeAmenities.push('wifi-alta-velocidad');
-    if (pension.includesMeals) activeAmenities.push('cocina-equipada');
-    if (pension.includesLaundry) activeAmenities.push('lavadora-secadora');
-    if (pension.includesStudyRoom) activeAmenities.push('sala-estudio-cowork');
-  }
+    pension.amenitySlugs && pension.amenitySlugs.length > 0
+      ? [...pension.amenitySlugs]
+      : pension.amenities
+        ? pension.amenities.map((a) => (typeof a === 'string' ? a : a.slug))
+        : [];
 
   return {
     activeAmenities,
-    monthlyPrice: pension.priceMonthlyClp,
-    deposit: pension.depositClp,
+    monthlyPrice: pension.baseMonthlyPrice,
+    deposit: pension.deposit ?? 0,
     waterIncluded: Boolean(pension.waterIncluded),
     electricityIncluded: Boolean(pension.electricityIncluded),
     gasIncluded: Boolean(pension.gasIncluded),
-    internetIncluded: Boolean(pension.internetIncluded ?? pension.includesWifi),
+    internetIncluded: Boolean(pension.internetIncluded),
     curfewText: pension.curfewTime || '',
     guestsAllowed: Boolean(pension.guestsAllowed),
     petsAllowed: Boolean(pension.petsAllowed),
@@ -150,10 +147,10 @@ export function calculateProposedDiff(
   if (current.city !== original.city) {
     changes.city = current.city.trim();
   }
-  if (current.monthlyPrice !== original.priceMonthlyClp) {
+  if (current.monthlyPrice !== original.baseMonthlyPrice) {
     changes.baseMonthlyPrice = current.monthlyPrice;
   }
-  if (current.deposit !== original.depositClp) {
+  if (current.deposit !== (original.deposit ?? 0)) {
     changes.deposit = current.deposit;
   }
 
@@ -166,7 +163,7 @@ export function calculateProposedDiff(
   if (current.gasIncluded !== Boolean(original.gasIncluded)) {
     changes.gasIncluded = current.gasIncluded;
   }
-  if (current.internetIncluded !== Boolean(original.internetIncluded ?? original.includesWifi)) {
+  if (current.internetIncluded !== Boolean(original.internetIncluded)) {
     changes.internetIncluded = current.internetIncluded;
   }
   if (current.guestsAllowed !== Boolean(original.guestsAllowed)) {
@@ -184,22 +181,11 @@ export function calculateProposedDiff(
   }
 
   const originalAmenities: string[] =
-    original.amenities && original.amenities.length > 0 ? [...original.amenities] : [];
-
-  if (originalAmenities.length === 0) {
-    if (original.includesWifi) {
-      originalAmenities.push('wifi-alta-velocidad');
-    }
-    if (original.includesMeals) {
-      originalAmenities.push('cocina-equipada');
-    }
-    if (original.includesLaundry) {
-      originalAmenities.push('lavadora-secadora');
-    }
-    if (original.includesStudyRoom) {
-      originalAmenities.push('sala-estudio-cowork');
-    }
-  }
+    original.amenitySlugs && original.amenitySlugs.length > 0
+      ? [...original.amenitySlugs]
+      : original.amenities
+        ? original.amenities.map((a) => (typeof a === 'string' ? a : a.slug))
+        : [];
 
   const amenitiesToAdd = current.activeAmenities.filter(
     (amenity) => !originalAmenities.includes(amenity),

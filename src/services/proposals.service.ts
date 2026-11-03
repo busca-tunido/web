@@ -1,152 +1,95 @@
-import { apiFetch } from '@/lib/api-client-base';
+import { apiFetch, wrapApiResponse } from '@/lib/api-fetch';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
 import type { paths } from '@/lib/api-schema';
-import type { CreateProposalDto, ProposalDto, ReviewProposalDto } from '@/types/api-contracts';
+import type { CreateProposalDto, ProposalDto, ReviewProposalDto } from '@/lib/types';
 
 export type ModerationProposalsQuery = NonNullable<
   paths['/moderation/proposals']['get']['parameters']['query']
 >;
 
-type RawProposal = {
-  id: string;
-  pensionId: string;
-  userId?: string;
-  submittedById?: string;
-  type: string;
-  proposedChanges?: Record<string, unknown>;
-  submissionNotes?: string | null;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | string;
-  reviewNotes?: string | null;
-  createdAt: string;
-  submittedBy?: ProposalDto['submittedBy'];
-};
-
-function normalizeProposal(raw: RawProposal): ProposalDto {
-  const user = raw.submittedBy || {
-    id: raw.submittedById ?? raw.userId ?? '',
-    firstName: '',
-    lastName: '',
-  };
-  return {
-    id: raw.id,
-    pensionId: raw.pensionId,
-    submittedById: raw.submittedById ?? raw.userId ?? '',
-    type: raw.type,
-    proposedChanges: (raw.proposedChanges as Record<string, unknown>) ?? {},
-    submissionNotes: raw.submissionNotes ?? null,
-    status: (raw.status as ProposalDto['status']) ?? 'PENDING',
-    reviewNotes: raw.reviewNotes ?? null,
-    createdAt: String(raw.createdAt),
-    updatedAt: String(raw.createdAt),
-    submittedBy: user,
-  };
-}
-
 export async function submitPensionProposal(
   pensionId: string,
   payload: CreateProposalDto,
 ): Promise<ApiResponse<ProposalDto>> {
-  const response = await apiFetch<RawProposal>(
-    `/pensions/${encodeURIComponent(pensionId)}/proposals`,
-    {
-      method: 'POST',
-      body: JSON.stringify(payload),
+  const result = await apiFetch.POST('/pensions/{id}/proposals', {
+    params: {
+      path: { id: pensionId },
     },
-  );
-
-  if (isApiSuccess(response)) {
-    return createSuccess<ProposalDto>(normalizeProposal(response.data), response.statusCode);
-  }
-
-  return response;
+    body: payload,
+  });
+  return wrapApiResponse<ProposalDto>(result, 'Error al enviar la sugerencia de edición');
 }
 
 export async function fetchPensionProposals(
   pensionId: string,
 ): Promise<ApiResponse<ProposalDto[]>> {
-  const response = await apiFetch<RawProposal[]>(
-    `/pensions/${encodeURIComponent(pensionId)}/proposals`,
-    {
-      method: 'GET',
+  const result = await apiFetch.GET('/pensions/{id}/proposals', {
+    params: {
+      path: { id: pensionId },
     },
-  );
-
-  if (isApiSuccess(response)) {
-    const list = Array.isArray(response.data) ? response.data : [];
-    return createSuccess<ProposalDto[]>(list.map(normalizeProposal), response.statusCode);
-  }
-
-  return response;
+  });
+  return wrapApiResponse<ProposalDto[]>(result, 'Error al obtener propuestas de la pensión');
 }
+
+export type ModerationProposalsResponse = {
+  items: ProposalDto[];
+  total?: number;
+  page?: number;
+  limit?: number;
+  hasMore?: boolean;
+};
 
 export async function fetchAllModerationProposals(
   query?: ModerationProposalsQuery,
 ): Promise<ApiResponse<ProposalDto[]>> {
-  const queryParams = new URLSearchParams();
-  if (query?.status) {
-    queryParams.set('status', query.status);
-  }
-  if (query?.page) {
-    queryParams.set('page', String(query.page));
-  }
-  if (query?.limit) {
-    queryParams.set('limit', String(query.limit));
-  }
-  const queryString = queryParams.toString();
-  const endpoint = `/moderation/proposals${queryString ? `?${queryString}` : ''}`;
-
-  const response = await apiFetch<RawProposal[] | { data: RawProposal[] }>(endpoint, {
-    method: 'GET',
+  const result = await apiFetch.GET('/moderation/proposals', {
+    params: {
+      query,
+    },
   });
-
-  if (isApiSuccess(response)) {
-    const rawList = Array.isArray(response.data)
-      ? response.data
-      : Array.isArray(response.data.data)
-        ? response.data.data
-        : [];
-    const items = rawList.map(normalizeProposal);
-    return createSuccess<ProposalDto[]>(items, response.statusCode);
+  const res = wrapApiResponse<ModerationProposalsResponse>(
+    result,
+    'Error al obtener propuestas para moderación',
+  );
+  if (!isApiSuccess(res)) {
+    return res;
   }
-
-  return response;
-}
-
-export async function fetchModerationProposalDetail(id: string): Promise<ApiResponse<ProposalDto>> {
-  const response = await apiFetch<RawProposal>(`/moderation/proposals/${encodeURIComponent(id)}`, {
-    method: 'GET',
-  });
-
-  if (isApiSuccess(response)) {
-    return createSuccess<ProposalDto>(normalizeProposal(response.data), response.statusCode);
-  }
-
-  return response;
+  const items = Array.isArray(res.data) ? res.data : (res.data.items ?? []);
+  return createSuccess(items, res.statusCode);
 }
 
 export async function reviewProposal(
-  id: string,
+  proposalId: string,
   payload: ReviewProposalDto,
 ): Promise<ApiResponse<ProposalDto>> {
-  const response = await apiFetch<RawProposal>(
-    `/moderation/proposals/${encodeURIComponent(id)}/review`,
-    {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
+  const result = await apiFetch.PATCH('/moderation/proposals/{id}/review', {
+    params: {
+      path: { id: proposalId },
     },
-  );
+    body: payload,
+  });
+  return wrapApiResponse<ProposalDto>(result, 'Error al revisar la propuesta');
+}
 
-  if (isApiSuccess(response)) {
-    return createSuccess<ProposalDto>(normalizeProposal(response.data), response.statusCode);
-  }
+export async function approveProposal(
+  proposalId: string,
+  reviewNotes?: string,
+): Promise<ApiResponse<ProposalDto>> {
+  return reviewProposal(proposalId, { action: 'APPROVE', reviewNotes });
+}
 
-  return response;
+export async function rejectProposal(
+  proposalId: string,
+  reviewNotes?: string,
+): Promise<ApiResponse<ProposalDto>> {
+  return reviewProposal(proposalId, { action: 'REJECT', reviewNotes });
 }
 
 export const proposalsService = {
   submitPensionProposal,
   fetchPensionProposals,
   fetchAllModerationProposals,
-  fetchModerationProposalDetail,
   reviewProposal,
+  approveProposal,
+  rejectProposal,
 };

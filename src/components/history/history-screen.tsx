@@ -156,7 +156,11 @@ function HistoryList({ stays, onExplore, onSelectReviewStay, formatDateRange }: 
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>
-                  {formatDateRange(stay.startDate, stay.endDate, stay.review?.stayDurationCategory)}
+                  {formatDateRange(
+                    undefined,
+                    undefined,
+                    stay.stayDurationCategory ?? stay.review?.stayDurationCategory,
+                  )}
                 </span>
               </div>
 

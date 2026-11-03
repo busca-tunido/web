@@ -29,7 +29,7 @@ export function generateAccommodationSchema(
     description:
       pension.description || `Pensión universitaria en ${pension.city}, ${pension.neighborhood}.`,
     url: `${appUrl}/pensions/${pension.slug || pension.id}`,
-    image: pension.photos?.[0] || `${appUrl}/icon.png`,
+    image: pension.images?.[0]?.url || `${appUrl}/icon.png`,
     address: {
       '@type': 'PostalAddress',
       streetAddress: pension.address,
@@ -44,7 +44,7 @@ export function generateAccommodationSchema(
     },
     offers: {
       '@type': 'Offer',
-      price: pension.priceMonthlyClp,
+      price: pension.baseMonthlyPrice,
       priceCurrency: 'CLP',
       availability: 'https://schema.org/InStock',
       unitText: 'MONTH',
@@ -85,7 +85,7 @@ export function generateItemListSchema(
         name: pension.title,
         description: pension.description || `Pensión universitaria en ${pension.city}.`,
         url: `${appUrl}/pensions/${pension.slug || pension.id}`,
-        image: pension.photos?.[0] || `${appUrl}/icon.png`,
+        image: pension.images?.[0]?.url || `${appUrl}/icon.png`,
         address: {
           '@type': 'PostalAddress',
           streetAddress: pension.address,
@@ -100,7 +100,7 @@ export function generateItemListSchema(
         },
         offers: {
           '@type': 'Offer',
-          price: pension.priceMonthlyClp,
+          price: pension.baseMonthlyPrice,
           priceCurrency: 'CLP',
           availability: 'https://schema.org/InStock',
           unitText: 'MONTH',

@@ -1,9 +1,8 @@
-import { apiFetch } from '@/lib/api-client-base';
+import { apiFetch, wrapApiResponse } from '@/lib/api-fetch';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
 import { getCityImageUrl } from '@/lib/location-images';
-import type { CityInfo } from '@/lib/types';
+import type { CityInfo, PensionItemDto, UniversityDto } from '@/lib/types';
 import { fetchUniversities as apiFetchUniversities } from '@/services/universities.service';
-import type { CitySummaryDto, PensionItemDto, UniversityDto } from '@/types/api-contracts';
 
 export type CityLocationItem = {
   city: string;
@@ -100,7 +99,8 @@ export function sortCitiesByCoordinates(
 }
 
 export async function fetchCities(): Promise<ApiResponse<CityInfo[]>> {
-  const citiesRes = await apiFetch<CitySummaryDto[]>('/cities', { method: 'GET' });
+  const result = await apiFetch.GET('/cities');
+  const citiesRes = wrapApiResponse<CityInfo[]>(result, 'Error al obtener ciudades');
   if (isApiSuccess(citiesRes) && Array.isArray(citiesRes.data)) {
     const cities: CityInfo[] = citiesRes.data.map((c) => ({
       id: c.id,

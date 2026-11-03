@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PublicNavHeader } from '@/components/common/public-nav-header';
 import { PensionDetailContent } from '@/components/pensions/pension-detail-content';
-import { mapRawPensionToItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
 import type { PensionItem } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
@@ -19,7 +18,7 @@ async function getPensionData(id: string): Promise<PensionItem | null> {
     if (!isApiSuccess(res) || !res.data) {
       return null;
     }
-    return mapRawPensionToItem(res.data as unknown as Record<string, unknown>);
+    return res.data;
   } catch {
     return null;
   }
@@ -39,9 +38,9 @@ export async function generateMetadata(props: PensionPageProps): Promise<Metadat
   const title = `${pension.title} en ${pension.city} | BuscaTuNido`;
   const description =
     pension.description?.slice(0, 160) ||
-    `Pensión universitaria en ${pension.address}, ${pension.city}. Habitaciones desde $${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP mensuales.`;
+    `Pensión universitaria en ${pension.address}, ${pension.city}. Habitaciones desde $${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP mensuales.`;
   const canonicalUrl = `/pensions/${id}`;
-  const firstPhoto = pension.photos?.[0];
+  const firstPhoto = pension.images?.[0]?.url;
 
   return {
     title,
@@ -79,7 +78,7 @@ export default async function PensionPage(props: PensionPageProps) {
     '@type': 'LodgingBusiness',
     name: pension.title,
     description: pension.description,
-    image: pension.photos?.[0],
+    image: pension.images?.[0]?.url,
     address: {
       '@type': 'PostalAddress',
       streetAddress: pension.address,
@@ -95,7 +94,7 @@ export default async function PensionPage(props: PensionPageProps) {
             longitude: pension.longitude,
           }
         : undefined,
-    priceRange: `$${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP`,
+    priceRange: `$${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP`,
     aggregateRating:
       pension.ratingAverage > 0 && pension.reviewsCount > 0
         ? {

@@ -22,10 +22,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { isApiSuccess } from '@/lib/api-response';
-import type { PensionItem } from '@/lib/types';
+import type { PensionDetailDto, PensionItem } from '@/lib/types';
 import { cn, normalizeImageUrl } from '@/lib/utils';
 import { pensionsService } from '@/services/pensions.service';
-import type { PensionDetailDto } from '@/types/api-contracts';
 
 export type LandlordReviewsScreenProps = {
   pensionId?: string;
@@ -656,11 +655,8 @@ export function LandlordReviewsScreen({
             {filteredReviews.map((review) => {
               const rating = review.overallRating ?? review.rating ?? 5;
               const photos = review.images?.slice(0, 4) || [];
-              const isLiked = userVotes[review.id] ?? Boolean(review.userVoted);
-              const calculatedLikes = Math.max(
-                0,
-                (review.helpfulCount ?? 0) + (isLiked && !review.userVoted ? 1 : 0),
-              );
+              const isLiked = Boolean(userVotes[review.id]);
+              const calculatedLikes = Math.max(0, (review.helpfulCount ?? 0) + (isLiked ? 1 : 0));
 
               return (
                 <Card
@@ -693,7 +689,7 @@ export function LandlordReviewsScreen({
                               {review.user?.firstName || 'Estudiante'}{' '}
                               {review.user?.lastName ? `${review.user.lastName.charAt(0)}.` : ''}
                             </h4>
-                            {(review.isResidentVerified || review.isVerifiedStudent) && (
+                            {review.isVerifiedStay && (
                               <Badge
                                 variant="outline"
                                 className="gap-1 border-sage/30 bg-sage/10 text-sage-foreground text-[10px] py-0 px-1.5 font-semibold"

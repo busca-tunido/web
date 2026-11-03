@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { mapRawPensionToItem } from '@/lib/api-client';
 import { type ApiResponse, isApiSuccess } from '@/lib/api-response';
 import { filterPensionsByRatingTier } from '@/lib/rating-tier';
 import type {
   CityInfo,
   NearbyCityCount,
+  PaginatedPensionsResponse,
   PensionItem,
   SearchFilters,
   UniversityInfo,
@@ -14,7 +14,6 @@ import type {
 import { sortCitiesWithCurrentFirst } from '@/lib/use-user-location';
 import { locationsService } from '@/services/locations.service';
 import { pensionsService } from '@/services/pensions.service';
-import type { PaginatedPensionsResponse } from '@/types/api-contracts';
 
 export type MapBounds = {
   minLat: number;
@@ -233,9 +232,7 @@ export function useStudentPensionsFeed(
         }
 
         if (isApiSuccess(res)) {
-          const rawItems: PensionItem[] = res.data.items.map((dto) =>
-            mapRawPensionToItem(dto as unknown as Record<string, unknown>),
-          );
+          const rawItems: PensionItem[] = res.data.items;
           const mappedItems = filterRatingTier
             ? filterPensionsByRatingTier(rawItems, filterRatingTier)
             : rawItems;

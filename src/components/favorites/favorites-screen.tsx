@@ -9,9 +9,8 @@ import { Button } from '@/components/ui/button';
 import { FavoritesSkeleton } from '@/components/ui/skeletons/favorites-skeleton';
 import { useNavigation } from '@/contexts/navigation-context';
 import { useStudentFavorites } from '@/hooks/use-student-favorites';
-import { mapRawPensionToItem } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth-context';
-import type { PensionItem } from '@/lib/types';
+import type { FavoritePensionSummaryDto, PensionItem } from '@/lib/types';
 
 type FavoritesScreenProps = {
   allPensions: PensionItem[];
@@ -39,16 +38,13 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
     useStudentFavorites();
 
   const savedPensions = useMemo(() => {
-    const mappedApiPensions = favoritePensions.map((dto) =>
-      mapRawPensionToItem(dto as unknown as Record<string, unknown>),
-    );
-    const mapById = new Map<string, PensionItem>();
+    const mapById = new Map<string, PensionItem | FavoritePensionSummaryDto>();
     for (const p of allPensions) {
       if (favorites.includes(p.id) || isFavorite(p.id)) {
         mapById.set(p.id, p);
       }
     }
-    for (const p of mappedApiPensions) {
+    for (const p of favoritePensions) {
       if (!mapById.has(p.id) && (favorites.includes(p.id) || isFavorite(p.id))) {
         mapById.set(p.id, p);
       }
@@ -99,7 +95,7 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
 }
 
 type FavoritesGridProps = {
-  savedPensions: PensionItem[];
+  savedPensions: (PensionItem | FavoritePensionSummaryDto)[];
   onSelectPension: (pension: PensionItem) => void;
   onExplore: () => void;
   toggleFavorite: (id: string) => void;
@@ -143,13 +139,13 @@ function FavoritesGrid({
         >
           <button
             type="button"
-            onClick={() => onSelectPension(pension)}
+            onClick={() => onSelectPension(pension as PensionItem)}
             className="w-full flex flex-col text-left cursor-pointer"
           >
             <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm flex items-center justify-center">
-              {pension.photos[0] ? (
+              {pension.images?.[0]?.url ? (
                 <Image
-                  src={pension.photos[0]}
+                  src={pension.images[0].url}
                   alt={pension.title}
                   fill
                   unoptimized
@@ -161,7 +157,8 @@ function FavoritesGrid({
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
-              {pension.isVerified && (
+              {(pension.verificationStatus === 'OFFICIALLY_VERIFIED' ||
+                pension.verificationStatus === 'COMMUNITY_VERIFIED') && (
                 <div className="absolute bottom-3 left-3">
                   <span className="flex items-center gap-1 rounded-full bg-sage/90 px-2.5 py-0.5 text-[11px] font-semibold text-white dark:text-zinc-950 backdrop-blur-md shadow-sm">
                     <ShieldCheck className="h-3 w-3" />
@@ -190,7 +187,7 @@ function FavoritesGrid({
 
               <div className="mt-0.5 flex items-baseline gap-1">
                 <span className="text-base font-bold text-foreground">
-                  ${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP
+                  ${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP
                 </span>
                 <span className="text-xs text-muted-foreground">/ mes</span>
               </div>

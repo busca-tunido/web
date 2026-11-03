@@ -32,10 +32,10 @@ import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
 import { translateApiError } from '@/lib/error-translator';
 import { clampNumber } from '@/lib/format-utils';
+import type { CreateRoomDto, UpdateRoomDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { createPensionRoom, updateRoom } from '@/services/rooms.service';
 import { uploadsService } from '@/services/uploads.service';
-import type { CreateRoomDto, UpdateRoomDto } from '@/types/api-contracts';
 
 export type RoomEditorDrawerProps = {
   isOpen: boolean;
@@ -162,15 +162,8 @@ export function RoomEditorDrawer({
   useEffect(() => {
     if (isOpen) {
       if (roomToEdit) {
-        const resolvedType: RoomType =
-          roomToEdit.type ?? (roomToEdit.roomType === 'SHARED' ? 'SHARED' : 'SINGLE');
-        const existingImages = roomToEdit.images?.length
-          ? roomToEdit.images
-          : roomToEdit.photos?.length
-            ? roomToEdit.photos
-            : roomToEdit.thumbnailUrl
-              ? [roomToEdit.thumbnailUrl]
-              : [];
+        const resolvedType: RoomType = roomToEdit.type ?? 'SINGLE';
+        const existingImages = roomToEdit.images ?? [];
 
         setForm({
           title: roomToEdit.title || roomToEdit.name || '',
@@ -178,21 +171,15 @@ export function RoomEditorDrawer({
           description: roomToEdit.description || '',
           type: resolvedType,
           monthlyPrice:
-            roomToEdit.monthlyPrice !== undefined
-              ? String(roomToEdit.monthlyPrice)
-              : roomToEdit.priceMonthlyClp !== undefined
-                ? String(roomToEdit.priceMonthlyClp)
-                : '',
+            roomToEdit.monthlyPrice !== undefined ? String(roomToEdit.monthlyPrice) : '',
           deposit:
             roomToEdit.deposit !== undefined && roomToEdit.deposit !== null
               ? String(roomToEdit.deposit)
-              : roomToEdit.depositClp !== undefined && roomToEdit.depositClp !== null
-                ? String(roomToEdit.depositClp)
-                : '',
+              : '',
           hasPrivateBathroom: Boolean(
             roomToEdit.hasPrivateBathroom ?? roomToEdit.bathType === 'PRIVATE',
           ),
-          totalBeds: roomToEdit.totalBeds ?? roomToEdit.bedCount ?? 1,
+          totalBeds: roomToEdit.totalBeds ?? 1,
           isAvailable: roomToEdit.isAvailable ?? true,
           images: existingImages,
         });

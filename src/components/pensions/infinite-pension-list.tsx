@@ -34,7 +34,7 @@ function areVirtualPropsEqual(
     prev.pension.id === next.pension.id &&
     prev.isFavorite === next.isFavorite &&
     prev.pension.ratingAverage === next.pension.ratingAverage &&
-    prev.pension.priceMonthlyClp === next.pension.priceMonthlyClp
+    prev.pension.baseMonthlyPrice === next.pension.baseMonthlyPrice
   );
 }
 

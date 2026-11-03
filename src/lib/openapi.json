@@ -5149,6 +5149,26 @@
         },
         "required": ["distanceMeters", "university"]
       },
+      "PensionNearestUniversitySummaryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Universidad de Chile"
+          },
+          "shortName": {
+            "type": "string",
+            "nullable": true,
+            "example": "UCHILE"
+          },
+          "distanceMeters": {
+            "type": "number",
+            "example": 450,
+            "description": "Distance in meters"
+          }
+        },
+        "required": ["name", "distanceMeters"]
+      },
       "BathType": {
         "type": "string",
         "enum": ["PRIVATE", "SHARED"]
@@ -5403,6 +5423,16 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PensionNearbyUniversityResponseDto"
+            }
+          },
+          "nearestUniversity": {
+            "$ref": "#/components/schemas/PensionNearestUniversitySummaryDto"
+          },
+          "amenitySlugs": {
+            "example": ["wifi-alta-velocidad", "comida-incluida"],
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           },
           "rooms": {

@@ -16,37 +16,11 @@ import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import type { RoomDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
-export type RoomType = 'SINGLE' | 'SHARED' | 'STUDIO';
-
-export type RoomItem = {
-  id: string;
-  pensionId?: string;
-  title?: string;
-  name?: string;
-  roomNumber?: string;
-  description?: string | null;
-  type?: RoomType;
-  roomType?: RoomType | 'SINGLE' | 'SHARED';
-  monthlyPrice?: number;
-  priceMonthlyClp?: number;
-  deposit?: number | null;
-  depositClp?: number | null;
-  hasPrivateBathroom?: boolean;
-  bathType?: 'PRIVATE' | 'SHARED';
-  isAvailable: boolean;
-  isActive?: boolean;
-  totalBeds?: number;
-  availableBeds?: number;
-  bedCount?: number;
-  images?: string[];
-  photos?: string[];
-  thumbnailUrl?: string;
-  availableFrom?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-};
+export type RoomType = RoomDto['type'];
+export type RoomItem = RoomDto;
 
 export type RoomItemCardProps = {
   room: RoomItem;
@@ -71,20 +45,12 @@ export function RoomItemCard({
     setIsAvailable(room.isAvailable);
   }, [room.isAvailable]);
 
-  const rawTitle = room.title || room.name || room.roomNumber || 'Habitación';
-  const resolvedType: RoomType = room.type ?? (room.roomType === 'SHARED' ? 'SHARED' : 'SINGLE');
-  const price = room.monthlyPrice ?? room.priceMonthlyClp ?? 0;
+  const rawTitle = room.title || room.name || 'Habitación';
+  const resolvedType: RoomType = room.type ?? 'SINGLE';
+  const price = room.monthlyPrice ?? 0;
   const isPrivateBath = Boolean(room.hasPrivateBathroom ?? room.bathType === 'PRIVATE');
-  const beds = room.totalBeds ?? room.bedCount ?? 1;
-
-  const imageList = room.images?.length
-    ? room.images
-    : room.photos?.length
-      ? room.photos
-      : room.thumbnailUrl
-        ? [room.thumbnailUrl]
-        : [];
-  const thumbnail = imageList[0];
+  const beds = room.totalBeds ?? 1;
+  const thumbnail = room.images?.[0];
 
   const formattedPrice = `$${price.toLocaleString('es-CL')} CLP`;
 

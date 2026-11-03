@@ -21,10 +21,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useLandlord } from '@/contexts/landlord-context';
 import { isApiSuccess } from '@/lib/api-response';
-import type { PensionItem } from '@/lib/types';
+import type { PensionItem, RoomDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { fetchPensionRooms, updateRoom } from '@/services/rooms.service';
-import type { RoomDto } from '@/types/api-contracts';
 
 export type LandlordRoomsScreenProps = {
   pensionId?: string;
@@ -33,21 +32,7 @@ export type LandlordRoomsScreenProps = {
 };
 
 function mapDtoToRoomItem(dto: RoomDto): RoomItem {
-  return {
-    id: dto.id,
-    pensionId: dto.pensionId,
-    title: dto.title ?? dto.name ?? '',
-    name: dto.name ?? dto.title ?? '',
-    description: dto.description ?? undefined,
-    monthlyPrice: dto.monthlyPrice,
-    priceMonthlyClp: dto.monthlyPrice,
-    isAvailable: dto.isAvailable,
-    isActive: dto.isActive !== false,
-    bathType: dto.bathType,
-    hasPrivateBathroom: dto.bathType === 'PRIVATE',
-    availableFrom: dto.availableFrom,
-    images: dto.images ?? [],
-  };
+  return dto;
 }
 
 export function LandlordRoomsScreen({
@@ -147,7 +132,7 @@ export function LandlordRoomsScreen({
   const inactiveRooms = useMemo(() => rooms.filter((r) => r.isActive === false), [rooms]);
 
   const projectedRevenue = useMemo(
-    () => occupiedRooms.reduce((sum, r) => sum + (r.monthlyPrice ?? r.priceMonthlyClp ?? 0), 0),
+    () => occupiedRooms.reduce((sum, r) => sum + (r.monthlyPrice ?? 0), 0),
     [occupiedRooms],
   );
 

@@ -1,4 +1,4 @@
-import { apiFetch } from '@/lib/api-client-base';
+import { apiFetch, wrapApiResponse } from '@/lib/api-fetch';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
 import type { paths } from '@/lib/api-schema';
 import { getUniversityImageUrl } from '@/lib/location-images';
@@ -7,127 +7,103 @@ import type {
   CreateUniversityDto,
   UniversityDto,
   UpdateUniversityDto,
-} from '@/types/api-contracts';
+} from '@/lib/types';
 
 export type UniversitiesFilterQuery = NonNullable<
   paths['/universities']['get']['parameters']['query']
 >;
 
-export function mapUniversityDto(raw: Record<string, unknown>): UniversityDto {
+export function mapUniversityDto(raw: UniversityDto): UniversityDto {
   const name = String(raw.name ?? '');
   const acronym = String(raw.acronym ?? raw.shortName ?? '');
   const rawImage =
-    typeof raw.imageUrl === 'string' && raw.imageUrl.trim().length > 0
-      ? raw.imageUrl
-      : typeof raw.campusImageUrl === 'string' && raw.campusImageUrl.trim().length > 0
-        ? raw.campusImageUrl
-        : undefined;
+    typeof raw.imageUrl === 'string' && raw.imageUrl.trim().length > 0 ? raw.imageUrl : undefined;
 
   return {
-    id: String(raw.id ?? ''),
-    name,
-    acronym,
-    city: String(raw.city ?? ''),
-    latitude: Number(raw.latitude ?? 0),
-    longitude: Number(raw.longitude ?? 0),
+    ...raw,
     imageUrl: rawImage ?? getUniversityImageUrl(name, acronym),
-    campuses: Array.isArray(raw.campuses) ? (raw.campuses as CampusAreaDto[]) : undefined,
-    createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : '',
-    updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : '',
   };
 }
 
 export async function fetchUniversities(
   params?: UniversitiesFilterQuery,
 ): Promise<ApiResponse<UniversityDto[]>> {
-  const query = params?.city ? `?city=${encodeURIComponent(params.city)}` : '';
-  const response = await apiFetch<Array<Record<string, unknown>>>(`/universities${query}`, {
-    method: 'GET',
+  const result = await apiFetch.GET('/universities', {
+    params: {
+      query: params,
+    },
   });
-
-  if (!isApiSuccess(response)) {
-    return response;
+  const res = wrapApiResponse<UniversityDto[]>(result, 'Error al obtener universidades');
+  if (!isApiSuccess(res)) {
+    return res;
   }
-
-  const items = Array.isArray(response.data) ? response.data.map(mapUniversityDto) : [];
-  return createSuccess(items, response.statusCode);
+  const items = Array.isArray(res.data) ? res.data.map(mapUniversityDto) : [];
+  return createSuccess(items, res.statusCode);
 }
 
 export async function fetchCampusAreas(params?: {
   city?: string;
 }): Promise<ApiResponse<CampusAreaDto[]>> {
-  const query = params?.city ? `?city=${encodeURIComponent(params.city)}` : '';
-  const response = await apiFetch<CampusAreaDto[]>(`/universities/campuses${query}`, {
-    method: 'GET',
+  const result = await apiFetch.GET('/universities/campuses', {
+    params: {
+      query: params,
+    },
   });
-  return response;
+  return wrapApiResponse<CampusAreaDto[]>(result, 'Error al obtener campus universitarios');
 }
 
 export async function fetchUniversityDetail(id: string): Promise<ApiResponse<UniversityDto>> {
-  const response = await apiFetch<Record<string, unknown>>(
-    `/universities/${encodeURIComponent(id)}`,
-    {
-      method: 'GET',
+  const result = await apiFetch.GET('/universities/{id}', {
+    params: {
+      path: { id },
     },
-  );
-
-  if (!isApiSuccess(response)) {
-    return response;
+  });
+  const res = wrapApiResponse<UniversityDto>(result, 'Error al obtener detalle de la universidad');
+  if (!isApiSuccess(res)) {
+    return res;
   }
-
-  return createSuccess(mapUniversityDto(response.data), response.statusCode);
+  return createSuccess(mapUniversityDto(res.data), res.statusCode);
 }
 
 export async function createUniversity(
   payload: CreateUniversityDto,
 ): Promise<ApiResponse<UniversityDto>> {
-  const response = await apiFetch<Record<string, unknown>>('/universities', {
-    method: 'POST',
-    body: JSON.stringify(payload),
+  const result = await apiFetch.POST('/universities', {
+    body: payload,
   });
-
-  if (!isApiSuccess(response)) {
-    return response;
+  const res = wrapApiResponse<UniversityDto>(result, 'Error al crear universidad');
+  if (!isApiSuccess(res)) {
+    return res;
   }
-
-  return createSuccess(mapUniversityDto(response.data), response.statusCode);
+  return createSuccess(mapUniversityDto(res.data), res.statusCode);
 }
 
 export async function updateUniversity(
   id: string,
   payload: UpdateUniversityDto,
 ): Promise<ApiResponse<UniversityDto>> {
-  const response = await apiFetch<Record<string, unknown>>(
-    `/universities/${encodeURIComponent(id)}`,
-    {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
+  const result = await apiFetch.PATCH('/universities/{id}', {
+    params: {
+      path: { id },
     },
-  );
-
-  if (!isApiSuccess(response)) {
-    return response;
+    body: payload,
+  });
+  const res = wrapApiResponse<UniversityDto>(result, 'Error al actualizar universidad');
+  if (!isApiSuccess(res)) {
+    return res;
   }
-
-  return createSuccess(mapUniversityDto(response.data), response.statusCode);
+  return createSuccess(mapUniversityDto(res.data), res.statusCode);
 }
 
 export async function deleteUniversity(id: string): Promise<ApiResponse<{ success: boolean }>> {
-  const response = await apiFetch<{ id?: string; deleted?: boolean }>(
-    `/universities/${encodeURIComponent(id)}`,
-    {
-      method: 'DELETE',
+  const result = await apiFetch.DELETE('/universities/{id}', {
+    params: {
+      path: { id },
     },
-  );
-
-  if (!isApiSuccess(response)) {
-    return response;
+  });
+  const res = wrapApiResponse<{ deleted?: boolean }>(result, 'Error al eliminar universidad');
+  if (!isApiSuccess(res)) {
+    return res;
   }
-
-  return createSuccess(
-    {
-      success: response.data.deleted ?? true,
-    },
-    response.statusCode,
-  );
+  return createSuccess({ success: res.data.deleted ?? true }, res.statusCode);
 }

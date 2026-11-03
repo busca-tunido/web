@@ -116,17 +116,17 @@ export function AmenitiesBreakdownModal({
               <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
                 <Wifi
                   className={`h-4 w-4 shrink-0 ${
-                    pension.includesWifi ? 'text-primary' : 'text-muted-foreground'
+                    pension.internetIncluded ? 'text-primary' : 'text-muted-foreground'
                   }`}
                 />
                 <div>
                   <p className="text-xs font-semibold text-foreground">Internet Fibra Óptica</p>
                   <p
                     className={`text-[10px] font-medium ${
-                      pension.includesWifi ? 'text-primary' : 'text-muted-foreground'
+                      pension.internetIncluded ? 'text-primary' : 'text-muted-foreground'
                     }`}
                   >
-                    {pension.includesWifi ? 'Alta velocidad libre' : 'No incluido'}
+                    {pension.internetIncluded ? 'Alta velocidad libre' : 'No incluido'}
                   </p>
                 </div>
               </div>
@@ -181,7 +181,10 @@ export function AmenitiesBreakdownModal({
                   <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>Comedor estudiantil y sala de estar compartida</span>
                 </li>
-                {pension.includesLaundry && (
+                {(pension.amenitySlugs?.includes('lavadora-secadora') ||
+                  pension.amenities?.some(
+                    (a) => (typeof a === 'string' ? a : a.slug) === 'lavadora-secadora',
+                  )) && (
                   <li className="flex items-start gap-2">
                     <Wind className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                     <span>Lavadora automática y zona de secado / tendero</span>
@@ -199,12 +202,15 @@ export function AmenitiesBreakdownModal({
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <span>
-                    {pension.includesStudyRoom
+                    {pension.amenitySlugs?.includes('sala-estudio-cowork') ||
+                    pension.amenities?.some(
+                      (a) => (typeof a === 'string' ? a : a.slug) === 'sala-estudio-cowork',
+                    )
                       ? 'Sala de estudio silenciosa exclusiva para residentes'
                       : 'Espacio de estudio independiente en cada dormitorio'}
                   </span>
                 </li>
-                {pension.includesWifi && (
+                {pension.internetIncluded && (
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                     <span>Cobertura de Wi-Fi de alta velocidad en todos los ambientes</span>
@@ -246,8 +252,9 @@ export function AmenitiesBreakdownModal({
                 <div>
                   <p className="font-semibold text-foreground">Horario de Llegada / Acceso</p>
                   <p className="text-muted-foreground text-[11px] mt-0.5">
-                    {pension.curfewDescription ||
-                      'Acceso las 24 horas con llave propia sin toque de queda.'}
+                    {pension.curfewTime
+                      ? `Toque de queda: ${pension.curfewTime}`
+                      : 'Acceso las 24 horas con llave propia sin toque de queda.'}
                   </p>
                 </div>
               </div>
@@ -267,8 +274,9 @@ export function AmenitiesBreakdownModal({
                 <div>
                   <p className="font-semibold text-foreground">Política de Visitas</p>
                   <p className="text-muted-foreground text-[11px] mt-0.5">
-                    {pension.visitsPolicy ||
-                      'Visitas permitidas en áreas comunes diurnas con previo aviso.'}
+                    {pension.guestsAllowed
+                      ? 'Visitas permitidas en áreas comunes diurnas con previo aviso.'
+                      : 'No se permiten visitas externas.'}
                   </p>
                 </div>
               </div>

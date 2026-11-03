@@ -1,68 +1,84 @@
-import type {
-  CitySummaryDto,
-  NearbyCityCount,
-  PaginationMeta,
-  PensionItemDto,
-  ReviewItemDto,
-  RoomDto,
-  StudentStayDto,
-  UniversityDto,
-  UserProfileDto,
-} from '@/types/api-contracts';
 import type { components } from './api-schema';
 
 export type UserRole = components['schemas']['Role'];
-export type UserProfile = UserProfileDto;
+export type UserProfile = components['schemas']['SanitizedUserResponseDto'];
+export type UserProfileDto = components['schemas']['SanitizedUserResponseDto'];
+export type AuthResponseDto = components['schemas']['AuthResponseDto'];
+export type RegisterDto = components['schemas']['RegisterDto'];
+export type LoginDto = components['schemas']['LoginDto'];
+export type DetectedUniversityDto = components['schemas']['DetectedUniversityResponseDto'];
+export type CheckEmailResponseDto = components['schemas']['CheckEmailResponseDto'];
 
-export type CityInfo = CitySummaryDto & {
-  region?: string;
-  isCurrentCity?: boolean;
+export type CitySummaryDto = components['schemas']['CitySummaryResponseDto'];
+export type CityInfo = CitySummaryDto & { isCurrentCity?: boolean };
+
+export type UniversityDto = components['schemas']['UniversityResponseDto'];
+export type UniversityInfo = UniversityDto;
+export type CreateUniversityDto = components['schemas']['CreateUniversityDto'];
+export type UpdateUniversityDto = components['schemas']['UpdateUniversityDto'];
+export type CampusAreaDto = components['schemas']['CampusAreaResponseDto'];
+
+export type RoomDto = components['schemas']['RoomResponseDto'];
+export type RoomInfo = RoomDto;
+export type CreateRoomDto = components['schemas']['CreateRoomDto'];
+export type UpdateRoomDto = components['schemas']['UpdateRoomDto'];
+
+export type PensionItemDto = components['schemas']['PensionItemResponseDto'];
+export type PensionDetailDto = components['schemas']['PensionItemResponseDto'];
+export type PensionItem = components['schemas']['PensionItemResponseDto'];
+export type CreatePensionDto = components['schemas']['CreatePensionDto'];
+export type UpdatePensionDto = Partial<components['schemas']['UpdatePensionDto']>;
+
+export type ReviewItemDto = components['schemas']['ReviewResponseDto'];
+export type PensionReview = components['schemas']['ReviewResponseDto'] & {
+  userVoted?: boolean;
 };
+export type CreateReviewDto = components['schemas']['CreateReviewDto'];
+export type UpdateReviewDto = components['schemas']['UpdateReviewDto'];
 
-export type UniversityInfo = UniversityDto & {
-  domains?: string[];
-  pensionsNearbyCount?: number;
-};
+export type StudentStayDto = components['schemas']['StudentStayResponseDto'];
+export type StayHistoryItem = StudentStayDto;
 
-export type RoomInfo = RoomDto & {
-  roomType?: components['schemas']['RoomType'];
-  photos?: string[];
-};
+export type FavoriteItemDto = components['schemas']['FavoriteItemResponseDto'];
+export type FavoriteItem = FavoriteItemDto;
+export type FavoritePensionSummaryDto = components['schemas']['FavoritePensionSummaryDto'];
+export type FavoritePensionSummary = FavoritePensionSummaryDto;
 
-export type PensionItem = Omit<PensionItemDto, 'genderPreference' | 'rooms' | 'amenities'> & {
-  latitude: number;
-  longitude: number;
-  ratingAverage: number;
-  reviewsCount: number;
-  priceMonthlyClp: number;
-  depositClp: number;
-  isVerified: boolean;
-  genderPreference: 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY' | 'MIXED';
-  includesMeals: boolean;
-  includesWifi: boolean;
-  includesLaundry: boolean;
-  includesStudyRoom: boolean;
-  nearestUniversityName: string;
-  distanceToUniversityMeters: number;
-  photos: string[];
-  rooms: RoomInfo[];
-  curfewDescription?: string;
-  visitsPolicy?: string;
-  distanceKm?: number;
-  relevanceScore?: number;
-  amenities?: string[];
-};
+export type ProposalDto = components['schemas']['ProposalResponseDto'];
+export type CreateProposalDto = components['schemas']['CreateProposalDto'];
+export type ReviewProposalDto = components['schemas']['ReviewProposalDto'];
 
-export type { NearbyCityCount, PaginationMeta };
+export type ReportDto = components['schemas']['ReportResponseDto'];
+export type CreateReportDto = components['schemas']['CreateReportDto'];
+export type UpdateReportDto = components['schemas']['UpdateReportDto'];
 
-export type PaginatedPensionsResponse = {
-  items: PensionItem[];
-  pagination: PaginationMeta;
-  nearbyCityCounts: NearbyCityCount[];
-};
-
+export type PaginationMeta = components['schemas']['PaginationMetaDto'];
+export type PaginationMetaDto = components['schemas']['PaginationMetaDto'];
+export type NearbyCityCount = components['schemas']['NearbyCityCountDto'];
+export type NearbyCityCountDto = components['schemas']['NearbyCityCountDto'];
 export type PriceBinItem = components['schemas']['PriceHistogramBinDto'];
 export type PriceHistogramResponse = components['schemas']['PriceHistogramResponseDto'];
+export type StayDurationCategory = components['schemas']['StayDurationCategory'];
+export type GenderPreference = components['schemas']['GenderPreference'];
+export type VerificationStatus = components['schemas']['VerificationStatus'];
+export type UploadImageResult = components['schemas']['UploadImageResponseDto'];
+export type UserHelpfulVotesResponse = components['schemas']['HelpfulVotesResponseDto'];
+export type UpdateReviewVisibilityDto = components['schemas']['UpdateReviewVisibilityDto'];
+export type UpdatePensionStatusDto = components['schemas']['UpdatePensionStatusDto'];
+
+export type PaginatedResponse<T> = {
+  items: T[];
+  pagination?: PaginationMeta;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages?: number;
+  hasMore?: boolean;
+  nearbyCityCounts?: NearbyCityCount[];
+};
+
+export type PaginatedPensionsResponse = PaginatedResponse<PensionItemDto>;
+export type PaginatedReviewsResponse = PaginatedResponse<ReviewItemDto>;
 
 export type RatingTier = 'high' | 'medium' | 'low';
 
@@ -82,19 +98,3 @@ export type SearchFilters = {
 };
 
 export type NavTab = 'explore' | 'favorites' | 'map' | 'history' | 'account';
-
-export type StayDurationCategory = components['schemas']['StayDurationCategory'];
-
-export type PensionReview = ReviewItemDto & {
-  pros?: string | null;
-  cons?: string | null;
-  isResidentVerified?: boolean;
-  isVerifiedStudent?: boolean;
-  userVoted?: boolean;
-};
-
-export type StayHistoryItem = StudentStayDto & {
-  startDate?: string | null;
-  endDate?: string | null;
-  review?: PensionReview | null;
-};

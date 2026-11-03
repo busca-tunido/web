@@ -19,9 +19,9 @@ import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
 import { translateApiError } from '@/lib/error-translator';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
+import type { DetectedUniversityDto } from '@/lib/types';
 import { type StudentRegisterInput, studentRegisterSchema } from '@/lib/validations/auth.schema';
 import { authService } from '@/services/auth.service';
-import type { DetectedUniversityDto } from '@/types/api-contracts';
 
 export type StudentRegisterModalProps = {
   isOpen: boolean;

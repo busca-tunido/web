@@ -881,6 +881,17 @@ export interface components {
       walkingMinutes?: number;
       university: components['schemas']['NearbyUniversityItemDto'];
     };
+    PensionNearestUniversitySummaryDto: {
+      /** @example Universidad de Chile */
+      name: string;
+      /** @example UCHILE */
+      shortName?: string | null;
+      /**
+       * @description Distance in meters
+       * @example 450
+       */
+      distanceMeters: number;
+    };
     /** @enum {string} */
     BathType: 'PRIVATE' | 'SHARED';
     PensionRoomSummaryDto: {
@@ -989,6 +1000,14 @@ export interface components {
       images: components['schemas']['PensionImageResponseDto'][];
       amenities: components['schemas']['PensionAmenityResponseDto'][];
       nearbyUniversities: components['schemas']['PensionNearbyUniversityResponseDto'][];
+      nearestUniversity?: components['schemas']['PensionNearestUniversitySummaryDto'];
+      /**
+       * @example [
+       *       "wifi-alta-velocidad",
+       *       "comida-incluida"
+       *     ]
+       */
+      amenitySlugs?: string[];
       rooms: components['schemas']['PensionRoomSummaryDto'][];
       _count: components['schemas']['PensionCountDto'];
     };

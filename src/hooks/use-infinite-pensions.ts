@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchPaginatedPensions } from '@/lib/api-client';
+import { isApiSuccess } from '@/lib/api-response';
 import type { NearbyCityCount, PensionItem, SearchFilters } from '@/lib/types';
+import { fetchPaginatedPensions } from '@/services/pensions.service';
 
 export type UseInfinitePensionsOptions = {
   filters?: SearchFilters;
@@ -77,12 +78,16 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
         limit,
       });
 
+      if (!isApiSuccess(res)) {
+        throw new Error(res.message);
+      }
+
       if (requestId === activeRequestIdRef.current && isMountedRef.current) {
-        setItems(res.items);
+        setItems(res.data.items);
         setPage(1);
-        setHasMore(res.pagination.hasMore);
-        setTotal(res.pagination.total);
-        setNearbyCityCounts(res.nearbyCityCounts);
+        setHasMore(res.data.hasMore ?? res.data.pagination?.hasMore ?? false);
+        setTotal(res.data.total ?? res.data.pagination?.total ?? 0);
+        setNearbyCityCounts(res.data.nearbyCityCounts ?? []);
       }
     } catch (err) {
       if (requestId === activeRequestIdRef.current && isMountedRef.current) {
@@ -144,17 +149,21 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
         limit,
       });
 
+      if (!isApiSuccess(res)) {
+        throw new Error(res.message);
+      }
+
       if (isMountedRef.current) {
         setItems((prev) => {
           const existingIds = new Set(prev.map((i) => i.id));
-          const uniqueNew = res.items.filter((i) => !existingIds.has(i.id));
+          const uniqueNew = res.data.items.filter((i) => !existingIds.has(i.id));
           return [...prev, ...uniqueNew];
         });
         setPage(nextPage);
-        setHasMore(res.pagination.hasMore);
-        setTotal(res.pagination.total);
-        if (res.nearbyCityCounts && res.nearbyCityCounts.length > 0) {
-          setNearbyCityCounts(res.nearbyCityCounts);
+        setHasMore(res.data.hasMore ?? res.data.pagination?.hasMore ?? false);
+        setTotal(res.data.total ?? res.data.pagination?.total ?? 0);
+        if (res.data.nearbyCityCounts && res.data.nearbyCityCounts.length > 0) {
+          setNearbyCityCounts(res.data.nearbyCityCounts);
         }
       }
     } catch (err) {

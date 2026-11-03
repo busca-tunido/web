@@ -2,8 +2,8 @@
 
 import { useCallback, useState } from 'react';
 import { isApiSuccess } from '@/lib/api-response';
+import type { CreateProposalDto } from '@/lib/types';
 import { submitPensionProposal } from '@/services/proposals.service';
-import type { CreateProposalDto } from '@/types/api-contracts';
 
 export function useSuggestEdit(pensionId: string) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);

@@ -64,7 +64,6 @@ describe('ExploreScreen Skeletons', () => {
       {
         id: 'c1',
         name: 'Santiago',
-        region: 'Región Metropolitana',
         pensionsCount: 42,
         imageUrl: 'https://example.com/santiago.webp',
         latitude: -33.4489,
@@ -78,8 +77,10 @@ describe('ExploreScreen Skeletons', () => {
         name: 'Universidad de Chile',
         acronym: 'UCH',
         city: 'Santiago',
-        domains: ['uchile.cl'],
-        pensionsNearbyCount: 25,
+        _count: {
+          nearbyPensions: 25,
+          students: 100,
+        },
         imageUrl: 'https://example.com/uchile.webp',
         latitude: -33.444,
         longitude: -70.655,

@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { isApiSuccess } from '@/lib/api-response';
+import type { FavoritePensionSummaryDto } from '@/lib/types';
 import { favoritesService } from '@/services/favorites.service';
-import type { PensionItemDto } from '@/types/api-contracts';
 
 export function useStudentFavorites(initialFavorites?: string[]) {
   const [favorites, setFavorites] = useState<string[]>(initialFavorites ?? []);
-  const [favoritePensions, setFavoritePensions] = useState<PensionItemDto[]>([]);
+  const [favoritePensions, setFavoritePensions] = useState<FavoritePensionSummaryDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 

@@ -259,11 +259,11 @@ describe('Rating Tier & Semaforo Logic', () => {
       id: 'p-no-wifi',
       ratingAverage: 4.8,
       reviewsCount: 10,
-      includesWifi: false,
-      isVerified: true,
-      includesStudyRoom: true,
-      distanceToUniversityMeters: 500,
-    } as PensionItem;
+      internetIncluded: false,
+      verificationStatus: 'OFFICIALLY_VERIFIED',
+      amenitySlugs: ['sala-estudio-cowork'],
+      nearestUniversity: { name: 'U', distanceMeters: 500 },
+    } as unknown as PensionItem;
     const resultNoWifi = classifyPensionRating(pensionWithoutWifi);
     expect(resultNoWifi.tier).toBe('medium');
     expect(resultNoWifi.label).toBe('Experiencia positiva');
@@ -272,11 +272,11 @@ describe('Rating Tier & Semaforo Logic', () => {
       id: 'p-complete',
       ratingAverage: 4.3,
       reviewsCount: 6,
-      includesWifi: true,
-      isVerified: true,
-      includesStudyRoom: true,
-      distanceToUniversityMeters: 800,
-    } as PensionItem;
+      internetIncluded: true,
+      verificationStatus: 'OFFICIALLY_VERIFIED',
+      amenitySlugs: ['sala-estudio-cowork'],
+      nearestUniversity: { name: 'U', distanceMeters: 800 },
+    } as unknown as PensionItem;
     const resultComplete = classifyPensionRating(pensionComplete);
     expect(resultComplete.tier).toBe('high');
     expect(resultComplete.label).toBe('Favoritas de la comunidad');

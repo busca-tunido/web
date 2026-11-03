@@ -42,13 +42,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useLandlord } from '@/contexts/landlord-context';
-import { mapRawPensionToPensionItem } from '@/lib/api-client';
 import { isApiSuccess } from '@/lib/api-response';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
-import type { PensionItem } from '@/lib/types';
+import type {
+  GenderPreference,
+  PensionDetailDto,
+  PensionItem,
+  UpdatePensionDto,
+} from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { pensionsService } from '@/services/pensions.service';
-import type { PensionDetailDto, UpdatePensionDto } from '@/types/api-contracts';
 
 export type LandlordPensionScreenProps = {
   pension?: PensionItem | PensionDetailDto | null;
@@ -57,7 +60,7 @@ export type LandlordPensionScreenProps = {
   className?: string;
 };
 
-type GenderPref = 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY';
+type GenderPref = GenderPreference;
 
 type FormState = {
   waterIncluded: boolean;
@@ -205,9 +208,7 @@ export function LandlordPensionScreen({
         waterIncluded: Boolean(p.waterIncluded),
         electricityIncluded: Boolean(p.electricityIncluded),
         gasIncluded: Boolean(p.gasIncluded),
-        internetIncluded: isPensionItemDto
-          ? Boolean(p.internetIncluded)
-          : Boolean((p as PensionItem).includesWifi),
+        internetIncluded: Boolean(p.internetIncluded),
         guestsAllowed: Boolean(p.guestsAllowed),
         smokingAllowed: Boolean(p.smokingAllowed),
         petsAllowed: Boolean(p.petsAllowed),
@@ -354,16 +355,12 @@ export function LandlordPensionScreen({
   const previewPensionItem: PensionItem | null = useMemo(() => {
     if (!activePension) return null;
 
-    const mapped = mapRawPensionToPensionItem(activePension as Record<string, unknown>);
     return {
-      ...mapped,
+      ...activePension,
       genderPreference: form.genderPreference,
-      includesWifi: form.internetIncluded,
-      curfewDescription:
-        form.hasCurfew && form.curfewTime
-          ? `Llegada hasta las ${form.curfewTime}`
-          : 'Sin horario límite de llegada',
-      visitsPolicy: form.guestsAllowed ? 'Visitas permitidas' : 'No se permiten visitas externas',
+      internetIncluded: form.internetIncluded,
+      curfewTime: form.hasCurfew && form.curfewTime ? form.curfewTime : null,
+      guestsAllowed: form.guestsAllowed,
     };
   }, [activePension, form]);
 

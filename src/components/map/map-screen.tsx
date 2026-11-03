@@ -31,10 +31,15 @@ import {
   getMarkerThemeStyles,
 } from '@/lib/rating-tier';
 import { useTheme } from '@/lib/theme-context';
-import type { CityInfo, PensionItem, SearchFilters, UniversityInfo } from '@/lib/types';
+import type {
+  CampusAreaDto,
+  CityInfo,
+  PensionItem,
+  SearchFilters,
+  UniversityInfo,
+} from '@/lib/types';
 import { findClosestCity, type UserCoordinates } from '@/lib/use-user-location';
 import { fetchCampusAreas } from '@/services/universities.service';
-import type { CampusAreaDto } from '@/types/api-contracts';
 
 type MapScreenProps = {
   pensions: PensionItem[];
@@ -78,8 +83,8 @@ function computeClusters(
       pensions: [p],
       isSelected: p.id === activePinId,
       isSingle: true,
-      minPrice: p.priceMonthlyClp,
-      maxPrice: p.priceMonthlyClp,
+      minPrice: p.baseMonthlyPrice,
+      maxPrice: p.baseMonthlyPrice,
     }));
   }
 
@@ -129,8 +134,8 @@ function computeClusters(
     for (const p of g.items) {
       totalLat += p.latitude;
       totalLng += p.longitude;
-      if (p.priceMonthlyClp < minPrice) minPrice = p.priceMonthlyClp;
-      if (p.priceMonthlyClp > maxPrice) maxPrice = p.priceMonthlyClp;
+      if (p.baseMonthlyPrice < minPrice) minPrice = p.baseMonthlyPrice;
+      if (p.baseMonthlyPrice > maxPrice) maxPrice = p.baseMonthlyPrice;
     }
 
     const count = g.items.length;
@@ -192,7 +197,7 @@ function createMarkerIcon(
       });
     }
 
-    const formattedPrice = `$${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP`;
+    const formattedPrice = `$${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP`;
     const opacityVal = cluster.isSelected ? 1 : styles.opacity;
     const opacityStyle = opacityVal < 1 ? `opacity: ${opacityVal};` : '';
 
@@ -1393,9 +1398,9 @@ function MapDrawerPensionList({
               className="w-full flex flex-col text-left cursor-pointer"
             >
               <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm flex items-center justify-center">
-                {pension.photos[0] ? (
+                {pension.images?.[0]?.url ? (
                   <Image
-                    src={pension.photos[0]}
+                    src={pension.images[0].url}
                     alt={pension.title}
                     fill
                     unoptimized
@@ -1407,7 +1412,8 @@ function MapDrawerPensionList({
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
-                {pension.isVerified && (
+                {(pension.verificationStatus === 'OFFICIALLY_VERIFIED' ||
+                  pension.verificationStatus === 'COMMUNITY_VERIFIED') && (
                   <div className="absolute bottom-3 left-3">
                     <span className="flex items-center gap-1 rounded-full bg-sage/90 px-2.5 py-0.5 text-[11px] font-semibold text-white dark:text-zinc-950 backdrop-blur-md shadow-sm">
                       <ShieldCheck className="h-3 w-3" />
@@ -1436,7 +1442,7 @@ function MapDrawerPensionList({
 
                 <div className="mt-0.5 flex items-baseline gap-1">
                   <span className="text-base font-bold text-foreground">
-                    ${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP
+                    ${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP
                   </span>
                   <span className="text-xs text-muted-foreground">/ mes</span>
                 </div>

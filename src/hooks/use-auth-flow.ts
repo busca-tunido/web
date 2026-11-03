@@ -3,19 +3,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
+import type { DetectedUniversityDto, RegisterDto } from '@/lib/types';
 import { emailCheckSchema } from '@/lib/validations/auth.schema';
 import { authService } from '@/services/auth.service';
-import type { DetectedUniversityDto } from '@/types/api-contracts';
 
 export type AuthFlowStep = 'email' | 'password';
 
-export type StudentRegisterPayload = {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  universityId: string;
-  phone?: string;
+export type StudentRegisterPayload = RegisterDto & {
   termsAccepted: true;
 };
 

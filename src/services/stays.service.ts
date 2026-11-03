@@ -1,18 +1,10 @@
-import { apiFetch } from '@/lib/api-client-base';
-import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
+import { apiFetch, wrapApiResponse } from '@/lib/api-fetch';
+import type { ApiResponse } from '@/lib/api-response';
 import type { StayHistoryItem } from '@/lib/types';
 
 export async function fetchStudentStays(): Promise<ApiResponse<StayHistoryItem[]>> {
-  const response = await apiFetch<StayHistoryItem[]>('/stays', {
-    method: 'GET',
-  });
-
-  if (!isApiSuccess(response)) {
-    return response;
-  }
-
-  const list = Array.isArray(response.data) ? response.data : [];
-  return createSuccess<StayHistoryItem[]>(list, response.statusCode);
+  const result = await apiFetch.GET('/stays');
+  return wrapApiResponse<StayHistoryItem[]>(result, 'Error al obtener historial de estancias');
 }
 
 export const staysService = {

@@ -119,7 +119,7 @@ export function PensionReviewsPreview({
                             {review.user?.firstName || 'Estudiante'}{' '}
                             {review.user?.lastName ? `${review.user.lastName.charAt(0)}.` : ''}
                           </span>
-                          {(review.isResidentVerified || review.isVerifiedStudent) && (
+                          {review.isVerifiedStay && (
                             <CheckCircle2 className="h-3 w-3 text-sage-foreground shrink-0" />
                           )}
                         </div>

@@ -1,61 +1,44 @@
-import { apiFetch } from '@/lib/api-client-base';
+import { apiFetch, wrapApiResponse } from '@/lib/api-fetch';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
-import type { components } from '@/lib/api-schema';
-import { mapPensionItemDto } from '@/services/pensions.service';
-import type { PensionItemDto } from '@/types/api-contracts';
+import type { FavoriteItemDto, FavoritePensionSummaryDto } from '@/lib/types';
 
-export type FavoriteItemDto = components['schemas']['FavoriteItemResponseDto'];
-
-function normalizePensionItem(raw: FavoriteItemDto | Record<string, unknown>): PensionItemDto {
-  const p = ('pension' in raw && raw.pension ? raw.pension : raw) as Record<string, unknown>;
-  return mapPensionItemDto(p);
-}
-
-export async function fetchStudentFavorites(): Promise<ApiResponse<PensionItemDto[]>> {
-  const response = await apiFetch<FavoriteItemDto[]>('/favorites', {
-    method: 'GET',
-  });
-
-  if (isApiSuccess(response)) {
-    const list = Array.isArray(response.data) ? response.data : [];
-    const items = list.map(normalizePensionItem);
-    return createSuccess<PensionItemDto[]>(items, response.statusCode);
+export async function fetchStudentFavorites(): Promise<ApiResponse<FavoritePensionSummaryDto[]>> {
+  const result = await apiFetch.GET('/favorites');
+  const res = wrapApiResponse<FavoriteItemDto[]>(result, 'Error al obtener favoritos');
+  if (isApiSuccess(res)) {
+    const list = Array.isArray(res.data) ? res.data : [];
+    const pensions = list.map((item) => item.pension);
+    return createSuccess<FavoritePensionSummaryDto[]>(pensions, res.statusCode);
   }
-
-  return response;
+  return res;
 }
 
 export async function addFavorite(pensionId: string): Promise<ApiResponse<{ success: boolean }>> {
-  const response = await apiFetch<{ added?: boolean }>(
-    `/favorites/${encodeURIComponent(pensionId)}`,
-    {
-      method: 'POST',
-      body: JSON.stringify({}),
+  const result = await apiFetch.POST('/favorites/{pensionId}', {
+    params: {
+      path: { pensionId },
     },
-  );
-
-  if (isApiSuccess(response)) {
-    return createSuccess<{ success: boolean }>({ success: true }, response.statusCode);
+  });
+  const res = wrapApiResponse<{ added?: boolean }>(result, 'Error al agregar favorito');
+  if (isApiSuccess(res)) {
+    return createSuccess({ success: true }, res.statusCode);
   }
-
-  return response;
+  return res;
 }
 
 export async function removeFavorite(
   pensionId: string,
 ): Promise<ApiResponse<{ success: boolean }>> {
-  const response = await apiFetch<{ removed?: boolean }>(
-    `/favorites/${encodeURIComponent(pensionId)}`,
-    {
-      method: 'DELETE',
+  const result = await apiFetch.DELETE('/favorites/{pensionId}', {
+    params: {
+      path: { pensionId },
     },
-  );
-
-  if (isApiSuccess(response)) {
-    return createSuccess<{ success: boolean }>({ success: true }, response.statusCode);
+  });
+  const res = wrapApiResponse<{ removed?: boolean }>(result, 'Error al eliminar favorito');
+  if (isApiSuccess(res)) {
+    return createSuccess({ success: true }, res.statusCode);
   }
-
-  return response;
+  return res;
 }
 
 export async function toggleFavorite(
@@ -65,14 +48,14 @@ export async function toggleFavorite(
   if (isCurrentlyFav) {
     const res = await removeFavorite(pensionId);
     if (isApiSuccess(res)) {
-      return createSuccess<{ isFavorite: boolean }>({ isFavorite: false }, res.statusCode);
+      return createSuccess({ isFavorite: false }, res.statusCode);
     }
     return res;
   }
 
   const res = await addFavorite(pensionId);
   if (isApiSuccess(res)) {
-    return createSuccess<{ isFavorite: boolean }>({ isFavorite: true }, res.statusCode);
+    return createSuccess({ isFavorite: true }, res.statusCode);
   }
   return res;
 }

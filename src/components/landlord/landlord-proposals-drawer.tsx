@@ -27,9 +27,9 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer';
 import { isApiSuccess } from '@/lib/api-response';
+import type { PensionDetailDto, ProposalDto } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 import { proposalsService } from '@/services/proposals.service';
-import type { PensionDetailDto, ProposalDto } from '@/types/api-contracts';
 
 export type LandlordProposalsDrawerProps = {
   isOpen: boolean;

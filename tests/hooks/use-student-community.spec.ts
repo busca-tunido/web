@@ -8,7 +8,7 @@ import {
 } from '@/hooks/use-stay-history';
 import { useStudentFavorites } from '@/hooks/use-student-favorites';
 import { createError, createSuccess } from '@/lib/api-response';
-import type { PensionItemDto } from '@/types/api-contracts';
+import type { PensionItemDto } from '@/lib/types';
 import { favoritesService } from '@/services/favorites.service';
 import { reviewsService } from '@/services/reviews.service';
 import { staysService } from '@/services/stays.service';

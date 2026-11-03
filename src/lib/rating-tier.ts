@@ -73,18 +73,19 @@ export function classifyPensionRating(
     (count / (count + confidenceInertia)) * rating +
     (confidenceInertia / (count + confidenceInertia)) * priorMean;
 
-  const isVerified = options.isVerified === true;
-  const hasWifi =
-    typeof options.includesWifi === 'boolean'
-      ? options.includesWifi
-      : typeof options.internetIncluded === 'boolean'
-        ? options.internetIncluded
-        : true;
-  const hasStudyRoom = options.includesStudyRoom === true;
-  const hasProximity =
-    typeof options.distanceToUniversityMeters === 'number' &&
-    options.distanceToUniversityMeters > 0 &&
-    options.distanceToUniversityMeters <= 1200;
+  const isVerified =
+    options.verificationStatus === 'OFFICIALLY_VERIFIED' ||
+    options.verificationStatus === 'COMMUNITY_VERIFIED';
+  const hasWifi = typeof options.internetIncluded === 'boolean' ? options.internetIncluded : true;
+  const hasStudyRoom = Boolean(
+    options.amenitySlugs?.includes('sala-estudio-cowork') ||
+      options.amenities?.some(
+        (a) => (typeof a === 'string' ? a : a.slug) === 'sala-estudio-cowork',
+      ),
+  );
+  const distance =
+    options.nearestUniversity?.distanceMeters ?? options.nearbyUniversities?.[0]?.distanceMeters;
+  const hasProximity = typeof distance === 'number' && distance > 0 && distance <= 1200;
 
   const deltaVerif = isVerified ? 0.25 : 0;
   const deltaWifi = hasWifi ? 0.1 : 0;

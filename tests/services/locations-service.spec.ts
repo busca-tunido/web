@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import * as apiClient from '@/lib/api-client-base';
-import { createError, createSuccess, isApiSuccess } from '@/lib/api-response';
+import { apiFetch } from '@/lib/api-fetch';
+import { isApiSuccess } from '@/lib/api-response';
 import { locationsService } from '@/services/locations.service';
-import * as universitiesService from '@/services/universities.service';
 
 describe('locationsService.fetchCities', () => {
   beforeEach(() => {
@@ -10,28 +9,35 @@ describe('locationsService.fetchCities', () => {
   });
 
   it('should fetch cities from /cities endpoint with absolute pension counts', async () => {
-    vi.spyOn(apiClient, 'apiFetch').mockResolvedValue(
-      createSuccess([
-        {
-          id: 'santiago',
-          name: 'Santiago',
-          pensionsCount: 35,
-          latitude: -33.45,
-          longitude: -70.66,
-        },
-        {
-          id: 'concepcion',
-          name: 'Concepción',
-          pensionsCount: 25,
-          latitude: -36.82,
-          longitude: -73.05,
-        },
-      ]),
-    );
+    vi.spyOn(apiFetch, 'GET').mockResolvedValue({
+      data: {
+        success: true,
+        statusCode: 200,
+        timestamp: '',
+        data: [
+          {
+            id: 'santiago',
+            name: 'Santiago',
+            pensionsCount: 35,
+            latitude: -33.45,
+            longitude: -70.66,
+          },
+          {
+            id: 'concepcion',
+            name: 'Concepción',
+            pensionsCount: 25,
+            latitude: -36.82,
+            longitude: -73.05,
+          },
+        ],
+      },
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    } as any);
 
     const result = await locationsService.fetchCities();
 
-    expect(apiClient.apiFetch).toHaveBeenCalledWith('/cities', { method: 'GET' });
+    expect(apiFetch.GET).toHaveBeenCalledWith('/cities');
     expect(isApiSuccess(result)).toBe(true);
     if (isApiSuccess(result)) {
       expect(result.data).toHaveLength(2);
@@ -53,7 +59,18 @@ describe('locationsService.fetchCities', () => {
   });
 
   it('should return clean empty state when /cities fails without synthetic fallback', async () => {
-    vi.spyOn(apiClient, 'apiFetch').mockResolvedValue(createError('Not found', 404));
+    vi.spyOn(apiFetch, 'GET').mockResolvedValue({
+      data: undefined,
+      error: {
+        success: false,
+        statusCode: 404,
+        timestamp: '',
+        path: '/cities',
+        message: 'Not found',
+        errorCode: 'NOT_FOUND',
+      },
+      response: new Response(null, { status: 404 }),
+    } as any);
 
     const result = await locationsService.fetchCities();
 

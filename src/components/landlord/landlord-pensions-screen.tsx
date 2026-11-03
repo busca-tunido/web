@@ -137,7 +137,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
     const totalRooms = rooms.length;
     const availableRooms = rooms.filter((r) => r.isAvailable).length;
     const occupiedRooms = Math.max(0, totalRooms - availableRooms);
-    const coverPhoto = prop.photos?.[0];
+    const coverPhoto = prop.images?.[0]?.url;
     const contactInfo = getPensionContact(prop.id);
 
     return (
@@ -183,7 +183,8 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                     <h2 className="text-sm sm:text-base font-bold text-foreground truncate">
                       {prop.title}
                     </h2>
-                    {prop.isVerified && (
+                    {(prop.verificationStatus === 'OFFICIALLY_VERIFIED' ||
+                      prop.verificationStatus === 'COMMUNITY_VERIFIED') && (
                       <Badge
                         variant="outline"
                         className="border-sage/30 bg-sage/10 text-sage-foreground text-[10px] py-0 font-semibold"
@@ -258,19 +259,22 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
 
               <span className="text-border">•</span>
 
-              {prop.nearestUniversityName && (
+              {prop.nearestUniversity?.name && (
                 <>
                   <div className="flex items-center gap-1">
                     <GraduationCap className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <span className="truncate max-w-[200px] sm:max-w-xs text-foreground font-medium">
-                      {prop.nearestUniversityName}
+                      {prop.nearestUniversity.name}
                     </span>
-                    {prop.distanceToUniversityMeters > 0 && (
+                    {Boolean(
+                      prop.nearestUniversity.distanceMeters &&
+                        prop.nearestUniversity.distanceMeters > 0,
+                    ) && (
                       <span className="text-[10px]">
                         (
-                        {prop.distanceToUniversityMeters >= 1000
-                          ? `${(prop.distanceToUniversityMeters / 1000).toFixed(1)} km`
-                          : `${prop.distanceToUniversityMeters}m`}
+                        {prop.nearestUniversity.distanceMeters >= 1000
+                          ? `${(prop.nearestUniversity.distanceMeters / 1000).toFixed(1)} km`
+                          : `${prop.nearestUniversity.distanceMeters}m`}
                         )
                       </span>
                     )}
@@ -281,7 +285,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
 
               <div className="flex items-baseline gap-1 font-semibold text-foreground">
                 <span>
-                  ${prop.priceMonthlyClp ? prop.priceMonthlyClp.toLocaleString('es-CL') : '0'}
+                  ${prop.baseMonthlyPrice ? prop.baseMonthlyPrice.toLocaleString('es-CL') : '0'}
                 </span>
                 <span className="text-[10px] text-muted-foreground font-normal">/ mes</span>
               </div>

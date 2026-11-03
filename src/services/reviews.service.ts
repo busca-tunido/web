@@ -1,261 +1,92 @@
-import { apiFetch } from '@/lib/api-client-base';
+import { apiFetch, wrapApiResponse } from '@/lib/api-fetch';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
-import type { components } from '@/lib/api-schema';
+import type { paths } from '@/lib/api-schema';
 import type {
   CreateReviewDto,
   PaginatedReviewsResponse,
   ReviewItemDto,
   UpdateReviewDto,
   UserHelpfulVotesResponse,
-} from '@/types/api-contracts';
+} from '@/lib/types';
 
-export type PaginationQuery = {
-  page?: number;
-  limit?: number;
-};
-
-function mapRawReviewToItem(
-  raw: components['schemas']['ReviewResponseDto'] | Record<string, unknown>,
-): ReviewItemDto {
-  const user = ('user' in raw && raw.user ? raw.user : undefined) as
-    | {
-        id?: string;
-        firstName?: string;
-        lastName?: string;
-        avatarUrl?: string | null;
-        university?: { name?: string; shortName?: string | null } | null;
-      }
-    | undefined;
-  const helpfulCount = typeof raw.helpfulCount === 'number' ? raw.helpfulCount : 0;
-  const overall = Number(raw.overallRating ?? raw.rating ?? 0);
-  const isVerifiedStay = Boolean(raw.isVerifiedStay ?? raw.isResidentVerified);
-
-  return {
-    id: String(raw.id ?? ''),
-    pensionId: String(raw.pensionId ?? ''),
-    userId: String(raw.userId ?? ''),
-    rating: overall,
-    overallRating: overall,
-    cleanlinessRating:
-      raw.cleanlinessRating !== undefined && raw.cleanlinessRating !== null
-        ? Number(raw.cleanlinessRating)
-        : undefined,
-    landlordRating:
-      raw.landlordRating !== undefined && raw.landlordRating !== null
-        ? Number(raw.landlordRating)
-        : undefined,
-    ownerRating:
-      raw.landlordRating !== undefined && raw.landlordRating !== null
-        ? Number(raw.landlordRating)
-        : undefined,
-    locationRating:
-      raw.locationRating !== undefined && raw.locationRating !== null
-        ? Number(raw.locationRating)
-        : undefined,
-    quietnessRating:
-      raw.quietnessRating !== undefined && raw.quietnessRating !== null
-        ? Number(raw.quietnessRating)
-        : undefined,
-    wifiRating:
-      raw.wifiRating !== undefined && raw.wifiRating !== null ? Number(raw.wifiRating) : undefined,
-    comment: String(raw.comment ?? ''),
-    stayDurationCategory:
-      (raw.stayDurationCategory as components['schemas']['StayDurationCategory']) ?? undefined,
-    images: Array.isArray(raw.images) ? (raw.images as string[]) : [],
-    isVerifiedStay,
-    isResidentVerified: isVerifiedStay,
-    isAnonymous: Boolean(raw.isAnonymous),
-    helpfulCount,
-    createdAt: raw.createdAt
-      ? raw.createdAt instanceof Date
-        ? raw.createdAt.toISOString()
-        : String(raw.createdAt)
-      : '',
-    user: user
-      ? {
-          id: String(user.id ?? raw.userId ?? ''),
-          firstName: user.firstName ?? '',
-          lastName: user.lastName ?? '',
-          avatarUrl: user.avatarUrl ?? null,
-          university: user.university ?? null,
-        }
-      : undefined,
-  };
-}
+export type PaginationQuery = NonNullable<
+  paths['/pensions/{pensionId}/reviews']['get']['parameters']['query']
+>;
 
 export async function fetchPensionReviews(
   pensionId: string,
   query?: PaginationQuery,
 ): Promise<ApiResponse<PaginatedReviewsResponse>> {
-  const queryParams = new URLSearchParams();
-  if (query?.page) {
-    queryParams.set('page', String(query.page));
-  }
-  if (query?.limit) {
-    queryParams.set('limit', String(query.limit));
-  }
-  const queryString = queryParams.toString();
-  const endpoint = `/pensions/${encodeURIComponent(pensionId)}/reviews${queryString ? `?${queryString}` : ''}`;
-
-  const response = await apiFetch<
-    components['schemas']['ReviewResponseDto'][] | Record<string, unknown>
-  >(endpoint, {
-    method: 'GET',
+  const result = await apiFetch.GET('/pensions/{pensionId}/reviews', {
+    params: {
+      path: { pensionId },
+      query,
+    },
   });
-
-  if (isApiSuccess(response)) {
-    if (Array.isArray(response.data)) {
-      const allMapped = response.data.map(mapRawReviewToItem);
-      const page = query?.page ?? 1;
-      const limit = query?.limit ?? (allMapped.length || 10);
-      const startIndex = (page - 1) * limit;
-      const paginatedItems = allMapped.slice(startIndex, startIndex + limit);
-
-      const totalPages = Math.ceil(allMapped.length / limit) || 1;
-      const hasMore = startIndex + limit < allMapped.length;
-
-      return createSuccess<PaginatedReviewsResponse>(
-        {
-          items: paginatedItems,
-          total: allMapped.length,
-          page,
-          limit,
-          totalPages,
-          hasMore,
-          pagination: {
-            page,
-            limit,
-            total: allMapped.length,
-            totalPages,
-            hasMore,
-          },
-        },
-        response.statusCode,
-      );
-    }
-
-    const rawData = response.data as Record<string, unknown>;
-    const rawItems = Array.isArray(rawData?.items)
-      ? (rawData.items as components['schemas']['ReviewResponseDto'][])
-      : [];
-    const page = typeof rawData?.page === 'number' ? rawData.page : (query?.page ?? 1);
-    const limit =
-      typeof rawData?.limit === 'number'
-        ? rawData.limit
-        : (query?.limit ?? (rawItems.length || 10));
-    const total = typeof rawData?.total === 'number' ? rawData.total : rawItems.length;
-    const totalPages = Math.ceil(total / limit) || 1;
-    const hasMore = typeof rawData?.hasMore === 'boolean' ? rawData.hasMore : page * limit < total;
-
-    return createSuccess<PaginatedReviewsResponse>(
-      {
-        items: rawItems.map(mapRawReviewToItem),
-        total,
-        page,
-        limit,
-        totalPages,
-        hasMore,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages,
-          hasMore,
-        },
-      },
-      response.statusCode,
-    );
-  }
-
-  return response;
+  return wrapApiResponse<PaginatedReviewsResponse>(result, 'Error al obtener reseñas');
 }
 
-export async function createPensionReview(
+export async function createReview(
   pensionId: string,
   payload: CreateReviewDto,
 ): Promise<ApiResponse<ReviewItemDto>> {
-  const response = await apiFetch<components['schemas']['ReviewResponseDto']>(
-    `/pensions/${encodeURIComponent(pensionId)}/reviews`,
-    {
-      method: 'POST',
-      body: JSON.stringify(payload),
+  const result = await apiFetch.POST('/pensions/{pensionId}/reviews', {
+    params: {
+      path: { pensionId },
     },
-  );
-
-  if (isApiSuccess(response)) {
-    return createSuccess<ReviewItemDto>(mapRawReviewToItem(response.data), response.statusCode);
-  }
-
-  return response;
+    body: payload,
+  });
+  return wrapApiResponse<ReviewItemDto>(result, 'Error al publicar la reseña');
 }
 
 export async function updateReview(
   reviewId: string,
   payload: UpdateReviewDto,
 ): Promise<ApiResponse<ReviewItemDto>> {
-  const response = await apiFetch<components['schemas']['ReviewResponseDto']>(
-    `/reviews/${encodeURIComponent(reviewId)}`,
-    {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
+  const result = await apiFetch.PATCH('/reviews/{id}', {
+    params: {
+      path: { id: reviewId },
     },
-  );
-
-  if (isApiSuccess(response)) {
-    return createSuccess<ReviewItemDto>(mapRawReviewToItem(response.data), response.statusCode);
-  }
-
-  return response;
+    body: payload,
+  });
+  return wrapApiResponse<ReviewItemDto>(result, 'Error al actualizar reseña');
 }
 
 export async function deleteReview(reviewId: string): Promise<ApiResponse<{ success: boolean }>> {
-  const response = await apiFetch<{ id?: string; deleted?: boolean }>(
-    `/reviews/${encodeURIComponent(reviewId)}`,
-    {
-      method: 'DELETE',
+  const result = await apiFetch.DELETE('/reviews/{id}', {
+    params: {
+      path: { id: reviewId },
     },
-  );
-
-  if (isApiSuccess(response)) {
-    return createSuccess<{ success: boolean }>({ success: true }, response.statusCode);
+  });
+  const res = wrapApiResponse<{ deleted?: boolean }>(result, 'Error al eliminar reseña');
+  if (isApiSuccess(res)) {
+    return createSuccess({ success: res.data.deleted ?? true }, res.statusCode);
   }
-
-  return response;
+  return res;
 }
 
 export async function voteReviewHelpful(
   reviewId: string,
-): Promise<ApiResponse<{ helpfulCount: number; voted: boolean }>> {
-  const response = await apiFetch<{ helpfulCount?: number; voted?: boolean }>(
-    `/reviews/${encodeURIComponent(reviewId)}/helpful`,
-    {
-      method: 'POST',
+): Promise<ApiResponse<{ voted: boolean; helpfulCount: number }>> {
+  const result = await apiFetch.POST('/reviews/{id}/helpful', {
+    params: {
+      path: { id: reviewId },
     },
+  });
+  return wrapApiResponse<{ voted: boolean; helpfulCount: number }>(
+    result,
+    'Error al registrar voto',
   );
-
-  if (isApiSuccess(response)) {
-    return createSuccess(
-      {
-        helpfulCount: response.data.helpfulCount ?? 0,
-        voted: Boolean(response.data.voted),
-      },
-      response.statusCode,
-    );
-  }
-
-  return response;
 }
 
 export async function fetchUserHelpfulVotes(): Promise<ApiResponse<UserHelpfulVotesResponse>> {
-  return apiFetch<UserHelpfulVotesResponse>('/reviews/helpful/voted', {
-    method: 'GET',
-  });
+  const result = await apiFetch.GET('/reviews/helpful/voted');
+  return wrapApiResponse<UserHelpfulVotesResponse>(result, 'Error al obtener votos de utilidad');
 }
 
 export const reviewsService = {
   fetchPensionReviews,
-  createPensionReview,
-  createReview: createPensionReview,
+  createReview,
   updateReview,
   deleteReview,
   voteReviewHelpful,

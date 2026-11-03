@@ -1,82 +1,37 @@
-import { apiFetch } from '@/lib/api-client-base';
-import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
+import { apiFetch, wrapApiResponse } from '@/lib/api-fetch';
+import type { ApiResponse } from '@/lib/api-response';
 import type { paths } from '@/lib/api-schema';
-import type { CreateReportDto, ReportDto, UpdateReportDto } from '@/types/api-contracts';
+import type { CreateReportDto, ReportDto, UpdateReportDto } from '@/lib/types';
 
 export type ReportFilterQuery = NonNullable<paths['/reports']['get']['parameters']['query']>;
 
-type RawReport = {
-  id: string;
-  pensionId: string;
-  userId: string;
-  reason: string;
-  description: string;
-  status: 'PENDING' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED' | string;
-  resolutionNotes?: string | null;
-  createdAt: string;
-};
-
-function normalizeReport(raw: RawReport): ReportDto {
-  return {
-    id: raw.id,
-    pensionId: raw.pensionId,
-    userId: raw.userId,
-    reason: raw.reason,
-    description: raw.description,
-    status: (raw.status as ReportDto['status']) ?? 'PENDING',
-    resolutionNotes: raw.resolutionNotes ?? undefined,
-    createdAt: String(raw.createdAt),
-    updatedAt: String(raw.createdAt),
-  };
-}
-
 export async function fetchReports(query?: ReportFilterQuery): Promise<ApiResponse<ReportDto[]>> {
-  const queryParams = new URLSearchParams();
-  if (query?.status) {
-    queryParams.set('status', query.status);
-  }
-  const queryString = queryParams.toString();
-  const endpoint = `/reports${queryString ? `?${queryString}` : ''}`;
-
-  const response = await apiFetch<RawReport[]>(endpoint, {
-    method: 'GET',
+  const result = await apiFetch.GET('/reports', {
+    params: {
+      query,
+    },
   });
-
-  if (isApiSuccess(response)) {
-    const list = Array.isArray(response.data) ? response.data : [];
-    return createSuccess<ReportDto[]>(list.map(normalizeReport), response.statusCode);
-  }
-
-  return response;
+  return wrapApiResponse<ReportDto[]>(result, 'Error al obtener reportes');
 }
 
 export async function submitReport(payload: CreateReportDto): Promise<ApiResponse<ReportDto>> {
-  const response = await apiFetch<RawReport>('/reports', {
-    method: 'POST',
-    body: JSON.stringify(payload),
+  const result = await apiFetch.POST('/reports', {
+    body: payload,
   });
-
-  if (isApiSuccess(response)) {
-    return createSuccess<ReportDto>(normalizeReport(response.data), response.statusCode);
-  }
-
-  return response;
+  return wrapApiResponse<ReportDto>(result, 'Error al enviar reporte');
 }
 
 export async function updateReportStatus(
   id: string,
   payload: UpdateReportDto,
 ): Promise<ApiResponse<ReportDto>> {
-  const response = await apiFetch<RawReport>(`/reports/${encodeURIComponent(id)}`, {
-    method: 'PATCH',
-    body: JSON.stringify(payload),
+  const result = await apiFetch.PATCH('/reports/{id}', {
+    params: {
+      path: { id },
+    },
+    body: payload,
   });
-
-  if (isApiSuccess(response)) {
-    return createSuccess<ReportDto>(normalizeReport(response.data), response.statusCode);
-  }
-
-  return response;
+  return wrapApiResponse<ReportDto>(result, 'Error al actualizar reporte');
 }
 
 export const reportsService = {

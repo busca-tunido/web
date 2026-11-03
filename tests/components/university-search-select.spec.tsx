@@ -4,7 +4,7 @@ import {
   filterUniversities,
   UniversitySearchSelect,
 } from '@/components/auth/university-search-select';
-import type { UniversityDto } from '@/types/api-contracts';
+import type { UniversityDto } from '@/lib/types';
 
 const mockUniversities: UniversityDto[] = [
   {

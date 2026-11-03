@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { StudentRegisterModal } from '@/components/auth/student-register-modal';
 import { authService } from '@/services/auth.service';
-import type { DetectedUniversityDto } from '@/types/api-contracts';
+import type { DetectedUniversityDto } from '@/lib/types';
 
 const mockLogin = vi.fn().mockResolvedValue(undefined);
 

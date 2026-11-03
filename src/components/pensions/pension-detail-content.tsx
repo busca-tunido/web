@@ -81,12 +81,14 @@ export function PensionDetailContent({
     reloadReviews();
   };
 
+  const displayPhotos = pension.images?.map((img) => img.url) ?? [];
+
   return (
     <div className="flex flex-col w-full">
       <div className="relative h-64 sm:h-80 md:h-96 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm">
-        {(pension.photos[activePhotoIdx] ?? pension.photos[0]) ? (
+        {(displayPhotos[activePhotoIdx] ?? displayPhotos[0]) ? (
           <Image
-            src={pension.photos[activePhotoIdx] ?? pension.photos[0]}
+            src={displayPhotos[activePhotoIdx] ?? displayPhotos[0]}
             alt={pension.title}
             fill
             unoptimized
@@ -131,7 +133,7 @@ export function PensionDetailContent({
 
         <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
           <div className="flex gap-1.5">
-            {pension.photos.map((photoUrl, i) => (
+            {displayPhotos.map((photoUrl, i) => (
               <button
                 key={`photo-dot-${pension.id}-${i}-${photoUrl}`}
                 type="button"
@@ -144,14 +146,15 @@ export function PensionDetailContent({
             ))}
           </div>
           <Badge className="bg-primary text-primary-foreground font-bold text-xs shadow">
-            ${pension.priceMonthlyClp.toLocaleString('es-CL')} CLP/mes
+            ${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP/mes
           </Badge>
         </div>
       </div>
 
       <div className="flex flex-col gap-1 mb-4">
         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-          {pension.isVerified && (
+          {(pension.verificationStatus === 'OFFICIALLY_VERIFIED' ||
+            pension.verificationStatus === 'COMMUNITY_VERIFIED') && (
             <Badge
               variant="outline"
               className="border-sage/30 bg-sage/10 text-sage-foreground gap-1 text-[11px] font-semibold"
@@ -189,15 +192,15 @@ export function PensionDetailContent({
       </div>
 
       {Boolean(
-        pension.distanceToUniversityMeters &&
-          pension.distanceToUniversityMeters > 0 &&
-          pension.nearestUniversityName,
+        pension.nearestUniversity?.distanceMeters &&
+          pension.nearestUniversity.distanceMeters > 0 &&
+          pension.nearestUniversity.name,
       ) && (
         <div className="mb-4 rounded-xl border border-sage/25 bg-sage/5 p-3">
           <div className="flex items-center gap-2 text-xs font-semibold text-sage-foreground">
             <MapPin className="h-3.5 w-3.5 shrink-0" />
             <span className="text-foreground">
-              A {pension.distanceToUniversityMeters}m de {pension.nearestUniversityName}
+              A {pension.nearestUniversity?.distanceMeters}m de {pension.nearestUniversity?.name}
             </span>
           </div>
         </div>
@@ -230,60 +233,87 @@ export function PensionDetailContent({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
           <div
             className={`flex items-center gap-2 rounded-lg border p-2.5 ${
-              pension.includesWifi
+              pension.internetIncluded
                 ? 'border-sage/25 bg-sage/8 text-foreground'
                 : 'border-border text-muted-foreground line-through opacity-50'
             }`}
           >
             <Wifi
               className={`h-4 w-4 shrink-0 ${
-                pension.includesWifi ? 'text-sage-foreground' : 'text-muted-foreground/60'
+                pension.internetIncluded ? 'text-sage-foreground' : 'text-muted-foreground/60'
               }`}
             />
             <span>WiFi Alta Velocidad</span>
           </div>
-          <div
-            className={`flex items-center gap-2 rounded-lg border p-2.5 ${
-              pension.includesMeals
-                ? 'border-sage/25 bg-sage/8 text-foreground'
-                : 'border-border text-muted-foreground opacity-50'
-            }`}
-          >
-            <Utensils
-              className={`h-4 w-4 shrink-0 ${
-                pension.includesMeals ? 'text-sage-foreground' : 'text-muted-foreground/60'
-              }`}
-            />
-            <span>{pension.includesMeals ? 'Comida incluida' : 'Sin alimentación'}</span>
-          </div>
-          <div
-            className={`flex items-center gap-2 rounded-lg border p-2.5 ${
-              pension.includesStudyRoom
-                ? 'border-sage/25 bg-sage/8 text-foreground'
-                : 'border-border text-muted-foreground opacity-50'
-            }`}
-          >
-            <BookOpen
-              className={`h-4 w-4 shrink-0 ${
-                pension.includesStudyRoom ? 'text-sage-foreground' : 'text-muted-foreground/60'
-              }`}
-            />
-            <span>Sala de Estudio</span>
-          </div>
-          <div
-            className={`flex items-center gap-2 rounded-lg border p-2.5 ${
-              pension.includesLaundry
-                ? 'border-sage/25 bg-sage/8 text-foreground'
-                : 'border-border text-muted-foreground opacity-50'
-            }`}
-          >
-            <Wind
-              className={`h-4 w-4 shrink-0 ${
-                pension.includesLaundry ? 'text-sage-foreground' : 'text-muted-foreground/60'
-              }`}
-            />
-            <span>Lavandería</span>
-          </div>
+          {(() => {
+            const hasMeals =
+              pension.amenitySlugs?.includes('comida-incluida') ||
+              pension.amenities?.some(
+                (a) => (typeof a === 'string' ? a : a.slug) === 'comida-incluida',
+              );
+            return (
+              <div
+                className={`flex items-center gap-2 rounded-lg border p-2.5 ${
+                  hasMeals
+                    ? 'border-sage/25 bg-sage/8 text-foreground'
+                    : 'border-border text-muted-foreground opacity-50'
+                }`}
+              >
+                <Utensils
+                  className={`h-4 w-4 shrink-0 ${
+                    hasMeals ? 'text-sage-foreground' : 'text-muted-foreground/60'
+                  }`}
+                />
+                <span>{hasMeals ? 'Comida incluida' : 'Sin alimentación'}</span>
+              </div>
+            );
+          })()}
+          {(() => {
+            const hasStudy =
+              pension.amenitySlugs?.includes('sala-estudio-cowork') ||
+              pension.amenities?.some(
+                (a) => (typeof a === 'string' ? a : a.slug) === 'sala-estudio-cowork',
+              );
+            return (
+              <div
+                className={`flex items-center gap-2 rounded-lg border p-2.5 ${
+                  hasStudy
+                    ? 'border-sage/25 bg-sage/8 text-foreground'
+                    : 'border-border text-muted-foreground opacity-50'
+                }`}
+              >
+                <BookOpen
+                  className={`h-4 w-4 shrink-0 ${
+                    hasStudy ? 'text-sage-foreground' : 'text-muted-foreground/60'
+                  }`}
+                />
+                <span>Sala de Estudio</span>
+              </div>
+            );
+          })()}
+          {(() => {
+            const hasLaundry =
+              pension.amenitySlugs?.includes('lavadora-secadora') ||
+              pension.amenities?.some(
+                (a) => (typeof a === 'string' ? a : a.slug) === 'lavadora-secadora',
+              );
+            return (
+              <div
+                className={`flex items-center gap-2 rounded-lg border p-2.5 ${
+                  hasLaundry
+                    ? 'border-sage/25 bg-sage/8 text-foreground'
+                    : 'border-border text-muted-foreground opacity-50'
+                }`}
+              >
+                <Wind
+                  className={`h-4 w-4 shrink-0 ${
+                    hasLaundry ? 'text-sage-foreground' : 'text-muted-foreground/60'
+                  }`}
+                />
+                <span>Lavandería</span>
+              </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -293,22 +323,22 @@ export function PensionDetailContent({
         onOpenFullReviews={() => setIsReviewsModalOpen(true)}
       />
 
-      {pension.curfewDescription && (
+      {Boolean(pension.curfewTime || pension.guestsAllowed !== undefined) && (
         <div className="mb-5 rounded-xl border border-border bg-muted/30 p-3.5">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
             Reglas de Convivencia
           </h2>
           <div className="flex flex-col gap-2 text-xs text-foreground/90">
-            <div className="flex items-start gap-2">
-              <Clock className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-              <span>{pension.curfewDescription}</span>
-            </div>
-            {pension.visitsPolicy && (
+            {pension.curfewTime && (
               <div className="flex items-start gap-2">
-                <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                <span>{pension.visitsPolicy}</span>
+                <Clock className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                <span>Toque de queda: {pension.curfewTime}</span>
               </div>
             )}
+            <div className="flex items-start gap-2">
+              <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+              <span>{pension.guestsAllowed ? 'Visitas permitidas' : 'Sin visitas'}</span>
+            </div>
           </div>
         </div>
       )}
@@ -332,7 +362,7 @@ export function PensionDetailContent({
               </div>
               <div className="text-right">
                 <span className="text-xs font-bold text-primary">
-                  ${(room.priceMonthlyClp ?? room.monthlyPrice ?? 0).toLocaleString('es-CL')}
+                  ${(room.monthlyPrice ?? 0).toLocaleString('es-CL')}
                 </span>
                 <span className="block text-[10px] text-muted-foreground">CLP / mes</span>
               </div>
