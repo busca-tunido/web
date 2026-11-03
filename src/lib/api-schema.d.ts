@@ -914,6 +914,14 @@ export interface components {
       baseMonthlyPrice: number;
       /** @example 100000 */
       deposit?: number | null;
+      /** @example Sra. Carmen Gloria */
+      contactName?: string | null;
+      /** @example +56 9 1234 5678 */
+      contactPhone?: string | null;
+      /** @example +56 9 1234 5678 */
+      contactWhatsapp?: string | null;
+      /** @example contacto@residencia.cl */
+      contactEmail?: string | null;
       /** @example CLP */
       currency: string;
       /** @example true */
@@ -1084,6 +1092,14 @@ export interface components {
       nearbyUniversityId?: string;
       /** @example 500 */
       distanceMeters?: number;
+      /** @example Sra. Carmen Gloria */
+      contactName?: string;
+      /** @example +56 9 1234 5678 */
+      contactPhone?: string;
+      /** @example +56 9 1234 5678 */
+      contactWhatsapp?: string;
+      /** @example contacto@residencia.cl */
+      contactEmail?: string;
     };
     UpdatePensionDto: {
       /** @example Residencia San Joaquín */
@@ -1166,6 +1182,14 @@ export interface components {
       nearbyUniversityId?: string;
       /** @example 500 */
       distanceMeters?: number;
+      /** @example Sra. Carmen Gloria */
+      contactName?: string;
+      /** @example +56 9 1234 5678 */
+      contactPhone?: string;
+      /** @example +56 9 1234 5678 */
+      contactWhatsapp?: string;
+      /** @example contacto@residencia.cl */
+      contactEmail?: string;
       /** @example true */
       isActive?: boolean;
     };

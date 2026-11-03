@@ -5203,6 +5203,26 @@
             "nullable": true,
             "example": 100000
           },
+          "contactName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Sra. Carmen Gloria"
+          },
+          "contactPhone": {
+            "type": "string",
+            "nullable": true,
+            "example": "+56 9 1234 5678"
+          },
+          "contactWhatsapp": {
+            "type": "string",
+            "nullable": true,
+            "example": "+56 9 1234 5678"
+          },
+          "contactEmail": {
+            "type": "string",
+            "nullable": true,
+            "example": "contacto@residencia.cl"
+          },
           "currency": {
             "type": "string",
             "example": "CLP"
@@ -5574,6 +5594,26 @@
           "distanceMeters": {
             "type": "number",
             "example": 500
+          },
+          "contactName": {
+            "type": "string",
+            "example": "Sra. Carmen Gloria",
+            "maxLength": 100
+          },
+          "contactPhone": {
+            "type": "string",
+            "example": "+56 9 1234 5678",
+            "maxLength": 30
+          },
+          "contactWhatsapp": {
+            "type": "string",
+            "example": "+56 9 1234 5678",
+            "maxLength": 30
+          },
+          "contactEmail": {
+            "type": "string",
+            "example": "contacto@residencia.cl",
+            "maxLength": 120
           }
         },
         "required": [
@@ -5707,6 +5747,26 @@
           "distanceMeters": {
             "type": "number",
             "example": 500
+          },
+          "contactName": {
+            "type": "string",
+            "example": "Sra. Carmen Gloria",
+            "maxLength": 100
+          },
+          "contactPhone": {
+            "type": "string",
+            "example": "+56 9 1234 5678",
+            "maxLength": 30
+          },
+          "contactWhatsapp": {
+            "type": "string",
+            "example": "+56 9 1234 5678",
+            "maxLength": 30
+          },
+          "contactEmail": {
+            "type": "string",
+            "example": "contacto@residencia.cl",
+            "maxLength": 120
           },
           "isActive": {
             "type": "boolean",

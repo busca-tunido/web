@@ -190,8 +190,16 @@ export function LandlordPensionScreen({
 
       const contactConfig = getPensionContact(p.id);
       const isCustomContact = contactConfig.isCustom;
-      const resolvedName = isCustomContact ? contactConfig.name : defaultContact.name;
-      const resolvedPhone = isCustomContact ? contactConfig.phone : defaultContact.phone;
+      const pensionContactName =
+        'contactName' in p && typeof p.contactName === 'string' ? p.contactName : '';
+      const pensionContactPhone =
+        'contactPhone' in p && typeof p.contactPhone === 'string' ? p.contactPhone : '';
+      const resolvedName = isCustomContact
+        ? contactConfig.name
+        : pensionContactName || defaultContact.name;
+      const resolvedPhone = isCustomContact
+        ? contactConfig.phone
+        : pensionContactPhone || defaultContact.phone;
 
       setForm({
         waterIncluded: Boolean(p.waterIncluded),
@@ -308,7 +316,7 @@ export function LandlordPensionScreen({
       phone: form.useCustomContact ? form.contactPhone.trim() : defaultContact.phone,
     });
 
-    const updatePayload: UpdatePensionDto & { contactName?: string; contactPhone?: string } = {
+    const updatePayload: UpdatePensionDto = {
       currency: 'CLP',
       waterIncluded: form.waterIncluded,
       electricityIncluded: form.electricityIncluded,

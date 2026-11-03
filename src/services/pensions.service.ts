@@ -211,6 +211,10 @@ export function mapPensionItemDto(raw: Record<string, unknown>): PensionItemDto 
     genderPreference: (raw.genderPreference as components['schemas']['GenderPreference']) ?? 'ANY',
     quietHoursStart: typeof raw.quietHoursStart === 'string' ? raw.quietHoursStart : null,
     quietHoursEnd: typeof raw.quietHoursEnd === 'string' ? raw.quietHoursEnd : null,
+    contactName: typeof raw.contactName === 'string' ? raw.contactName : null,
+    contactPhone: typeof raw.contactPhone === 'string' ? raw.contactPhone : null,
+    contactWhatsapp: typeof raw.contactWhatsapp === 'string' ? raw.contactWhatsapp : null,
+    contactEmail: typeof raw.contactEmail === 'string' ? raw.contactEmail : null,
     verificationStatus:
       (raw.verificationStatus as components['schemas']['VerificationStatus']) ?? 'UNVERIFIED',
     isActive: typeof raw.isActive === 'boolean' ? raw.isActive : true,
