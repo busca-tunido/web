@@ -281,4 +281,36 @@ describe('Rating Tier & Semaforo Logic', () => {
     expect(resultComplete.tier).toBe('high');
     expect(resultComplete.label).toBe('Favoritas de la comunidad');
   });
+
+  it('correctly resolves review count from ratingCount or _count when reviewsCount is omitted', () => {
+    const pensionWithRatingCountOnly = {
+      id: 'p-rating-count',
+      ratingAverage: 4.8,
+      ratingCount: 8,
+      verificationStatus: 'OFFICIALLY_VERIFIED',
+      internetIncluded: true,
+      amenitySlugs: ['sala-estudio-cowork'],
+      nearestUniversity: { name: 'U', distanceMeters: 500 },
+    } as unknown as PensionItem;
+
+    const classification = classifyPensionRating(pensionWithRatingCountOnly);
+    expect(classification.tier).toBe('high');
+    expect(classification.reviewsCount).toBe(8);
+
+    const darkStyles = getMarkerThemeStyles(classification, true, false);
+    expect(darkStyles.bgHex).toBe('#366e56');
+
+    const pensionWithNestedCount = {
+      id: 'p-nested-count',
+      ratingAverage: 3.5,
+      _count: { reviews: 3 },
+    } as unknown as PensionItem;
+
+    const nestedClassification = classifyPensionRating(pensionWithNestedCount);
+    expect(nestedClassification.tier).toBe('medium');
+    expect(nestedClassification.reviewsCount).toBe(3);
+
+    const medDarkStyles = getMarkerThemeStyles(nestedClassification, true, false);
+    expect(medDarkStyles.bgHex).toBe('#c8861e');
+  });
 });

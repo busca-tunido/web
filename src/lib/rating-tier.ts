@@ -42,14 +42,27 @@ export function classifyPensionRating(
   let options: RatingOptions = {};
 
   if (typeof arg1 === 'object' && arg1 !== null) {
-    ratingAverage = arg1.ratingAverage;
-    reviewsCount = arg1.reviewsCount;
+    ratingAverage = arg1.ratingAverage ?? (arg1 as { averageRating?: number }).averageRating;
+    reviewsCount =
+      arg1.reviewsCount ??
+      arg1.ratingCount ??
+      (arg1 as { _count?: { reviews?: number } })._count?.reviews;
     options = arg1;
   } else {
     ratingAverage = arg1;
     reviewsCount = arg2;
     if (arg3 && typeof arg3 === 'object') {
       options = arg3;
+      if (reviewsCount === undefined || reviewsCount === null) {
+        reviewsCount =
+          options.reviewsCount ??
+          options.ratingCount ??
+          (options as { _count?: { reviews?: number } })._count?.reviews;
+      }
+      if (ratingAverage === undefined || ratingAverage === null) {
+        ratingAverage =
+          options.ratingAverage ?? (options as { averageRating?: number }).averageRating;
+      }
     }
   }
 

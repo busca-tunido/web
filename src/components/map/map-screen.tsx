@@ -170,7 +170,7 @@ function createMarkerIcon(
 ): import('leaflet').DivIcon {
   if (cluster.isSingle) {
     const pension = cluster.pensions[0];
-    const classification = classifyPensionRating(pension.ratingAverage, pension.reviewsCount);
+    const classification = classifyPensionRating(pension);
     const styles = getMarkerThemeStyles(classification, theme === 'dark', cluster.isSelected);
 
     if (zoom < 14) {
@@ -577,7 +577,7 @@ export function MapScreen({
               ? 'badge'
               : 'cluster';
       const tierKey = cluster.isSingle
-        ? (cluster.pensions[0]?.ratingAverage ?? '0')
+        ? classifyPensionRating(cluster.pensions[0]).tier
         : getDominantRatingClassification(cluster.pensions).tier;
       const cacheKey = `${cluster.id}:${cluster.isSelected ? '1' : '0'}:${modeKey}:${currentTheme}:${tierKey}`;
 
