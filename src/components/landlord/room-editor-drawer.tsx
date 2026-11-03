@@ -269,10 +269,18 @@ export function RoomEditorDrawer({
         const uploadRes = await uploadsService.uploadMultipleFiles(newImageFiles);
         if (isApiSuccess(uploadRes) && uploadRes.data?.urls) {
           uploadedUrls = uploadRes.data.urls;
+        } else if (!isApiSuccess(uploadRes)) {
+          const friendly = translateApiError(
+            uploadRes.message || 'No fue posible subir las imágenes de la habitación.',
+          );
+          setErrorMessage(friendly);
+          toast.error(friendly);
+          setIsSubmitting(false);
+          return;
         }
       }
 
-      const _allImages = [...form.images, ...uploadedUrls];
+      const allImages = [...form.images, ...uploadedUrls];
       const parsedDeposit = form.deposit.trim() ? Number(form.deposit) : undefined;
       const roomNumberVal = form.roomNumber.trim() || trimmedTitle;
 
@@ -289,6 +297,7 @@ export function RoomEditorDrawer({
           availableBeds: form.type === 'SHARED' ? form.totalBeds : 1,
           isAvailable: form.isAvailable,
           isActive: roomToEdit.isActive ?? true,
+          images: allImages,
         };
 
         const res = await updateRoom(roomToEdit.id, updatePayload);
@@ -314,6 +323,7 @@ export function RoomEditorDrawer({
           availableBeds: form.type === 'SHARED' ? form.totalBeds : 1,
           isAvailable: form.isAvailable,
           isActive: true,
+          images: allImages,
         };
 
         const res = await createPensionRoom(pensionId, createPayload);
