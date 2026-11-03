@@ -1,6 +1,6 @@
 import { apiFetch, wrapApiResponse } from '@/lib/api-fetch';
-import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
-import type { CreateRoomDto, RoomDto, UpdateRoomDto } from '@/lib/types';
+import type { ApiResponse } from '@/lib/api-response';
+import type { CreateRoomDto, DeleteResultDto, RoomDto, UpdateRoomDto } from '@/lib/types';
 
 export async function fetchPensionRooms(pensionId: string): Promise<ApiResponse<RoomDto[]>> {
   const result = await apiFetch.GET('/pensions/{pensionId}/rooms', {
@@ -46,17 +46,13 @@ export async function updateRoom(
   return wrapApiResponse<RoomDto>(result, 'Error al actualizar habitación');
 }
 
-export async function deleteRoom(roomId: string): Promise<ApiResponse<{ success: boolean }>> {
+export async function deleteRoom(roomId: string): Promise<ApiResponse<DeleteResultDto>> {
   const result = await apiFetch.DELETE('/rooms/{id}', {
     params: {
       path: { id: roomId },
     },
   });
-  const res = wrapApiResponse<{ deleted?: boolean }>(result, 'Error al eliminar habitación');
-  if (isApiSuccess(res)) {
-    return createSuccess({ success: res.data.deleted ?? true }, res.statusCode);
-  }
-  return res;
+  return wrapApiResponse<DeleteResultDto>(result, 'Error al eliminar habitación');
 }
 
 export const roomsService = {

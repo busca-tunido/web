@@ -65,6 +65,9 @@ export type UploadImageResult = components['schemas']['UploadImageResponseDto'];
 export type UserHelpfulVotesResponse = components['schemas']['HelpfulVotesResponseDto'];
 export type UpdateReviewVisibilityDto = components['schemas']['UpdateReviewVisibilityDto'];
 export type UpdatePensionStatusDto = components['schemas']['UpdatePensionStatusDto'];
+export type DeleteResultDto = components['schemas']['DeleteResultResponseDto'];
+export type RoomType = components['schemas']['RoomType'];
+export type BathType = components['schemas']['BathType'];
 
 export type PaginatedResponse<T> = {
   items: T[];

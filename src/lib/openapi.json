@@ -7,9 +7,18 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "Welcome message",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Hello World!"
+                }
+              }
+            }
           }
         },
+        "summary": "API welcome root endpoint",
         "tags": ["App"]
       }
     },
@@ -5057,6 +5066,10 @@
       "DeleteResultResponseDto": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "example": "6659f8c123456789abcdef01"
+          },
           "deleted": {
             "type": "boolean",
             "example": true
@@ -5169,6 +5182,10 @@
         },
         "required": ["name", "distanceMeters"]
       },
+      "RoomType": {
+        "type": "string",
+        "enum": ["SINGLE", "SHARED", "STUDIO"]
+      },
       "BathType": {
         "type": "string",
         "enum": ["PRIVATE", "SHARED"]
@@ -5195,8 +5212,12 @@
             "example": "Habitación Individual"
           },
           "type": {
-            "type": "string",
-            "example": "SINGLE"
+            "example": "SINGLE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoomType"
+              }
+            ]
           },
           "monthlyPrice": {
             "type": "number",
@@ -5899,10 +5920,6 @@
             "example": true
           }
         }
-      },
-      "RoomType": {
-        "type": "string",
-        "enum": ["SINGLE", "SHARED", "STUDIO"]
       },
       "RoomResponseDto": {
         "type": "object",

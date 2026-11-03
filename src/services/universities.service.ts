@@ -5,6 +5,7 @@ import { getUniversityImageUrl } from '@/lib/location-images';
 import type {
   CampusAreaDto,
   CreateUniversityDto,
+  DeleteResultDto,
   UniversityDto,
   UpdateUniversityDto,
 } from '@/lib/types';
@@ -95,15 +96,11 @@ export async function updateUniversity(
   return createSuccess(mapUniversityDto(res.data), res.statusCode);
 }
 
-export async function deleteUniversity(id: string): Promise<ApiResponse<{ success: boolean }>> {
+export async function deleteUniversity(id: string): Promise<ApiResponse<DeleteResultDto>> {
   const result = await apiFetch.DELETE('/universities/{id}', {
     params: {
       path: { id },
     },
   });
-  const res = wrapApiResponse<{ deleted?: boolean }>(result, 'Error al eliminar universidad');
-  if (!isApiSuccess(res)) {
-    return res;
-  }
-  return createSuccess({ success: res.data.deleted ?? true }, res.statusCode);
+  return wrapApiResponse<DeleteResultDto>(result, 'Error al eliminar universidad');
 }

@@ -1,8 +1,9 @@
 import { apiFetch, wrapApiResponse } from '@/lib/api-fetch';
-import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
+import type { ApiResponse } from '@/lib/api-response';
 import type { components, paths } from '@/lib/api-schema';
 import type {
   CreatePensionDto,
+  DeleteResultDto,
   PaginatedPensionsResponse,
   PensionDetailDto,
   PensionItemDto,
@@ -81,17 +82,13 @@ export async function updatePension(
   return wrapApiResponse<PensionDetailDto>(result, 'Error al actualizar pensión');
 }
 
-export async function deletePension(id: string): Promise<ApiResponse<{ success: boolean }>> {
+export async function deletePension(id: string): Promise<ApiResponse<DeleteResultDto>> {
   const result = await apiFetch.DELETE('/pensions/{id}', {
     params: {
       path: { id },
     },
   });
-  const res = wrapApiResponse<{ deleted?: boolean }>(result, 'Error al eliminar pensión');
-  if (isApiSuccess(res)) {
-    return createSuccess({ success: res.data.deleted ?? true }, res.statusCode);
-  }
-  return res;
+  return wrapApiResponse<DeleteResultDto>(result, 'Error al eliminar pensión');
 }
 
 export async function fetchNearbyPensions(

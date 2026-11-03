@@ -11,6 +11,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** API welcome root endpoint */
     get: operations['AppController_getHello'];
     put?: never;
     post?: never;
@@ -841,6 +842,8 @@ export interface components {
       longitude?: number;
     };
     DeleteResultResponseDto: {
+      /** @example 6659f8c123456789abcdef01 */
+      id?: string;
       /** @example true */
       deleted: boolean;
     };
@@ -893,6 +896,8 @@ export interface components {
       distanceMeters: number;
     };
     /** @enum {string} */
+    RoomType: 'SINGLE' | 'SHARED' | 'STUDIO';
+    /** @enum {string} */
     BathType: 'PRIVATE' | 'SHARED';
     PensionRoomSummaryDto: {
       /** @example room-123 */
@@ -904,7 +909,7 @@ export interface components {
       /** @example Habitación Individual */
       name?: string | null;
       /** @example SINGLE */
-      type: string;
+      type: components['schemas']['RoomType'];
       /** @example 250000 */
       monthlyPrice: number;
       /** @example 250000 */
@@ -1246,8 +1251,6 @@ export interface components {
       /** @example true */
       isActive?: boolean;
     };
-    /** @enum {string} */
-    RoomType: 'SINGLE' | 'SHARED' | 'STUDIO';
     RoomResponseDto: {
       /** @example room-123 */
       id: string;
@@ -1864,11 +1867,14 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
+      /** @description Welcome message */
       200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'text/plain': string;
+        };
       };
     };
   };
