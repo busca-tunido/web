@@ -899,8 +899,7 @@
             "required": false,
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": ["ANY", "FEMALE_ONLY", "MALE_ONLY"]
+              "$ref": "#/components/schemas/GenderPreference"
             }
           },
           {
@@ -928,8 +927,7 @@
             "required": false,
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": ["SINGLE", "SHARED", "STUDIO"]
+              "$ref": "#/components/schemas/RoomType"
             }
           },
           {
@@ -1065,9 +1063,7 @@
             "required": false,
             "in": "query",
             "schema": {
-              "example": "relevance",
-              "type": "string",
-              "enum": ["relevance", "distance", "rating", "price_asc", "price_desc"]
+              "$ref": "#/components/schemas/PensionSortBy"
             }
           }
         ],
@@ -1092,45 +1088,7 @@
                       "example": "2026-11-02T01:00:00.000Z"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/PensionItemResponseDto"
-                          }
-                        },
-                        "pagination": {
-                          "$ref": "#/components/schemas/PaginationMetaDto"
-                        },
-                        "total": {
-                          "type": "number",
-                          "example": 45
-                        },
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 20
-                        },
-                        "totalPages": {
-                          "type": "number",
-                          "example": 3
-                        },
-                        "hasMore": {
-                          "type": "boolean",
-                          "example": true
-                        },
-                        "nearbyCityCounts": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/NearbyCityCountDto"
-                          }
-                        }
-                      },
-                      "required": ["items", "pagination", "total", "page", "limit", "totalPages"]
+                      "$ref": "#/components/schemas/PaginatedPensionsResponseDto"
                     }
                   },
                   "required": ["success", "statusCode", "timestamp", "data"]
@@ -1305,8 +1263,7 @@
             "required": false,
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": ["ANY", "FEMALE_ONLY", "MALE_ONLY"]
+              "$ref": "#/components/schemas/GenderPreference"
             }
           },
           {
@@ -1334,8 +1291,7 @@
             "required": false,
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": ["SINGLE", "SHARED", "STUDIO"]
+              "$ref": "#/components/schemas/RoomType"
             }
           },
           {
@@ -1471,9 +1427,7 @@
             "required": false,
             "in": "query",
             "schema": {
-              "example": "relevance",
-              "type": "string",
-              "enum": ["relevance", "distance", "rating", "price_asc", "price_desc"]
+              "$ref": "#/components/schemas/PensionSortBy"
             }
           }
         ],
@@ -2516,10 +2470,7 @@
             "in": "query",
             "description": "Sort order for reviews",
             "schema": {
-              "default": "newest",
-              "example": "newest",
-              "type": "string",
-              "enum": ["newest", "oldest", "rating_desc", "rating_asc"]
+              "$ref": "#/components/schemas/ReviewSortBy"
             }
           }
         ],
@@ -2544,45 +2495,7 @@
                       "example": "2026-11-02T01:00:00.000Z"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/ReviewResponseDto"
-                          }
-                        },
-                        "pagination": {
-                          "$ref": "#/components/schemas/PaginationMetaDto"
-                        },
-                        "total": {
-                          "type": "number",
-                          "example": 45
-                        },
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 20
-                        },
-                        "totalPages": {
-                          "type": "number",
-                          "example": 3
-                        },
-                        "hasMore": {
-                          "type": "boolean",
-                          "example": true
-                        },
-                        "nearbyCityCounts": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/NearbyCityCountDto"
-                          }
-                        }
-                      },
-                      "required": ["items", "pagination", "total", "page", "limit", "totalPages"]
+                      "$ref": "#/components/schemas/PaginatedReviewsResponseDto"
                     }
                   },
                   "required": ["success", "statusCode", "timestamp", "data"]
@@ -3858,8 +3771,7 @@
             "required": false,
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": ["PENDING", "APPROVED", "REJECTED", "MODIFIED_AND_APPROVED"]
+              "$ref": "#/components/schemas/ProposalStatus"
             }
           },
           {
@@ -3900,45 +3812,7 @@
                       "example": "2026-11-02T01:00:00.000Z"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "items": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/ProposalResponseDto"
-                          }
-                        },
-                        "pagination": {
-                          "$ref": "#/components/schemas/PaginationMetaDto"
-                        },
-                        "total": {
-                          "type": "number",
-                          "example": 45
-                        },
-                        "page": {
-                          "type": "number",
-                          "example": 1
-                        },
-                        "limit": {
-                          "type": "number",
-                          "example": 20
-                        },
-                        "totalPages": {
-                          "type": "number",
-                          "example": 3
-                        },
-                        "hasMore": {
-                          "type": "boolean",
-                          "example": true
-                        },
-                        "nearbyCityCounts": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/NearbyCityCountDto"
-                          }
-                        }
-                      },
-                      "required": ["items", "pagination", "total", "page", "limit", "totalPages"]
+                      "$ref": "#/components/schemas/PaginatedProposalsResponseDto"
                     }
                   },
                   "required": ["success", "statusCode", "timestamp", "data"]
@@ -4728,9 +4602,12 @@
             "pattern": "^(\\+?56)?\\s?0?9\\s?[0-9]{4}\\s?[0-9]{4}$|^(\\+?56)?\\s?0?9\\s?[0-9]{8}$"
           },
           "role": {
-            "type": "string",
-            "enum": ["STUDENT", "LANDLORD"],
-            "default": "STUDENT"
+            "default": "STUDENT",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Role"
+              }
+            ]
           },
           "universityId": {
             "type": "string",
@@ -5542,6 +5419,51 @@
         },
         "required": ["city", "count"]
       },
+      "PaginatedPensionsResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PensionItemResponseDto"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          },
+          "total": {
+            "type": "number",
+            "example": 45
+          },
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 3
+          },
+          "hasMore": {
+            "type": "boolean",
+            "example": true
+          },
+          "nearbyCityCounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NearbyCityCountDto"
+            }
+          }
+        },
+        "required": ["items", "pagination", "total", "page", "limit", "totalPages"]
+      },
+      "PensionSortBy": {
+        "type": "string",
+        "enum": ["relevance", "distance", "rating", "price_asc", "price_desc"]
+      },
       "PriceHistogramBinDto": {
         "type": "object",
         "properties": {
@@ -5715,9 +5637,12 @@
             "default": false
           },
           "genderPreference": {
-            "type": "string",
-            "enum": ["ANY", "FEMALE_ONLY", "MALE_ONLY"],
-            "default": "ANY"
+            "default": "ANY",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GenderPreference"
+              }
+            ]
           },
           "quietHoursStart": {
             "type": "string",
@@ -5868,9 +5793,12 @@
             "default": false
           },
           "genderPreference": {
-            "type": "string",
-            "enum": ["ANY", "FEMALE_ONLY", "MALE_ONLY"],
-            "default": "ANY"
+            "default": "ANY",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GenderPreference"
+              }
+            ]
           },
           "quietHoursStart": {
             "type": "string",
@@ -6059,9 +5987,12 @@
             "maxLength": 800
           },
           "type": {
-            "type": "string",
-            "enum": ["SINGLE", "SHARED", "STUDIO"],
-            "default": "SINGLE"
+            "default": "SINGLE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoomType"
+              }
+            ]
           },
           "monthlyPrice": {
             "type": "number",
@@ -6142,9 +6073,12 @@
             "maxLength": 800
           },
           "type": {
-            "type": "string",
-            "enum": ["SINGLE", "SHARED", "STUDIO"],
-            "default": "SINGLE"
+            "default": "SINGLE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoomType"
+              }
+            ]
           },
           "monthlyPrice": {
             "type": "number",
@@ -6446,6 +6380,45 @@
           "createdAt"
         ]
       },
+      "PaginatedReviewsResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewResponseDto"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          },
+          "total": {
+            "type": "number",
+            "example": 12
+          },
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "example": 10
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 2
+          },
+          "hasMore": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": ["items", "pagination", "total", "page", "limit", "totalPages"]
+      },
+      "ReviewSortBy": {
+        "type": "string",
+        "enum": ["newest", "oldest", "rating_desc", "rating_asc"]
+      },
       "StudentStayResponseDto": {
         "type": "object",
         "properties": {
@@ -6600,8 +6573,11 @@
             }
           },
           "stayDurationCategory": {
-            "type": "string",
-            "enum": ["FEW_DAYS", "FEW_WEEKS", "ONE_SEMESTER", "ONE_YEAR", "MORE_THAN_A_YEAR"]
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StayDurationCategory"
+              }
+            ]
           }
         },
         "required": ["overallRating", "comment"]
@@ -6654,8 +6630,11 @@
             }
           },
           "stayDurationCategory": {
-            "type": "string",
-            "enum": ["FEW_DAYS", "FEW_WEEKS", "ONE_SEMESTER", "ONE_YEAR", "MORE_THAN_A_YEAR"]
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StayDurationCategory"
+              }
+            ]
           }
         }
       },
@@ -6685,6 +6664,17 @@
           }
         },
         "required": ["helpfulCount", "voted"]
+      },
+      "ReportReason": {
+        "type": "string",
+        "enum": [
+          "FRAUD_OR_SCAM",
+          "INACCURATE_PRICE",
+          "MISLEADING_PHOTOS",
+          "HOUSE_RULES_VIOLATION",
+          "PROPERTY_UNAVAILABLE",
+          "INAPPROPRIATE_CONTENT"
+        ]
       },
       "ReportStatus": {
         "type": "string",
@@ -6746,8 +6736,12 @@
             "example": "6659f8c123456789abcdef02"
           },
           "reason": {
-            "type": "string",
-            "example": "INCORRECT_INFORMATION"
+            "example": "INACCURATE_PRICE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportReason"
+              }
+            ]
           },
           "description": {
             "type": "string",
@@ -6802,16 +6796,12 @@
             "example": "6659f8c123456789abcdef01"
           },
           "reason": {
-            "type": "string",
-            "enum": [
-              "FRAUD_OR_SCAM",
-              "INACCURATE_PRICE",
-              "MISLEADING_PHOTOS",
-              "HOUSE_RULES_VIOLATION",
-              "PROPERTY_UNAVAILABLE",
-              "INAPPROPRIATE_CONTENT"
-            ],
-            "example": "INACCURATE_PRICE"
+            "example": "INACCURATE_PRICE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportReason"
+              }
+            ]
           },
           "description": {
             "type": "string",
@@ -6826,9 +6816,12 @@
         "type": "object",
         "properties": {
           "status": {
-            "type": "string",
-            "enum": ["PENDING", "UNDER_REVIEW", "RESOLVED", "DISMISSED"],
-            "example": "RESOLVED"
+            "example": "RESOLVED",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReportStatus"
+              }
+            ]
           },
           "resolutionNotes": {
             "type": "string",
@@ -6940,6 +6933,10 @@
         },
         "required": ["removed"]
       },
+      "ProposalType": {
+        "type": "string",
+        "enum": ["AMENITIES_UPDATE", "BASIC_INFO", "LOCATION_UPDATE", "FULL_UPDATE"]
+      },
       "ProposalStatus": {
         "type": "string",
         "enum": ["PENDING", "APPROVED", "REJECTED", "MODIFIED_AND_APPROVED"]
@@ -6982,8 +6979,12 @@
             "example": "6659f8c123456789abcdef02"
           },
           "type": {
-            "type": "string",
-            "example": "PRICE_UPDATE"
+            "example": "BASIC_INFO",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProposalType"
+              }
+            ]
           },
           "status": {
             "example": "PENDING",
@@ -7049,9 +7050,12 @@
         "type": "object",
         "properties": {
           "type": {
-            "type": "string",
-            "enum": ["AMENITIES_UPDATE", "BASIC_INFO", "LOCATION_UPDATE", "FULL_UPDATE"],
-            "default": "BASIC_INFO"
+            "default": "BASIC_INFO",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProposalType"
+              }
+            ]
           },
           "proposedChanges": {
             "type": "object",
@@ -7072,13 +7076,55 @@
         },
         "required": ["type", "proposedChanges"]
       },
+      "PaginatedProposalsResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProposalResponseDto"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationMetaDto"
+          },
+          "total": {
+            "type": "number",
+            "example": 5
+          },
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "totalPages": {
+            "type": "number",
+            "example": 1
+          },
+          "hasMore": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": ["items", "pagination", "total", "page", "limit", "totalPages"]
+      },
+      "ReviewAction": {
+        "type": "string",
+        "enum": ["APPROVE", "REJECT", "MODIFY_AND_APPROVE"]
+      },
       "ReviewProposalDto": {
         "type": "object",
         "properties": {
           "action": {
-            "type": "string",
-            "enum": ["APPROVE", "REJECT", "MODIFY_AND_APPROVE"],
-            "example": "APPROVE"
+            "example": "APPROVE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewAction"
+              }
+            ]
           },
           "reviewNotes": {
             "type": "string",
@@ -7113,9 +7159,12 @@
         "type": "object",
         "properties": {
           "verificationStatus": {
-            "type": "string",
-            "enum": ["UNVERIFIED", "COMMUNITY_VERIFIED", "OFFICIALLY_VERIFIED", "REJECTED"],
-            "example": "COMMUNITY_VERIFIED"
+            "example": "COMMUNITY_VERIFIED",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VerificationStatus"
+              }
+            ]
           },
           "isActive": {
             "type": "boolean",

@@ -83,11 +83,11 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
       }
 
       if (requestId === activeRequestIdRef.current && isMountedRef.current) {
-        setItems(res.data.items);
+        setItems([...res.data.items]);
         setPage(1);
         setHasMore(res.data.hasMore ?? res.data.pagination?.hasMore ?? false);
         setTotal(res.data.total ?? res.data.pagination?.total ?? 0);
-        setNearbyCityCounts(res.data.nearbyCityCounts ?? []);
+        setNearbyCityCounts(res.data.nearbyCityCounts ? [...res.data.nearbyCityCounts] : []);
       }
     } catch (err) {
       if (requestId === activeRequestIdRef.current && isMountedRef.current) {
@@ -163,7 +163,7 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
         setHasMore(res.data.hasMore ?? res.data.pagination?.hasMore ?? false);
         setTotal(res.data.total ?? res.data.pagination?.total ?? 0);
         if (res.data.nearbyCityCounts && res.data.nearbyCityCounts.length > 0) {
-          setNearbyCityCounts(res.data.nearbyCityCounts);
+          setNearbyCityCounts([...res.data.nearbyCityCounts]);
         }
       }
     } catch (err) {

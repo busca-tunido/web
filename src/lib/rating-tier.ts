@@ -129,10 +129,10 @@ export function classifyPensionRating(
 }
 
 export function filterPensionsByRatingTier(
-  pensions: PensionItem[],
+  pensions: readonly PensionItem[],
   tier?: RatingTier,
 ): PensionItem[] {
-  if (!tier) return pensions;
+  if (!tier) return [...pensions];
 
   return pensions.filter((p) => {
     const classification = classifyPensionRating(p);

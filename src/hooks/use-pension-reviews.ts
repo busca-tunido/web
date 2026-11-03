@@ -104,7 +104,7 @@ export function usePensionReviews(
     try {
       const res = await reviewsService.fetchPensionReviews(pensionId);
       if (isApiSuccess(res)) {
-        setRawItems(res.data.items);
+        setRawItems([...res.data.items]);
       } else {
         setError(res.message);
       }

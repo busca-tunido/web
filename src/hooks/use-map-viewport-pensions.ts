@@ -128,7 +128,7 @@ export function useMapViewportPensions(options: {
         });
 
         if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
-          const rawItems = res.data.items;
+          const rawItems = [...res.data.items];
           const filteredByRating = filters?.ratingTier
             ? filterPensionsByRatingTier(rawItems, filters.ratingTier)
             : rawItems;
@@ -186,7 +186,7 @@ export function useMapViewportPensions(options: {
         });
 
         if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
-          const rawItems = res.data.items;
+          const rawItems = [...res.data.items];
           const filteredByRating = filters?.ratingTier
             ? filterPensionsByRatingTier(rawItems, filters.ratingTier)
             : rawItems;
@@ -241,7 +241,7 @@ export function useMapViewportPensions(options: {
         });
 
         if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
-          const rawItems = res.data.items;
+          const rawItems = [...res.data.items];
           const filteredByRating = filters?.ratingTier
             ? filterPensionsByRatingTier(rawItems, filters.ratingTier)
             : rawItems;

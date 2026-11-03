@@ -108,9 +108,9 @@ apiFetch.use(authMiddleware);
 
 export function wrapApiResponse<T>(
   result: {
-    data?: { data: T } | null;
-    error?: components['schemas']['ErrorEnvelopeDto'] | unknown;
-    response: Response;
+    readonly data?: unknown;
+    readonly error?: unknown;
+    readonly response: Response;
   },
   defaultErrorMessage = 'Ocurrió un error inesperado al procesar la solicitud.',
 ): ApiResponse<T> {
@@ -130,7 +130,12 @@ export function wrapApiResponse<T>(
     return createError(message, statusCode, errorType, result.error);
   }
 
-  return createSuccess<T>(result.data.data, result.response.status);
+  const envelope = result.data as { readonly data?: unknown } | null | undefined;
+  const payload = (
+    envelope && typeof envelope === 'object' && 'data' in envelope ? envelope.data : envelope
+  ) as T;
+
+  return createSuccess<T>(payload, result.response.status);
 }
 
 export async function settledBatch<T>(

@@ -102,7 +102,7 @@ export function useStudentPensionsFeed(
     if (citiesResult.status === 'fulfilled') {
       const val = citiesResult.value;
       if (isApiSuccess(val)) {
-        loadedCities = val.data;
+        loadedCities = [...val.data];
       } else if (Array.isArray(val)) {
         loadedCities = val;
       } else if ('message' in val && typeof val.message === 'string') {
@@ -232,7 +232,7 @@ export function useStudentPensionsFeed(
         }
 
         if (isApiSuccess(res)) {
-          const rawItems: PensionItem[] = res.data.items;
+          const rawItems: PensionItem[] = [...res.data.items];
           const mappedItems = filterRatingTier
             ? filterPensionsByRatingTier(rawItems, filterRatingTier)
             : rawItems;

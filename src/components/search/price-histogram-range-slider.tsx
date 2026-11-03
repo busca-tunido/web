@@ -8,7 +8,7 @@ export type PriceHistogramRangeSliderProps = {
   maxBound: number;
   minValue: number;
   maxValue: number;
-  bins: Array<{ min: number; max: number; count: number }>;
+  bins: ReadonlyArray<{ readonly min: number; readonly max: number; readonly count: number }>;
   onChange: (range: { min: number; max: number }) => void;
   currency?: string;
   isLoading?: boolean;

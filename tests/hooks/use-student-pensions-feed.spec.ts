@@ -67,6 +67,16 @@ const MOCK_TEST_PENSION_DTO = {
   amenities: ['comida-incluida', 'lavanderia'],
 };
 
+const mockPaginated = (items: unknown[] = [], total = items.length, hasMore = false) => ({
+  items: items as never[],
+  total,
+  page: 1,
+  limit: 12,
+  totalPages: Math.ceil(total / 12) || 1,
+  hasMore,
+  pagination: { page: 1, limit: 12, total, totalPages: Math.ceil(total / 12) || 1, hasMore },
+});
+
 describe('useStudentPensionsFeed', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -85,13 +95,7 @@ describe('useStudentPensionsFeed', () => {
         createSuccess(MOCK_TEST_UNIVERSITIES),
       );
       vi.spyOn(pensionsService, 'fetchPaginatedPensions').mockResolvedValue(
-        createSuccess({
-          items: [MOCK_TEST_PENSION_DTO as never],
-          total: 1,
-          page: 1,
-          limit: 12,
-          hasMore: false,
-        }),
+        createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 1, false)),
       );
 
       const { result } = renderHook(() => useStudentPensionsFeed());
@@ -116,13 +120,7 @@ describe('useStudentPensionsFeed', () => {
         createSuccess(MOCK_TEST_UNIVERSITIES),
       );
       vi.spyOn(pensionsService, 'fetchPaginatedPensions').mockResolvedValue(
-        createSuccess({
-          items: [],
-          total: 0,
-          page: 1,
-          limit: 12,
-          hasMore: false,
-        }),
+        createSuccess(mockPaginated([], 0, false)),
       );
 
       const { result } = renderHook(() =>
@@ -146,13 +144,7 @@ describe('useStudentPensionsFeed', () => {
         .mockRejectedValue(new Error('Network error on universities'));
 
       vi.spyOn(pensionsService, 'fetchPaginatedPensions').mockResolvedValue(
-        createSuccess({
-          items: [],
-          total: 0,
-          page: 1,
-          limit: 12,
-          hasMore: false,
-        }),
+        createSuccess(mockPaginated([], 0, false)),
       );
 
       const { result } = renderHook(() => useStudentPensionsFeed());
@@ -183,13 +175,7 @@ describe('useStudentPensionsFeed', () => {
         new Error('Failed to load universities'),
       );
       vi.spyOn(pensionsService, 'fetchPaginatedPensions').mockResolvedValue(
-        createSuccess({
-          items: [],
-          total: 0,
-          page: 1,
-          limit: 12,
-          hasMore: false,
-        }),
+        createSuccess(mockPaginated([], 0, false)),
       );
 
       const { result } = renderHook(() => useStudentPensionsFeed());
@@ -214,13 +200,7 @@ describe('useStudentPensionsFeed', () => {
       const pensionsSpy = vi
         .spyOn(pensionsService, 'fetchPaginatedPensions')
         .mockResolvedValue(
-          createSuccess({
-            items: [MOCK_TEST_PENSION_DTO as never],
-            total: 1,
-            page: 1,
-            limit: 12,
-            hasMore: false,
-          }),
+          createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 1, false)),
         );
 
       const { result } = renderHook(() =>
@@ -270,13 +250,7 @@ describe('useStudentPensionsFeed', () => {
       const nearbySpy = vi
         .spyOn(pensionsService, 'fetchNearbyPensions')
         .mockResolvedValue(
-          createSuccess({
-            items: [MOCK_TEST_PENSION_DTO as never],
-            total: 1,
-            page: 1,
-            limit: 12,
-            hasMore: false,
-          }),
+          createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 1, false)),
         );
 
       const { result } = renderHook(() =>
@@ -305,13 +279,7 @@ describe('useStudentPensionsFeed', () => {
       const pensionsSpy = vi
         .spyOn(pensionsService, 'fetchPaginatedPensions')
         .mockResolvedValue(
-          createSuccess({
-            items: [MOCK_TEST_PENSION_DTO as never],
-            total: 1,
-            page: 1,
-            limit: 12,
-            hasMore: false,
-          }),
+          createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 1, false)),
         );
 
       const { result } = renderHook(() => useStudentPensionsFeed());
@@ -351,28 +319,22 @@ describe('useStudentPensionsFeed', () => {
       const pensionsSpy = vi
         .spyOn(pensionsService, 'fetchPaginatedPensions')
         .mockResolvedValueOnce(
-          createSuccess({
-            items: [MOCK_TEST_PENSION_DTO as never],
-            total: 2,
-            page: 1,
-            limit: 1,
-            hasMore: true,
-          }),
+          createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 2, true)),
         )
         .mockResolvedValueOnce(
-          createSuccess({
-            items: [
-              {
-                ...MOCK_TEST_PENSION_DTO,
-                id: 'pen-2',
-                title: 'Pensión Segunda',
-              } as never,
-            ],
-            total: 2,
-            page: 2,
-            limit: 1,
-            hasMore: false,
-          }),
+          createSuccess(
+            mockPaginated(
+              [
+                {
+                  ...MOCK_TEST_PENSION_DTO,
+                  id: 'pen-2',
+                  title: 'Pensión Segunda',
+                },
+              ],
+              2,
+              false,
+            ),
+          ),
         );
 
       const { result } = renderHook(() =>
@@ -420,13 +382,7 @@ describe('useStudentPensionsFeed', () => {
       expect(result.current.pensions).toHaveLength(0);
 
       pensionsSpy.mockResolvedValueOnce(
-        createSuccess({
-          items: [MOCK_TEST_PENSION_DTO as never],
-          total: 1,
-          page: 1,
-          limit: 12,
-          hasMore: false,
-        }),
+        createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 1, false)),
       );
 
       await act(async () => {

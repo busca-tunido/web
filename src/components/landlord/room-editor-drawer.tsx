@@ -163,7 +163,7 @@ export function RoomEditorDrawer({
     if (isOpen) {
       if (roomToEdit) {
         const resolvedType: RoomType = roomToEdit.type ?? 'SINGLE';
-        const existingImages = roomToEdit.images ?? [];
+        const existingImages = roomToEdit.images ? [...roomToEdit.images] : [];
 
         setForm({
           title: roomToEdit.title || roomToEdit.name || '',
