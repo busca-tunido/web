@@ -27,7 +27,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LandlordProposalsDrawer } from '@/components/landlord/landlord-proposals-drawer';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import { Badge } from '@/components/ui/badge';
@@ -147,6 +147,7 @@ export function LandlordPensionScreen({
     defaultContact,
     getPensionContact,
     updatePensionCustomContact,
+    updatePensionInList,
     pendingProposalsCount,
     refetchProposals,
   } = useLandlord();
@@ -154,6 +155,7 @@ export function LandlordPensionScreen({
   const [activePension, setActivePension] = useState<PensionDetailDto | PensionItem | null>(
     initialPension,
   );
+  const lastSyncedPensionIdRef = useRef<string | null>(initialPension?.id ?? null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -183,7 +185,10 @@ export function LandlordPensionScreen({
   const effectivePensionId = propPensionId || activePension?.id || '';
 
   const syncFormFromPension = useCallback(
-    (p: PensionDetailDto | PensionItem) => {
+    (
+      p: PensionDetailDto | PensionItem,
+      customContactOverride?: { enabled: boolean; name: string; phone: string },
+    ) => {
       const isPensionItemDto = 'waterIncluded' in p;
       const rawCurfew = isPensionItemDto ? p.curfewTime : undefined;
       const curfewVal = typeof rawCurfew === 'string' ? rawCurfew : '';
@@ -191,8 +196,9 @@ export function LandlordPensionScreen({
       const normalizedGender: GenderPref =
         rawGender === 'FEMALE_ONLY' || rawGender === 'MALE_ONLY' ? rawGender : 'ANY';
 
-      const contactConfig = getPensionContact(p.id);
-      const isCustomContact = contactConfig.isCustom;
+      const contactConfig = customContactOverride ?? getPensionContact(p.id);
+      const isCustomContact =
+        'isCustom' in contactConfig ? contactConfig.isCustom : Boolean(contactConfig.enabled);
       const pensionContactName =
         'contactName' in p && typeof p.contactName === 'string' ? p.contactName : '';
       const pensionContactPhone =
@@ -232,6 +238,7 @@ export function LandlordPensionScreen({
     if (effectivePensionId) {
       const res = await pensionsService.fetchPensionDetail(effectivePensionId);
       if (isApiSuccess(res)) {
+        lastSyncedPensionIdRef.current = res.data.id;
         setActivePension(res.data);
         syncFormFromPension(res.data);
       } else {
@@ -248,9 +255,11 @@ export function LandlordPensionScreen({
         const first = list[0];
         const detailRes = await pensionsService.fetchPensionDetail(first.id);
         if (isApiSuccess(detailRes)) {
+          lastSyncedPensionIdRef.current = detailRes.data.id;
           setActivePension(detailRes.data);
           syncFormFromPension(detailRes.data);
         } else {
+          lastSyncedPensionIdRef.current = first.id;
           setActivePension(first);
           syncFormFromPension(first);
         }
@@ -265,12 +274,21 @@ export function LandlordPensionScreen({
 
   useEffect(() => {
     if (initialPension) {
-      setActivePension(initialPension);
-      syncFormFromPension(initialPension);
-    } else {
+      if (lastSyncedPensionIdRef.current !== initialPension.id) {
+        lastSyncedPensionIdRef.current = initialPension.id;
+        setActivePension(initialPension);
+        syncFormFromPension(initialPension);
+      }
+    } else if (propPensionId) {
+      if (lastSyncedPensionIdRef.current !== propPensionId) {
+        lastSyncedPensionIdRef.current = propPensionId;
+        loadPensionData();
+      }
+    } else if (!activePension) {
+      lastSyncedPensionIdRef.current = null;
       loadPensionData();
     }
-  }, [initialPension, loadPensionData, syncFormFromPension]);
+  }, [propPensionId, initialPension, activePension, loadPensionData, syncFormFromPension]);
 
   const handleToggle = (field: keyof FormState) => {
     setForm((prev) => ({
@@ -311,12 +329,6 @@ export function LandlordPensionScreen({
     setSaveSuccessMessage(null);
     setSaveErrorMessage(null);
 
-    updatePensionCustomContact(activePension.id, {
-      enabled: form.useCustomContact,
-      name: form.useCustomContact ? form.contactName.trim() : defaultContact.name,
-      phone: form.useCustomContact ? form.contactPhone.trim() : defaultContact.phone,
-    });
-
     const updatePayload: UpdatePensionDto = {
       currency: 'CLP',
       waterIncluded: form.waterIncluded,
@@ -339,9 +351,21 @@ export function LandlordPensionScreen({
     setIsSaving(false);
 
     if (isApiSuccess(response)) {
+      const customContact = {
+        enabled: form.useCustomContact,
+        name: form.useCustomContact ? form.contactName.trim() : defaultContact.name,
+        phone: form.useCustomContact ? form.contactPhone.trim() : defaultContact.phone,
+      };
+
+      updatePensionCustomContact(activePension.id, customContact);
+
+      lastSyncedPensionIdRef.current = response.data.id;
       setActivePension(response.data);
-      setSaveSuccessMessage('¡Cambios guardados correctamente en la ficha de tu pensión!');
+      syncFormFromPension(response.data, customContact);
+      updatePensionInList?.(response.data);
       onPensionUpdated?.(response.data);
+
+      setSaveSuccessMessage('¡Cambios guardados correctamente en la ficha de tu pensión!');
       setTimeout(() => {
         setSaveSuccessMessage(null);
       }, 4000);

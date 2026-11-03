@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
-import type { PensionItem } from '@/lib/types';
+import type { PensionDetailDto, PensionItem } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 import { proposalsService } from '@/services/proposals.service';
 
@@ -24,6 +24,7 @@ export type LandlordContextValue = {
   pensions: PensionItem[];
   selectedPension: PensionItem | null;
   setSelectedPension: (pension: PensionItem) => void;
+  updatePensionInList: (updated: PensionItem | PensionDetailDto) => void;
   activeTab: LandlordTab;
   setActiveTab: (tab: LandlordTab) => void;
   isLoading: boolean;
@@ -316,11 +317,37 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
     [pensions, selectedPension],
   );
 
+  const updatePensionInList = useCallback((updated: PensionItem | PensionDetailDto) => {
+    setPensions((prev) =>
+      prev.map((p) => (p.id === updated.id ? ({ ...p, ...updated } as PensionItem) : p)),
+    );
+    setSelectedPension((prev) =>
+      prev && prev.id === updated.id ? ({ ...prev, ...updated } as PensionItem) : prev,
+    );
+    const raw = updated as unknown as {
+      contactName?: string | null;
+      contactPhone?: string | null;
+    };
+    const hasName = Boolean(raw.contactName && raw.contactName.trim().length > 0);
+    const hasPhone = Boolean(raw.contactPhone && raw.contactPhone.trim().length > 0);
+    if (hasName || hasPhone) {
+      setCustomContacts((prev) => ({
+        ...prev,
+        [updated.id]: {
+          enabled: true,
+          name: raw.contactName ?? '',
+          phone: raw.contactPhone ?? '',
+        },
+      }));
+    }
+  }, []);
+
   const value = useMemo<LandlordContextValue>(
     () => ({
       pensions,
       selectedPension,
       setSelectedPension,
+      updatePensionInList,
       activeTab,
       setActiveTab,
       isLoading,
@@ -341,6 +368,7 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
     [
       pensions,
       selectedPension,
+      updatePensionInList,
       activeTab,
       isLoading,
       error,

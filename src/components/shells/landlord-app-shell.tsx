@@ -60,6 +60,7 @@ function LandlordAppShellContent() {
     pensions,
     selectedPension,
     setSelectedPension,
+    updatePensionInList,
     activeTab,
     setActiveTab,
     togglePensionActive,
@@ -116,7 +117,11 @@ function LandlordAppShellContent() {
             />
           )}
           {activeTab === 'pension' && (
-            <LandlordPensionScreen pension={selectedPension} pensionId={selectedPension?.id} />
+            <LandlordPensionScreen
+              pension={selectedPension}
+              pensionId={selectedPension?.id}
+              onPensionUpdated={updatePensionInList}
+            />
           )}
           {activeTab === 'reviews' && (
             <LandlordReviewsScreen pension={selectedPension} pensionId={selectedPension?.id} />

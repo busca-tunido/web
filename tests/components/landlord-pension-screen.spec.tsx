@@ -59,6 +59,7 @@ const mockGetPensionContact = vi.fn(() => ({
 const mockOpenCreatePensionModal = vi.fn();
 const mockTogglePensionActive = vi.fn();
 const mockUpdatePensionCustomContact = vi.fn();
+const mockUpdatePensionInList = vi.fn();
 const mockRefetchProposals = vi.fn();
 
 vi.mock('@/contexts/landlord-context', () => ({
@@ -68,6 +69,7 @@ vi.mock('@/contexts/landlord-context', () => ({
     defaultContact: mockDefaultContact,
     getPensionContact: mockGetPensionContact,
     updatePensionCustomContact: mockUpdatePensionCustomContact,
+    updatePensionInList: mockUpdatePensionInList,
     pendingProposalsCount: 0,
     refetchProposals: mockRefetchProposals,
   }),
@@ -119,5 +121,41 @@ describe('LandlordPensionScreen', () => {
     );
 
     expect(await screen.findByText(/¡cambios guardados correctamente en la ficha de tu pensión!/i)).toBeDefined();
+    expect(mockUpdatePensionInList).toHaveBeenCalledWith(
+      expect.objectContaining({ id: '6659f8c123456789abcdef01' }),
+    );
+  });
+
+  it('notifies onPensionUpdated and keeps updated state when saving', async () => {
+    const onPensionUpdated = vi.fn();
+    const updatedPension = {
+      ...mockPension,
+      smokingAllowed: true,
+      petsAllowed: true,
+    };
+
+    vi.mocked(pensionsService.update).mockResolvedValueOnce(createSuccess(updatedPension));
+
+    render(<LandlordPensionScreen pension={mockPension} onPensionUpdated={onPensionUpdated} />);
+
+    const saveButton = screen.getByRole('button', { name: /guardar cambios en ficha/i });
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(onPensionUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: '6659f8c123456789abcdef01',
+          smokingAllowed: true,
+          petsAllowed: true,
+        }),
+      );
+    });
+
+    expect(mockUpdatePensionInList).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: '6659f8c123456789abcdef01',
+        smokingAllowed: true,
+      }),
+    );
   });
 });
