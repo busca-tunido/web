@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useMemo } from 'react';
 import { FavoritesGuestIncentive } from '@/components/favorites/favorites-guest-incentive';
 import { Button } from '@/components/ui/button';
-import { FavoritesSkeleton } from '@/components/ui/skeletons/favorites-skeleton';
+import { PensionCardSkeleton } from '@/components/ui/skeletons/pension-card-skeleton';
 import { useNavigation } from '@/contexts/navigation-context';
 import { useStudentFavorites } from '@/hooks/use-student-favorites';
 import { useAuth } from '@/lib/auth-context';
@@ -61,8 +61,13 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
   }, [allPensions, favoritePensions, favorites, isFavorite]);
 
   const knownCount = Math.max(authFavorites.length, favorites.length);
-  const skeletonCount = knownCount > 0 ? Math.min(knownCount, 8) : 4;
-  const showSkeletons = isLoadingFavorites && savedPensions.length === 0;
+  const remainingCount = isLoadingFavorites
+    ? savedPensions.length === 0
+      ? knownCount > 0
+        ? knownCount
+        : 4
+      : Math.max(0, knownCount - savedPensions.length)
+    : 0;
 
   return (
     <div
@@ -73,7 +78,7 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
         <div>
           <h2 className="text-xl font-bold text-foreground">Tus Favoritos</h2>
           <p className="text-xs text-muted-foreground">
-            {showSkeletons
+            {isLoadingFavorites && remainingCount > 0
               ? knownCount > 0
                 ? `Cargando ${knownCount} ${knownCount === 1 ? 'alojamiento guardado' : 'alojamientos guardados'}...`
                 : 'Cargando tus alojamientos guardados...'
@@ -86,16 +91,13 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
         </div>
       </div>
 
-      {showSkeletons ? (
-        <FavoritesSkeleton count={skeletonCount} hideHeader />
-      ) : (
-        <FavoritesGrid
-          savedPensions={savedPensions}
-          onSelectPension={onSelectPension}
-          onExplore={onExplore}
-          toggleFavorite={toggleFavorite}
-        />
-      )}
+      <FavoritesGrid
+        savedPensions={savedPensions}
+        skeletonCount={remainingCount}
+        onSelectPension={onSelectPension}
+        onExplore={onExplore}
+        toggleFavorite={toggleFavorite}
+      />
 
       {errorMessage && (
         <div className="fixed bottom-20 left-4 right-4 z-50 flex items-center justify-between rounded-xl bg-destructive text-destructive-foreground px-4 py-3 text-xs font-semibold shadow-lg">
@@ -115,6 +117,7 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
 
 type FavoritesGridProps = {
   savedPensions: (PensionItem | FavoritePensionSummaryDto)[];
+  skeletonCount?: number;
   onSelectPension: (pension: PensionItem | FavoritePensionSummaryDto) => void;
   onExplore: () => void;
   toggleFavorite: (id: string) => void;
@@ -122,11 +125,12 @@ type FavoritesGridProps = {
 
 function FavoritesGrid({
   savedPensions,
+  skeletonCount = 0,
   onSelectPension,
   onExplore,
   toggleFavorite,
 }: FavoritesGridProps) {
-  if (savedPensions.length === 0) {
+  if (savedPensions.length === 0 && skeletonCount === 0) {
     return (
       <div className="my-12 flex flex-col items-center justify-center rounded-2xl border border-border bg-card/60 p-8 text-center shadow-sm">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-3">
@@ -225,6 +229,10 @@ function FavoritesGrid({
             <Heart className="h-5 w-5 fill-primary text-primary" />
           </motion.button>
         </motion.div>
+      ))}
+
+      {Array.from({ length: skeletonCount }, (_, idx) => (
+        <PensionCardSkeleton key={`fav-skel-slot-${idx}`} />
       ))}
     </div>
   );

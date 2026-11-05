@@ -23,17 +23,19 @@ vi.mock('@/lib/auth-context', () => ({
   }),
 }));
 
+let mockStudentFavorites = {
+  favorites: [] as string[],
+  isFavorite: (_id: string) => false,
+  toggleFavorite: vi.fn(),
+  errorMessage: null as string | null,
+  clearError: vi.fn(),
+  favoritePensions: [] as unknown[],
+  isLoading: false,
+  refreshFavorites: vi.fn(),
+};
+
 vi.mock('@/hooks/use-student-favorites', () => ({
-  useStudentFavorites: () => ({
-    favorites: [],
-    isFavorite: () => false,
-    toggleFavorite: vi.fn(),
-    errorMessage: null,
-    clearError: vi.fn(),
-    favoritePensions: [],
-    isLoading: false,
-    refreshFavorites: vi.fn(),
-  }),
+  useStudentFavorites: () => mockStudentFavorites,
 }));
 
 let mockStayHistory = {
@@ -90,6 +92,16 @@ describe('AuthGate and Guest Incentive Screens', () => {
   beforeEach(() => {
     mockUser = null;
     mockIsLoading = false;
+    mockStudentFavorites = {
+      favorites: [] as string[],
+      isFavorite: (_id: string) => false,
+      toggleFavorite: vi.fn(),
+      errorMessage: null,
+      clearError: vi.fn(),
+      favoritePensions: [] as unknown[],
+      isLoading: false,
+      refreshFavorites: vi.fn(),
+    };
     vi.clearAllMocks();
   });
 
@@ -290,6 +302,105 @@ describe('AuthGate and Guest Incentive Screens', () => {
 
     expect(screen.getByText('Donde me he alojado')).toBeDefined();
     expect(screen.queryByText('Aún no registras estadías finalizadas')).toBeNull();
+    const skeletons = container.querySelectorAll('.animate-pulse');
+    expect(skeletons.length).toBeGreaterThan(0);
+  });
+
+  it('renders preloaded pension cards alongside skeletons for remaining pending favorites', () => {
+    mockIsLoading = false;
+    mockUser = {
+      id: 'usr-1',
+      email: 'student@universidad.cl',
+      firstName: 'Ana',
+      lastName: 'Valdés',
+      role: 'STUDENT',
+    };
+    mockStudentFavorites = {
+      favorites: ['pen-1', 'pen-2', 'pen-3', 'pen-4', 'pen-5'],
+      isFavorite: (id: string) => ['pen-1', 'pen-2', 'pen-3', 'pen-4', 'pen-5'].includes(id),
+      toggleFavorite: vi.fn(),
+      errorMessage: null,
+      clearError: vi.fn(),
+      favoritePensions: [],
+      isLoading: true,
+      refreshFavorites: vi.fn(),
+    };
+
+    const mockAllPensions = [
+      {
+        id: 'pen-1',
+        slug: 'pension-1',
+        title: 'Pensión Uno',
+        description: 'Desc',
+        address: 'Calle 1',
+        neighborhood: 'Centro',
+        city: 'Santiago',
+        latitude: -33.4,
+        longitude: -70.6,
+        baseMonthlyPrice: 200000,
+        currency: 'CLP',
+        waterIncluded: true,
+        electricityIncluded: true,
+        gasIncluded: true,
+        internetIncluded: true,
+        guestsAllowed: true,
+        smokingAllowed: false,
+        petsAllowed: false,
+        genderPreference: 'ANY',
+        verificationStatus: 'OFFICIALLY_VERIFIED',
+        isActive: true,
+        ratingAverage: 4.8,
+        ratingCount: 10,
+        reviewsCount: 10,
+        images: [],
+        amenities: [],
+        nearbyUniversities: [],
+        rooms: [],
+      },
+      {
+        id: 'pen-2',
+        slug: 'pension-2',
+        title: 'Pensión Dos',
+        description: 'Desc',
+        address: 'Calle 2',
+        neighborhood: 'Providencia',
+        city: 'Santiago',
+        latitude: -33.4,
+        longitude: -70.6,
+        baseMonthlyPrice: 250000,
+        currency: 'CLP',
+        waterIncluded: true,
+        electricityIncluded: true,
+        gasIncluded: true,
+        internetIncluded: true,
+        guestsAllowed: true,
+        smokingAllowed: false,
+        petsAllowed: false,
+        genderPreference: 'ANY',
+        verificationStatus: 'OFFICIALLY_VERIFIED',
+        isActive: true,
+        ratingAverage: 4.5,
+        ratingCount: 8,
+        reviewsCount: 8,
+        images: [],
+        amenities: [],
+        nearbyUniversities: [],
+        rooms: [],
+      },
+    ] as unknown as SearchFilters[];
+
+    const { container } = render(
+      <FavoritesScreen
+        allPensions={mockAllPensions as unknown as Parameters<typeof FavoritesScreen>[0]['allPensions']}
+        onSelectPension={vi.fn()}
+        onExplore={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Pensión Uno')).toBeDefined();
+    expect(screen.getByText('Pensión Dos')).toBeDefined();
+    expect(screen.getByText('Cargando 5 alojamientos guardados...')).toBeDefined();
+    expect(screen.queryByText('No tienes favoritos guardados')).toBeNull();
     const skeletons = container.querySelectorAll('.animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);
   });
