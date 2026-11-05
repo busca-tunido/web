@@ -6,10 +6,28 @@ import type { FavoritePensionSummaryDto } from '@/lib/types';
 import { favoritesService } from '@/services/favorites.service';
 
 export function useStudentFavorites(initialFavorites?: string[]) {
-  const [favorites, setFavorites] = useState<string[]>(initialFavorites ?? []);
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    if (initialFavorites && initialFavorites.length > 0) return initialFavorites;
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('tunido_favs');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch {}
+    }
+    return [];
+  });
   const [favoritePensions, setFavoritePensions] = useState<FavoritePensionSummaryDto[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialFavorites && initialFavorites.length > 0 && favorites.length === 0) {
+      setFavorites(initialFavorites);
+    }
+  }, [initialFavorites, favorites.length]);
 
   const loadFavorites = useCallback(async () => {
     setIsLoading(true);

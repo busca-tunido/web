@@ -3,7 +3,7 @@
 import { Building2, Heart, ShieldCheck, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
-import { Suspense, useMemo } from 'react';
+import { useMemo } from 'react';
 import { FavoritesGuestIncentive } from '@/components/favorites/favorites-guest-incentive';
 import { Button } from '@/components/ui/button';
 import { FavoritesSkeleton } from '@/components/ui/skeletons/favorites-skeleton';
@@ -34,8 +34,16 @@ export function FavoritesScreen(props: FavoritesScreenProps) {
 }
 
 function FavoritesContent({ allPensions, onSelectPension, onExplore }: FavoritesScreenProps) {
-  const { favorites, isFavorite, toggleFavorite, errorMessage, clearError, favoritePensions } =
-    useStudentFavorites();
+  const { favorites: authFavorites } = useAuth();
+  const {
+    favorites,
+    isFavorite,
+    toggleFavorite,
+    errorMessage,
+    clearError,
+    favoritePensions,
+    isLoading: isLoadingFavorites,
+  } = useStudentFavorites(authFavorites);
 
   const savedPensions = useMemo(() => {
     const mapById = new Map<string, PensionItem | FavoritePensionSummaryDto>();
@@ -52,6 +60,10 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
     return Array.from(mapById.values());
   }, [allPensions, favoritePensions, favorites, isFavorite]);
 
+  const knownCount = Math.max(authFavorites.length, favorites.length);
+  const skeletonCount = knownCount > 0 ? Math.min(knownCount, 8) : 4;
+  const showSkeletons = isLoadingFavorites && savedPensions.length === 0;
+
   return (
     <div
       id="favorites-screen-view"
@@ -61,22 +73,29 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
         <div>
           <h2 className="text-xl font-bold text-foreground">Tus Favoritos</h2>
           <p className="text-xs text-muted-foreground">
-            {savedPensions.length}{' '}
-            {savedPensions.length === 1
-              ? 'alojamiento guardado para postular'
-              : 'alojamientos guardados para postular'}
+            {showSkeletons
+              ? knownCount > 0
+                ? `Cargando ${knownCount} ${knownCount === 1 ? 'alojamiento guardado' : 'alojamientos guardados'}...`
+                : 'Cargando tus alojamientos guardados...'
+              : `${savedPensions.length} ${
+                  savedPensions.length === 1
+                    ? 'alojamiento guardado para postular'
+                    : 'alojamientos guardados para postular'
+                }`}
           </p>
         </div>
       </div>
 
-      <Suspense fallback={<FavoritesSkeleton />}>
+      {showSkeletons ? (
+        <FavoritesSkeleton count={skeletonCount} hideHeader />
+      ) : (
         <FavoritesGrid
           savedPensions={savedPensions}
           onSelectPension={onSelectPension}
           onExplore={onExplore}
           toggleFavorite={toggleFavorite}
         />
-      </Suspense>
+      )}
 
       {errorMessage && (
         <div className="fixed bottom-20 left-4 right-4 z-50 flex items-center justify-between rounded-xl bg-destructive text-destructive-foreground px-4 py-3 text-xs font-semibold shadow-lg">

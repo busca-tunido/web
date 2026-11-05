@@ -33,12 +33,14 @@ import { SuggestEditModal } from './suggest-edit-modal';
 
 export type PensionDetailContentProps = {
   pension: PensionDetailViewItem;
+  isLoadingDetail?: boolean;
   onBack?: () => void;
   showBackButton?: boolean;
 };
 
 export function PensionDetailContent({
   pension: initialPension,
+  isLoadingDetail = false,
   onBack,
   showBackButton = false,
 }: PensionDetailContentProps) {
@@ -213,7 +215,7 @@ export function PensionDetailContent({
         </div>
       )}
 
-      {Boolean(pension.description) && (
+      {pension.description ? (
         <div className="mb-5">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
             Descripción de la Pensión
@@ -222,118 +224,143 @@ export function PensionDetailContent({
             {pension.description}
           </p>
         </div>
-      )}
+      ) : isLoadingDetail ? (
+        <div className="mb-5" aria-hidden="true">
+          <div className="h-3.5 w-36 rounded bg-muted animate-pulse mb-2.5" />
+          <div className="space-y-2">
+            <div className="h-3 w-full rounded bg-muted/70 animate-pulse" />
+            <div className="h-3 w-4/5 rounded bg-muted/60 animate-pulse" />
+            <div className="h-3 w-3/5 rounded bg-muted/50 animate-pulse" />
+          </div>
+        </div>
+      ) : null}
 
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2.5">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Servicios y Comodidades
           </h2>
-          <button
-            type="button"
-            onClick={() => setIsAmenitiesModalOpen(true)}
-            className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
-          >
-            <span>Ver más detalles</span>
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
+          {!isLoadingDetail && (
+            <button
+              type="button"
+              onClick={() => setIsAmenitiesModalOpen(true)}
+              className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5 cursor-pointer"
+            >
+              <span>Ver más detalles</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-          {(() => {
-            const hasWifi = Boolean(
-              pension.amenitySlugs?.includes('wifi-alta-velocidad') ||
+        {isLoadingDetail && !pension.amenitySlugs && !pension.amenities ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs" aria-hidden="true">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={`amenity-skel-${i}`}
+                className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-2.5 animate-pulse"
+              >
+                <div className="h-4 w-4 rounded-full bg-muted-foreground/20" />
+                <div className="h-3 w-20 rounded bg-muted-foreground/20" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            {(() => {
+              const hasWifi = Boolean(
+                pension.amenitySlugs?.includes('wifi-alta-velocidad') ||
+                  pension.amenities?.some(
+                    (a) => (typeof a === 'string' ? a : a.slug) === 'wifi-alta-velocidad',
+                  ),
+              );
+              return (
+                <div
+                  className={`flex items-center gap-2 rounded-lg border p-2.5 ${
+                    hasWifi
+                      ? 'border-sage/25 bg-sage/8 text-foreground'
+                      : 'border-border text-muted-foreground opacity-50'
+                  }`}
+                >
+                  <Wifi
+                    className={`h-4 w-4 shrink-0 ${
+                      hasWifi ? 'text-sage-foreground' : 'text-muted-foreground/60'
+                    }`}
+                  />
+                  <span>{hasWifi ? 'WiFi Alta Velocidad' : 'Sin WiFi'}</span>
+                </div>
+              );
+            })()}
+            {(() => {
+              const hasMeals =
+                pension.amenitySlugs?.includes('comida-incluida') ||
                 pension.amenities?.some(
-                  (a) => (typeof a === 'string' ? a : a.slug) === 'wifi-alta-velocidad',
-                ),
-            );
-            return (
-              <div
-                className={`flex items-center gap-2 rounded-lg border p-2.5 ${
-                  hasWifi
-                    ? 'border-sage/25 bg-sage/8 text-foreground'
-                    : 'border-border text-muted-foreground opacity-50'
-                }`}
-              >
-                <Wifi
-                  className={`h-4 w-4 shrink-0 ${
-                    hasWifi ? 'text-sage-foreground' : 'text-muted-foreground/60'
+                  (a) => (typeof a === 'string' ? a : a.slug) === 'comida-incluida',
+                );
+              return (
+                <div
+                  className={`flex items-center gap-2 rounded-lg border p-2.5 ${
+                    hasMeals
+                      ? 'border-sage/25 bg-sage/8 text-foreground'
+                      : 'border-border text-muted-foreground opacity-50'
                   }`}
-                />
-                <span>{hasWifi ? 'WiFi Alta Velocidad' : 'Sin WiFi'}</span>
-              </div>
-            );
-          })()}
-          {(() => {
-            const hasMeals =
-              pension.amenitySlugs?.includes('comida-incluida') ||
-              pension.amenities?.some(
-                (a) => (typeof a === 'string' ? a : a.slug) === 'comida-incluida',
+                >
+                  <Utensils
+                    className={`h-4 w-4 shrink-0 ${
+                      hasMeals ? 'text-sage-foreground' : 'text-muted-foreground/60'
+                    }`}
+                  />
+                  <span>{hasMeals ? 'Comida incluida' : 'Sin alimentación'}</span>
+                </div>
               );
-            return (
-              <div
-                className={`flex items-center gap-2 rounded-lg border p-2.5 ${
-                  hasMeals
-                    ? 'border-sage/25 bg-sage/8 text-foreground'
-                    : 'border-border text-muted-foreground opacity-50'
-                }`}
-              >
-                <Utensils
-                  className={`h-4 w-4 shrink-0 ${
-                    hasMeals ? 'text-sage-foreground' : 'text-muted-foreground/60'
+            })()}
+            {(() => {
+              const hasStudy =
+                pension.amenitySlugs?.includes('sala-estudio-cowork') ||
+                pension.amenities?.some(
+                  (a) => (typeof a === 'string' ? a : a.slug) === 'sala-estudio-cowork',
+                );
+              return (
+                <div
+                  className={`flex items-center gap-2 rounded-lg border p-2.5 ${
+                    hasStudy
+                      ? 'border-sage/25 bg-sage/8 text-foreground'
+                      : 'border-border text-muted-foreground opacity-50'
                   }`}
-                />
-                <span>{hasMeals ? 'Comida incluida' : 'Sin alimentación'}</span>
-              </div>
-            );
-          })()}
-          {(() => {
-            const hasStudy =
-              pension.amenitySlugs?.includes('sala-estudio-cowork') ||
-              pension.amenities?.some(
-                (a) => (typeof a === 'string' ? a : a.slug) === 'sala-estudio-cowork',
+                >
+                  <BookOpen
+                    className={`h-4 w-4 shrink-0 ${
+                      hasStudy ? 'text-sage-foreground' : 'text-muted-foreground/60'
+                    }`}
+                  />
+                  <span>Sala de Estudio</span>
+                </div>
               );
-            return (
-              <div
-                className={`flex items-center gap-2 rounded-lg border p-2.5 ${
-                  hasStudy
-                    ? 'border-sage/25 bg-sage/8 text-foreground'
-                    : 'border-border text-muted-foreground opacity-50'
-                }`}
-              >
-                <BookOpen
-                  className={`h-4 w-4 shrink-0 ${
-                    hasStudy ? 'text-sage-foreground' : 'text-muted-foreground/60'
+            })()}
+            {(() => {
+              const hasLaundry =
+                pension.amenitySlugs?.includes('lavadora-secadora') ||
+                pension.amenities?.some(
+                  (a) => (typeof a === 'string' ? a : a.slug) === 'lavadora-secadora',
+                );
+              return (
+                <div
+                  className={`flex items-center gap-2 rounded-lg border p-2.5 ${
+                    hasLaundry
+                      ? 'border-sage/25 bg-sage/8 text-foreground'
+                      : 'border-border text-muted-foreground opacity-50'
                   }`}
-                />
-                <span>Sala de Estudio</span>
-              </div>
-            );
-          })()}
-          {(() => {
-            const hasLaundry =
-              pension.amenitySlugs?.includes('lavadora-secadora') ||
-              pension.amenities?.some(
-                (a) => (typeof a === 'string' ? a : a.slug) === 'lavadora-secadora',
+                >
+                  <Wind
+                    className={`h-4 w-4 shrink-0 ${
+                      hasLaundry ? 'text-sage-foreground' : 'text-muted-foreground/60'
+                    }`}
+                  />
+                  <span>Lavandería</span>
+                </div>
               );
-            return (
-              <div
-                className={`flex items-center gap-2 rounded-lg border p-2.5 ${
-                  hasLaundry
-                    ? 'border-sage/25 bg-sage/8 text-foreground'
-                    : 'border-border text-muted-foreground opacity-50'
-                }`}
-              >
-                <Wind
-                  className={`h-4 w-4 shrink-0 ${
-                    hasLaundry ? 'text-sage-foreground' : 'text-muted-foreground/60'
-                  }`}
-                />
-                <span>Lavandería</span>
-              </div>
-            );
-          })()}
-        </div>
+            })()}
+          </div>
+        )}
       </div>
 
       <PensionReviewsPreview
@@ -366,37 +393,61 @@ export function PensionDetailContent({
 
       {(() => {
         const rooms = pension.rooms;
-        if (!Array.isArray(rooms) || rooms.length === 0) return null;
-
-        return (
-          <div className="mb-5">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-              Habitaciones Registradas
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {rooms.map((room, idx) => (
-                <div
-                  key={room.id || `room-${pension.id}-${idx}`}
-                  className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3"
-                >
-                  <div>
-                    <h3 className="text-xs font-semibold text-foreground">{room.title}</h3>
-                    <p className="text-[11px] text-muted-foreground">
-                      {room.hasPrivateBathroom ? 'Baño privado' : 'Baño compartido'} •{' '}
-                      {room.isAvailable ? 'Disponible' : 'Ocupada'}
-                    </p>
+        if (Array.isArray(rooms) && rooms.length > 0) {
+          return (
+            <div className="mb-5">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                Habitaciones Registradas
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {rooms.map((room, idx) => (
+                  <div
+                    key={room.id || `room-${pension.id}-${idx}`}
+                    className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3"
+                  >
+                    <div>
+                      <h3 className="text-xs font-semibold text-foreground">{room.title}</h3>
+                      <p className="text-[11px] text-muted-foreground">
+                        {room.hasPrivateBathroom ? 'Baño privado' : 'Baño compartido'} •{' '}
+                        {room.isAvailable ? 'Disponible' : 'Ocupada'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs font-bold text-primary">
+                        ${(room.monthlyPrice ?? 0).toLocaleString('es-CL')}
+                      </span>
+                      <span className="block text-[10px] text-muted-foreground">CLP / mes</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xs font-bold text-primary">
-                      ${(room.monthlyPrice ?? 0).toLocaleString('es-CL')}
-                    </span>
-                    <span className="block text-[10px] text-muted-foreground">CLP / mes</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        );
+          );
+        }
+
+        if (isLoadingDetail && rooms === undefined) {
+          return (
+            <div className="mb-5" aria-hidden="true">
+              <div className="h-3.5 w-40 rounded bg-muted animate-pulse mb-2.5" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {[1, 2].map((i) => (
+                  <div
+                    key={`room-skel-${i}`}
+                    className="flex items-center justify-between rounded-xl border border-border bg-muted/20 p-3 animate-pulse"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="h-3.5 w-24 rounded bg-muted-foreground/20" />
+                      <div className="h-2.5 w-32 rounded bg-muted-foreground/15" />
+                    </div>
+                    <div className="h-4 w-16 rounded bg-muted-foreground/20" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }
+
+        return null;
       })()}
 
       <PensionLocationMap
@@ -406,6 +457,7 @@ export function PensionDetailContent({
         city={pension.city}
         neighborhood={pension.neighborhood}
         address={pension.address}
+        isLoading={isLoadingDetail}
       />
 
       <div className="mt-4 mb-2 p-3 rounded-xl bg-muted/30 border border-border/80 flex items-center justify-between">

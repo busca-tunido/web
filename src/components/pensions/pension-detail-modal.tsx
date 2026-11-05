@@ -78,7 +78,12 @@ export function PensionDetailModal({
             />
           )}
 
-          <PensionDetailContent pension={activePension} onBack={onClose} showBackButton />
+          <PensionDetailContent
+            pension={activePension}
+            isLoadingDetail={isLoadingDetail}
+            onBack={onClose}
+            showBackButton
+          />
         </div>
       </DrawerContent>
     </Drawer>

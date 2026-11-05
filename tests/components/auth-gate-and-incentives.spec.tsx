@@ -31,6 +31,8 @@ vi.mock('@/hooks/use-student-favorites', () => ({
     errorMessage: null,
     clearError: vi.fn(),
     favoritePensions: [],
+    isLoading: false,
+    refreshFavorites: vi.fn(),
   }),
 }));
 

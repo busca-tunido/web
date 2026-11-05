@@ -12,6 +12,7 @@ export type PensionLocationMapProps = {
   city: string;
   neighborhood?: string;
   address?: string;
+  isLoading?: boolean;
 };
 
 function getTileUrl(theme: 'light' | 'dark'): string {
@@ -53,6 +54,7 @@ export function PensionLocationMap({
   city,
   neighborhood,
   address,
+  isLoading = false,
 }: PensionLocationMapProps) {
   const { resolvedTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -202,6 +204,22 @@ export function PensionLocationMap({
   const locationSubtitle = `${neighborhood ? `${neighborhood}, ` : ''}${city}, Chile`;
 
   if (!hasValidCoords) {
+    if (isLoading) {
+      return (
+        <section className="mb-6 pt-1" aria-hidden="true">
+          <div className="flex items-center justify-between mb-1.5">
+            <div>
+              <div className="h-4 w-36 rounded bg-muted animate-pulse mb-1" />
+              <div className="h-3 w-28 rounded bg-muted/70 animate-pulse" />
+            </div>
+          </div>
+          <div className="relative h-64 sm:h-72 md:h-80 w-full rounded-2xl overflow-hidden border border-border/80 bg-muted/30 animate-pulse mt-3 flex flex-col items-center justify-center gap-2 text-muted-foreground/60">
+            <MapPin className="h-8 w-8 opacity-60" />
+            <span className="text-xs font-medium">Cargando mapa...</span>
+          </div>
+        </section>
+      );
+    }
     return null;
   }
 

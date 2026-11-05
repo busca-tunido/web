@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { PensionDetailContent } from '@/components/pensions/pension-detail-content';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import type { FavoritePensionSummaryDto, PensionItem } from '@/lib/types';
 
@@ -192,5 +193,36 @@ describe('PensionDetailModal without NavigationProvider', () => {
     expect(screen.getByText('Residencia Favorita')).toBeDefined();
     expect(screen.getByText('$280.000 CLP/mes')).toBeDefined();
     expect(screen.queryByText('Habitaciones Registradas')).toBeNull();
+  });
+
+  it('renders progressive skeletons for description, rooms and map when detail is loading', () => {
+    const favoriteSummary: FavoritePensionSummaryDto = {
+      id: 'pension-fav-2',
+      slug: 'pension-loading',
+      title: 'Pensión Cargando',
+      city: 'Santiago',
+      neighborhood: 'Providencia',
+      baseMonthlyPrice: 200000,
+      ratingAverage: 4.0,
+      ratingCount: 3,
+      images: [
+        {
+          id: 'img-2',
+          url: 'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/v1/shared/fallbacks/fallback.webp',
+          thumbnailUrl:
+            'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/v1/shared/fallbacks/fallback.webp',
+        },
+      ],
+    };
+
+    render(
+      <PensionDetailContent
+        pension={favoriteSummary}
+        isLoadingDetail={true}
+      />,
+    );
+
+    expect(screen.getByText('Pensión Cargando')).toBeDefined();
+    expect(screen.getByText('Cargando mapa...')).toBeDefined();
   });
 });
