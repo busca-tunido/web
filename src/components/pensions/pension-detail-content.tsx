@@ -5,6 +5,7 @@ import {
   BookOpen,
   Building2,
   Check,
+  ChevronLeft,
   ChevronRight,
   Clock,
   Heart,
@@ -16,8 +17,9 @@ import {
   Wifi,
   Wind,
 } from 'lucide-react';
+import { AnimatePresence, motion, type PanInfo } from 'motion/react';
 import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useOptionalNavigation } from '@/contexts/navigation-context';
@@ -39,6 +41,21 @@ export type PensionDetailContentProps = {
   showBackButton?: boolean;
 };
 
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? '100%' : direction < 0 ? '-100%' : 0,
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    x: direction < 0 ? '100%' : direction > 0 ? '-100%' : 0,
+    opacity: 0,
+  }),
+};
+
 export function PensionDetailContent({
   pension: initialPension,
   isLoadingDetail = false,
@@ -51,6 +68,7 @@ export function PensionDetailContent({
   const openAuthModal = navigation?.openAuthModal;
 
   const [activePhotoIdx, setActivePhotoIdx] = useState<number>(0);
+  const [direction, setDirection] = useState<number>(0);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState<boolean>(false);
   const [isAmenitiesModalOpen, setIsAmenitiesModalOpen] = useState<boolean>(false);
   const [isPublishReviewOpen, setIsPublishReviewOpen] = useState<boolean>(false);
@@ -94,25 +112,81 @@ export function PensionDetailContent({
 
   const displayPhotos = pension.images?.map((img) => img.url) ?? [];
 
+  const pensionId = initialPension.id;
+  useEffect(() => {
+    if (pensionId) {
+      setActivePhotoIdx(0);
+      setDirection(0);
+    }
+  }, [pensionId]);
+
+  const paginate = useCallback(
+    (newDirection: number) => {
+      if (displayPhotos.length <= 1) return;
+      setDirection(newDirection);
+      setActivePhotoIdx((prev) => {
+        const next = prev + newDirection;
+        if (next < 0) return displayPhotos.length - 1;
+        if (next >= displayPhotos.length) return 0;
+        return next;
+      });
+    },
+    [displayPhotos.length],
+  );
+
+  const handleDragEnd = useCallback(
+    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const threshold = 40;
+      const velocityThreshold = 300;
+      if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
+        paginate(1);
+      } else if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
+        paginate(-1);
+      }
+    },
+    [paginate],
+  );
+
   return (
     <div className="flex flex-col w-full">
-      <div className="relative h-64 sm:h-80 md:h-96 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm">
-        {(displayPhotos[activePhotoIdx] ?? displayPhotos[0]) ? (
-          <Image
-            src={displayPhotos[activePhotoIdx] ?? displayPhotos[0]}
-            alt={pension.title}
-            fill
-            unoptimized
-            sizes="(max-width: 640px) 100vw, 896px"
-            className="object-cover transition duration-300"
-            priority
-          />
+      <div className="relative h-64 sm:h-80 md:h-96 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm touch-pan-y select-none">
+        {displayPhotos.length > 0 ? (
+          <AnimatePresence initial={false} custom={direction}>
+            <motion.div
+              key={activePhotoIdx}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: 'spring', stiffness: 350, damping: 35 },
+                opacity: { duration: 0.2 },
+              }}
+              drag={displayPhotos.length > 1 ? 'x' : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.25}
+              onDragEnd={handleDragEnd}
+              className="absolute inset-0 h-full w-full cursor-grab active:cursor-grabbing"
+            >
+              <Image
+                src={displayPhotos[activePhotoIdx]}
+                alt={`${pension.title} - Foto ${activePhotoIdx + 1}`}
+                fill
+                unoptimized
+                draggable={false}
+                sizes="(max-width: 640px) 100vw, 896px"
+                className="object-cover pointer-events-none"
+                priority={activePhotoIdx === 0}
+              />
+            </motion.div>
+          </AnimatePresence>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-muted/60">
             <Building2 className="h-16 w-16 text-muted-foreground/30" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none z-10" />
 
         {showBackButton && onBack && (
           <button
@@ -125,7 +199,7 @@ export function PensionDetailContent({
           </button>
         )}
 
-        <div className="absolute top-3 right-3 flex items-center gap-2">
+        <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
           <button
             type="button"
             onClick={(e) => onFavoriteClick(pension.id, e)}
@@ -136,13 +210,38 @@ export function PensionDetailContent({
           </button>
         </div>
 
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-          <div className="flex gap-1.5">
+        {displayPhotos.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => paginate(-1)}
+              className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 active:scale-95 transition shadow-sm cursor-pointer"
+              aria-label="Foto anterior"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => paginate(1)}
+              className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 active:scale-95 transition shadow-sm cursor-pointer"
+              aria-label="Siguiente foto"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </>
+        )}
+
+        <div className="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
+          <div className="flex gap-1.5 pointer-events-auto">
             {displayPhotos.map((photoUrl, i) => (
               <button
                 key={`photo-dot-${pension.id}-${i}-${photoUrl}`}
                 type="button"
-                onClick={() => setActivePhotoIdx(i)}
+                onClick={() => {
+                  if (i === activePhotoIdx) return;
+                  setDirection(i > activePhotoIdx ? 1 : -1);
+                  setActivePhotoIdx(i);
+                }}
                 className={`h-1.5 rounded-full transition-all cursor-pointer ${
                   i === activePhotoIdx ? 'w-6 bg-primary' : 'w-2 bg-white/40'
                 }`}
@@ -150,7 +249,7 @@ export function PensionDetailContent({
               />
             ))}
           </div>
-          <Badge className="bg-primary text-primary-foreground font-bold text-xs shadow">
+          <Badge className="bg-primary text-primary-foreground font-bold text-xs shadow pointer-events-auto">
             ${(pension.baseMonthlyPrice ?? 0).toLocaleString('es-CL')} CLP/mes
           </Badge>
         </div>

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PensionDetailContent } from '@/components/pensions/pension-detail-content';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
@@ -224,5 +224,53 @@ describe('PensionDetailModal without NavigationProvider', () => {
 
     expect(screen.getByText('Pensión Cargando')).toBeDefined();
     expect(screen.getByText('Cargando mapa...')).toBeDefined();
+  });
+
+  it('renders photo carousel with swipe navigation controls and updates active photo', () => {
+    const multiPhotoPension: PensionItem = {
+      ...mockPension,
+      images: [
+        {
+          id: 'img-1',
+          url: 'https://example.com/photo-1.webp',
+          thumbnailUrl: 'https://example.com/photo-1.webp',
+        },
+        {
+          id: 'img-2',
+          url: 'https://example.com/photo-2.webp',
+          thumbnailUrl: 'https://example.com/photo-2.webp',
+        },
+        {
+          id: 'img-3',
+          url: 'https://example.com/photo-3.webp',
+          thumbnailUrl: 'https://example.com/photo-3.webp',
+        },
+      ],
+    };
+
+    render(
+      <PensionDetailContent
+        pension={multiPhotoPension}
+        isLoadingDetail={false}
+      />,
+    );
+
+    expect(screen.getByAltText('Pensión Bellavista - Foto 1')).toBeDefined();
+    expect(screen.getByLabelText('Ver foto 1')).toBeDefined();
+    expect(screen.getByLabelText('Ver foto 2')).toBeDefined();
+    expect(screen.getByLabelText('Siguiente foto')).toBeDefined();
+    expect(screen.getByLabelText('Foto anterior')).toBeDefined();
+
+    const nextBtn = screen.getByLabelText('Siguiente foto');
+    fireEvent.click(nextBtn);
+    expect(screen.getByAltText('Pensión Bellavista - Foto 2')).toBeDefined();
+
+    const dot3 = screen.getByLabelText('Ver foto 3');
+    fireEvent.click(dot3);
+    expect(screen.getByAltText('Pensión Bellavista - Foto 3')).toBeDefined();
+
+    const prevBtn = screen.getByLabelText('Foto anterior');
+    fireEvent.click(prevBtn);
+    expect(screen.getByAltText('Pensión Bellavista - Foto 2')).toBeDefined();
   });
 });
