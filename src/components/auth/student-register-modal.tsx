@@ -85,6 +85,10 @@ export function StudentRegisterModal({
 
     const validation = validateForm();
     if (!validation.isValid || !validation.data) {
+      const firstError = Object.values(validation.errors)[0];
+      if (firstError) {
+        setServerError(firstError);
+      }
       return;
     }
 
@@ -291,6 +295,10 @@ export function StudentRegisterModal({
                 </p>
               </div>
             </div>
+          )}
+
+          {errors.universityId && (
+            <p className="text-xs text-destructive font-medium mt-1">{errors.universityId}</p>
           )}
 
           <FormField

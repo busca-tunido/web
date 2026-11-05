@@ -21,7 +21,7 @@ export const studentRegisterSchema = z.object({
     .refine((val) => !val || /^(\+?56\s?9?\s?[\d\s-]{8,12}|\+[1-9][\d\s-]{7,15})$/.test(val), {
       message: 'Ingresa un número telefónico válido (ej: +56912345678)',
     }),
-  universityId: z.string().uuid('Selecciona una universidad válida'),
+  universityId: z.string().trim().min(1, 'Selecciona una universidad válida'),
   termsAccepted: z.boolean().refine((val) => val === true, {
     message: 'Debes aceptar los términos y condiciones',
   }),

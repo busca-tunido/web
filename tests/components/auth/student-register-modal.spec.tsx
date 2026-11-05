@@ -29,7 +29,7 @@ vi.mock('@/services/auth.service', () => ({
 
 describe('StudentRegisterModal - Auto-Detect University Affiliation', () => {
   const mockDetectedUniversity: DetectedUniversityDto = {
-    id: '00000000-0000-4000-8000-000000000001',
+    id: '6824177b8b2e1f2b380a912c',
     name: 'Universidad de Chile',
     shortName: 'UCHILE',
     city: 'Santiago',
@@ -134,12 +134,32 @@ describe('StudentRegisterModal - Auto-Detect University Affiliation', () => {
         firstName: 'Ana',
         lastName: 'Silva',
         phone: undefined,
-        universityId: '00000000-0000-4000-8000-000000000001',
+        universityId: '6824177b8b2e1f2b380a912c',
         role: 'STUDENT',
       });
       expect(mockLogin).toHaveBeenCalledWith('estudiante@uchile.cl', 'Password123!');
       expect(handleSuccess).toHaveBeenCalled();
       expect(handleClose).toHaveBeenCalled();
+    });
+  });
+
+  it('displays validation error banner when submitting incomplete form', async () => {
+    render(
+      <StudentRegisterModal
+        isOpen={true}
+        onClose={vi.fn()}
+        prefilledEmail="estudiante@uchile.cl"
+        detectedUniversity={mockDetectedUniversity}
+      />,
+    );
+
+    const submitBtn = screen.getByRole('button', { name: /Completar Registro/i });
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('El nombre debe tener al menos 2 caracteres')).toBeDefined();
     });
   });
 });

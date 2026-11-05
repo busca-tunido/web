@@ -691,7 +691,7 @@ export interface components {
       readonly phone?: string;
       /** @default STUDENT */
       readonly role: components['schemas']['Role'];
-      /** @example 00000000-0000-0000-0000-000000000000 */
+      /** @example 6824177b8b2e1f2b380a912c */
       readonly universityId?: string;
     };
     readonly LoginDto: {
