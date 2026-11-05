@@ -4,6 +4,7 @@ import { Crosshair, Hand, MapPin, Minus, Plus, RotateCcw } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
 import { env } from '@/env';
 import { useTheme } from '@/lib/theme-context';
+import { SANTIAGO_COORDINATES } from '@/lib/use-user-location';
 import { cn } from '@/lib/utils';
 
 export type PensionLocationPickerMapProps = {
@@ -15,6 +16,16 @@ export type PensionLocationPickerMapProps = {
   onLocationChange: (latitude: number, longitude: number) => void;
   className?: string;
 };
+
+function isValidCoordinate(lat: number, lng: number): boolean {
+  return (
+    typeof lat === 'number' &&
+    typeof lng === 'number' &&
+    !Number.isNaN(lat) &&
+    !Number.isNaN(lng) &&
+    (lat !== 0 || lng !== 0)
+  );
+}
 
 function getTileUrl(theme: 'light' | 'dark'): string {
   const apiKey = env.NEXT_PUBLIC_CARTO_API_KEY;
@@ -84,7 +95,9 @@ export function PensionLocationPickerMap({
       if (!isMounted || !containerRef.current) return;
       if (mapRef.current) return;
 
-      const { latitude: initLat, longitude: initLng } = currentCoordsRef.current;
+      const { latitude: rawLat, longitude: rawLng } = currentCoordsRef.current;
+      const initLat = isValidCoordinate(rawLat, rawLng) ? rawLat : SANTIAGO_COORDINATES.latitude;
+      const initLng = isValidCoordinate(rawLat, rawLng) ? rawLng : SANTIAGO_COORDINATES.longitude;
 
       const map = L.map(containerRef.current, {
         center: [initLat, initLng],
@@ -185,12 +198,19 @@ export function PensionLocationPickerMap({
 
   useEffect(() => {
     if (mapRef.current && markerRef.current) {
+      const targetLat = isValidCoordinate(latitude, longitude)
+        ? latitude
+        : SANTIAGO_COORDINATES.latitude;
+      const targetLng = isValidCoordinate(latitude, longitude)
+        ? longitude
+        : SANTIAGO_COORDINATES.longitude;
+
       const currentPos = markerRef.current.getLatLng();
-      const distance = Math.hypot(currentPos.lat - latitude, currentPos.lng - longitude);
+      const distance = Math.hypot(currentPos.lat - targetLat, currentPos.lng - targetLng);
 
       if (distance > 0.0001) {
-        markerRef.current.setLatLng([latitude, longitude]);
-        mapRef.current.setView([latitude, longitude], mapRef.current.getZoom() || 15, {
+        markerRef.current.setLatLng([targetLat, targetLng]);
+        mapRef.current.setView([targetLat, targetLng], mapRef.current.getZoom() || 15, {
           animate: true,
         });
         mapRef.current.invalidateSize();
@@ -208,8 +228,15 @@ export function PensionLocationPickerMap({
 
   const handleRecenter = useCallback(() => {
     if (mapRef.current) {
-      mapRef.current.setView([latitude, longitude], 15, { animate: true });
-      markerRef.current?.setLatLng([latitude, longitude]);
+      const targetLat = isValidCoordinate(latitude, longitude)
+        ? latitude
+        : SANTIAGO_COORDINATES.latitude;
+      const targetLng = isValidCoordinate(latitude, longitude)
+        ? longitude
+        : SANTIAGO_COORDINATES.longitude;
+
+      mapRef.current.setView([targetLat, targetLng], 15, { animate: true });
+      markerRef.current?.setLatLng([targetLat, targetLng]);
     }
   }, [latitude, longitude]);
 
@@ -276,7 +303,15 @@ export function PensionLocationPickerMap({
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card/90 backdrop-blur-md border border-border/80 shadow-md text-[11px] font-mono font-medium text-foreground">
             <Crosshair className="h-3 w-3 text-primary shrink-0" />
             <span>
-              {latitude.toFixed(4)}, {longitude.toFixed(4)}
+              {(isValidCoordinate(latitude, longitude)
+                ? latitude
+                : SANTIAGO_COORDINATES.latitude
+              ).toFixed(4)}
+              ,{' '}
+              {(isValidCoordinate(latitude, longitude)
+                ? longitude
+                : SANTIAGO_COORDINATES.longitude
+              ).toFixed(4)}
             </span>
           </div>
         </div>

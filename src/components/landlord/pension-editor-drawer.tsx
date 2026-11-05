@@ -36,6 +36,7 @@ import { isApiSuccess } from '@/lib/api-response';
 import { translateApiError } from '@/lib/error-translator';
 import { clampNumber } from '@/lib/format-utils';
 import type { CityInfo, CreatePensionDto, PensionDetailDto } from '@/lib/types';
+import { SANTIAGO_COORDINATES, useUserLocation } from '@/lib/use-user-location';
 import { cn } from '@/lib/utils';
 import {
   fetchCities,
@@ -119,14 +120,59 @@ type PensionFormState = {
   selectedAmenitySlugs: string[];
 };
 
+const CHILE_CITY_COORDINATES: Readonly<Record<string, { latitude: number; longitude: number }>> = {
+  santiago: { latitude: -33.4489, longitude: -70.6693 },
+  concepcion: { latitude: -36.827, longitude: -73.0503 },
+  valparaiso: { latitude: -33.0472, longitude: -71.6127 },
+  'vina del mar': { latitude: -33.0245, longitude: -71.5518 },
+  valdivia: { latitude: -39.8142, longitude: -73.2459 },
+  antofagasta: { latitude: -23.6509, longitude: -70.3975 },
+  temuco: { latitude: -38.7359, longitude: -72.5904 },
+  'la serena': { latitude: -29.9027, longitude: -71.252 },
+  coquimbo: { latitude: -29.9533, longitude: -71.3395 },
+  talca: { latitude: -35.4264, longitude: -71.6554 },
+  calama: { latitude: -22.456, longitude: -68.9295 },
+  arica: { latitude: -18.4783, longitude: -70.3126 },
+  iquique: { latitude: -20.2208, longitude: -70.1431 },
+  copiapo: { latitude: -27.3668, longitude: -70.3323 },
+  ovalle: { latitude: -30.5983, longitude: -71.2003 },
+  'san antonio': { latitude: -33.5939, longitude: -71.6075 },
+  rancagua: { latitude: -34.1708, longitude: -70.7444 },
+  curico: { latitude: -34.9828, longitude: -71.2394 },
+  linares: { latitude: -35.8454, longitude: -71.5979 },
+  chillan: { latitude: -36.6063, longitude: -72.1034 },
+  'los angeles': { latitude: -37.4697, longitude: -72.3537 },
+  osorno: { latitude: -40.5739, longitude: -73.1335 },
+  'puerto montt': { latitude: -41.4693, longitude: -72.9424 },
+  'puerto varas': { latitude: -41.3195, longitude: -72.9854 },
+  castro: { latitude: -42.4721, longitude: -73.7732 },
+  ancud: { latitude: -41.8697, longitude: -73.8286 },
+  coyhaique: { latitude: -45.5752, longitude: -72.0662 },
+  'punta arenas': { latitude: -53.1638, longitude: -70.9171 },
+  algarrobo: { latitude: -33.3688, longitude: -71.6685 },
+  'alto hospicio': { latitude: -20.2747, longitude: -70.1047 },
+  'alto del carmen': { latitude: -28.7592, longitude: -70.4856 },
+  andacollo: { latitude: -30.2319, longitude: -71.085 },
+  angol: { latitude: -37.7981, longitude: -72.7164 },
+  arauco: { latitude: -37.2464, longitude: -73.3175 },
+  buin: { latitude: -33.7328, longitude: -70.7431 },
+  cabildo: { latitude: -32.4286, longitude: -71.0669 },
+  cabrero: { latitude: -37.0336, longitude: -72.4042 },
+};
+
+function getKnownCityCoordinates(cityName: string): { latitude: number; longitude: number } | null {
+  const normalized = normalizeCityName(cityName);
+  return CHILE_CITY_COORDINATES[normalized] ?? null;
+}
+
 const INITIAL_FORM_STATE: PensionFormState = {
   title: '',
   description: '',
   address: '',
   city: '',
   neighborhood: '',
-  latitude: 0,
-  longitude: 0,
+  latitude: SANTIAGO_COORDINATES.latitude,
+  longitude: SANTIAGO_COORDINATES.longitude,
   baseMonthlyPrice: '',
   deposit: '',
   waterIncluded: false,
@@ -158,6 +204,9 @@ export function PensionEditorDrawer({
   const [isForwardGeocoding, setIsForwardGeocoding] = useState<boolean>(false);
   const [cities, setCities] = useState<CityInfo[]>([]);
 
+  const { userLocation, currentCity } = useUserLocation(cities);
+  const hasUserSelectedLocationRef = useRef<boolean>(false);
+
   useEffect(() => {
     let isMounted = true;
     async function loadCities() {
@@ -172,6 +221,25 @@ export function PensionEditorDrawer({
     };
   }, []);
 
+  useEffect(() => {
+    if (!isOpen || hasUserSelectedLocationRef.current) return;
+    if (userLocation && (userLocation.latitude !== 0 || userLocation.longitude !== 0)) {
+      setForm((prev) => {
+        const isDefault =
+          (prev.latitude === 0 && prev.longitude === 0) ||
+          (prev.latitude === SANTIAGO_COORDINATES.latitude &&
+            prev.longitude === SANTIAGO_COORDINATES.longitude);
+        if (!isDefault) return prev;
+        return {
+          ...prev,
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          city: prev.city || currentCity?.name || 'Santiago',
+        };
+      });
+    }
+  }, [isOpen, userLocation, currentCity]);
+
   const { hasDraft, restoreDraft, clearDraft } = useFormDraft<PensionFormState>(
     'landlord-new-pension',
     form,
@@ -184,14 +252,37 @@ export function PensionEditorDrawer({
   const forwardAbortRef = useRef<AbortController | null>(null);
 
   const resetForm = useCallback(() => {
-    setForm(INITIAL_FORM_STATE);
+    hasUserSelectedLocationRef.current = false;
+    setForm({
+      ...INITIAL_FORM_STATE,
+      latitude: userLocation.latitude || SANTIAGO_COORDINATES.latitude,
+      longitude: userLocation.longitude || SANTIAGO_COORDINATES.longitude,
+      city: currentCity?.name || '',
+    });
     setErrorMessage(null);
-  }, []);
+  }, [userLocation, currentCity]);
 
   const handleRestoreDraft = () => {
     const draft = restoreDraft();
     if (draft) {
-      setForm(draft);
+      const hasValidDraftCoords =
+        typeof draft.latitude === 'number' &&
+        typeof draft.longitude === 'number' &&
+        !Number.isNaN(draft.latitude) &&
+        !Number.isNaN(draft.longitude) &&
+        (draft.latitude !== 0 || draft.longitude !== 0);
+
+      const sanitizedDraft: PensionFormState = {
+        ...draft,
+        latitude: hasValidDraftCoords
+          ? draft.latitude
+          : userLocation.latitude || SANTIAGO_COORDINATES.latitude,
+        longitude: hasValidDraftCoords
+          ? draft.longitude
+          : userLocation.longitude || SANTIAGO_COORDINATES.longitude,
+      };
+      hasUserSelectedLocationRef.current = true;
+      setForm(sanitizedDraft);
       toast.success('Borrador restaurado');
     }
   };
@@ -224,18 +315,62 @@ export function PensionEditorDrawer({
     setForm((prev) => ({ ...prev, deposit: clamped.value.toString() }));
   };
 
-  const handleCityChange = (cityName: string) => {
+  const handleCityChange = async (cityName: string) => {
+    hasUserSelectedLocationRef.current = true;
     const foundCity = cities.find((c) => c.name.toLowerCase() === cityName.toLowerCase());
-    setForm((prev) => ({
-      ...prev,
-      city: cityName,
-      latitude: foundCity ? foundCity.latitude : prev.latitude,
-      longitude: foundCity ? foundCity.longitude : prev.longitude,
-    }));
+    const hasValidCoords =
+      foundCity &&
+      typeof foundCity.latitude === 'number' &&
+      typeof foundCity.longitude === 'number' &&
+      !Number.isNaN(foundCity.latitude) &&
+      !Number.isNaN(foundCity.longitude) &&
+      (foundCity.latitude !== 0 || foundCity.longitude !== 0);
+
+    if (hasValidCoords) {
+      setForm((prev) => ({
+        ...prev,
+        city: cityName,
+        latitude: foundCity.latitude,
+        longitude: foundCity.longitude,
+      }));
+      return;
+    }
+
+    const knownCoords = getKnownCityCoordinates(cityName);
+    if (knownCoords) {
+      setForm((prev) => ({
+        ...prev,
+        city: cityName,
+        latitude: knownCoords.latitude,
+        longitude: knownCoords.longitude,
+      }));
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        city: cityName,
+      }));
+    }
+
+    try {
+      const geo = await forwardGeocode(`${cityName}, Chile`);
+      if (geo && (geo.lat !== 0 || geo.lng !== 0)) {
+        setForm((prev) => {
+          if (prev.city.toLowerCase() !== cityName.toLowerCase()) return prev;
+          return {
+            ...prev,
+            latitude: geo.lat,
+            longitude: geo.lng,
+          };
+        });
+      }
+    } catch {
+      // Retain existing coordinates
+    }
   };
 
   const handleLocationChange = useCallback(
     async (lat: number, lng: number) => {
+      hasUserSelectedLocationRef.current = true;
       isUpdatingFromMapRef.current = true;
       setForm((prev) => ({
         ...prev,
@@ -348,6 +483,7 @@ export function PensionEditorDrawer({
   }, [form.address, form.neighborhood, form.city]);
 
   const handleCompleteWithGps = () => {
+    hasUserSelectedLocationRef.current = true;
     if (typeof window === 'undefined' || !navigator.geolocation) {
       setErrorMessage('La geolocalización no está disponible en este navegador.');
       return;
@@ -468,14 +604,27 @@ export function PensionEditorDrawer({
       const parsedDeposit = form.deposit.trim() ? Number(form.deposit) : undefined;
       const formattedCurfew = form.hasCurfew && form.curfewTime ? form.curfewTime : undefined;
 
+      const safeLat =
+        typeof form.latitude === 'number' &&
+        !Number.isNaN(form.latitude) &&
+        (form.latitude !== 0 || form.longitude !== 0)
+          ? form.latitude
+          : userLocation.latitude || SANTIAGO_COORDINATES.latitude;
+      const safeLng =
+        typeof form.longitude === 'number' &&
+        !Number.isNaN(form.longitude) &&
+        (form.latitude !== 0 || form.longitude !== 0)
+          ? form.longitude
+          : userLocation.longitude || SANTIAGO_COORDINATES.longitude;
+
       const payload: CreatePensionDto = {
         title: trimmedTitle,
         description: trimmedDescription,
         address: trimmedAddress,
         city: trimmedCity,
         neighborhood: trimmedNeighborhood,
-        latitude: form.latitude,
-        longitude: form.longitude,
+        latitude: safeLat,
+        longitude: safeLng,
         baseMonthlyPrice: parsedPrice,
         deposit: parsedDeposit && !Number.isNaN(parsedDeposit) ? parsedDeposit : undefined,
         currency: 'CLP',
