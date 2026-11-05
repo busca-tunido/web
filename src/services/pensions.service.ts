@@ -5,6 +5,7 @@ import type {
   CreatePensionDto,
   DeleteResultDto,
   PaginatedPensionsResponse,
+  PensionAmenityCatalogItemDto,
   PensionDetailDto,
   PensionItemDto,
   PriceHistogramResponse,
@@ -120,6 +121,16 @@ export async function fetchMinePensions(): Promise<ApiResponse<PensionItemDto[]>
   return wrapApiResponse<PensionItemDto[]>(result, 'Error al obtener pensiones propias');
 }
 
+export async function fetchAmenitiesCatalog(): Promise<
+  ApiResponse<PensionAmenityCatalogItemDto[]>
+> {
+  const result = await apiFetch.GET('/pensions/amenities');
+  return wrapApiResponse<PensionAmenityCatalogItemDto[]>(
+    result,
+    'Error al obtener catálogo de comodidades',
+  );
+}
+
 export const pensionsService = {
   fetchPaginatedPensions,
   fetchPensionDetail,
@@ -127,6 +138,8 @@ export const pensionsService = {
   fetchNearbyPensions,
   fetchPriceHistogram,
   fetchMinePensions,
+  fetchAmenitiesCatalog,
+  getAmenities: fetchAmenitiesCatalog,
   createPension,
   updatePension,
   update: updatePension,

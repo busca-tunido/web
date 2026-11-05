@@ -1612,6 +1612,57 @@
         "tags": ["Pensions"]
       }
     },
+    "/pensions/amenities": {
+      "get": {
+        "operationId": "PensionsController_getAmenities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all pension amenities grouped by category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "example": "2026-11-02T01:00:00.000Z"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PensionAmenityCatalogItemDto"
+                      }
+                    }
+                  },
+                  "required": ["success", "statusCode", "timestamp", "data"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno del servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List all available pension amenities catalog",
+        "tags": ["Pensions"]
+      }
+    },
     "/pensions/{idOrSlug}": {
       "get": {
         "operationId": "PensionsController_findOne",
@@ -5542,6 +5593,36 @@
           }
         },
         "required": ["id", "name", "pensionsCount", "latitude", "longitude"]
+      },
+      "PensionAmenityCatalogItemDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "wifi-alta-velocidad"
+          },
+          "name": {
+            "type": "string",
+            "example": "Wi-Fi fibra óptica alta velocidad"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "BASIC_UTILITY",
+              "ROOM_FEATURE",
+              "COMMON_AREA",
+              "STUDY_WORK",
+              "SAFETY_SECURITY"
+            ],
+            "example": "BASIC_UTILITY"
+          },
+          "iconKey": {
+            "type": "string",
+            "nullable": true,
+            "example": "wifi"
+          }
+        },
+        "required": ["slug", "name", "category"]
       },
       "CreatePensionDto": {
         "type": "object",

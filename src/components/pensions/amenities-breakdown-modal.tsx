@@ -48,7 +48,8 @@ export function AmenitiesBreakdownModal({
         : 'Alojamiento Mixto';
 
   const hasWifi = Boolean(
-    pension.amenitySlugs?.includes('wifi-alta-velocidad') ||
+    pension.internetIncluded ||
+      pension.amenitySlugs?.includes('wifi-alta-velocidad') ||
       pension.amenities?.some(
         (a) => (typeof a === 'string' ? a : a.slug) === 'wifi-alta-velocidad',
       ),
@@ -97,26 +98,56 @@ export function AmenitiesBreakdownModal({
             </div>
             <div className="grid grid-cols-2 gap-2.5">
               <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
-                <Droplets className="h-4 w-4 text-primary shrink-0" />
+                <Droplets
+                  className={`h-4 w-4 shrink-0 ${
+                    pension.waterIncluded ? 'text-primary' : 'text-muted-foreground/60'
+                  }`}
+                />
                 <div>
                   <p className="text-xs font-semibold text-foreground">Agua Potable</p>
-                  <p className="text-[10px] text-primary font-medium">Incluido sin costo</p>
+                  <p
+                    className={`text-[10px] font-medium ${
+                      pension.waterIncluded ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {pension.waterIncluded ? 'Incluido sin costo' : 'No incluido'}
+                  </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
-                <Zap className="h-4 w-4 text-primary shrink-0" />
+                <Zap
+                  className={`h-4 w-4 shrink-0 ${
+                    pension.electricityIncluded ? 'text-primary' : 'text-muted-foreground/60'
+                  }`}
+                />
                 <div>
                   <p className="text-xs font-semibold text-foreground">Luz y Electricidad</p>
-                  <p className="text-[10px] text-primary font-medium">Incluido sin costo</p>
+                  <p
+                    className={`text-[10px] font-medium ${
+                      pension.electricityIncluded ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {pension.electricityIncluded ? 'Incluido sin costo' : 'No incluido'}
+                  </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
-                <Flame className="h-4 w-4 text-primary shrink-0" />
+                <Flame
+                  className={`h-4 w-4 shrink-0 ${
+                    pension.gasIncluded ? 'text-primary' : 'text-muted-foreground/60'
+                  }`}
+                />
                 <div>
                   <p className="text-xs font-semibold text-foreground">Gas y Calefont</p>
-                  <p className="text-[10px] text-primary font-medium">Incluido sin costo</p>
+                  <p
+                    className={`text-[10px] font-medium ${
+                      pension.gasIncluded ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {pension.gasIncluded ? 'Incluido sin costo' : 'No incluido'}
+                  </p>
                 </div>
               </div>
 
