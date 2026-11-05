@@ -1,22 +1,36 @@
 'use client';
 
 import {
+  Archive,
   Ban,
+  Bath,
+  Bed,
   BookOpen,
-  CheckCircle2,
+  Check,
   ChevronLeft,
   Clock,
+  Coffee,
+  Disc,
   Droplets,
   Flame,
-  Home,
+  Key,
+  Monitor,
   Moon,
-  Shield,
+  PawPrint,
+  Printer,
+  ShieldCheck,
+  Sparkles,
+  Sun,
+  Trees,
   Users,
+  Utensils,
+  Video,
   VolumeX,
   Wifi,
-  Wind,
+  X,
   Zap,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
   Drawer,
@@ -25,7 +39,9 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
-import type { PensionItem } from '@/lib/types';
+import { isApiSuccess } from '@/lib/api-response';
+import type { PensionAmenityCatalogItemDto, PensionItem } from '@/lib/types';
+import { pensionsService } from '@/services/pensions.service';
 
 type AmenitiesBreakdownModalProps = {
   isOpen: boolean;
@@ -33,11 +49,200 @@ type AmenitiesBreakdownModalProps = {
   pension: PensionItem;
 };
 
+const DEFAULT_AMENITIES_CATALOG: readonly PensionAmenityCatalogItemDto[] = [
+  {
+    slug: 'wifi-alta-velocidad',
+    name: 'Wi-Fi fibra óptica alta velocidad',
+    category: 'BASIC_UTILITY',
+    iconKey: 'wifi',
+  },
+  {
+    slug: 'agua-caliente',
+    name: 'Agua caliente 24/7',
+    category: 'BASIC_UTILITY',
+    iconKey: 'droplet',
+  },
+  {
+    slug: 'luz-incluida',
+    name: 'Electricidad incluida en renta',
+    category: 'BASIC_UTILITY',
+    iconKey: 'zap',
+  },
+  {
+    slug: 'gas-incluido',
+    name: 'Gas incluido',
+    category: 'BASIC_UTILITY',
+    iconKey: 'flame',
+  },
+  {
+    slug: 'calefaccion',
+    name: 'Calefacción central o estufa',
+    category: 'BASIC_UTILITY',
+    iconKey: 'thermometer',
+  },
+  {
+    slug: 'bano-privado',
+    name: 'Baño privado en habitación',
+    category: 'ROOM_FEATURE',
+    iconKey: 'bath',
+  },
+  {
+    slug: 'escritorio-estudio',
+    name: 'Escritorio y silla ergonómica',
+    category: 'ROOM_FEATURE',
+    iconKey: 'monitor',
+  },
+  {
+    slug: 'closet-amplio',
+    name: 'Clóset empotrado amplio',
+    category: 'ROOM_FEATURE',
+    iconKey: 'archive',
+  },
+  {
+    slug: 'cama-plaza-media',
+    name: 'Cama 1.5 plazas con colchón nuevo',
+    category: 'ROOM_FEATURE',
+    iconKey: 'bed',
+  },
+  {
+    slug: 'ventana-exterior',
+    name: 'Ventana al exterior con luz natural',
+    category: 'ROOM_FEATURE',
+    iconKey: 'sun',
+  },
+  {
+    slug: 'cocina-equipada',
+    name: 'Cocina compartida full equipada',
+    category: 'COMMON_AREA',
+    iconKey: 'utensils',
+  },
+  {
+    slug: 'lavadora-secadora',
+    name: 'Lavandería (lavadora y secadora)',
+    category: 'COMMON_AREA',
+    iconKey: 'disc',
+  },
+  {
+    slug: 'living-comedor',
+    name: 'Sala de estar y comedor compartido',
+    category: 'COMMON_AREA',
+    iconKey: 'coffee',
+  },
+  {
+    slug: 'patio-terraza',
+    name: 'Terraza / Patio al aire libre',
+    category: 'COMMON_AREA',
+    iconKey: 'trees',
+  },
+  {
+    slug: 'sala-estudio-cowork',
+    name: 'Sala de estudio silenciosa y coworking',
+    category: 'STUDY_WORK',
+    iconKey: 'book-open',
+  },
+  {
+    slug: 'impresora-scanner',
+    name: 'Punto de impresión y escáner',
+    category: 'STUDY_WORK',
+    iconKey: 'printer',
+  },
+  {
+    slug: 'conserjeria-24-7',
+    name: 'Conserjería / Control de acceso 24/7',
+    category: 'SAFETY_SECURITY',
+    iconKey: 'shield',
+  },
+  {
+    slug: 'camaras-seguridad',
+    name: 'Cámaras de vigilancia en accesos',
+    category: 'SAFETY_SECURITY',
+    iconKey: 'video',
+  },
+  {
+    slug: 'cerradura-digital',
+    name: 'Cerradura digital en dormitorios',
+    category: 'SAFETY_SECURITY',
+    iconKey: 'key',
+  },
+];
+
+const AMENITY_ICON_MAP: Record<string, typeof Wifi> = {
+  wifi: Wifi,
+  droplet: Droplets,
+  zap: Zap,
+  flame: Flame,
+  thermometer: Flame,
+  bath: Bath,
+  monitor: Monitor,
+  archive: Archive,
+  bed: Bed,
+  sun: Sun,
+  utensils: Utensils,
+  disc: Disc,
+  coffee: Coffee,
+  trees: Trees,
+  'book-open': BookOpen,
+  printer: Printer,
+  shield: ShieldCheck,
+  video: Video,
+  key: Key,
+};
+
+const CATEGORIES: ReadonlyArray<{
+  key: 'BASIC_UTILITY' | 'ROOM_FEATURE' | 'COMMON_AREA' | 'STUDY_WORK' | 'SAFETY_SECURITY';
+  title: string;
+  icon: typeof Wifi;
+}> = [
+  { key: 'BASIC_UTILITY', title: 'Servicios Básicos', icon: Zap },
+  { key: 'ROOM_FEATURE', title: 'Habitación y Confort', icon: Bed },
+  { key: 'COMMON_AREA', title: 'Áreas Comunes', icon: Utensils },
+  { key: 'STUDY_WORK', title: 'Estudio y Trabajo', icon: BookOpen },
+  { key: 'SAFETY_SECURITY', title: 'Seguridad', icon: ShieldCheck },
+];
+
+let cachedAmenitiesCatalog: PensionAmenityCatalogItemDto[] | null = null;
+
 export function AmenitiesBreakdownModal({
   isOpen,
   onClose,
   pension,
 }: AmenitiesBreakdownModalProps) {
+  const [catalog, setCatalog] = useState<PensionAmenityCatalogItemDto[]>(
+    cachedAmenitiesCatalog ?? [...DEFAULT_AMENITIES_CATALOG],
+  );
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (cachedAmenitiesCatalog && cachedAmenitiesCatalog.length > 0) {
+      setCatalog(cachedAmenitiesCatalog);
+      return;
+    }
+
+    let isMounted = true;
+    const loadAmenities = async () => {
+      try {
+        const res = await (pensionsService.fetchAmenitiesCatalog?.() ?? Promise.resolve(null));
+        if (
+          isMounted &&
+          res &&
+          isApiSuccess(res) &&
+          Array.isArray(res.data) &&
+          res.data.length > 0
+        ) {
+          cachedAmenitiesCatalog = res.data;
+          setCatalog(res.data);
+        }
+      } catch {
+        // Fallback to defaults
+      }
+    };
+    void loadAmenities();
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const genderPreferenceLabel =
@@ -47,13 +252,44 @@ export function AmenitiesBreakdownModal({
         ? 'Alojamiento Exclusivo Hombres'
         : 'Alojamiento Mixto';
 
+  const rawAmenitySlugs: string[] = Array.isArray(pension.amenitySlugs)
+    ? [...pension.amenitySlugs]
+    : Array.isArray(pension.amenities)
+      ? pension.amenities
+          .map((a) => (typeof a === 'string' ? a : a.slug))
+          .filter((s): s is string => Boolean(s))
+      : [];
+
   const hasWifi = Boolean(
     pension.internetIncluded ||
-      pension.amenitySlugs?.includes('wifi-alta-velocidad') ||
+      rawAmenitySlugs.includes('wifi-alta-velocidad') ||
       pension.amenities?.some(
         (a) => (typeof a === 'string' ? a : a.slug) === 'wifi-alta-velocidad',
       ),
   );
+
+  const activeSlugs = new Set<string>(rawAmenitySlugs);
+  if (hasWifi) {
+    activeSlugs.add('wifi-alta-velocidad');
+  } else {
+    activeSlugs.delete('wifi-alta-velocidad');
+  }
+
+  const isAmenityActive = (slug: string): boolean => {
+    if (slug === 'wifi-alta-velocidad') return hasWifi;
+    if (slug === 'agua-caliente') {
+      return Boolean(pension.waterIncluded || activeSlugs.has('agua-caliente'));
+    }
+    if (slug === 'luz-incluida') {
+      return Boolean(pension.electricityIncluded || activeSlugs.has('luz-incluida'));
+    }
+    if (slug === 'gas-incluido') {
+      return Boolean(pension.gasIncluded || activeSlugs.has('gas-incluido'));
+    }
+    return activeSlugs.has(slug);
+  };
+
+  const activeTotalCount = catalog.filter((am) => isAmenityActive(am.slug)).length;
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -80,263 +316,172 @@ export function AmenitiesBreakdownModal({
 
         <div className="overflow-y-auto flex-1 px-4 py-4 space-y-6">
           <DrawerHeader className="p-0 text-left">
-            <DrawerTitle className="text-lg font-bold text-foreground">
-              Comodidades y normas de convivencia
-            </DrawerTitle>
-            <DrawerDescription className="text-xs text-muted-foreground mt-1">
-              Detalle completo de los servicios incluidos y reglas del alojamiento en{' '}
-              <span className="font-semibold text-foreground">{pension.title}</span>.
-            </DrawerDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <DrawerTitle className="text-lg font-bold text-foreground">
+                  Servicios y Comodidades
+                </DrawerTitle>
+                <DrawerDescription className="text-xs text-muted-foreground mt-0.5">
+                  Revisa qué servicios están incluidos y cuáles no en{' '}
+                  <span className="font-semibold text-foreground">{pension.title}</span>.
+                </DrawerDescription>
+              </div>
+              <Badge
+                variant="outline"
+                className="text-xs font-semibold shrink-0 self-start sm:self-auto"
+              >
+                {activeTotalCount} de {catalog.length} incluidos
+              </Badge>
+            </div>
           </DrawerHeader>
 
-          <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
-                Servicios Básicos Incluidos en la Mensualidad
+          {CATEGORIES.map((cat) => {
+            const items = catalog.filter((a) => a.category === cat.key);
+            if (items.length === 0) return null;
+
+            const CategoryIcon = cat.icon;
+            const activeCountInCat = items.filter((a) => isAmenityActive(a.slug)).length;
+
+            return (
+              <section key={cat.key} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CategoryIcon className="h-4 w-4 text-primary" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                      {cat.title}
+                    </h3>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground font-medium">
+                    {activeCountInCat} de {items.length}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {items.map((am) => {
+                    const active = isAmenityActive(am.slug);
+                    const Icon = (am.iconKey && AMENITY_ICON_MAP[am.iconKey]) || Sparkles;
+
+                    if (active) {
+                      return (
+                        <div
+                          key={am.slug}
+                          className="flex items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 p-3 shadow-2xs"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-xs font-semibold text-foreground truncate">
+                                {am.name}
+                              </span>
+                              <span className="text-[10px] text-primary font-medium">
+                                Incluido en la mensualidad
+                              </span>
+                            </div>
+                          </div>
+                          <Check className="h-4 w-4 text-primary shrink-0 ml-1" />
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={am.slug}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/10 p-3 opacity-40 select-none"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground/70">
+                            <Icon className="h-4 w-4 text-muted-foreground/70" />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-medium text-muted-foreground truncate">
+                              {am.name}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground/70">
+                              No disponible
+                            </span>
+                          </div>
+                        </div>
+                        <X className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0 ml-1" />
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+
+          <section className="space-y-3 pt-3 border-t border-border/60">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                Normas y Reglas de la Casa
               </h3>
             </div>
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
-                <Droplets
-                  className={`h-4 w-4 shrink-0 ${
-                    pension.waterIncluded ? 'text-primary' : 'text-muted-foreground/60'
-                  }`}
-                />
-                <div>
-                  <p className="text-xs font-semibold text-foreground">Agua Potable</p>
-                  <p
-                    className={`text-[10px] font-medium ${
-                      pension.waterIncluded ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    {pension.waterIncluded ? 'Incluido sin costo' : 'No incluido'}
-                  </p>
-                </div>
-              </div>
 
-              <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
-                <Zap
-                  className={`h-4 w-4 shrink-0 ${
-                    pension.electricityIncluded ? 'text-primary' : 'text-muted-foreground/60'
-                  }`}
-                />
-                <div>
-                  <p className="text-xs font-semibold text-foreground">Luz y Electricidad</p>
-                  <p
-                    className={`text-[10px] font-medium ${
-                      pension.electricityIncluded ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    {pension.electricityIncluded ? 'Incluido sin costo' : 'No incluido'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
-                <Flame
-                  className={`h-4 w-4 shrink-0 ${
-                    pension.gasIncluded ? 'text-primary' : 'text-muted-foreground/60'
-                  }`}
-                />
-                <div>
-                  <p className="text-xs font-semibold text-foreground">Gas y Calefont</p>
-                  <p
-                    className={`text-[10px] font-medium ${
-                      pension.gasIncluded ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    {pension.gasIncluded ? 'Incluido sin costo' : 'No incluido'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2.5 rounded-xl border border-border/80 bg-card/80 p-2.5 shadow-2xs">
-                <Wifi
-                  className={`h-4 w-4 shrink-0 ${
-                    hasWifi ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                />
-                <div>
-                  <p className="text-xs font-semibold text-foreground">Internet Fibra Óptica</p>
-                  <p
-                    className={`text-[10px] font-medium ${
-                      hasWifi ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    {hasWifi ? 'Alta velocidad libre' : 'No incluido'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Comodidades por Área
-            </h3>
-
-            <div className="rounded-2xl border border-border bg-muted/20 p-3.5 space-y-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                <Home className="h-4 w-4 text-primary" />
-                <span>Equipamiento de Dormitorios</span>
-              </div>
-              <ul className="space-y-2 text-xs text-foreground/85">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>Cama con colchón cómodo y juego de sábanas base</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>Escritorio amplio con silla ergonómica de estudio</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>Clóset individual con cajonera y colgador</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>Enchufes accesibles junto al escritorio y velador</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="rounded-2xl border border-border bg-muted/20 p-3.5 space-y-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                <Users className="h-4 w-4 text-primary" />
-                <span>Espacios Comunes y Cocina</span>
-              </div>
-              <ul className="space-y-2 text-xs text-foreground/85">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>Cocina completamente amoblada con microondas y hervidor</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>Refrigerador de libre uso con espacio individual designado</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>Comedor estudiantil y sala de estar compartida</span>
-                </li>
-                {(pension.amenitySlugs?.includes('lavadora-secadora') ||
-                  pension.amenities?.some(
-                    (a) => (typeof a === 'string' ? a : a.slug) === 'lavadora-secadora',
-                  )) && (
-                  <li className="flex items-start gap-2">
-                    <Wind className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                    <span>Lavadora automática y zona de secado / tendero</span>
-                  </li>
-                )}
-              </ul>
-            </div>
-
-            <div className="rounded-2xl border border-border bg-muted/20 p-3.5 space-y-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                <BookOpen className="h-4 w-4 text-primary" />
-                <span>Ambiente de Estudio y Tranquilidad</span>
-              </div>
-              <ul className="space-y-2 text-xs text-foreground/85">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>
-                    {pension.amenitySlugs?.includes('sala-estudio-cowork') ||
-                    pension.amenities?.some(
-                      (a) => (typeof a === 'string' ? a : a.slug) === 'sala-estudio-cowork',
-                    )
-                      ? 'Sala de estudio silenciosa exclusiva para residentes'
-                      : 'Espacio de estudio independiente en cada dormitorio'}
-                  </span>
-                </li>
-                {hasWifi && (
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                    <span>Cobertura de Wi-Fi de alta velocidad en todos los ambientes</span>
-                  </li>
-                )}
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>Iluminación LED natural y adecuada para lectura nocturna</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="rounded-2xl border border-border bg-muted/20 p-3.5 space-y-3">
-              <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                <Shield className="h-4 w-4 text-primary" />
-                <span>Seguridad y Tranquilidad</span>
-              </div>
-              <ul className="space-y-2 text-xs text-foreground/85">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>Cerradura de seguridad en puerta principal y llaves independientes</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <span>Entorno barrial seguro con acceso expedito al transporte</span>
-                </li>
-              </ul>
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-border bg-card p-4 space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Normas de Convivencia y Reglas de la Casa
-            </h3>
-
-            <div className="space-y-2.5 text-xs text-foreground/90">
-              <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+              <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/20 p-2.5">
                 <Clock className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-foreground">Horario de Llegada / Acceso</p>
-                  <p className="text-muted-foreground text-[11px] mt-0.5">
+                  <p className="font-semibold text-foreground">Horario de Acceso</p>
+                  <p className="text-[11px] text-muted-foreground">
                     {pension.curfewTime
-                      ? `Toque de queda: ${pension.curfewTime}`
-                      : 'Acceso las 24 horas con llave propia sin toque de queda.'}
+                      ? `Toque de queda: ${pension.curfewTime} hrs`
+                      : 'Acceso libre 24/7 con llave propia'}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-2.5">
+              <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/20 p-2.5">
                 <VolumeX className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-foreground">Horario de Silencio y Estudio</p>
-                  <p className="text-muted-foreground text-[11px] mt-0.5">
-                    23:00 a 07:00 hrs. Prohibido ruidos molestos en favor del descanso y certámenes.
+                  <p className="font-semibold text-foreground">Horario de Silencio</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {pension.quietHoursStart && pension.quietHoursEnd
+                      ? `${pension.quietHoursStart} a ${pension.quietHoursEnd} hrs`
+                      : '22:00 a 08:00 hrs'}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-2.5">
+              <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/20 p-2.5">
                 <Users className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-foreground">Política de Visitas</p>
-                  <p className="text-muted-foreground text-[11px] mt-0.5">
-                    {pension.guestsAllowed
-                      ? 'Visitas permitidas en áreas comunes diurnas con previo aviso.'
-                      : 'No se permiten visitas externas.'}
+                  <p className="font-semibold text-foreground">Visitas</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {pension.guestsAllowed ? 'Permitidas' : 'No permitidas'}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-2.5">
+              <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/20 p-2.5">
+                <PawPrint className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-foreground">Mascotas</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {pension.petsAllowed ? 'Permitidas' : 'No permitidas'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/20 p-2.5">
                 <Ban className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-foreground">Fumadores y Mascotas</p>
-                  <p className="text-muted-foreground text-[11px] mt-0.5">
-                    Espacio 100% libre de humo. No se admiten mascotas por respeto y posibles
-                    alergias comunitarias.
+                  <p className="font-semibold text-foreground">Fumadores</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {pension.smokingAllowed
+                      ? 'Permitido en zonas designadas'
+                      : 'Espacio libre de humo'}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 rounded-xl bg-muted/30 p-2.5">
+              <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/20 p-2.5">
                 <Moon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-foreground">Preferencia de Convivencia</p>
-                  <Badge variant="secondary" className="mt-1 text-[11px] font-semibold">
-                    {genderPreferenceLabel}
-                  </Badge>
+                  <p className="text-[11px] text-muted-foreground">{genderPreferenceLabel}</p>
                 </div>
               </div>
             </div>
