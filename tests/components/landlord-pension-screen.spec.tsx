@@ -58,6 +58,7 @@ const mockGetPensionContact = vi.fn(() => ({
 }));
 const mockOpenCreatePensionModal = vi.fn();
 const mockTogglePensionActive = vi.fn();
+const mockDeletePension = vi.fn();
 const mockUpdatePensionCustomContact = vi.fn();
 const mockUpdatePensionInList = vi.fn();
 const mockRefetchProposals = vi.fn();
@@ -66,6 +67,7 @@ vi.mock('@/contexts/landlord-context', () => ({
   useLandlord: () => ({
     openCreatePensionModal: mockOpenCreatePensionModal,
     togglePensionActive: mockTogglePensionActive,
+    deletePension: mockDeletePension,
     defaultContact: mockDefaultContact,
     getPensionContact: mockGetPensionContact,
     updatePensionCustomContact: mockUpdatePensionCustomContact,
@@ -157,5 +159,25 @@ describe('LandlordPensionScreen', () => {
         smokingAllowed: true,
       }),
     );
+  });
+
+  it('opens delete confirmation modal and invokes deletePension on confirmation', async () => {
+    mockDeletePension.mockResolvedValueOnce(true);
+
+    render(<LandlordPensionScreen pension={mockPension} />);
+
+    const openDeleteBtn = screen.getByRole('button', { name: /eliminar pensión/i });
+    expect(openDeleteBtn).toBeDefined();
+
+    fireEvent.click(openDeleteBtn);
+
+    expect(screen.getByText('¿Eliminar esta pensión?')).toBeDefined();
+
+    const confirmBtn = screen.getByRole('button', { name: /eliminar definitivamente/i });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(mockDeletePension).toHaveBeenCalledWith('6659f8c123456789abcdef01');
+    });
   });
 });

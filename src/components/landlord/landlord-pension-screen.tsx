@@ -21,6 +21,7 @@ import {
   RefreshCw,
   Save,
   ShieldCheck,
+  Trash2,
   User,
   Users,
   Wifi,
@@ -144,6 +145,7 @@ export function LandlordPensionScreen({
   const {
     openCreatePensionModal,
     togglePensionActive,
+    deletePension,
     defaultContact,
     getPensionContact,
     updatePensionCustomContact,
@@ -163,6 +165,9 @@ export function LandlordPensionScreen({
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState<boolean>(false);
   const [isProposalsDrawerOpen, setIsProposalsDrawerOpen] = useState<boolean>(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null);
 
   const [form, setForm] = useState<FormState>({
     waterIncluded: true,
@@ -402,6 +407,24 @@ export function LandlordPensionScreen({
       setShowConfirmActiveModal(false);
     } finally {
       setIsTogglingActive(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!effectivePensionId || isDeleting) return;
+    setIsDeleting(true);
+    setDeleteErrorMessage(null);
+    try {
+      const success = await deletePension(effectivePensionId);
+      if (success) {
+        setIsDeleteModalOpen(false);
+      } else {
+        setDeleteErrorMessage('No se pudo eliminar la pensión. Inténtalo nuevamente.');
+      }
+    } catch {
+      setDeleteErrorMessage('Ocurrió un error inesperado al eliminar la pensión.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -1186,6 +1209,33 @@ export function LandlordPensionScreen({
         </Card>
       </div>
 
+      <div className="rounded-2xl border border-destructive/25 bg-destructive/5 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+            <Trash2 className="h-5 w-5" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-foreground">Zona de Peligro</h4>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Dar de baja esta pensión la ocultará inmediatamente de las búsquedas de estudiantes y
+              la eliminará de tu panel de gestión.
+            </p>
+          </div>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => {
+            setDeleteErrorMessage(null);
+            setIsDeleteModalOpen(true);
+          }}
+          className="w-full sm:w-auto border-destructive/35 text-destructive hover:bg-destructive hover:text-white transition-colors text-xs font-bold cursor-pointer shrink-0"
+        >
+          <Trash2 className="h-4 w-4 mr-1.5" />
+          Eliminar Pensión
+        </Button>
+      </div>
+
       <div className="sticky bottom-16 md:bottom-4 z-30 p-4 border border-border/80 bg-background/95 backdrop-blur-md rounded-2xl shadow-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <Button
           type="button"
@@ -1277,6 +1327,54 @@ export function LandlordPensionScreen({
             >
               {isTogglingActive && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
               <span>{!isPensionActive ? 'Activar Publicación' : 'Pausar Publicación'}</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isDeleteModalOpen}
+        onOpenChange={(open) => !open && !isDeleting && setIsDeleteModalOpen(false)}
+      >
+        <DialogContent className="max-w-md p-5 sm:p-6 bg-background rounded-2xl">
+          <DialogHeader className="text-left space-y-1.5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-destructive/10 text-destructive mb-1">
+              <Trash2 className="h-6 w-6" />
+            </div>
+            <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
+              ¿Eliminar esta pensión?
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              La pensión &ldquo;{activePension?.title}&rdquo; dejará de estar disponible para los
+              estudiantes universitarios y se removerá de tu panel de gestión. Esta acción no se
+              puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+
+          {deleteErrorMessage && (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive font-medium">
+              {deleteErrorMessage}
+            </div>
+          )}
+
+          <DialogFooter className="flex flex-col sm:flex-row items-center justify-end gap-2 pt-4 border-t border-border/50">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isDeleting}
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="w-full sm:w-auto text-xs font-semibold cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              disabled={isDeleting}
+              onClick={handleConfirmDelete}
+              className="w-full sm:w-auto text-xs font-semibold bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-none cursor-pointer"
+            >
+              {isDeleting && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
+              <span>{isDeleting ? 'Eliminando...' : 'Eliminar Definitivamente'}</span>
             </Button>
           </DialogFooter>
         </DialogContent>

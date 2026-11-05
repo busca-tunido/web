@@ -30,6 +30,7 @@ export type LandlordContextValue = {
   isLoading: boolean;
   error: string | null;
   togglePensionActive: (pensionId: string, isActive: boolean) => Promise<void>;
+  deletePension: (pensionId: string) => Promise<boolean>;
   refetchPensions: (selectPensionId?: string) => Promise<void>;
   isCreatePensionOpen: boolean;
   setIsCreatePensionOpen: (open: boolean) => void;
@@ -342,6 +343,37 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
     }
   }, []);
 
+  const deletePension = useCallback(
+    async (pensionId: string): Promise<boolean> => {
+      try {
+        const response = await pensionsService.deletePension(pensionId);
+        if (isApiSuccess(response)) {
+          setPensions((prev) => prev.filter((p) => p.id !== pensionId));
+          setSelectedPension((current) => {
+            if (current && current.id === pensionId) {
+              const remaining = pensions.filter((p) => p.id !== pensionId);
+              return remaining[0] ?? null;
+            }
+            return current;
+          });
+          setCustomContacts((prev) => {
+            const next = { ...prev };
+            delete next[pensionId];
+            return next;
+          });
+          void refetchProposals();
+          return true;
+        }
+        setError(response.message || 'Error al eliminar la pensión');
+        return false;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error al eliminar la pensión');
+        return false;
+      }
+    },
+    [pensions, refetchProposals],
+  );
+
   const value = useMemo<LandlordContextValue>(
     () => ({
       pensions,
@@ -353,6 +385,7 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       isLoading,
       error,
       togglePensionActive,
+      deletePension,
       refetchPensions,
       isCreatePensionOpen,
       setIsCreatePensionOpen,
@@ -373,6 +406,7 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       isLoading,
       error,
       togglePensionActive,
+      deletePension,
       refetchPensions,
       isCreatePensionOpen,
       openCreatePensionModal,
