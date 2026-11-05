@@ -20,6 +20,22 @@ export function translateApiError(
 ): string {
   if (!error) return fallbackMessage;
 
+  if (typeof error === 'object' && error !== null) {
+    const errorObj = error as Record<string, unknown>;
+    const errorsList =
+      Array.isArray(errorObj.errors) && errorObj.errors.length > 0
+        ? errorObj.errors
+        : typeof errorObj.details === 'object' &&
+            errorObj.details !== null &&
+            Array.isArray((errorObj.details as Record<string, unknown>).errors)
+          ? (errorObj.details as { errors: unknown[] }).errors
+          : undefined;
+
+    if (errorsList && errorsList.length > 0 && typeof errorsList[0] === 'string') {
+      return errorsList[0];
+    }
+  }
+
   const code =
     typeof error === 'object' && error !== null && 'errorCode' in error
       ? (error as { errorCode: unknown }).errorCode
@@ -42,8 +58,21 @@ export function translateApiError(
       return 'Esta pensión ya está en tus favoritos.';
     case 'RATE_LIMIT_EXCEEDED':
       return 'Has alcanzado el límite de intentos. Por favor espera unos minutos antes de reintentar.';
-    case 'VALIDATION_FAILED':
+    case 'VALIDATION_FAILED': {
+      const rawMsg =
+        typeof error === 'object' && error !== null && 'message' in error
+          ? String((error as { message: unknown }).message)
+          : '';
+      if (
+        rawMsg &&
+        rawMsg.trim() !== '' &&
+        rawMsg.toLowerCase() !== 'validation failed' &&
+        !rawMsg.toLowerCase().includes('error')
+      ) {
+        return rawMsg;
+      }
       return 'Los datos ingresados no son válidos. Por favor, revisa la información ingresada.';
+    }
   }
 
   const raw =

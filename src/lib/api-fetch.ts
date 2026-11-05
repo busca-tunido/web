@@ -115,10 +115,21 @@ export function wrapApiResponse<T>(
   defaultErrorMessage = 'Ocurrió un error inesperado al procesar la solicitud.',
 ): ApiResponse<T> {
   if (result.error || !result.data || !result.response.ok) {
-    const errorEnvelope = result.error as components['schemas']['ErrorEnvelopeDto'] | undefined;
+    const errorEnvelope = result.error as
+      | (components['schemas']['ErrorEnvelopeDto'] & { errors?: string[] })
+      | undefined;
     const statusCode = result.response.status || errorEnvelope?.statusCode || 500;
-    const rawMessage = errorEnvelope?.message || result.response.statusText;
-    const message = formatFriendlyErrorMessage(statusCode, rawMessage) || defaultErrorMessage;
+    const firstValidationError =
+      Array.isArray(errorEnvelope?.errors) &&
+      errorEnvelope.errors.length > 0 &&
+      typeof errorEnvelope.errors[0] === 'string'
+        ? errorEnvelope.errors[0]
+        : undefined;
+    const rawMessage = firstValidationError || errorEnvelope?.message || result.response.statusText;
+    const message =
+      firstValidationError ||
+      formatFriendlyErrorMessage(statusCode, rawMessage) ||
+      defaultErrorMessage;
 
     let errorType: ApiError['errorType'] = 'SERVER_ERROR';
     if (statusCode === 400) errorType = 'VALIDATION_ERROR';

@@ -247,10 +247,21 @@ export function RoomEditorDrawer({
     if (e) e.preventDefault();
 
     const trimmedTitle = form.title.trim();
+    const trimmedRoomNumber = form.roomNumber.trim();
     const parsedPrice = Number(form.monthlyPrice);
 
-    if (!trimmedTitle) {
-      setErrorMessage('Ingresa el nombre o identificación de la habitación.');
+    if (trimmedTitle.length < 3) {
+      setErrorMessage('El nombre de la habitación debe tener al menos 3 caracteres.');
+      return;
+    }
+
+    if (trimmedTitle.length > 80) {
+      setErrorMessage('El nombre de la habitación no puede superar los 80 caracteres.');
+      return;
+    }
+
+    if (trimmedRoomNumber.length > 20) {
+      setErrorMessage('El número o identificador no puede superar los 20 caracteres.');
       return;
     }
 
@@ -271,6 +282,7 @@ export function RoomEditorDrawer({
           uploadedUrls = uploadRes.data.urls;
         } else if (!isApiSuccess(uploadRes)) {
           const friendly = translateApiError(
+            uploadRes,
             uploadRes.message || 'No fue posible subir las imágenes de la habitación.',
           );
           setErrorMessage(friendly);
@@ -282,7 +294,7 @@ export function RoomEditorDrawer({
 
       const allImages = [...form.images, ...uploadedUrls];
       const parsedDeposit = form.deposit.trim() ? Number(form.deposit) : undefined;
-      const roomNumberVal = form.roomNumber.trim() || trimmedTitle;
+      const roomNumberVal = trimmedRoomNumber ? trimmedRoomNumber.slice(0, 20) : undefined;
 
       if (isEditing && roomToEdit) {
         const updatePayload: UpdateRoomDto = {
@@ -303,6 +315,7 @@ export function RoomEditorDrawer({
         const res = await updateRoom(roomToEdit.id, updatePayload);
         if (!isApiSuccess(res)) {
           const friendly = translateApiError(
+            res,
             res.message || 'No fue posible actualizar la habitación.',
           );
           setErrorMessage(friendly);
@@ -328,7 +341,10 @@ export function RoomEditorDrawer({
 
         const res = await createPensionRoom(pensionId, createPayload);
         if (!isApiSuccess(res)) {
-          const friendly = translateApiError(res.message || 'No fue posible crear la habitación.');
+          const friendly = translateApiError(
+            res,
+            res.message || 'No fue posible crear la habitación.',
+          );
           setErrorMessage(friendly);
           toast.error(friendly);
           setIsSubmitting(false);
@@ -431,19 +447,48 @@ export function RoomEditorDrawer({
             )}
 
             <div className="space-y-1.5">
-              <label
-                htmlFor="room-name-input"
-                className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
-              >
-                Nombre o Identificador <span className="text-destructive">*</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="room-name-input"
+                  className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                >
+                  Nombre de la Habitación <span className="text-destructive">*</span>
+                </label>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  {form.title.length}/80
+                </span>
+              </div>
               <input
                 id="room-name-input"
                 type="text"
                 maxLength={80}
-                placeholder="Ej: Habitación 101 - Individual con escritorio"
+                placeholder="Ej: Habitación Individual Luminosa"
                 value={form.title}
                 onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="room-number-input"
+                  className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                >
+                  N° o Código Corto{' '}
+                  <span className="text-[10px] lowercase font-normal">(opcional)</span>
+                </label>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  {form.roomNumber.length}/20
+                </span>
+              </div>
+              <input
+                id="room-number-input"
+                type="text"
+                maxLength={20}
+                placeholder="Ej: 101, 2B, Hab 1"
+                value={form.roomNumber}
+                onChange={(e) => setForm((prev) => ({ ...prev, roomNumber: e.target.value }))}
                 className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
               />
             </div>
