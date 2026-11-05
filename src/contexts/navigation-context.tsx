@@ -2,20 +2,22 @@
 
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { type UrlNavigationState, useUrlNavigationState } from '@/hooks/use-url-navigation-state';
-import type { NavTab, PensionItem, UniversityInfo } from '@/lib/types';
+import type { FavoritePensionSummaryDto, NavTab, PensionItem, UniversityInfo } from '@/lib/types';
 
 export type NavigationContextType = {
   activeTab: NavTab;
   navigateTab: (tab: NavTab) => void;
-  selectedPension: PensionItem | null;
-  selectPension: (pension: PensionItem | null) => void;
-  setSelectedPension: React.Dispatch<React.SetStateAction<PensionItem | null>>;
+  selectedPension: PensionItem | FavoritePensionSummaryDto | null;
+  selectPension: (pension: PensionItem | FavoritePensionSummaryDto | null) => void;
+  setSelectedPension: React.Dispatch<
+    React.SetStateAction<PensionItem | FavoritePensionSummaryDto | null>
+  >;
   mapTargetCity: string | null;
   setMapTargetCity: React.Dispatch<React.SetStateAction<string | null>>;
   selectedUniversity: UniversityInfo | null;
   setSelectedUniversity: React.Dispatch<React.SetStateAction<UniversityInfo | null>>;
   isPensionDetailOpen: boolean;
-  openPensionDetail: (pension: PensionItem) => void;
+  openPensionDetail: (pension: PensionItem | FavoritePensionSummaryDto) => void;
   closePensionDetail: () => void;
   isFiltersOpen: boolean;
   openFilters: () => void;
@@ -70,14 +72,16 @@ export function NavigationProvider({
 
   const [mapTargetCity, setMapTargetCity] = useState<string | null>(urlCity);
   const [selectedUniversity, setSelectedUniversity] = useState<UniversityInfo | null>(null);
-  const [selectedPension, setSelectedPension] = useState<PensionItem | null>(null);
+  const [selectedPension, setSelectedPension] = useState<
+    PensionItem | FavoritePensionSummaryDto | null
+  >(null);
 
-  const selectPension = useCallback((pension: PensionItem | null) => {
+  const selectPension = useCallback((pension: PensionItem | FavoritePensionSummaryDto | null) => {
     setSelectedPension(pension);
   }, []);
 
   const openPensionDetail = useCallback(
-    (pension: PensionItem) => {
+    (pension: PensionItem | FavoritePensionSummaryDto) => {
       setSelectedPension(pension);
       openDetailByUrl(pension.id);
     },

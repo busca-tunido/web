@@ -2,11 +2,11 @@
 
 import { ArrowRight, Camera, CheckCircle2, ChevronRight, GraduationCap, Star } from 'lucide-react';
 import Image from 'next/image';
-import type { PensionItem, PensionReview } from '@/lib/types';
+import type { PensionDetailViewItem, PensionReview } from '@/lib/types';
 import { normalizeImageUrl } from '@/lib/utils';
 
 type PensionReviewsPreviewProps = {
-  pension: PensionItem;
+  pension: PensionDetailViewItem;
   reviews: PensionReview[];
   onOpenFullReviews: () => void;
 };
@@ -44,7 +44,7 @@ export function PensionReviewsPreview({
   onOpenFullReviews,
 }: PensionReviewsPreviewProps) {
   const displayReviews = reviews.slice(0, 5);
-  const totalCount = Math.max(reviews.length, pension.reviewsCount);
+  const totalCount = Math.max(reviews.length, pension.reviewsCount ?? 0);
 
   return (
     <div className="mb-6 rounded-2xl border border-border/80 bg-card/60 p-4 shadow-sm">

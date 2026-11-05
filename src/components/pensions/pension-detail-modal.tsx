@@ -4,11 +4,11 @@ import { Loader2 } from 'lucide-react';
 import { NetworkErrorBanner, NetworkErrorState } from '@/components/common/network-error-state';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { usePensionDetail } from '@/hooks/use-pension-detail';
-import type { PensionItem } from '@/lib/types';
+import type { FavoritePensionSummaryDto, PensionItem } from '@/lib/types';
 import { PensionDetailContent } from './pension-detail-content';
 
 type PensionDetailModalProps = {
-  pension?: PensionItem | null;
+  pension?: PensionItem | FavoritePensionSummaryDto | null;
   pensionId?: string | null;
   isOpen: boolean;
   onClose: () => void;

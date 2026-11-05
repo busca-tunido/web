@@ -34,6 +34,7 @@ import { useTheme } from '@/lib/theme-context';
 import type {
   CampusAreaDto,
   CityInfo,
+  FavoritePensionSummaryDto,
   PensionItem,
   SearchFilters,
   UniversityInfo,
@@ -44,7 +45,7 @@ import { fetchCampusAreas } from '@/services/universities.service';
 type MapScreenProps = {
   pensions: PensionItem[];
   cities: CityInfo[];
-  selectedPension: PensionItem | null;
+  selectedPension: PensionItem | FavoritePensionSummaryDto | null;
   selectedCity: string | null;
   selectedUniversity: UniversityInfo | null;
   userLocation: UserCoordinates | null;
@@ -531,7 +532,13 @@ export function MapScreen({
     if (selectedUniversity) {
       return { latitude: selectedUniversity.latitude, longitude: selectedUniversity.longitude };
     }
-    if (selectedPension) {
+    if (
+      selectedPension &&
+      'latitude' in selectedPension &&
+      'longitude' in selectedPension &&
+      typeof selectedPension.latitude === 'number' &&
+      typeof selectedPension.longitude === 'number'
+    ) {
       return { latitude: selectedPension.latitude, longitude: selectedPension.longitude };
     }
     if (selectedCity) {
@@ -963,7 +970,13 @@ export function MapScreen({
         } else {
           fetchPensionsForCityRef.current(initProps.selectedCity);
         }
-      } else if (initProps.selectedPension) {
+      } else if (
+        initProps.selectedPension &&
+        'latitude' in initProps.selectedPension &&
+        'longitude' in initProps.selectedPension &&
+        typeof initProps.selectedPension.latitude === 'number' &&
+        typeof initProps.selectedPension.longitude === 'number'
+      ) {
         initialLat = initProps.selectedPension.latitude;
         initialLng = initProps.selectedPension.longitude;
         initialZoom = 15;
@@ -1030,7 +1043,15 @@ export function MapScreen({
       renderUserMarkerRef.current();
 
       const initialPension = initProps.selectedPension;
-      if (initialPension && !initProps.selectedCity && !initProps.selectedUniversity) {
+      if (
+        initialPension &&
+        'latitude' in initialPension &&
+        'longitude' in initialPension &&
+        typeof initialPension.latitude === 'number' &&
+        typeof initialPension.longitude === 'number' &&
+        !initProps.selectedCity &&
+        !initProps.selectedUniversity
+      ) {
         setTimeout(() => {
           if (isMounted) {
             panToPensionRef.current(initialPension.latitude, initialPension.longitude);
@@ -1091,9 +1112,16 @@ export function MapScreen({
       if (desktopListRef.current) {
         desktopListRef.current.scrollTop = 0;
       }
-      if (lastPannedPensionIdRef.current !== selectedPension.id) {
-        lastPannedPensionIdRef.current = selectedPension.id;
-        panToPension(selectedPension.latitude, selectedPension.longitude);
+      if (
+        'latitude' in selectedPension &&
+        'longitude' in selectedPension &&
+        typeof selectedPension.latitude === 'number' &&
+        typeof selectedPension.longitude === 'number'
+      ) {
+        if (lastPannedPensionIdRef.current !== selectedPension.id) {
+          lastPannedPensionIdRef.current = selectedPension.id;
+          panToPension(selectedPension.latitude, selectedPension.longitude);
+        }
       }
     }
   }, [selectedPension, panToPension]);

@@ -6,8 +6,8 @@ import { env } from '@/env';
 import { useTheme } from '@/lib/theme-context';
 
 export type PensionLocationMapProps = {
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
   title: string;
   city: string;
   neighborhood?: string;
@@ -71,6 +71,7 @@ export function PensionLocationMap({
   latestPropsRef.current = { latitude, longitude, title, resolvedTheme };
 
   useEffect(() => {
+    if (!hasValidCoords) return;
     let isMounted = true;
     let observer: ResizeObserver | null = null;
     const timers: NodeJS.Timeout[] = [];
@@ -81,8 +82,8 @@ export function PensionLocationMap({
       if (mapRef.current) return;
 
       const {
-        latitude: currentLat,
-        longitude: currentLng,
+        latitude: currentLat = 0,
+        longitude: currentLng = 0,
         resolvedTheme: currentTheme,
         title: currentTitle,
       } = latestPropsRef.current;
@@ -158,7 +159,7 @@ export function PensionLocationMap({
       markerRef.current = null;
       tileLayerRef.current = null;
     };
-  }, []);
+  }, [hasValidCoords]);
 
   useEffect(() => {
     if (tileLayerRef.current) {
@@ -167,12 +168,18 @@ export function PensionLocationMap({
   }, [resolvedTheme]);
 
   useEffect(() => {
-    if (mapRef.current && markerRef.current) {
+    if (
+      mapRef.current &&
+      markerRef.current &&
+      hasValidCoords &&
+      latitude !== undefined &&
+      longitude !== undefined
+    ) {
       mapRef.current.setView([latitude, longitude], 15, { animate: true });
       markerRef.current.setLatLng([latitude, longitude]);
       mapRef.current.invalidateSize();
     }
-  }, [latitude, longitude]);
+  }, [latitude, longitude, hasValidCoords]);
 
   const handleZoomIn = useCallback(() => {
     mapRef.current?.zoomIn();
@@ -183,7 +190,9 @@ export function PensionLocationMap({
   }, []);
 
   const handleRecenter = useCallback(() => {
-    mapRef.current?.setView([latitude, longitude], 15, { animate: true });
+    if (latitude !== undefined && longitude !== undefined) {
+      mapRef.current?.setView([latitude, longitude], 15, { animate: true });
+    }
   }, [latitude, longitude]);
 
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(

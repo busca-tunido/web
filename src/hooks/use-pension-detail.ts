@@ -2,20 +2,22 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isApiSuccess } from '@/lib/api-response';
-import type { PensionItem } from '@/lib/types';
+import type { FavoritePensionSummaryDto, PensionItem } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 
 export function usePensionDetail(
   pensionId: string | null,
-  initialPension?: PensionItem | null,
+  initialPension?: PensionItem | FavoritePensionSummaryDto | null,
 ): {
-  livePension: PensionItem | null;
-  activePension: PensionItem | null;
+  livePension: PensionItem | FavoritePensionSummaryDto | null;
+  activePension: PensionItem | FavoritePensionSummaryDto | null;
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 } {
-  const [livePension, setLivePension] = useState<PensionItem | null>(initialPension ?? null);
+  const [livePension, setLivePension] = useState<PensionItem | FavoritePensionSummaryDto | null>(
+    initialPension ?? null,
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
-import type { PensionItem } from '@/lib/types';
+import type { FavoritePensionSummaryDto, PensionItem } from '@/lib/types';
 
 const mockPension: PensionItem = {
   id: 'pension-100',
@@ -155,5 +155,42 @@ describe('PensionDetailModal without NavigationProvider', () => {
         />,
       );
     }).not.toThrow();
+  });
+
+  it('renders safely when opening a favorite pension summary with undefined rooms', () => {
+    const favoriteSummary: FavoritePensionSummaryDto = {
+      id: 'pension-fav-1',
+      slug: 'residencia-favorita',
+      title: 'Residencia Favorita',
+      city: 'Valparaíso',
+      neighborhood: 'Cerro Alegre',
+      baseMonthlyPrice: 280000,
+      ratingAverage: 4.5,
+      ratingCount: 8,
+      images: [
+        {
+          id: 'img-fav-1',
+          url: 'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/v1/shared/fallbacks/fallback.webp',
+          thumbnailUrl:
+            'https://br-gentle-butterfly-aevuizs0.storage.c-2.us-east-2.aws.neon.tech/uploads/v1/shared/fallbacks/fallback.webp',
+        },
+      ],
+      verificationStatus: 'OFFICIALLY_VERIFIED',
+    };
+
+    expect(() => {
+      render(
+        <PensionDetailModal
+          isOpen={true}
+          onClose={vi.fn()}
+          pension={favoriteSummary}
+          pensionId={favoriteSummary.id}
+        />,
+      );
+    }).not.toThrow();
+
+    expect(screen.getByText('Residencia Favorita')).toBeDefined();
+    expect(screen.getByText('$280.000 CLP/mes')).toBeDefined();
+    expect(screen.queryByText('Habitaciones Registradas')).toBeNull();
   });
 });

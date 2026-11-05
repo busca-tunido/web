@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { useOptionalNavigation } from '@/contexts/navigation-context';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { useAuth } from '@/lib/auth-context';
-import type { PensionItem, PensionReview } from '@/lib/types';
+import type { PensionDetailViewItem, PensionItem, PensionReview } from '@/lib/types';
 import { PensionReviewsModal } from '../reviews/pension-reviews-modal';
 import { PensionReviewsPreview } from '../reviews/pension-reviews-preview';
 import { PublishReviewModal } from '../reviews/publish-review-modal';
@@ -32,7 +32,7 @@ import { PensionLocationMap } from './pension-location-map';
 import { SuggestEditModal } from './suggest-edit-modal';
 
 export type PensionDetailContentProps = {
-  pension: PensionItem;
+  pension: PensionDetailViewItem;
   onBack?: () => void;
   showBackButton?: boolean;
 };
@@ -52,27 +52,34 @@ export function PensionDetailContent({
   const [isPublishReviewOpen, setIsPublishReviewOpen] = useState<boolean>(false);
   const [isSuggestEditOpen, setIsSuggestEditOpen] = useState<boolean>(false);
 
+  const initialCount =
+    ('reviewsCount' in initialPension && typeof initialPension.reviewsCount === 'number'
+      ? initialPension.reviewsCount
+      : 'ratingCount' in initialPension &&
+          typeof (initialPension as { ratingCount?: number }).ratingCount === 'number'
+        ? (initialPension as { ratingCount?: number }).ratingCount
+        : 0) ?? 0;
+
   const {
     reviews,
     ratingStats,
     refetch: reloadReviews,
   } = usePensionReviews(initialPension.id, {
     average: initialPension.ratingAverage ?? 0,
-    count: initialPension.reviewsCount ?? 0,
+    count: initialCount,
   });
 
-  const pension = useMemo(() => {
+  const pension: PensionDetailViewItem = useMemo(() => {
     const effectiveAverage =
       ratingStats.average > 0 ? ratingStats.average : (initialPension.ratingAverage ?? 0);
-    const effectiveCount =
-      ratingStats.count > 0 ? ratingStats.count : (initialPension.reviewsCount ?? 0);
+    const effectiveCount = ratingStats.count > 0 ? ratingStats.count : initialCount;
 
     return {
       ...initialPension,
       ratingAverage: effectiveAverage,
       reviewsCount: effectiveCount,
     };
-  }, [initialPension, ratingStats]);
+  }, [initialPension, ratingStats, initialCount]);
 
   const isFav = isFavorite(pension.id);
   const hasAlreadyReviewed = Boolean(user && reviews.some((r) => r.user?.id === user.id));
@@ -146,7 +153,7 @@ export function PensionDetailContent({
             ))}
           </div>
           <Badge className="bg-primary text-primary-foreground font-bold text-xs shadow">
-            ${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP/mes
+            ${(pension.baseMonthlyPrice ?? 0).toLocaleString('es-CL')} CLP/mes
           </Badge>
         </div>
       </div>
@@ -172,8 +179,8 @@ export function PensionDetailContent({
             <span>{pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}</span>
             <span className="text-muted-foreground font-normal underline decoration-muted-foreground/40">
               (
-              {pension.reviewsCount > 0
-                ? `${pension.reviewsCount} ${pension.reviewsCount === 1 ? 'reseña' : 'reseñas'}`
+              {(pension.reviewsCount ?? 0) > 0
+                ? `${pension.reviewsCount} ${(pension.reviewsCount ?? 0) === 1 ? 'reseña' : 'reseñas'}`
                 : 'Sin reseñas'}
               )
             </span>
@@ -186,7 +193,7 @@ export function PensionDetailContent({
         <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
           <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
           <span>
-            {pension.address}, {pension.neighborhood}, {pension.city}
+            {[pension.address, pension.neighborhood, pension.city].filter(Boolean).join(', ')}
           </span>
         </p>
       </div>
@@ -206,14 +213,16 @@ export function PensionDetailContent({
         </div>
       )}
 
-      <div className="mb-5">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-          Descripción de la Pensión
-        </h2>
-        <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
-          {pension.description}
-        </p>
-      </div>
+      {Boolean(pension.description) && (
+        <div className="mb-5">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+            Descripción de la Pensión
+          </h2>
+          <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
+            {pension.description}
+          </p>
+        </div>
+      )}
 
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2.5">
@@ -345,41 +354,50 @@ export function PensionDetailContent({
                 <span>Toque de queda: {pension.curfewTime}</span>
               </div>
             )}
-            <div className="flex items-start gap-2">
-              <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-              <span>{pension.guestsAllowed ? 'Visitas permitidas' : 'Sin visitas'}</span>
-            </div>
+            {pension.guestsAllowed !== undefined && (
+              <div className="flex items-start gap-2">
+                <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <span>{pension.guestsAllowed ? 'Visitas permitidas' : 'Sin visitas'}</span>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      <div className="mb-5">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-          Habitaciones Registradas
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {pension.rooms.map((room, idx) => (
-            <div
-              key={room.id || `room-${pension.id}-${idx}`}
-              className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3"
-            >
-              <div>
-                <h3 className="text-xs font-semibold text-foreground">{room.title}</h3>
-                <p className="text-[11px] text-muted-foreground">
-                  {room.hasPrivateBathroom ? 'Baño privado' : 'Baño compartido'} •{' '}
-                  {room.isAvailable ? 'Disponible' : 'Ocupada'}
-                </p>
-              </div>
-              <div className="text-right">
-                <span className="text-xs font-bold text-primary">
-                  ${(room.monthlyPrice ?? 0).toLocaleString('es-CL')}
-                </span>
-                <span className="block text-[10px] text-muted-foreground">CLP / mes</span>
-              </div>
+      {(() => {
+        const rooms = pension.rooms;
+        if (!Array.isArray(rooms) || rooms.length === 0) return null;
+
+        return (
+          <div className="mb-5">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+              Habitaciones Registradas
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {rooms.map((room, idx) => (
+                <div
+                  key={room.id || `room-${pension.id}-${idx}`}
+                  className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3"
+                >
+                  <div>
+                    <h3 className="text-xs font-semibold text-foreground">{room.title}</h3>
+                    <p className="text-[11px] text-muted-foreground">
+                      {room.hasPrivateBathroom ? 'Baño privado' : 'Baño compartido'} •{' '}
+                      {room.isAvailable ? 'Disponible' : 'Ocupada'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-bold text-primary">
+                      ${(room.monthlyPrice ?? 0).toLocaleString('es-CL')}
+                    </span>
+                    <span className="block text-[10px] text-muted-foreground">CLP / mes</span>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        );
+      })()}
 
       <PensionLocationMap
         latitude={pension.latitude}
@@ -446,7 +464,7 @@ export function PensionDetailContent({
         <PensionReviewsModal
           isOpen={isReviewsModalOpen}
           onClose={() => setIsReviewsModalOpen(false)}
-          pension={pension}
+          pension={pension as PensionItem}
           reviews={reviews}
         />
       )}
@@ -455,7 +473,7 @@ export function PensionDetailContent({
         <AmenitiesBreakdownModal
           isOpen={isAmenitiesModalOpen}
           onClose={() => setIsAmenitiesModalOpen(false)}
-          pension={pension}
+          pension={pension as PensionItem}
         />
       )}
 
@@ -463,7 +481,7 @@ export function PensionDetailContent({
         <PublishReviewModal
           isOpen={isPublishReviewOpen}
           onClose={() => setIsPublishReviewOpen(false)}
-          pension={pension}
+          pension={pension as PensionItem}
           onReviewPublished={handleReviewPublished}
         />
       )}
@@ -472,7 +490,7 @@ export function PensionDetailContent({
         <SuggestEditModal
           isOpen={isSuggestEditOpen}
           onClose={() => setIsSuggestEditOpen(false)}
-          pension={pension}
+          pension={pension as PensionItem}
         />
       )}
     </div>

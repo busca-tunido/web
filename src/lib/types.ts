@@ -35,6 +35,10 @@ export type StayDurationCategory = components['schemas']['StayDurationCategory']
 
 export type FavoriteItemDto = components['schemas']['FavoriteItemResponseDto'];
 export type FavoritePensionSummaryDto = components['schemas']['FavoritePensionSummaryDto'];
+export type PensionDetailViewItem = FavoritePensionSummaryDto &
+  Partial<Omit<PensionItem, keyof FavoritePensionSummaryDto>> & {
+    readonly reviewsCount?: number;
+  };
 
 export type ProposalDto = components['schemas']['ProposalResponseDto'];
 export type ProposalType = components['schemas']['ProposalType'];

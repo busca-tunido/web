@@ -14,7 +14,7 @@ import type { FavoritePensionSummaryDto, PensionItem } from '@/lib/types';
 
 type FavoritesScreenProps = {
   allPensions: PensionItem[];
-  onSelectPension: (pension: PensionItem) => void;
+  onSelectPension: (pension: PensionItem | FavoritePensionSummaryDto) => void;
   onExplore: () => void;
 };
 
@@ -96,7 +96,7 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
 
 type FavoritesGridProps = {
   savedPensions: (PensionItem | FavoritePensionSummaryDto)[];
-  onSelectPension: (pension: PensionItem) => void;
+  onSelectPension: (pension: PensionItem | FavoritePensionSummaryDto) => void;
   onExplore: () => void;
   toggleFavorite: (id: string) => void;
 };
@@ -139,7 +139,7 @@ function FavoritesGrid({
         >
           <button
             type="button"
-            onClick={() => onSelectPension(pension as PensionItem)}
+            onClick={() => onSelectPension(pension)}
             className="w-full flex flex-col text-left cursor-pointer"
           >
             <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm flex items-center justify-center">
