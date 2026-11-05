@@ -133,4 +133,11 @@ describe('PensionEditorDrawer - Map Coordinates & City Fallback', () => {
       expect(lng).not.toBe(0);
     });
   });
+
+  it('does not render Completar con GPS button', async () => {
+    render(<PensionEditorDrawer isOpen={true} onClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.queryByText(/Completar con GPS/i)).toBeNull();
+    });
+  });
 });

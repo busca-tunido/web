@@ -12,7 +12,6 @@ import {
   GraduationCap,
   Loader2,
   MapPin,
-  Navigation,
   ShieldCheck,
   User,
   Users,
@@ -199,7 +198,6 @@ export function PensionEditorDrawer({
   const [form, setForm] = useState<PensionFormState>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isLocating, setIsLocating] = useState<boolean>(false);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState<boolean>(false);
   const [isForwardGeocoding, setIsForwardGeocoding] = useState<boolean>(false);
   const [cities, setCities] = useState<CityInfo[]>([]);
@@ -482,69 +480,6 @@ export function PensionEditorDrawer({
     };
   }, [form.address, form.neighborhood, form.city]);
 
-  const handleCompleteWithGps = () => {
-    hasUserSelectedLocationRef.current = true;
-    if (typeof window === 'undefined' || !navigator.geolocation) {
-      setErrorMessage('La geolocalización no está disponible en este navegador.');
-      return;
-    }
-
-    setIsLocating(true);
-    setErrorMessage(null);
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const lat = Number(position.coords.latitude.toFixed(6));
-        const lng = Number(position.coords.longitude.toFixed(6));
-
-        isUpdatingFromMapRef.current = true;
-        setForm((prev) => ({
-          ...prev,
-          latitude: lat,
-          longitude: lng,
-        }));
-
-        try {
-          const result = await reverseGeocode(lat, lng);
-          if (result) {
-            const matchedCity = cities.find(
-              (c) => normalizeCityName(c.name) === normalizeCityName(result.city),
-            );
-            const resolvedCity = matchedCity
-              ? matchedCity.name
-              : cities.length > 0
-                ? findClosestCity(
-                    lat,
-                    lng,
-                    cities.map((c) => ({ lat: c.latitude, lng: c.longitude, name: c.name })),
-                  ).name
-                : result.city;
-
-            setForm((prev) => ({
-              ...prev,
-              latitude: lat,
-              longitude: lng,
-              city: resolvedCity,
-              neighborhood: result.neighborhood || prev.neighborhood,
-              address: result.address || prev.address,
-            }));
-          }
-        } finally {
-          setIsLocating(false);
-        }
-      },
-      (error) => {
-        setIsLocating(false);
-        setErrorMessage(
-          error.code === error.PERMISSION_DENIED
-            ? 'Permiso de ubicación denegado. Puedes seleccionar tu ubicación directamente en el mapa.'
-            : 'No fue posible obtener tu ubicación actual vía GPS.',
-        );
-      },
-      { timeout: 10000, enableHighAccuracy: true },
-    );
-  };
-
   const toggleAmenity = (slug: string) => {
     setForm((prev) => {
       const exists = prev.selectedAmenitySlugs.includes(slug);
@@ -787,24 +722,9 @@ export function PensionEditorDrawer({
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  <span>2. Ubicación y Ciudad</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCompleteWithGps}
-                  disabled={isLocating}
-                  className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:underline cursor-pointer disabled:opacity-50"
-                >
-                  {isLocating ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <Navigation className="h-3 w-3" />
-                  )}
-                  <span>{isLocating ? 'Obteniendo GPS...' : 'Completar con GPS'}</span>
-                </button>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <MapPin className="h-4 w-4 text-primary" />
+                <span>2. Ubicación y Ciudad</span>
               </div>
 
               <div className="space-y-2">
