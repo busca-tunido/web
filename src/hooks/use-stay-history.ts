@@ -5,6 +5,22 @@ import { isApiSuccess } from '@/lib/api-response';
 import type { StayHistoryItem } from '@/lib/types';
 import { staysService } from '@/services/stays.service';
 
+const SESSION_STAYS_COUNT_KEY = 'tunido_stays_count';
+
+function getInitialExpectedCount(): number {
+  if (typeof window === 'undefined') return 3;
+  try {
+    const raw = sessionStorage.getItem(SESSION_STAYS_COUNT_KEY);
+    if (raw !== null) {
+      const parsed = Number.parseInt(raw, 10);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
+    }
+  } catch {}
+  return 3;
+}
+
 export function formatStayDateRange(
   startDateStr?: string | null,
   endDateStr?: string | null,
@@ -45,7 +61,8 @@ export function formatStayDate(dateStr: string, locale = 'es-CL'): string {
 
 export function useStayHistory() {
   const [stays, setStays] = useState<StayHistoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [expectedCount, setExpectedCount] = useState<number>(getInitialExpectedCount);
   const [error, setError] = useState<string | null>(null);
 
   const loadStays = useCallback(async () => {
@@ -55,6 +72,13 @@ export function useStayHistory() {
       const res = await staysService.fetchStudentStays();
       if (isApiSuccess(res)) {
         setStays(res.data);
+        const count = res.data.length;
+        if (count > 0) {
+          setExpectedCount(count);
+          try {
+            sessionStorage.setItem(SESSION_STAYS_COUNT_KEY, String(count));
+          } catch {}
+        }
       } else {
         setError(res.message);
       }
@@ -87,6 +111,7 @@ export function useStayHistory() {
   return {
     stays,
     isLoading,
+    expectedCount,
     error,
     pendingReviewStays,
     reviewedStays,

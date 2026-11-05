@@ -195,6 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       localStorage.removeItem('tunido_favs');
+      sessionStorage.removeItem('tunido_stays_count');
       window.dispatchEvent(new CustomEvent('tunido_favs_updated', { detail: [] }));
       await authService.logoutSession();
     } catch {}

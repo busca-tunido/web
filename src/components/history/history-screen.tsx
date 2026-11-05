@@ -2,11 +2,11 @@
 
 import { Building2, Calendar, CheckCircle2, History, MessageSquare, Star } from 'lucide-react';
 import Image from 'next/image';
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import { HistoryGuestIncentive } from '@/components/history/history-guest-incentive';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { HistorySkeleton } from '@/components/ui/skeletons/history-skeleton';
+import { HistoryCardsSkeleton } from '@/components/ui/skeletons/history-skeleton';
 import { useNavigation } from '@/contexts/navigation-context';
 import { useStayHistory } from '@/hooks/use-stay-history';
 import { useAuth } from '@/lib/auth-context';
@@ -33,7 +33,7 @@ export function HistoryScreen(props: HistoryScreenProps) {
 }
 
 function HistoryContent({ onExplore }: HistoryScreenProps) {
-  const { stays, formatDateRange } = useStayHistory();
+  const { stays, isLoading, expectedCount, formatDateRange } = useStayHistory();
   const [selectedReviewStay, setSelectedReviewStay] = useState<StayHistoryItem | null>(null);
 
   return (
@@ -60,14 +60,14 @@ function HistoryContent({ onExplore }: HistoryScreenProps) {
         </div>
       </div>
 
-      <Suspense fallback={<HistorySkeleton />}>
-        <HistoryList
-          stays={stays}
-          onExplore={onExplore}
-          onSelectReviewStay={setSelectedReviewStay}
-          formatDateRange={formatDateRange}
-        />
-      </Suspense>
+      <HistoryList
+        stays={stays}
+        isLoading={isLoading}
+        expectedCount={expectedCount}
+        onExplore={onExplore}
+        onSelectReviewStay={setSelectedReviewStay}
+        formatDateRange={formatDateRange}
+      />
 
       <UserReviewModal
         isOpen={Boolean(selectedReviewStay)}
@@ -80,6 +80,8 @@ function HistoryContent({ onExplore }: HistoryScreenProps) {
 
 type HistoryListProps = {
   stays: StayHistoryItem[];
+  isLoading: boolean;
+  expectedCount?: number;
   onExplore?: () => void;
   onSelectReviewStay: (stay: StayHistoryItem) => void;
   formatDateRange: (
@@ -89,7 +91,18 @@ type HistoryListProps = {
   ) => string;
 };
 
-function HistoryList({ stays, onExplore, onSelectReviewStay, formatDateRange }: HistoryListProps) {
+function HistoryList({
+  stays,
+  isLoading,
+  expectedCount = 3,
+  onExplore,
+  onSelectReviewStay,
+  formatDateRange,
+}: HistoryListProps) {
+  if (isLoading) {
+    return <HistoryCardsSkeleton count={expectedCount} />;
+  }
+
   if (stays.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center">

@@ -194,6 +194,8 @@ describe('useStayHistory and Date Formatting', () => {
     });
 
     expect(result.current.stays).toHaveLength(2);
+    expect(result.current.expectedCount).toBe(2);
+    expect(sessionStorage.getItem('tunido_stays_count')).toBe('2');
     expect(result.current.pendingReviewStays).toHaveLength(1);
     expect(result.current.pendingReviewStays[0].id).toBe('stay-1');
     expect(result.current.reviewedStays).toHaveLength(1);

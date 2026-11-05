@@ -36,11 +36,15 @@ vi.mock('@/hooks/use-student-favorites', () => ({
   }),
 }));
 
+let mockStayHistory = {
+  stays: [] as unknown[],
+  isLoading: false,
+  expectedCount: 3,
+  formatDateRange: () => '',
+};
+
 vi.mock('@/hooks/use-stay-history', () => ({
-  useStayHistory: () => ({
-    stays: [],
-    formatDateRange: () => '',
-  }),
+  useStayHistory: () => mockStayHistory,
 }));
 
 const mockNavValue = {
@@ -252,10 +256,41 @@ describe('AuthGate and Guest Incentive Screens', () => {
       lastName: 'Valdés',
       role: 'STUDENT',
     };
+    mockStayHistory = {
+      stays: [],
+      isLoading: false,
+      expectedCount: 3,
+      formatDateRange: () => '',
+    };
 
     render(<HistoryScreen onExplore={vi.fn()} />);
 
     expect(screen.getByText('Donde me he alojado')).toBeDefined();
+    expect(screen.getByText('Aún no registras estadías finalizadas')).toBeDefined();
     expect(screen.queryByText('Construye tu historial de estadías')).toBeNull();
+  });
+
+  it('renders skeleton cards without empty message while stays are loading on HistoryScreen', () => {
+    mockIsLoading = false;
+    mockUser = {
+      id: 'usr-1',
+      email: 'student@universidad.cl',
+      firstName: 'Ana',
+      lastName: 'Valdés',
+      role: 'STUDENT',
+    };
+    mockStayHistory = {
+      stays: [],
+      isLoading: true,
+      expectedCount: 2,
+      formatDateRange: () => '',
+    };
+
+    const { container } = render(<HistoryScreen onExplore={vi.fn()} />);
+
+    expect(screen.getByText('Donde me he alojado')).toBeDefined();
+    expect(screen.queryByText('Aún no registras estadías finalizadas')).toBeNull();
+    const skeletons = container.querySelectorAll('.animate-pulse');
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 });
