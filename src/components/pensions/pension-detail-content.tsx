@@ -21,6 +21,7 @@ import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useOptionalNavigation } from '@/contexts/navigation-context';
+import { useFavoriteAction } from '@/hooks/use-favorite-action';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { useAuth } from '@/lib/auth-context';
 import type { PensionDetailViewItem, PensionItem, PensionReview } from '@/lib/types';
@@ -44,7 +45,8 @@ export function PensionDetailContent({
   onBack,
   showBackButton = false,
 }: PensionDetailContentProps) {
-  const { user, isFavorite, toggleFavorite } = useAuth();
+  const { user } = useAuth();
+  const { isFavorite, onFavoriteClick } = useFavoriteAction();
   const navigation = useOptionalNavigation();
   const openAuthModal = navigation?.openAuthModal;
 
@@ -126,13 +128,7 @@ export function PensionDetailContent({
         <div className="absolute top-3 right-3 flex items-center gap-2">
           <button
             type="button"
-            onClick={() => {
-              if (!user) {
-                openAuthModal?.();
-                return;
-              }
-              toggleFavorite(pension.id);
-            }}
+            onClick={(e) => onFavoriteClick(pension.id, e)}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-white hover:text-primary active:scale-90 transition shadow-sm cursor-pointer"
             aria-label="Guardar en favoritos"
           >

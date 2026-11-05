@@ -3,8 +3,7 @@
 import { CheckCircle2, Loader2, SearchX } from 'lucide-react';
 import { memo, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigation } from '@/contexts/navigation-context';
-import { useAuth } from '@/lib/auth-context';
+import { useFavoriteAction } from '@/hooks/use-favorite-action';
 import type { PensionItem } from '@/lib/types';
 import { PensionCard } from './pension-card';
 
@@ -107,8 +106,7 @@ export function InfinitePensionList({
   onSelectPension,
   onResetFilters,
 }: InfinitePensionListProps) {
-  const { user, isFavorite, toggleFavorite } = useAuth();
-  const { openAuthModal } = useNavigation();
+  const { isFavorite, onFavoriteClick } = useFavoriteAction();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -180,13 +178,7 @@ export function InfinitePensionList({
           key={pension.id}
           pension={pension}
           isFavorite={isFavorite(pension.id)}
-          onToggleFavorite={(id) => {
-            if (!user) {
-              openAuthModal();
-              return;
-            }
-            toggleFavorite(id);
-          }}
+          onToggleFavorite={(id) => onFavoriteClick(id)}
           onSelectPension={onSelectPension}
           initialVisible={index < 8}
         />

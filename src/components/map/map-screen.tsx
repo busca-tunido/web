@@ -21,9 +21,9 @@ import Image from 'next/image';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
 import { env } from '@/env';
+import { useFavoriteAction } from '@/hooks/use-favorite-action';
 import { useMapViewportPensions } from '@/hooks/use-map-viewport-pensions';
 import { isApiSuccess } from '@/lib/api-response';
-import { useAuth } from '@/lib/auth-context';
 import { matchesSearchFilters } from '@/lib/filter-matcher';
 import {
   classifyPensionRating,
@@ -401,7 +401,7 @@ export function MapScreen({
   onOpenPensionDetail,
   filters,
 }: MapScreenProps) {
-  const { isFavorite, toggleFavorite } = useAuth();
+  const { isFavorite, onFavoriteClick } = useFavoriteAction();
   const { resolvedTheme } = useTheme();
 
   const [drawerState, setDrawerState] = useState<DrawerState>('minimized');
@@ -1257,7 +1257,7 @@ export function MapScreen({
               displayedPensions={displayedPensions}
               isAreaLoading={isAreaLoading}
               isFavorite={isFavorite}
-              toggleFavorite={toggleFavorite}
+              onToggleFavorite={onFavoriteClick}
               onSelectPension={(p) => {
                 panToPension(p.latitude, p.longitude);
                 onSelectPension(p);
@@ -1364,7 +1364,7 @@ export function MapScreen({
                 displayedPensions={displayedPensions}
                 isAreaLoading={isAreaLoading}
                 isFavorite={isFavorite}
-                toggleFavorite={toggleFavorite}
+                onToggleFavorite={onFavoriteClick}
                 onSelectPension={onSelectPension}
                 onOpenPensionDetail={onOpenPensionDetail}
                 setActivePinId={setActivePinId}
@@ -1397,7 +1397,7 @@ type MapDrawerPensionListProps = {
   displayedPensions: PensionItem[];
   isAreaLoading: boolean;
   isFavorite: (id: string) => boolean;
-  toggleFavorite: (id: string) => void;
+  onToggleFavorite: (id: string, event?: React.MouseEvent) => void;
   onSelectPension: (pension: PensionItem) => void;
   onOpenPensionDetail: (pension: PensionItem) => void;
   setActivePinId: (id: string) => void;
@@ -1407,7 +1407,7 @@ function MapDrawerPensionList({
   displayedPensions,
   isAreaLoading,
   isFavorite,
-  toggleFavorite,
+  onToggleFavorite,
   onSelectPension,
   onOpenPensionDetail,
   setActivePinId,
@@ -1490,7 +1490,7 @@ function MapDrawerPensionList({
 
             <button
               type="button"
-              onClick={() => toggleFavorite(pension.id)}
+              onClick={(e) => onToggleFavorite(pension.id, e)}
               className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md hover:text-primary transition active:scale-90 shadow-sm border border-border/40 cursor-pointer"
               aria-label="Guardar en favoritos"
             >

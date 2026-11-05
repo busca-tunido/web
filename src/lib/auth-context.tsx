@@ -46,17 +46,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const savedToken = localStorage.getItem('tunido_token');
         const savedFavs = localStorage.getItem('tunido_favs');
 
-        if (savedFavs) {
-          const parsed = JSON.parse(savedFavs);
-          if (Array.isArray(parsed)) {
-            const cleaned = parsed.filter(
-              (id: unknown) => typeof id === 'string' && !id.startsWith('pen-'),
-            );
-            if (isMounted) setFavorites(cleaned);
-            localStorage.setItem('tunido_favs', JSON.stringify(cleaned));
-          }
-        }
-
         if (savedUser && savedToken) {
           const parsed = JSON.parse(savedUser);
           if (isMounted) {
@@ -64,6 +53,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setToken(savedToken);
             setIsLoading(false);
           }
+          if (savedFavs) {
+            const parsedFavs = JSON.parse(savedFavs);
+            if (Array.isArray(parsedFavs)) {
+              const cleaned = parsedFavs.filter(
+                (id: unknown) => typeof id === 'string' && !id.startsWith('pen-'),
+              );
+              if (isMounted) setFavorites(cleaned);
+              localStorage.setItem('tunido_favs', JSON.stringify(cleaned));
+            }
+          }
+        } else {
+          localStorage.removeItem('tunido_favs');
         }
 
         const meRes = await authService.getCurrentUserProfile();
@@ -123,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const handleFavsUpdate = (e: Event) => {
+      if (!user) return;
       const customEvent = e as CustomEvent<string[]>;
       if (Array.isArray(customEvent.detail)) {
         setFavorites(customEvent.detail);
@@ -132,7 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       window.removeEventListener('tunido_favs_updated', handleFavsUpdate);
     };
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!token) {
@@ -205,6 +207,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleFavorite = (pensionId: string) => {
+    if (!user || !token) {
+      return;
+    }
     const wasFav = favorites.includes(pensionId);
     const next = wasFav ? favorites.filter((id) => id !== pensionId) : [...favorites, pensionId];
     setFavorites(next);
@@ -212,12 +217,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('tunido_favs', JSON.stringify(next));
       window.dispatchEvent(new CustomEvent('tunido_favs_updated', { detail: next }));
     } catch {}
-    if (token) {
-      favoritesService.toggleFavorite(pensionId, wasFav).catch(() => {});
-    }
+    favoritesService.toggleFavorite(pensionId, wasFav).catch(() => {});
   };
 
-  const isFavorite = (pensionId: string) => favorites.includes(pensionId);
+  const isFavorite = (pensionId: string) => Boolean(user && favorites.includes(pensionId));
 
   return (
     <AuthContext.Provider

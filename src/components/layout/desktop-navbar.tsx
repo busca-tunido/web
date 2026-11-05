@@ -64,7 +64,7 @@ export function DesktopNavbar({
   const navLinks: Array<{ id: NavTab; label: string; icon: typeof Compass; badge?: number }> = [
     { id: 'explore', label: 'Explorar', icon: Compass },
     { id: 'map', label: 'Ubicación', icon: MapPin },
-    { id: 'favorites', label: 'Favoritos', icon: Heart, badge: favorites.length },
+    { id: 'favorites', label: 'Favoritos', icon: Heart, badge: user ? favorites.length : 0 },
     { id: 'history', label: 'Mis Estadías', icon: History },
   ];
 

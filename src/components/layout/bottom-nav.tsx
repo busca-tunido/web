@@ -20,7 +20,7 @@ export function BottomNav({ activeTab, onTabChange, onOpenAuthModal }: BottomNav
     badge?: number;
   }> = [
     { id: 'explore', label: 'Explorar', icon: Compass },
-    { id: 'favorites', label: 'Favoritos', icon: Heart, badge: favorites.length },
+    { id: 'favorites', label: 'Favoritos', icon: Heart, badge: user ? favorites.length : 0 },
     { id: 'map', label: 'Ubicación', icon: MapPin },
     { id: 'history', label: 'Mis Estadías', icon: History },
     { id: 'account', label: 'Mi Cuenta', icon: User },
