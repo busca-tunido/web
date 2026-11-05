@@ -10,14 +10,18 @@ import {
   Droplets,
   Flame,
   GraduationCap,
+  Image as ImageIcon,
   Loader2,
   MapPin,
   ShieldCheck,
+  Upload,
   User,
   Users,
   Wifi,
+  X,
   Zap,
 } from 'lucide-react';
+import Image from 'next/image';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -45,6 +49,7 @@ import {
   reverseGeocode,
 } from '@/services/locations.service';
 import { pensionsService } from '@/services/pensions.service';
+import { uploadsService } from '@/services/uploads.service';
 
 export type PensionEditorDrawerProps = {
   isOpen: boolean;
@@ -117,6 +122,7 @@ type PensionFormState = {
   smokingAllowed: boolean;
   petsAllowed: boolean;
   selectedAmenitySlugs: string[];
+  images: string[];
 };
 
 const CHILE_CITY_COORDINATES: Readonly<Record<string, { latitude: number; longitude: number }>> = {
@@ -187,6 +193,7 @@ const INITIAL_FORM_STATE: PensionFormState = {
   smokingAllowed: false,
   petsAllowed: false,
   selectedAmenitySlugs: [],
+  images: [],
 };
 
 export function PensionEditorDrawer({
@@ -198,9 +205,56 @@ export function PensionEditorDrawer({
   const [form, setForm] = useState<PensionFormState>(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState<boolean>(false);
   const [isForwardGeocoding, setIsForwardGeocoding] = useState<boolean>(false);
   const [cities, setCities] = useState<CityInfo[]>([]);
+
+  const previewsRef = useRef<string[]>([]);
+  previewsRef.current = newImagePreviews;
+
+  useEffect(() => {
+    return () => {
+      for (const url of previewsRef.current) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileArray = Array.from(files);
+    const newPreviews = fileArray.map((file) => URL.createObjectURL(file));
+
+    setNewImageFiles((prev) => [...prev, ...fileArray]);
+    setNewImagePreviews((prev) => [...prev, ...newPreviews]);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveExistingImage = (indexToRemove: number) => {
+    setForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, idx) => idx !== indexToRemove),
+    }));
+  };
+
+  const handleRemoveNewImage = (indexToRemove: number) => {
+    setNewImageFiles((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    setNewImagePreviews((prev) => {
+      const urlToRevoke = prev[indexToRemove];
+      if (urlToRevoke) {
+        URL.revokeObjectURL(urlToRevoke);
+      }
+      return prev.filter((_, idx) => idx !== indexToRemove);
+    });
+  };
 
   const { userLocation, currentCity } = useUserLocation(cities);
   const hasUserSelectedLocationRef = useRef<boolean>(false);
@@ -250,6 +304,11 @@ export function PensionEditorDrawer({
   const forwardAbortRef = useRef<AbortController | null>(null);
 
   const resetForm = useCallback(() => {
+    for (const url of previewsRef.current) {
+      URL.revokeObjectURL(url);
+    }
+    setNewImageFiles([]);
+    setNewImagePreviews([]);
     hasUserSelectedLocationRef.current = false;
     setForm({
       ...INITIAL_FORM_STATE,
@@ -272,6 +331,7 @@ export function PensionEditorDrawer({
 
       const sanitizedDraft: PensionFormState = {
         ...draft,
+        images: Array.isArray(draft.images) ? draft.images : [],
         latitude: hasValidDraftCoords
           ? draft.latitude
           : userLocation.latitude || SANTIAGO_COORDINATES.latitude,
@@ -536,6 +596,25 @@ export function PensionEditorDrawer({
     setErrorMessage(null);
 
     try {
+      let uploadedUrls: string[] = [];
+
+      if (newImageFiles.length > 0) {
+        const uploadRes = await uploadsService.uploadMultipleFiles(newImageFiles);
+        if (isApiSuccess(uploadRes) && uploadRes.data?.urls) {
+          uploadedUrls = uploadRes.data.urls;
+        } else if (!isApiSuccess(uploadRes)) {
+          const friendly = translateApiError(
+            uploadRes,
+            uploadRes.message || 'No fue posible subir las fotos de la pensión.',
+          );
+          setErrorMessage(friendly);
+          toast.error(friendly);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      const allImages = [...form.images, ...uploadedUrls];
       const parsedDeposit = form.deposit.trim() ? Number(form.deposit) : undefined;
       const formattedCurfew = form.hasCurfew && form.curfewTime ? form.curfewTime : undefined;
 
@@ -575,11 +654,17 @@ export function PensionEditorDrawer({
         quietHoursStart: form.quietHoursStart || undefined,
         quietHoursEnd: form.quietHoursEnd || undefined,
         amenitySlugs: form.selectedAmenitySlugs.length > 0 ? form.selectedAmenitySlugs : undefined,
+        images: allImages.length > 0 ? allImages : undefined,
       };
 
       const response = await pensionsService.createPension(payload);
 
       if (isApiSuccess(response)) {
+        for (const url of previewsRef.current) {
+          URL.revokeObjectURL(url);
+        }
+        setNewImageFiles([]);
+        setNewImagePreviews([]);
         clearDraft();
         resetForm();
         toast.success('Pensión registrada exitosamente');
@@ -587,6 +672,7 @@ export function PensionEditorDrawer({
         onClose();
       } else {
         const friendly = translateApiError(
+          response,
           response.message || 'No fue posible registrar la pensión.',
         );
         setErrorMessage(friendly);
@@ -721,10 +807,103 @@ export function PensionEditorDrawer({
               </div>
             </div>
 
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <ImageIcon className="h-4 w-4 text-primary" />
+                  <span>2. Fotos de la Pensión</span>
+                </div>
+                <span className="text-[11px] text-muted-foreground font-medium">
+                  {form.images.length + newImagePreviews.length} seleccionadas
+                </span>
+              </div>
+
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Sube fotos de la fachada, áreas comunes o espacios compartidos. La primera imagen
+                será la foto principal destacada.
+              </p>
+
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+                {form.images.map((imgUrl, idx) => (
+                  <div
+                    key={imgUrl}
+                    className="group relative aspect-square rounded-xl overflow-hidden bg-muted border border-border/70 shadow-2xs"
+                  >
+                    <Image
+                      src={imgUrl}
+                      alt={`Foto pensión ${idx + 1}`}
+                      fill
+                      unoptimized
+                      sizes="120px"
+                      className="object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveExistingImage(idx)}
+                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs"
+                      aria-label="Eliminar foto"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                    {idx === 0 && (
+                      <span className="absolute bottom-1 left-1 rounded-md bg-primary text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold shadow-xs">
+                        Principal
+                      </span>
+                    )}
+                  </div>
+                ))}
+
+                {newImagePreviews.map((previewUrl, idx) => (
+                  <div
+                    key={previewUrl}
+                    className="group relative aspect-square rounded-xl overflow-hidden bg-muted border border-primary/40 shadow-2xs"
+                  >
+                    <Image
+                      src={previewUrl}
+                      alt={`Nueva foto pensión ${idx + 1}`}
+                      fill
+                      unoptimized
+                      sizes="120px"
+                      className="object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveNewImage(idx)}
+                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs"
+                      aria-label="Eliminar nueva foto"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="absolute bottom-1 left-1 rounded-md bg-primary/90 text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold shadow-xs">
+                      {form.images.length === 0 && idx === 0 ? 'Principal' : 'Nueva'}
+                    </span>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex flex-col items-center justify-center aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary/60 bg-muted/20 hover:bg-secondary/60 text-muted-foreground hover:text-primary transition cursor-pointer min-h-20"
+                >
+                  <Upload className="h-5 w-5 mb-1 shrink-0" />
+                  <span className="text-[10px] font-semibold">Subir foto</span>
+                </button>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 <MapPin className="h-4 w-4 text-primary" />
-                <span>2. Ubicación y Ciudad</span>
+                <span>3. Ubicación y Ciudad</span>
               </div>
 
               <div className="space-y-2">
@@ -831,7 +1010,7 @@ export function PensionEditorDrawer({
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 <DollarSign className="h-4 w-4 text-primary" />
-                <span>3. Precios y Valores</span>
+                <span>4. Precios y Valores</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -898,7 +1077,7 @@ export function PensionEditorDrawer({
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 <Droplets className="h-4 w-4 text-primary" />
-                <span>4. Servicios Básicos Incluidos</span>
+                <span>5. Servicios Básicos Incluidos</span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -967,7 +1146,7 @@ export function PensionEditorDrawer({
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 <Users className="h-4 w-4 text-primary" />
-                <span>5. Normas y Preferencia de Género</span>
+                <span>6. Normas y Preferencia de Género</span>
               </div>
 
               <div className="space-y-2">
@@ -1127,7 +1306,7 @@ export function PensionEditorDrawer({
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 <Check className="h-4 w-4 text-primary" />
-                <span>6. Comodidades Destacadas</span>
+                <span>7. Comodidades Destacadas</span>
               </div>
 
               <div className="flex flex-wrap gap-2">

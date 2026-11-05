@@ -6,6 +6,7 @@ import { createSuccess } from '@/lib/api-response';
 import { SANTIAGO_COORDINATES } from '@/lib/use-user-location';
 import * as locationsService from '@/services/locations.service';
 import { pensionsService } from '@/services/pensions.service';
+import { uploadsService } from '@/services/uploads.service';
 
 vi.mock('@/components/landlord/pension-location-picker-map', () => ({
   PensionLocationPickerMap: ({
@@ -54,6 +55,12 @@ vi.mock('@/services/locations.service', () => ({
 vi.mock('@/services/pensions.service', () => ({
   pensionsService: {
     createPension: vi.fn(),
+  },
+}));
+
+vi.mock('@/services/uploads.service', () => ({
+  uploadsService: {
+    uploadMultipleFiles: vi.fn(),
   },
 }));
 
@@ -138,6 +145,79 @@ describe('PensionEditorDrawer - Map Coordinates & City Fallback', () => {
     render(<PensionEditorDrawer isOpen={true} onClose={vi.fn()} />);
     await waitFor(() => {
       expect(screen.queryByText(/Completar con GPS/i)).toBeNull();
+    });
+  });
+
+  it('renders 2. Fotos de la Pensión section and Subir foto button', async () => {
+    render(<PensionEditorDrawer isOpen={true} onClose={vi.fn()} />);
+    await waitFor(() => {
+      expect(screen.getByText('2. Fotos de la Pensión')).toBeDefined();
+      expect(screen.getByText('Subir foto')).toBeDefined();
+    });
+  });
+
+  it('uploads selected images and sends images array to pensionsService.createPension', async () => {
+    if (!globalThis.URL.createObjectURL) {
+      globalThis.URL.createObjectURL = vi.fn(() => 'blob:http://localhost/test-photo.jpg');
+    }
+    if (!globalThis.URL.revokeObjectURL) {
+      globalThis.URL.revokeObjectURL = vi.fn();
+    }
+
+    vi.mocked(uploadsService.uploadMultipleFiles).mockResolvedValue(
+      createSuccess({
+        urls: ['https://storage.buscatunido.cl/pensions/photo-1.webp'],
+      }),
+    );
+
+    const mockCreate = vi.fn().mockResolvedValue(
+      createSuccess({
+        id: 'pension-123',
+        title: 'Mi Pensión Universitaria',
+      }),
+    );
+    vi.mocked(pensionsService.createPension).mockImplementation(mockCreate);
+
+    render(<PensionEditorDrawer isOpen={true} onClose={vi.fn()} />);
+
+    const titleInput = screen.getByLabelText(/Título de la Publicación/i);
+    fireEvent.change(titleInput, { target: { value: 'Mi Pensión Universitaria' } });
+
+    const descInput = screen.getByLabelText(/Descripción General/i);
+    fireEvent.change(descInput, {
+      target: { value: 'Una excelente pensión para estudiantes cerca del metro.' },
+    });
+
+    const addrInput = screen.getByLabelText(/Dirección Exacta/i);
+    fireEvent.change(addrInput, { target: { value: 'Av. Vicuña Mackenna 4860' } });
+
+    const neighInput = screen.getByLabelText(/Comuna o Barrio/i);
+    fireEvent.change(neighInput, { target: { value: 'San Joaquín' } });
+
+    const priceInput = screen.getByLabelText(/Precio Base Mensual/i);
+    fireEvent.change(priceInput, { target: { value: '350000' } });
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).not.toBeNull();
+
+    const dummyFile = new File(['dummy-content'], 'fachada.png', { type: 'image/png' });
+    fireEvent.change(fileInput, { target: { files: [dummyFile] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('1 seleccionadas')).toBeDefined();
+    });
+
+    const submitBtn = screen.getByRole('button', { name: /Publicar Pensión/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(uploadsService.uploadMultipleFiles).toHaveBeenCalledWith([dummyFile]);
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Mi Pensión Universitaria',
+          images: ['https://storage.buscatunido.cl/pensions/photo-1.webp'],
+        }),
+      );
     });
   });
 });

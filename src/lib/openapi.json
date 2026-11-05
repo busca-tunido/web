@@ -5686,6 +5686,14 @@
             "type": "string",
             "example": "contacto@residencia.cl",
             "maxLength": 120
+          },
+          "images": {
+            "example": ["https://storage.buscatunido.cl/pensions/photo-1.webp"],
+            "description": "URLs de fotos de la pensión",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -5842,6 +5850,14 @@
             "type": "string",
             "example": "contacto@residencia.cl",
             "maxLength": 120
+          },
+          "images": {
+            "example": ["https://storage.buscatunido.cl/pensions/photo-1.webp"],
+            "description": "URLs de fotos de la pensión",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "isActive": {
             "type": "boolean",

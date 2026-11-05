@@ -1173,6 +1173,13 @@ export interface components {
       readonly contactWhatsapp?: string;
       /** @example contacto@residencia.cl */
       readonly contactEmail?: string;
+      /**
+       * @description URLs de fotos de la pensión
+       * @example [
+       *       "https://storage.buscatunido.cl/pensions/photo-1.webp"
+       *     ]
+       */
+      readonly images?: readonly string[];
     };
     readonly UpdatePensionDto: {
       /** @example Residencia San Joaquín */
@@ -1260,6 +1267,13 @@ export interface components {
       readonly contactWhatsapp?: string;
       /** @example contacto@residencia.cl */
       readonly contactEmail?: string;
+      /**
+       * @description URLs de fotos de la pensión
+       * @example [
+       *       "https://storage.buscatunido.cl/pensions/photo-1.webp"
+       *     ]
+       */
+      readonly images?: readonly string[];
       /** @example true */
       readonly isActive?: boolean;
     };
