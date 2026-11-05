@@ -2,28 +2,42 @@
 
 import {
   AlertCircle,
+  Archive,
   Ban,
+  Bath,
+  Bed,
+  BookOpen,
   Building2,
   Check,
   CheckCircle2,
   ChevronRight,
   Clock,
+  Coffee,
+  Disc,
   Droplets,
   Eye,
   Flame,
+  Key,
   Loader2,
   MessageCircle,
   MessageSquare,
+  Monitor,
   Moon,
   PawPrint,
   Phone,
   Plus,
+  Printer,
   RefreshCw,
   Save,
   ShieldCheck,
+  Sparkles,
+  Sun,
   Trash2,
+  Trees,
   User,
   Users,
+  Utensils,
+  Video,
   Wifi,
   X,
   Zap,
@@ -47,6 +61,7 @@ import { isApiSuccess } from '@/lib/api-response';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
 import type {
   GenderPreference,
+  PensionAmenityCatalogItemDto,
   PensionDetailDto,
   PensionItem,
   UpdatePensionDto,
@@ -68,6 +83,7 @@ type FormState = {
   electricityIncluded: boolean;
   gasIncluded: boolean;
   internetIncluded: boolean;
+  selectedAmenitySlugs: string[];
   guestsAllowed: boolean;
   smokingAllowed: boolean;
   petsAllowed: boolean;
@@ -79,6 +95,36 @@ type FormState = {
   useCustomContact: boolean;
   contactName: string;
   contactPhone: string;
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  BASIC_UTILITY: 'Servicios Básicos',
+  ROOM_FEATURE: 'Habitación y Confort',
+  COMMON_AREA: 'Áreas Comunes',
+  STUDY_WORK: 'Estudio y Trabajo',
+  SAFETY_SECURITY: 'Seguridad',
+};
+
+const AMENITY_ICON_MAP: Record<string, typeof Wifi> = {
+  wifi: Wifi,
+  droplet: Droplets,
+  zap: Zap,
+  flame: Flame,
+  thermometer: Flame,
+  bath: Bath,
+  monitor: Monitor,
+  archive: Archive,
+  bed: Bed,
+  sun: Sun,
+  utensils: Utensils,
+  disc: Disc,
+  coffee: Coffee,
+  trees: Trees,
+  'book-open': BookOpen,
+  printer: Printer,
+  shield: ShieldCheck,
+  video: Video,
+  key: Key,
 };
 
 function normalizePhoneToDisplay(rawPhone?: string | null): string {
@@ -174,6 +220,7 @@ export function LandlordPensionScreen({
     electricityIncluded: true,
     gasIncluded: true,
     internetIncluded: true,
+    selectedAmenitySlugs: [],
     guestsAllowed: false,
     smokingAllowed: false,
     petsAllowed: false,
@@ -186,6 +233,27 @@ export function LandlordPensionScreen({
     contactName: '',
     contactPhone: '',
   });
+
+  const [amenitiesCatalog, setAmenitiesCatalog] = useState<PensionAmenityCatalogItemDto[]>([]);
+  const [isLoadingAmenities, setIsLoadingAmenities] = useState<boolean>(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadAmenities = async () => {
+      setIsLoadingAmenities(true);
+      const res = await pensionsService.fetchAmenitiesCatalog();
+      if (isMounted && isApiSuccess(res) && Array.isArray(res.data)) {
+        setAmenitiesCatalog(res.data);
+      }
+      if (isMounted) {
+        setIsLoadingAmenities(false);
+      }
+    };
+    void loadAmenities();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const effectivePensionId = propPensionId || activePension?.id || '';
 
@@ -215,11 +283,26 @@ export function LandlordPensionScreen({
         ? contactConfig.phone
         : pensionContactPhone || defaultContact.phone;
 
+      const rawAmenitySlugs: string[] = Array.isArray(p.amenitySlugs)
+        ? [...p.amenitySlugs]
+        : Array.isArray(p.amenities)
+          ? p.amenities
+              .map((a) => (typeof a === 'string' ? a : a.slug))
+              .filter((s): s is string => Boolean(s))
+          : [];
+      const hasWifi = Boolean(
+        p.internetIncluded || rawAmenitySlugs.includes('wifi-alta-velocidad'),
+      );
+      const finalAmenitySlugs = hasWifi
+        ? Array.from(new Set([...rawAmenitySlugs, 'wifi-alta-velocidad']))
+        : rawAmenitySlugs.filter((s) => s !== 'wifi-alta-velocidad');
+
       setForm({
         waterIncluded: Boolean(p.waterIncluded),
         electricityIncluded: Boolean(p.electricityIncluded),
         gasIncluded: Boolean(p.gasIncluded),
-        internetIncluded: Boolean(p.internetIncluded),
+        internetIncluded: hasWifi,
+        selectedAmenitySlugs: finalAmenitySlugs,
         guestsAllowed: Boolean(p.guestsAllowed),
         smokingAllowed: Boolean(p.smokingAllowed),
         petsAllowed: Boolean(p.petsAllowed),
@@ -296,10 +379,45 @@ export function LandlordPensionScreen({
   }, [propPensionId, initialPension, activePension, loadPensionData, syncFormFromPension]);
 
   const handleToggle = (field: keyof FormState) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: !prev[field],
-    }));
+    setForm((prev) => {
+      const nextVal = !prev[field];
+      if (field === 'internetIncluded') {
+        const nextAmenities = nextVal
+          ? Array.from(new Set([...prev.selectedAmenitySlugs, 'wifi-alta-velocidad']))
+          : prev.selectedAmenitySlugs.filter((s) => s !== 'wifi-alta-velocidad');
+        return {
+          ...prev,
+          internetIncluded: Boolean(nextVal),
+          selectedAmenitySlugs: nextAmenities,
+        };
+      }
+      return {
+        ...prev,
+        [field]: nextVal,
+      };
+    });
+  };
+
+  const handleToggleAmenity = (slug: string) => {
+    setForm((prev) => {
+      const exists = prev.selectedAmenitySlugs.includes(slug);
+      const nextAmenities = exists
+        ? prev.selectedAmenitySlugs.filter((s) => s !== slug)
+        : [...prev.selectedAmenitySlugs, slug];
+
+      if (slug === 'wifi-alta-velocidad') {
+        return {
+          ...prev,
+          internetIncluded: !exists,
+          selectedAmenitySlugs: nextAmenities,
+        };
+      }
+
+      return {
+        ...prev,
+        selectedAmenitySlugs: nextAmenities,
+      };
+    });
   };
 
   const handleCurfewToggle = (enabled: boolean) => {
@@ -340,6 +458,7 @@ export function LandlordPensionScreen({
       electricityIncluded: form.electricityIncluded,
       gasIncluded: form.gasIncluded,
       internetIncluded: form.internetIncluded,
+      amenitySlugs: form.selectedAmenitySlugs,
       guestsAllowed: form.guestsAllowed,
       smokingAllowed: form.smokingAllowed,
       petsAllowed: form.petsAllowed,
@@ -388,6 +507,7 @@ export function LandlordPensionScreen({
       ...activePension,
       genderPreference: form.genderPreference,
       internetIncluded: form.internetIncluded,
+      amenitySlugs: form.selectedAmenitySlugs,
       curfewTime: form.hasCurfew && form.curfewTime ? form.curfewTime : null,
       guestsAllowed: form.guestsAllowed,
     };
@@ -1205,6 +1325,85 @@ export function LandlordPensionScreen({
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="xl:col-span-12 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+          <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <Sparkles className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
+                <div>
+                  <CardTitle className="text-sm font-semibold text-foreground">
+                    Comodidades y Equipamiento
+                  </CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                    Selecciona las características y comodidades disponibles para los estudiantes
+                  </CardDescription>
+                </div>
+              </div>
+              <Badge variant="outline" className="text-xs font-semibold self-start sm:self-auto">
+                {form.selectedAmenitySlugs.length} seleccionada
+                {form.selectedAmenitySlugs.length === 1 ? '' : 's'}
+              </Badge>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-4 sm:p-5 flex-1 space-y-6">
+            {isLoadingAmenities && amenitiesCatalog.length === 0 ? (
+              <div className="flex items-center justify-center py-8 text-xs text-muted-foreground gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Cargando catálogo de comodidades...</span>
+              </div>
+            ) : (
+              (Object.keys(CATEGORY_LABELS) as Array<keyof typeof CATEGORY_LABELS>).map(
+                (catKey) => {
+                  const categoryAmenities = amenitiesCatalog.filter((a) => a.category === catKey);
+                  if (categoryAmenities.length === 0) return null;
+
+                  return (
+                    <div key={catKey} className="space-y-2.5">
+                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                        {CATEGORY_LABELS[catKey]}
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                        {categoryAmenities.map((am) => {
+                          const isSelected = form.selectedAmenitySlugs.includes(am.slug);
+                          const Icon = (am.iconKey && AMENITY_ICON_MAP[am.iconKey]) || Sparkles;
+
+                          return (
+                            <button
+                              key={am.slug}
+                              type="button"
+                              onClick={() => handleToggleAmenity(am.slug)}
+                              className={cn(
+                                'flex items-center justify-between gap-2.5 rounded-xl border p-3 text-left transition cursor-pointer select-none',
+                                isSelected
+                                  ? 'border-primary/50 bg-primary/10 text-foreground font-semibold shadow-2xs'
+                                  : 'border-border/60 bg-card hover:bg-muted/20 text-muted-foreground hover:text-foreground',
+                              )}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <Icon
+                                  className={cn(
+                                    'h-4 w-4 shrink-0 transition-colors',
+                                    isSelected ? 'text-primary' : 'text-muted-foreground',
+                                  )}
+                                />
+                                <span className="text-xs truncate">{am.name}</span>
+                              </div>
+                              {isSelected ? (
+                                <Check className="h-3.5 w-3.5 text-primary shrink-0 ml-1" />
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                },
+              )
+            )}
           </CardContent>
         </Card>
       </div>

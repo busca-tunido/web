@@ -21,6 +21,7 @@ export type CreateRoomDto = components['schemas']['CreateRoomDto'];
 export type UpdateRoomDto = components['schemas']['UpdateRoomDto'];
 
 export type PensionItemDto = components['schemas']['PensionItemResponseDto'];
+export type PensionAmenityCatalogItemDto = components['schemas']['PensionAmenityCatalogItemDto'];
 export type CreatePensionDto = components['schemas']['CreatePensionDto'];
 export type UpdatePensionDto = Partial<components['schemas']['UpdatePensionDto']>;
 export type PensionSortBy = components['schemas']['PensionSortBy'];

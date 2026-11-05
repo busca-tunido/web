@@ -229,6 +229,23 @@ export interface paths {
     readonly patch?: never;
     readonly trace?: never;
   };
+  readonly '/pensions/amenities': {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    /** List all available pension amenities catalog */
+    readonly get: operations['PensionsController_getAmenities'];
+    readonly put?: never;
+    readonly post?: never;
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
   readonly '/pensions/{idOrSlug}': {
     readonly parameters: {
       readonly query?: never;
@@ -1086,6 +1103,24 @@ export interface components {
       readonly longitude: number;
       /** @example https://example.com/santiago.webp */
       readonly imageUrl?: string | null;
+    };
+    readonly PensionAmenityCatalogItemDto: {
+      /** @example wifi-alta-velocidad */
+      readonly slug: string;
+      /** @example Wi-Fi fibra óptica alta velocidad */
+      readonly name: string;
+      /**
+       * @example BASIC_UTILITY
+       * @enum {string}
+       */
+      readonly category:
+        | 'BASIC_UTILITY'
+        | 'ROOM_FEATURE'
+        | 'COMMON_AREA'
+        | 'STUDY_WORK'
+        | 'SAFETY_SECURITY';
+      /** @example wifi */
+      readonly iconKey?: string | null;
     };
     readonly CreatePensionDto: {
       /** @example Residencia San Joaquín */
@@ -2805,6 +2840,43 @@ export interface operations {
             /** @example 2026-11-02T01:00:00.000Z */
             readonly timestamp: string;
             readonly data: readonly components['schemas']['CitySummaryResponseDto'][];
+          };
+        };
+      };
+      /** @description Error interno del servidor */
+      readonly 500: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': components['schemas']['ErrorEnvelopeDto'];
+        };
+      };
+    };
+  };
+  readonly PensionsController_getAmenities: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly requestBody?: never;
+    readonly responses: {
+      /** @description List of all pension amenities grouped by category */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': {
+            /** @example true */
+            readonly success: boolean;
+            /** @example 200 */
+            readonly statusCode: number;
+            /** @example 2026-11-02T01:00:00.000Z */
+            readonly timestamp: string;
+            readonly data: readonly components['schemas']['PensionAmenityCatalogItemDto'][];
           };
         };
       };

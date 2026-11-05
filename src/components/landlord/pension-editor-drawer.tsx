@@ -543,11 +543,21 @@ export function PensionEditorDrawer({
   const toggleAmenity = (slug: string) => {
     setForm((prev) => {
       const exists = prev.selectedAmenitySlugs.includes(slug);
+      const nextAmenities = exists
+        ? prev.selectedAmenitySlugs.filter((s) => s !== slug)
+        : [...prev.selectedAmenitySlugs, slug];
+
+      if (slug === 'wifi-alta-velocidad') {
+        return {
+          ...prev,
+          internetIncluded: !exists,
+          selectedAmenitySlugs: nextAmenities,
+        };
+      }
+
       return {
         ...prev,
-        selectedAmenitySlugs: exists
-          ? prev.selectedAmenitySlugs.filter((s) => s !== slug)
-          : [...prev.selectedAmenitySlugs, slug],
+        selectedAmenitySlugs: nextAmenities,
       };
     });
   };
@@ -631,6 +641,12 @@ export function PensionEditorDrawer({
           ? form.longitude
           : userLocation.longitude || SANTIAGO_COORDINATES.longitude;
 
+      const hasWifi =
+        form.internetIncluded || form.selectedAmenitySlugs.includes('wifi-alta-velocidad');
+      const alignedAmenities = hasWifi
+        ? Array.from(new Set([...form.selectedAmenitySlugs, 'wifi-alta-velocidad']))
+        : form.selectedAmenitySlugs.filter((s) => s !== 'wifi-alta-velocidad');
+
       const payload: CreatePensionDto = {
         title: trimmedTitle,
         description: trimmedDescription,
@@ -645,7 +661,7 @@ export function PensionEditorDrawer({
         waterIncluded: form.waterIncluded,
         electricityIncluded: form.electricityIncluded,
         gasIncluded: form.gasIncluded,
-        internetIncluded: form.internetIncluded,
+        internetIncluded: hasWifi,
         genderPreference: form.genderPreference,
         guestsAllowed: form.guestsAllowed,
         smokingAllowed: form.smokingAllowed,
@@ -653,7 +669,7 @@ export function PensionEditorDrawer({
         curfewTime: formattedCurfew,
         quietHoursStart: form.quietHoursStart || undefined,
         quietHoursEnd: form.quietHoursEnd || undefined,
-        amenitySlugs: form.selectedAmenitySlugs.length > 0 ? form.selectedAmenitySlugs : undefined,
+        amenitySlugs: alignedAmenities.length > 0 ? alignedAmenities : undefined,
         images: allImages.length > 0 ? allImages : undefined,
       };
 
@@ -1115,10 +1131,27 @@ export function PensionEditorDrawer({
                       key={utility.key}
                       type="button"
                       onClick={() =>
-                        setForm((prev) => ({
-                          ...prev,
-                          [utility.key]: !prev[utility.key],
-                        }))
+                        setForm((prev) => {
+                          const nextVal = !prev[utility.key];
+                          if (utility.key === 'internetIncluded') {
+                            const nextAmenities = nextVal
+                              ? Array.from(
+                                  new Set([...prev.selectedAmenitySlugs, 'wifi-alta-velocidad']),
+                                )
+                              : prev.selectedAmenitySlugs.filter(
+                                  (s) => s !== 'wifi-alta-velocidad',
+                                );
+                            return {
+                              ...prev,
+                              internetIncluded: nextVal,
+                              selectedAmenitySlugs: nextAmenities,
+                            };
+                          }
+                          return {
+                            ...prev,
+                            [utility.key]: nextVal,
+                          };
+                        })
                       }
                       className={cn(
                         'flex flex-col items-center justify-center p-3 rounded-2xl border transition-all min-h-16 text-center cursor-pointer',

@@ -128,6 +128,7 @@ describe('PensionDetailModal without NavigationProvider', () => {
   it('renders "Sin WiFi" when wifi-alta-velocidad amenity is not included', () => {
     const pensionWithoutWifi: PensionItem = {
       ...mockPension,
+      internetIncluded: false,
       amenitySlugs: ['sala-estudio-cowork'],
       amenities: [],
     };

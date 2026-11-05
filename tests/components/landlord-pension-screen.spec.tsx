@@ -81,6 +81,7 @@ vi.mock('@/services/pensions.service', () => ({
   pensionsService: {
     fetchPensionDetail: vi.fn(),
     fetchMinePensions: vi.fn(),
+    fetchAmenitiesCatalog: vi.fn().mockResolvedValue({ success: true, data: [] }),
     update: vi.fn(),
   },
 }));

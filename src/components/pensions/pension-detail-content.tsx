@@ -363,7 +363,8 @@ export function PensionDetailContent({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {(() => {
               const hasWifi = Boolean(
-                pension.amenitySlugs?.includes('wifi-alta-velocidad') ||
+                pension.internetIncluded ||
+                  pension.amenitySlugs?.includes('wifi-alta-velocidad') ||
                   pension.amenities?.some(
                     (a) => (typeof a === 'string' ? a : a.slug) === 'wifi-alta-velocidad',
                   ),
