@@ -221,10 +221,6 @@ export function LandlordProposalsScreen({
               </Badge>
             )}
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Revisa, aprueba o rechaza actualizaciones de servicios y datos sugeridos por estudiantes
-            universitarios
-          </p>
         </div>
 
         <Button
