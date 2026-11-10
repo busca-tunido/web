@@ -31,6 +31,9 @@ export function draftLifecycleReducer(
     case 'DISCARD':
       return { status: 'DISCARDED', isBannerVisible: false };
     case 'RESET':
+      if (state.status === 'IDLE' && !state.isBannerVisible) {
+        return state;
+      }
       return { status: 'IDLE', isBannerVisible: false };
     default:
       return state;

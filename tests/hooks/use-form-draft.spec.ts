@@ -168,4 +168,101 @@ describe('useFormDraft with lifecycle FSM', () => {
     expect(JSON.parse(stored || '{}').title).toBe('Nueva Pensión Universidad');
     expect(result.current.isBannerVisible).toBe(false);
   });
+
+  it('redisplays restore banner upon reopening drawer after restoring and applying changes', () => {
+    const savedDraft = {
+      ...initialPension,
+      title: 'Pensión Original',
+      baseMonthlyPrice: '200000',
+    };
+    sessionStorage.setItem('buscatunido_draft_test-pension', JSON.stringify(savedDraft));
+
+    let isEnabled = true;
+    let current = { ...initialPension };
+
+    const { result, rerender } = renderHook(() =>
+      useFormDraft({
+        storageKey: 'test-pension',
+        currentValues: current,
+        initialValues: initialPension,
+        isEnabled,
+        isSubstantive: isSubstantivePensionDraft,
+      }),
+    );
+
+    expect(result.current.isBannerVisible).toBe(true);
+    expect(result.current.status).toBe('AVAILABLE');
+
+    let restored: typeof initialPension | null = null;
+    act(() => {
+      restored = result.current.restoreDraft();
+    });
+    expect(restored).toEqual(savedDraft);
+    expect(result.current.status).toBe('RESTORED');
+    expect(result.current.isBannerVisible).toBe(false);
+
+    const restoredData = restored ?? initialPension;
+    current = { ...restoredData, title: 'Pensión Modificada' };
+    rerender();
+
+    act(() => {
+      vi.advanceTimersByTime(650);
+    });
+
+    isEnabled = false;
+    current = { ...initialPension };
+    rerender();
+
+    expect(result.current.status).toBe('IDLE');
+    expect(result.current.isBannerVisible).toBe(false);
+
+    isEnabled = true;
+    rerender();
+
+    expect(result.current.status).toBe('AVAILABLE');
+    expect(result.current.isBannerVisible).toBe(true);
+
+    let secondRestored: typeof initialPension | null = null;
+    act(() => {
+      secondRestored = result.current.restoreDraft();
+    });
+    const secondRestoredData = secondRestored as typeof initialPension | null;
+    expect(secondRestoredData?.title).toBe('Pensión Modificada');
+  });
+
+  it('flushes pending debounced draft when drawer closes before timer expires', () => {
+    let isEnabled = true;
+    let current = { ...initialPension };
+
+    const { result, rerender } = renderHook(() =>
+      useFormDraft({
+        storageKey: 'test-pension',
+        currentValues: current,
+        initialValues: initialPension,
+        isEnabled,
+        isSubstantive: isSubstantivePensionDraft,
+      }),
+    );
+
+    current = {
+      ...initialPension,
+      title: 'Guardado Inmediato Al Cerrar',
+      baseMonthlyPrice: '150000',
+    };
+    rerender();
+
+    isEnabled = false;
+    current = { ...initialPension };
+    rerender();
+
+    const stored = sessionStorage.getItem('buscatunido_draft_test-pension');
+    expect(stored).not.toBeNull();
+    expect(JSON.parse(stored || '{}').title).toBe('Guardado Inmediato Al Cerrar');
+
+    isEnabled = true;
+    rerender();
+
+    expect(result.current.status).toBe('AVAILABLE');
+    expect(result.current.isBannerVisible).toBe(true);
+  });
 });

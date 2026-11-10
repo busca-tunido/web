@@ -70,4 +70,22 @@ describe('draftLifecycleReducer', () => {
       isBannerVisible: false,
     });
   });
+
+  it('preserves referential equality on RESET when already in IDLE state', () => {
+    const state = { status: 'IDLE' as const, isBannerVisible: false };
+    const nextState = draftLifecycleReducer(state, {
+      type: 'RESET',
+    });
+    expect(nextState).toBe(state);
+  });
+
+  it('allows DRAFT_FOUND after RESET from RESTORED state', () => {
+    const restoredState = { status: 'RESTORED' as const, isBannerVisible: false };
+    const resetState = draftLifecycleReducer(restoredState, { type: 'RESET' });
+    const foundState = draftLifecycleReducer(resetState, { type: 'DRAFT_FOUND' });
+    expect(foundState).toEqual({
+      status: 'AVAILABLE',
+      isBannerVisible: true,
+    });
+  });
 });

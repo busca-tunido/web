@@ -33,22 +33,70 @@ export function useFormDraft<T extends Record<string, unknown>>({
 }: UseFormDraftOptions<T>): UseFormDraftReturn<T> {
   const [state, dispatch] = useReducer(draftLifecycleReducer, initialDraftLifecycleState);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isDiscardedRef = useRef<boolean>(false);
+  const lastSubstantiveValuesRef = useRef<T | null>(null);
   const fullKey = `buscatunido_draft_${storageKey}`;
+  const prevKeyRef = useRef<string>(fullKey);
+
+  const checkIsSubstantive = useCallback(
+    (values: T): boolean => {
+      if (isSubstantive) {
+        return isSubstantive(values, initialValues);
+      }
+      return Object.keys(values).some(
+        (k) => values[k] !== initialValues[k] && values[k] !== '' && values[k] !== undefined,
+      );
+    },
+    [initialValues, isSubstantive],
+  );
+
+  const flushDraft = useCallback(
+    (values: T | null) => {
+      if (!values || isDiscardedRef.current || typeof window === 'undefined') return;
+      try {
+        if (checkIsSubstantive(values)) {
+          window.sessionStorage.setItem(fullKey, JSON.stringify(values));
+        }
+      } catch {}
+    },
+    [checkIsSubstantive, fullKey],
+  );
 
   useEffect(() => {
-    if (!isEnabled || typeof window === 'undefined') return;
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+        flushDraft(lastSubstantiveValuesRef.current);
+      }
+    };
+  }, [flushDraft]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (!isEnabled) {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+        flushDraft(lastSubstantiveValuesRef.current);
+      }
+      dispatch({ type: 'RESET' });
+      return;
+    }
+
+    if (prevKeyRef.current !== fullKey) {
+      prevKeyRef.current = fullKey;
+      lastSubstantiveValuesRef.current = null;
+      isDiscardedRef.current = false;
+      dispatch({ type: 'RESET' });
+    }
 
     try {
       const stored = window.sessionStorage.getItem(fullKey);
       if (stored) {
         const parsed = JSON.parse(stored) as T;
-        const isMeaningful = isSubstantive
-          ? isSubstantive(parsed, initialValues)
-          : Object.keys(parsed).some(
-              (k) => parsed[k] !== initialValues[k] && parsed[k] !== '' && parsed[k] !== undefined,
-            );
-
-        if (isMeaningful) {
+        if (checkIsSubstantive(parsed)) {
           dispatch({ type: 'DRAFT_FOUND' });
         } else {
           window.sessionStorage.removeItem(fullKey);
@@ -60,30 +108,23 @@ export function useFormDraft<T extends Record<string, unknown>>({
     } catch {
       dispatch({ type: 'RESET' });
     }
-  }, [fullKey, initialValues, isEnabled, isSubstantive]);
+  }, [checkIsSubstantive, flushDraft, fullKey, isEnabled]);
 
   useEffect(() => {
     if (!isEnabled || typeof window === 'undefined') return;
+
+    if (checkIsSubstantive(currentValues)) {
+      lastSubstantiveValuesRef.current = currentValues;
+      isDiscardedRef.current = false;
+    }
 
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
 
     debounceTimerRef.current = setTimeout(() => {
-      try {
-        const isMeaningful = isSubstantive
-          ? isSubstantive(currentValues, initialValues)
-          : Object.keys(currentValues).some(
-              (k) =>
-                currentValues[k] !== initialValues[k] &&
-                currentValues[k] !== '' &&
-                currentValues[k] !== undefined,
-            );
-
-        if (isMeaningful) {
-          window.sessionStorage.setItem(fullKey, JSON.stringify(currentValues));
-        }
-      } catch {}
+      flushDraft(lastSubstantiveValuesRef.current);
+      debounceTimerRef.current = null;
     }, 600);
 
     return () => {
@@ -91,7 +132,7 @@ export function useFormDraft<T extends Record<string, unknown>>({
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [currentValues, fullKey, initialValues, isEnabled, isSubstantive]);
+  }, [checkIsSubstantive, currentValues, flushDraft, isEnabled]);
 
   const restoreDraft = useCallback((): T | null => {
     if (typeof window === 'undefined') return null;
@@ -111,6 +152,12 @@ export function useFormDraft<T extends Record<string, unknown>>({
   const clearDraft = useCallback(() => {
     if (typeof window === 'undefined') return;
     try {
+      isDiscardedRef.current = true;
+      lastSubstantiveValuesRef.current = null;
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
       window.sessionStorage.removeItem(fullKey);
       dispatch({ type: 'DISCARD' });
     } catch {}
