@@ -66,16 +66,45 @@ BuscaTuNido Web is a mobile-first web application built with [Next.js](https://n
 
 ---
 
-## 3. Task-Driven Lifecycle (`tasks/[task-name].md` Workflow)
+## 3. Execution Workflow
+
+```bash
+# PHASE 1: CONTRACT SYNC (Conditional: Incoming Backend Changes)
+# When: ONLY if the feature depends on new backend endpoints, fields or DTOs.
+# Why: Guarantees 'src/lib/api-schema.d.ts' contains the latest types before writing UI.
+just openapi
+
+# PHASE 2: IMPLEMENT (Mobile-First UI & State)
+# When: Build pages, components, drawers and hooks using strict domain types.
+# Rule: Do NOT run 'next build' or background watch tasks.
+
+# PHASE 3: SANITIZE & FORMAT (Biome Autofix ~2s - Fail-Fast #1)
+# When: Immediately after completing code changes.
+# Why: Formats Tailwind classes, sorts imports and fixes safe lints in-place (~2s).
+#      Produces the final file content on disk before running the compiler.
+pnpm run check
+
+# PHASE 4: TYPECHECK (Incremental Static Check ~8-10s - Fail-Fast #2)
+# When: Immediately after Biome finishes writing files.
+# Why: Validates Next.js types and OpenAPI contract alignment ONCE on clean code.
+pnpm exec tsc --noEmit
+
+# PHASE 5: TEST (Vitest Component & Hook Suite ~15-20s - Fail-Fast #3)
+# When: Once types and contracts are 100% verified.
+# Why: The slowest command in the stack (~20s). Only runs when code is guaranteed sound.
+pnpm exec vitest run
+
+# PHASE 6: COMMIT (Targeted Conventional Staging)
+# When: All validations passed without errors.
+git add <target-files>
+git commit -m "feat(ui): descriptive single-line message"
+```
+
+---
+
+## 4. Task-Driven Lifecycle (`tasks/[task-name].md` Workflow)
 
 Every frontend UI enhancement, page, or bug fix must strictly adhere to the following workflow:
-
-### Code Quality & Biome Scripts Workflow:
-
-- `pnpm run check`: Unified command combining formatting, import organization, and safe lint autofixes (`biome check --write .`). Agents must run this after modifying code.
-- `pnpm run review`: Read-only verification check (`biome check .`) that returns an error exit code if any unresolved formatting or lint errors exist. Mandatory for validation.
-- `pnpm exec tsc --noEmit`: Fast incremental typecheck leveraging persistent `.tsbuildinfo` without full bundling.
-- `pnpm build`: Full Next.js production build (`next build`). Reserved for production asset compilation and deployment.
 
 > [!IMPORTANT]
 > **Always Use Global `pnpm run <script>` (Do Not Target Individual Files)**:
