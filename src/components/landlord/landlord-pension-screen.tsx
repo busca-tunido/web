@@ -47,7 +47,7 @@ import { LandlordProposalsDrawer } from '@/components/landlord/landlord-proposal
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -98,7 +98,7 @@ type FormState = {
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  BASIC_UTILITY: 'Servicios Básicos',
+  BASIC_UTILITY: 'Suministros y Conectividad',
   ROOM_FEATURE: 'Habitación y Confort',
   COMMON_AREA: 'Áreas Comunes',
   STUDY_WORK: 'Estudio y Trabajo',
@@ -615,9 +615,6 @@ export function LandlordPensionScreen({
           <h2 className="text-lg font-extrabold tracking-tight text-foreground sm:text-xl">
             Perfil de la Pensión
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Configura servicios incluidos, normas de convivencia y datos de contacto
-          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
@@ -670,16 +667,6 @@ export function LandlordPensionScreen({
               </span>
             </button>
           )}
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setIsPreviewModalOpen(true)}
-            className="min-h-[40px] px-3.5 text-xs font-semibold border-border text-foreground hover:bg-secondary shadow-2xs cursor-pointer rounded-xl gap-1.5"
-          >
-            <Eye className="h-4 w-4 text-muted-foreground" />
-            <span>Vista de Estudiante</span>
-          </Button>
         </div>
       </div>
 
@@ -761,14 +748,9 @@ export function LandlordPensionScreen({
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
               <Zap className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
-              <div>
-                <CardTitle className="text-sm font-semibold text-foreground">
-                  Servicios Básicos Incluidos
-                </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                  Indica qué cuentas básicas están cubiertas en el arriendo mensual
-                </CardDescription>
-              </div>
+              <CardTitle className="text-sm font-semibold text-foreground">
+                Servicios Básicos Incluidos
+              </CardTitle>
             </div>
           </CardHeader>
 
@@ -776,12 +758,7 @@ export function LandlordPensionScreen({
             <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
               <div className="flex items-center gap-3 min-w-0">
                 <Droplets className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-foreground">Agua Potable</span>
-                  <span className="text-[11px] text-muted-foreground">
-                    Consumo de agua fría y caliente incluido
-                  </span>
-                </div>
+                <span className="text-xs font-semibold text-foreground">Agua Potable</span>
               </div>
 
               <button
@@ -807,12 +784,7 @@ export function LandlordPensionScreen({
             <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
               <div className="flex items-center gap-3 min-w-0">
                 <Zap className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-foreground">Electricidad / Luz</span>
-                  <span className="text-[11px] text-muted-foreground">
-                    Gasto eléctrico general y en habitaciones
-                  </span>
-                </div>
+                <span className="text-xs font-semibold text-foreground">Electricidad / Luz</span>
               </div>
 
               <button
@@ -838,12 +810,7 @@ export function LandlordPensionScreen({
             <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
               <div className="flex items-center gap-3 min-w-0">
                 <Flame className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-foreground">Gas / Calefón</span>
-                  <span className="text-[11px] text-muted-foreground">
-                    Gas para cocina y agua caliente
-                  </span>
-                </div>
+                <span className="text-xs font-semibold text-foreground">Gas / Calefón</span>
               </div>
 
               <button
@@ -869,12 +836,7 @@ export function LandlordPensionScreen({
             <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
               <div className="flex items-center gap-3 min-w-0">
                 <Wifi className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-foreground">Internet Wi-Fi</span>
-                  <span className="text-[11px] text-muted-foreground">
-                    Conexión de alta velocidad para estudio
-                  </span>
-                </div>
+                <span className="text-xs font-semibold text-foreground">Internet Wi-Fi</span>
               </div>
 
               <button
@@ -903,14 +865,9 @@ export function LandlordPensionScreen({
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
               <Users className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
-              <div>
-                <CardTitle className="text-sm font-semibold text-foreground">
-                  Preferencia de Género
-                </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                  Especifica a qué público universitario está dirigida la residencia
-                </CardDescription>
-              </div>
+              <CardTitle className="text-sm font-semibold text-foreground">
+                Preferencia de Género
+              </CardTitle>
             </div>
           </CardHeader>
 
@@ -939,12 +896,7 @@ export function LandlordPensionScreen({
                           isSelected ? 'text-foreground' : 'text-muted-foreground',
                         )}
                       />
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-medium text-foreground">{option.label}</span>
-                        <span className="text-[11px] text-muted-foreground">
-                          {option.description}
-                        </span>
-                      </div>
+                      <span className="text-xs font-medium text-foreground">{option.label}</span>
                     </div>
                     {isSelected ? (
                       <Check className="h-4 w-4 text-foreground shrink-0 ml-2" />
@@ -955,10 +907,6 @@ export function LandlordPensionScreen({
                 );
               })}
             </div>
-
-            <div className="rounded-lg border border-border/50 bg-muted/15 p-2.5 text-[11px] text-muted-foreground">
-              Define la convivencia en áreas compartidas para tranquilidad de los postulantes.
-            </div>
           </CardContent>
         </Card>
 
@@ -967,14 +915,9 @@ export function LandlordPensionScreen({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <MessageCircle className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
-                <div>
-                  <CardTitle className="text-sm font-semibold text-foreground">
-                    Contacto Directo y WhatsApp
-                  </CardTitle>
-                  <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                    Canal oficial para consultas de disponibilidad
-                  </CardDescription>
-                </div>
+                <CardTitle className="text-sm font-semibold text-foreground">
+                  Contacto Directo y WhatsApp
+                </CardTitle>
               </div>
 
               <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 bg-muted/30 px-2.5 py-1 rounded-lg border border-border/60">
@@ -985,16 +928,17 @@ export function LandlordPensionScreen({
                   aria-checked={form.useCustomContact}
                   aria-label="Personalizar datos de contacto para esta pensión"
                   onClick={() =>
-                    setForm((prev) => ({
-                      ...prev,
-                      useCustomContact: !prev.useCustomContact,
-                      contactName: !prev.useCustomContact
-                        ? prev.contactName || defaultContact.name
-                        : defaultContact.name,
-                      contactPhone: !prev.useCustomContact
-                        ? prev.contactPhone || defaultContact.phone
-                        : normalizePhoneToDisplay(defaultContact.phone),
-                    }))
+                    setForm((prev) => {
+                      const nextCustom = !prev.useCustomContact;
+                      return {
+                        ...prev,
+                        useCustomContact: nextCustom,
+                        contactName: nextCustom ? '' : defaultContact.name,
+                        contactPhone: nextCustom
+                          ? ''
+                          : normalizePhoneToDisplay(defaultContact.phone),
+                      };
+                    })
                   }
                   className={cn(
                     'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
@@ -1014,23 +958,6 @@ export function LandlordPensionScreen({
 
           <CardContent className="p-4 sm:p-5 space-y-4 flex-1 flex flex-col justify-between">
             <div className="space-y-3.5">
-              <div className="rounded-lg border border-border/60 bg-muted/20 p-2.5 text-xs flex items-center justify-between gap-2 text-muted-foreground">
-                <div className="flex items-center gap-2 min-w-0">
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <span className="text-[11px] leading-tight">
-                    {form.useCustomContact
-                      ? 'Contacto personalizado activo para esta pensión'
-                      : 'Utilizando datos por defecto configurados en Mis Pensiones'}
-                  </span>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="text-[10px] shrink-0 font-normal border-border/70 text-muted-foreground"
-                >
-                  {form.useCustomContact ? 'Personalizado' : 'Por Defecto'}
-                </Badge>
-              </div>
-
               <div>
                 <label
                   htmlFor="landlord-contact-name"
@@ -1061,15 +988,12 @@ export function LandlordPensionScreen({
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label
-                    htmlFor="landlord-contact-whatsapp"
-                    className="block text-xs font-medium text-foreground"
-                  >
-                    WhatsApp de Contacto (Chile)
-                  </label>
-                  <span className="text-[10px] text-muted-foreground">+56 9</span>
-                </div>
+                <label
+                  htmlFor="landlord-contact-whatsapp"
+                  className="block text-xs font-medium text-foreground mb-1"
+                >
+                  WhatsApp de Contacto (Chile)
+                </label>
 
                 <div className="relative flex items-center">
                   <div className="absolute left-3 flex items-center text-muted-foreground pointer-events-none">
@@ -1097,17 +1021,8 @@ export function LandlordPensionScreen({
                     )}
                   />
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  {form.useCustomContact
-                    ? 'Los estudiantes contactarán a este número exclusivo para esta pensión.'
-                    : 'Para cambiar el contacto general, edítalo en Mis Pensiones.'}
-                </p>
               </div>
             </div>
-
-            <p className="text-[11px] text-muted-foreground pt-1">
-              Canal verificado para consultas directas de estudiantes.
-            </p>
           </CardContent>
         </Card>
 
@@ -1115,14 +1030,9 @@ export function LandlordPensionScreen({
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
               <ShieldCheck className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
-              <div>
-                <CardTitle className="text-sm font-semibold text-foreground">
-                  Reglas y Convivencia
-                </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                  Define normas claras para mantener un ambiente de estudio y descanso
-                </CardDescription>
-              </div>
+              <CardTitle className="text-sm font-semibold text-foreground">
+                Reglas y Convivencia
+              </CardTitle>
             </div>
           </CardHeader>
 
@@ -1131,14 +1041,7 @@ export function LandlordPensionScreen({
               <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
                   <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="text-xs font-semibold text-foreground">
-                      Visitas Permitidas
-                    </span>
-                    <span className="text-[11px] text-muted-foreground">
-                      Los residentes pueden recibir compañeros o familiares
-                    </span>
-                  </div>
+                  <span className="text-xs font-semibold text-foreground">Visitas Permitidas</span>
                 </div>
 
                 <button
@@ -1164,12 +1067,7 @@ export function LandlordPensionScreen({
               <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
                   <Ban className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="text-xs font-semibold text-foreground">Permitido Fumar</span>
-                    <span className="text-[11px] text-muted-foreground">
-                      En áreas designadas o patios abiertos
-                    </span>
-                  </div>
+                  <span className="text-xs font-semibold text-foreground">Permitido Fumar</span>
                 </div>
 
                 <button
@@ -1195,14 +1093,7 @@ export function LandlordPensionScreen({
               <div className="flex items-center justify-between gap-3 px-5 py-3.5 select-none hover:bg-muted/15 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
                   <PawPrint className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="text-xs font-semibold text-foreground">
-                      Mascotas Permitidas
-                    </span>
-                    <span className="text-[11px] text-muted-foreground">
-                      Acepta perros, gatos o mascotas pequeñas
-                    </span>
-                  </div>
+                  <span className="text-xs font-semibold text-foreground">Mascotas Permitidas</span>
                 </div>
 
                 <button
@@ -1254,7 +1145,7 @@ export function LandlordPensionScreen({
                   </button>
                 </div>
 
-                {form.hasCurfew ? (
+                {form.hasCurfew && (
                   <div className="pt-0.5">
                     <label
                       htmlFor="curfew-time-input"
@@ -1270,10 +1161,6 @@ export function LandlordPensionScreen({
                       className="min-h-[38px] w-full rounded-lg border border-border/70 bg-background px-3 text-xs font-medium text-foreground focus:border-foreground/40 focus:outline-none transition-colors"
                     />
                   </div>
-                ) : (
-                  <p className="text-[11px] text-muted-foreground">
-                    Acceso independiente 24/7 sin límite de horario.
-                  </p>
                 )}
               </div>
 
@@ -1282,9 +1169,6 @@ export function LandlordPensionScreen({
                   <Moon className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="text-xs font-medium text-foreground">Horario de Silencio</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground">
-                  Franja horaria para favorecer el descanso y estudio.
-                </p>
 
                 <div className="grid grid-cols-2 gap-2 pt-0.5">
                   <div>
@@ -1333,14 +1217,9 @@ export function LandlordPensionScreen({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <LayoutGrid className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
-                <div>
-                  <CardTitle className="text-sm font-semibold text-foreground">
-                    Comodidades y Equipamiento
-                  </CardTitle>
-                  <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                    Selecciona las características y comodidades disponibles para los estudiantes
-                  </CardDescription>
-                </div>
+                <CardTitle className="text-sm font-semibold text-foreground">
+                  Comodidades y Equipamiento
+                </CardTitle>
               </div>
               <Badge variant="outline" className="text-xs font-semibold self-start sm:self-auto">
                 {form.selectedAmenitySlugs.length} seleccionada
