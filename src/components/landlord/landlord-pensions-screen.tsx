@@ -377,9 +377,6 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 {pensions.length} {pensions.length === 1 ? 'pensión' : 'pensiones'}
               </Badge>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Supervisa tus alojamientos, controla su ocupación y selecciona cuál administrar
-            </p>
           </div>
 
           <Button
@@ -443,14 +440,9 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
               <div className="flex items-center gap-2.5">
                 <Phone className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
-                <div>
-                  <h2 className="text-xs sm:text-sm font-semibold text-foreground">
-                    Datos de Contacto Predeterminados
-                  </h2>
-                  <p className="text-[11px] text-muted-foreground">
-                    Contacto y WhatsApp aplicados por defecto a todas tus pensiones
-                  </p>
-                </div>
+                <h2 className="text-xs sm:text-sm font-semibold text-foreground">
+                  Datos de Contacto
+                </h2>
               </div>
 
               {contactSaveFeedback && (

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LandlordPensionScreen } from '@/components/landlord/landlord-pension-screen';
 import type { PensionDetailDto } from '@/lib/types';
@@ -180,5 +180,66 @@ describe('LandlordPensionScreen', () => {
     await waitFor(() => {
       expect(mockDeletePension).toHaveBeenCalledWith('6659f8c123456789abcdef01');
     });
+  });
+
+  it('renders amenity categories without redundant utility category or card subtitles', async () => {
+    vi.mocked(pensionsService.fetchAmenitiesCatalog).mockResolvedValueOnce(
+      createSuccess([
+        {
+          id: 'amenity-calefaccion',
+          slug: 'calefaccion',
+          name: 'Calefacción central o estufa',
+          category: 'ROOM_FEATURE',
+          iconKey: 'thermometer',
+        },
+      ]),
+    );
+
+    render(<LandlordPensionScreen pension={mockPension} />);
+
+    expect(await screen.findByText('Habitación y Confort')).toBeDefined();
+    expect(screen.queryByText('Suministros y Conectividad')).toBeNull();
+
+    expect(
+      screen.queryByText(/Indica qué cuentas básicas están cubiertas en el arriendo mensual/i),
+    ).toBeNull();
+    expect(
+      screen.queryByText(/Especifica a qué público universitario está dirigida la residencia/i),
+    ).toBeNull();
+    expect(
+      screen.queryByText(/Consumo de agua fría y caliente incluido/i),
+    ).toBeNull();
+    expect(
+      screen.queryByText(/Define la convivencia en áreas compartidas para tranquilidad de los postulantes/i),
+    ).toBeNull();
+    expect(
+      screen.queryByText(/Configura servicios incluidos, normas de convivencia y datos de contacto/i),
+    ).toBeNull();
+    expect(
+      screen.queryByText(/Utilizando datos por defecto configurados en Mis Pensiones/i),
+    ).toBeNull();
+  });
+
+  it('handles contact personalization toggle with disabled default vs active empty inputs', async () => {
+    render(<LandlordPensionScreen pension={mockPension} />);
+
+    const nameInput = screen.getByLabelText(/Nombre del Anfitrión o Administrador/i) as HTMLInputElement;
+    const phoneInput = screen.getByLabelText(/WhatsApp de Contacto/i) as HTMLInputElement;
+
+    expect(nameInput.disabled).toBe(true);
+    expect(phoneInput.disabled).toBe(true);
+    expect(nameInput.value).toBe('Patricio Valenzuela');
+
+    const toggleCustomBtn = screen.getByRole('switch', {
+      name: /Personalizar datos de contacto para esta pensión/i,
+    });
+    act(() => {
+      fireEvent.click(toggleCustomBtn);
+    });
+
+    expect(nameInput.disabled).toBe(false);
+    expect(phoneInput.disabled).toBe(false);
+    expect(nameInput.value).toBe('');
+    expect(phoneInput.value).toBe('');
   });
 });
