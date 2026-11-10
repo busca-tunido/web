@@ -21,13 +21,7 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { RoomItem, RoomType } from '@/components/landlord/room-item-card';
 import { Button } from '@/components/ui/button';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
 import { isSubstantiveRoomDraft } from '@/lib/draft-validators';
@@ -420,14 +414,10 @@ export function RoomEditorDrawer({
           className="flex-1 flex flex-col min-h-0 overflow-hidden"
         >
           <div className="overflow-y-auto flex-1 px-4 py-4 space-y-5">
-            <DrawerHeader className="p-0 text-left">
-              <DrawerTitle className="text-lg font-bold text-foreground">
+            <DrawerHeader className="p-0 text-center">
+              <DrawerTitle className="text-lg font-bold text-foreground text-center">
                 {isEditing ? 'Detalles de la Habitación' : 'Configura tu nueva habitación'}
               </DrawerTitle>
-              <DrawerDescription className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                Define el tipo de estancia, valor mensual en pesos chilenos y condiciones de
-                arriendo.
-              </DrawerDescription>
             </DrawerHeader>
 
             {isBannerVisible && !isEditing && (

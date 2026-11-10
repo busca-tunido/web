@@ -27,13 +27,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { PensionLocationPickerMap } from '@/components/landlord/pension-location-picker-map';
 import { Button } from '@/components/ui/button';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
 import { isSubstantivePensionDraft } from '@/lib/draft-validators';
@@ -744,15 +738,10 @@ export function PensionEditorDrawer({
           className="flex-1 flex flex-col min-h-0 overflow-hidden"
         >
           <div className="overflow-y-auto flex-1 px-4 py-4 space-y-6">
-            <DrawerHeader className="p-0 text-left">
-              <DrawerTitle className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary shrink-0" />
-                <span>Registra tu Pensión Universitaria</span>
+            <DrawerHeader className="p-0 text-center">
+              <DrawerTitle className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight text-center">
+                Registra tu Pensión Universitaria
               </DrawerTitle>
-              <DrawerDescription className="text-xs text-muted-foreground mt-0.5 leading-relaxed text-left">
-                Publica los datos de tu alojamiento para comenzar a agregar habitaciones y recibir
-                solicitudes de estudiantes en BuscaTuNido.
-              </DrawerDescription>
             </DrawerHeader>
 
             {isBannerVisible && (
