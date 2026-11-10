@@ -111,4 +111,60 @@ describe('RoomEditorDrawer - Validations & roomNumber safety', () => {
     const translated = translateApiError(errorResponse);
     expect(translated).toBe('El número o identificador no puede superar los 20 caracteres');
   });
+
+  it('restores draft scoped to pensionId and removes banner on restore', async () => {
+    sessionStorage.setItem(
+      'buscatunido_draft_landlord-room-draft-pension-1',
+      JSON.stringify({
+        title: 'Habitación Luminosa 101',
+        roomNumber: '101',
+        monthlyPrice: '210000',
+        totalBeds: 1,
+        type: 'SINGLE',
+        images: [],
+      }),
+    );
+
+    render(
+      <RoomEditorDrawer
+        isOpen={true}
+        onClose={vi.fn()}
+        onSuccess={vi.fn()}
+        pensionId="pension-1"
+      />,
+    );
+
+    expect(await screen.findByText(/Tienes un borrador de habitación no guardado/i)).toBeDefined();
+
+    const restoreBtn = screen.getByRole('button', { name: 'Restaurar' });
+    fireEvent.click(restoreBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Tienes un borrador de habitación no guardado/i)).toBeNull();
+      const titleInput = screen.getByLabelText(/Nombre de la Habitación/i) as HTMLInputElement;
+      expect(titleInput.value).toBe('Habitación Luminosa 101');
+    });
+  });
+
+  it('does not display draft belonging to another pensionId', async () => {
+    sessionStorage.setItem(
+      'buscatunido_draft_landlord-room-draft-pension-OTHER',
+      JSON.stringify({
+        title: 'Habitación Otra Pensión',
+        roomNumber: '999',
+        monthlyPrice: '300000',
+      }),
+    );
+
+    render(
+      <RoomEditorDrawer
+        isOpen={true}
+        onClose={vi.fn()}
+        onSuccess={vi.fn()}
+        pensionId="pension-1"
+      />,
+    );
+
+    expect(screen.queryByText(/Tienes un borrador de habitación no guardado/i)).toBeNull();
+  });
 });

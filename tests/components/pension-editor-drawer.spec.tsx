@@ -220,4 +220,51 @@ describe('PensionEditorDrawer - Map Coordinates & City Fallback', () => {
       );
     });
   });
+
+  it('restores substantive draft on user click and removes banner immediately', async () => {
+    sessionStorage.setItem(
+      'buscatunido_draft_landlord-new-pension',
+      JSON.stringify({
+        title: 'Pensión Borrador Guardado',
+        description: 'Descripción recuperada de la pensión',
+        address: 'Calle Falsa 123',
+        city: 'Valparaíso',
+        baseMonthlyPrice: '200000',
+        selectedAmenitySlugs: [],
+        images: [],
+      }),
+    );
+
+    render(<PensionEditorDrawer isOpen={true} onClose={vi.fn()} />);
+
+    expect(await screen.findByText(/Tienes un borrador previo no publicado/i)).toBeDefined();
+
+    const restoreBtn = screen.getByRole('button', { name: 'Restaurar' });
+    fireEvent.click(restoreBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Tienes un borrador previo no publicado/i)).toBeNull();
+      const titleInput = screen.getByLabelText(/Título de la Publicación/i) as HTMLInputElement;
+      expect(titleInput.value).toBe('Pensión Borrador Guardado');
+    });
+  });
+
+  it('clears draft and closes drawer when clicking Cancelar', async () => {
+    sessionStorage.setItem(
+      'buscatunido_draft_landlord-new-pension',
+      JSON.stringify({
+        title: 'Pensión a Descartar',
+        baseMonthlyPrice: '150000',
+      }),
+    );
+
+    const onClose = vi.fn();
+    render(<PensionEditorDrawer isOpen={true} onClose={onClose} />);
+
+    const cancelBtn = screen.getByRole('button', { name: 'Cancelar' });
+    fireEvent.click(cancelBtn);
+
+    expect(onClose).toHaveBeenCalled();
+    expect(sessionStorage.getItem('buscatunido_draft_landlord-new-pension')).toBeNull();
+  });
 });

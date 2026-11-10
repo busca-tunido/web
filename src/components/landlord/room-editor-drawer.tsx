@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/drawer';
 import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
+import { isSubstantiveRoomDraft } from '@/lib/draft-validators';
 import { translateApiError } from '@/lib/error-translator';
 import { clampNumber } from '@/lib/format-utils';
 import type { CreateRoomDto, UpdateRoomDto } from '@/lib/types';
@@ -111,22 +112,36 @@ export function RoomEditorDrawer({
 
   const [form, setForm] = useState<RoomFormState>(INITIAL_ROOM_STATE);
 
-  const { hasDraft, restoreDraft, clearDraft } = useFormDraft<RoomFormState>(
-    'landlord-new-room',
-    form,
-    INITIAL_ROOM_STATE,
-    isOpen && !isEditing,
-  );
+  const storageKey = pensionId ? `landlord-room-draft-${pensionId}` : 'landlord-new-room';
+
+  const { isBannerVisible, restoreDraft, clearDraft } = useFormDraft<RoomFormState>({
+    storageKey,
+    currentValues: form,
+    initialValues: INITIAL_ROOM_STATE,
+    isEnabled: isOpen && !isEditing,
+    isSubstantive: isSubstantiveRoomDraft,
+  });
 
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const handleCancel = () => {
+    if (!isEditing) {
+      clearDraft();
+    }
+    onClose();
+  };
+
   const handleRestoreDraft = () => {
     const draft = restoreDraft();
     if (draft) {
-      setForm(draft);
+      setForm({
+        ...INITIAL_ROOM_STATE,
+        ...draft,
+        images: Array.isArray(draft.images) ? draft.images : [],
+      });
       toast.success('Borrador restaurado');
     }
   };
@@ -415,7 +430,7 @@ export function RoomEditorDrawer({
               </DrawerDescription>
             </DrawerHeader>
 
-            {hasDraft && !isEditing && (
+            {isBannerVisible && !isEditing && (
               <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs">
                 <span className="text-foreground">
                   Tienes un borrador de habitación no guardado.
@@ -773,7 +788,7 @@ export function RoomEditorDrawer({
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={handleCancel}
               disabled={isSubmitting}
               className="flex-1 min-h-12 rounded-xl border-border/80 hover:bg-secondary font-semibold text-xs cursor-pointer"
             >

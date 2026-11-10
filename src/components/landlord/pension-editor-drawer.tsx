@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/drawer';
 import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
+import { isSubstantivePensionDraft } from '@/lib/draft-validators';
 import { translateApiError } from '@/lib/error-translator';
 import { clampNumber } from '@/lib/format-utils';
 import type { CityInfo, CreatePensionDto, PensionDetailDto } from '@/lib/types';
@@ -292,12 +293,13 @@ export function PensionEditorDrawer({
     }
   }, [isOpen, userLocation, currentCity]);
 
-  const { hasDraft, restoreDraft, clearDraft } = useFormDraft<PensionFormState>(
-    'landlord-new-pension',
-    form,
-    INITIAL_FORM_STATE,
-    isOpen,
-  );
+  const { isBannerVisible, restoreDraft, clearDraft } = useFormDraft<PensionFormState>({
+    storageKey: 'landlord-new-pension',
+    currentValues: form,
+    initialValues: INITIAL_FORM_STATE,
+    isEnabled: isOpen,
+    isSubstantive: isSubstantivePensionDraft,
+  });
 
   const isUpdatingFromMapRef = useRef<boolean>(false);
   const reverseAbortRef = useRef<AbortController | null>(null);
@@ -319,6 +321,17 @@ export function PensionEditorDrawer({
     setErrorMessage(null);
   }, [userLocation, currentCity]);
 
+  const handleCancel = () => {
+    clearDraft();
+    resetForm();
+    onClose();
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
   const handleRestoreDraft = () => {
     const draft = restoreDraft();
     if (draft) {
@@ -330,6 +343,7 @@ export function PensionEditorDrawer({
         (draft.latitude !== 0 || draft.longitude !== 0);
 
       const sanitizedDraft: PensionFormState = {
+        ...INITIAL_FORM_STATE,
         ...draft,
         images: Array.isArray(draft.images) ? draft.images : [],
         latitude: hasValidDraftCoords
@@ -704,7 +718,7 @@ export function PensionEditorDrawer({
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Drawer open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DrawerContent
         id="pension-editor-drawer"
         className={cn(
@@ -717,7 +731,7 @@ export function PensionEditorDrawer({
         <div className="flex items-center justify-between px-4 py-2 border-b border-border/60">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted text-muted-foreground transition cursor-pointer"
             aria-label="Cerrar modal"
           >
@@ -746,7 +760,7 @@ export function PensionEditorDrawer({
               </DrawerDescription>
             </DrawerHeader>
 
-            {hasDraft && (
+            {isBannerVisible && (
               <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs">
                 <span className="text-foreground">Tienes un borrador previo no publicado.</span>
                 <div className="flex items-center gap-1.5 shrink-0">
@@ -1373,7 +1387,7 @@ export function PensionEditorDrawer({
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={handleCancel}
               disabled={isSubmitting}
               className="min-h-12 px-5 rounded-xl border-border text-xs font-semibold cursor-pointer"
             >
