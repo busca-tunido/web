@@ -2,30 +2,24 @@
 
 import {
   Archive,
-  Ban,
   Bath,
   Bed,
   BookOpen,
   Check,
   CheckCircle2,
   ChevronLeft,
-  Clock,
   Coffee,
   Disc,
   Droplets,
   Flame,
   Key,
   Monitor,
-  Moon,
-  PawPrint,
   Printer,
   ShieldCheck,
   Sun,
   Trees,
-  Users,
   Utensils,
   Video,
-  VolumeX,
   Wifi,
   X,
   Zap,
@@ -49,35 +43,42 @@ type AmenitiesBreakdownModalProps = {
   pension: PensionItem;
 };
 
-const DEFAULT_AMENITIES_CATALOG: readonly PensionAmenityCatalogItemDto[] = [
+const REDUNDANT_UTILITY_SLUGS = new Set(['wifi-alta-velocidad', 'luz-incluida', 'gas-incluido']);
+
+const BASIC_UTILITIES = [
   {
-    slug: 'wifi-alta-velocidad',
-    name: 'Wi-Fi fibra óptica alta velocidad',
-    category: 'BASIC_UTILITY',
-    iconKey: 'wifi',
+    key: 'waterIncluded' as const,
+    name: 'Agua Potable',
+    icon: Droplets,
   },
+  {
+    key: 'electricityIncluded' as const,
+    name: 'Electricidad / Luz',
+    icon: Zap,
+  },
+  {
+    key: 'gasIncluded' as const,
+    name: 'Gas / Calefón',
+    icon: Flame,
+  },
+  {
+    key: 'internetIncluded' as const,
+    name: 'Internet Wi-Fi',
+    icon: Wifi,
+  },
+] as const;
+
+const DEFAULT_AMENITIES_CATALOG: readonly PensionAmenityCatalogItemDto[] = [
   {
     slug: 'agua-caliente',
     name: 'Agua caliente 24/7',
-    category: 'BASIC_UTILITY',
+    category: 'ROOM_FEATURE',
     iconKey: 'droplet',
-  },
-  {
-    slug: 'luz-incluida',
-    name: 'Electricidad incluida en renta',
-    category: 'BASIC_UTILITY',
-    iconKey: 'zap',
-  },
-  {
-    slug: 'gas-incluido',
-    name: 'Gas incluido',
-    category: 'BASIC_UTILITY',
-    iconKey: 'flame',
   },
   {
     slug: 'calefaccion',
     name: 'Calefacción central o estufa',
-    category: 'BASIC_UTILITY',
+    category: 'ROOM_FEATURE',
     iconKey: 'thermometer',
   },
   {
@@ -188,12 +189,11 @@ const AMENITY_ICON_MAP: Record<string, typeof Wifi> = {
   key: Key,
 };
 
-const CATEGORIES: ReadonlyArray<{
-  key: 'BASIC_UTILITY' | 'ROOM_FEATURE' | 'COMMON_AREA' | 'STUDY_WORK' | 'SAFETY_SECURITY';
+const AMENITY_CATEGORIES: ReadonlyArray<{
+  key: 'ROOM_FEATURE' | 'COMMON_AREA' | 'STUDY_WORK' | 'SAFETY_SECURITY';
   title: string;
-  icon: typeof Wifi;
+  icon: typeof Bed;
 }> = [
-  { key: 'BASIC_UTILITY', title: 'Servicios Básicos', icon: Zap },
   { key: 'ROOM_FEATURE', title: 'Habitación y Confort', icon: Bed },
   { key: 'COMMON_AREA', title: 'Áreas Comunes', icon: Utensils },
   { key: 'STUDY_WORK', title: 'Estudio y Trabajo', icon: BookOpen },
@@ -230,8 +230,15 @@ export function AmenitiesBreakdownModal({
           Array.isArray(res.data) &&
           res.data.length > 0
         ) {
-          cachedAmenitiesCatalog = res.data;
-          setCatalog(res.data);
+          const sanitized = res.data
+            .filter((a) => !REDUNDANT_UTILITY_SLUGS.has(a.slug))
+            .map((a) =>
+              a.slug === 'agua-caliente' || a.slug === 'calefaccion'
+                ? { ...a, category: 'ROOM_FEATURE' as const }
+                : a,
+            );
+          cachedAmenitiesCatalog = sanitized;
+          setCatalog(sanitized);
         }
       } catch {
         // Fallback to defaults
@@ -245,13 +252,6 @@ export function AmenitiesBreakdownModal({
 
   if (!isOpen) return null;
 
-  const genderPreferenceLabel =
-    pension.genderPreference === 'FEMALE_ONLY'
-      ? 'Alojamiento Exclusivo Mujeres'
-      : pension.genderPreference === 'MALE_ONLY'
-        ? 'Alojamiento Exclusivo Hombres'
-        : 'Alojamiento Mixto';
-
   const rawAmenitySlugs: string[] = Array.isArray(pension.amenitySlugs)
     ? [...pension.amenitySlugs]
     : Array.isArray(pension.amenities)
@@ -260,36 +260,19 @@ export function AmenitiesBreakdownModal({
           .filter((s): s is string => Boolean(s))
       : [];
 
-  const hasWifi = Boolean(
-    pension.internetIncluded ||
-      rawAmenitySlugs.includes('wifi-alta-velocidad') ||
-      pension.amenities?.some(
-        (a) => (typeof a === 'string' ? a : a.slug) === 'wifi-alta-velocidad',
-      ),
-  );
-
   const activeSlugs = new Set<string>(rawAmenitySlugs);
-  if (hasWifi) {
-    activeSlugs.add('wifi-alta-velocidad');
-  } else {
-    activeSlugs.delete('wifi-alta-velocidad');
-  }
 
   const isAmenityActive = (slug: string): boolean => {
-    if (slug === 'wifi-alta-velocidad') return hasWifi;
     if (slug === 'agua-caliente') {
-      return Boolean(pension.waterIncluded || activeSlugs.has('agua-caliente'));
-    }
-    if (slug === 'luz-incluida') {
-      return Boolean(pension.electricityIncluded || activeSlugs.has('luz-incluida'));
-    }
-    if (slug === 'gas-incluido') {
-      return Boolean(pension.gasIncluded || activeSlugs.has('gas-incluido'));
+      return Boolean(activeSlugs.has('agua-caliente') || pension.waterIncluded);
     }
     return activeSlugs.has(slug);
   };
 
-  const activeTotalCount = catalog.filter((am) => isAmenityActive(am.slug)).length;
+  const activeBasicCount = BASIC_UTILITIES.filter((u) => Boolean(pension[u.key])).length;
+  const activeAmenitiesCount = catalog.filter((am) => isAmenityActive(am.slug)).length;
+  const totalActive = activeBasicCount + activeAmenitiesCount;
+  const totalItems = BASIC_UTILITIES.length + catalog.length;
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -330,12 +313,69 @@ export function AmenitiesBreakdownModal({
                 variant="outline"
                 className="text-xs font-semibold shrink-0 self-start sm:self-auto"
               >
-                {activeTotalCount} de {catalog.length} incluidos
+                {totalActive} de {totalItems} incluidos
               </Badge>
             </div>
           </DrawerHeader>
 
-          {CATEGORIES.map((cat) => {
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                  Servicios Básicos
+                </h3>
+              </div>
+              <span className="text-[11px] text-muted-foreground font-medium">
+                {activeBasicCount} de {BASIC_UTILITIES.length}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {BASIC_UTILITIES.map((utility) => {
+                const active = Boolean(pension[utility.key]);
+                const Icon = utility.icon;
+
+                if (active) {
+                  return (
+                    <div
+                      key={utility.key}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 p-3 shadow-2xs"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <span className="text-xs font-semibold text-foreground truncate">
+                          {utility.name}
+                        </span>
+                      </div>
+                      <Check className="h-4 w-4 text-primary shrink-0 ml-1" />
+                    </div>
+                  );
+                }
+
+                return (
+                  <div
+                    key={utility.key}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/10 p-3 opacity-40 select-none"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground/70">
+                        <Icon className="h-4 w-4 text-muted-foreground/70" />
+                      </div>
+                      <span className="text-xs font-medium text-muted-foreground truncate">
+                        {utility.name}
+                      </span>
+                    </div>
+                    <X className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0 ml-1" />
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {AMENITY_CATEGORIES.map((cat) => {
             const items = catalog.filter((a) => a.category === cat.key);
             if (items.length === 0) return null;
 
@@ -371,14 +411,9 @@ export function AmenitiesBreakdownModal({
                             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                               <Icon className="h-4 w-4" />
                             </div>
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-xs font-semibold text-foreground truncate">
-                                {am.name}
-                              </span>
-                              <span className="text-[10px] text-primary font-medium">
-                                Incluido en la mensualidad
-                              </span>
-                            </div>
+                            <span className="text-xs font-semibold text-foreground truncate">
+                              {am.name}
+                            </span>
                           </div>
                           <Check className="h-4 w-4 text-primary shrink-0 ml-1" />
                         </div>
@@ -394,14 +429,9 @@ export function AmenitiesBreakdownModal({
                           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground/70">
                             <Icon className="h-4 w-4 text-muted-foreground/70" />
                           </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-medium text-muted-foreground truncate">
-                              {am.name}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground/70">
-                              No disponible
-                            </span>
-                          </div>
+                          <span className="text-xs font-medium text-muted-foreground truncate">
+                            {am.name}
+                          </span>
                         </div>
                         <X className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0 ml-1" />
                       </div>
@@ -411,81 +441,6 @@ export function AmenitiesBreakdownModal({
               </section>
             );
           })}
-
-          <section className="space-y-3 pt-3 border-t border-border/60">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                Normas y Reglas de la Casa
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-              <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                <Clock className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-foreground">Horario de Acceso</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {pension.curfewTime
-                      ? `Toque de queda: ${pension.curfewTime} hrs`
-                      : 'Acceso libre 24/7 con llave propia'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                <VolumeX className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-foreground">Horario de Silencio</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {pension.quietHoursStart && pension.quietHoursEnd
-                      ? `${pension.quietHoursStart} a ${pension.quietHoursEnd} hrs`
-                      : '22:00 a 08:00 hrs'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                <Users className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-foreground">Visitas</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {pension.guestsAllowed ? 'Permitidas' : 'No permitidas'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                <PawPrint className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-foreground">Mascotas</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {pension.petsAllowed ? 'Permitidas' : 'No permitidas'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                <Ban className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-foreground">Fumadores</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {pension.smokingAllowed
-                      ? 'Permitido en zonas designadas'
-                      : 'Espacio libre de humo'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-muted/20 p-2.5">
-                <Moon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-foreground">Preferencia de Convivencia</p>
-                  <p className="text-[11px] text-muted-foreground">{genderPreferenceLabel}</p>
-                </div>
-              </div>
-            </div>
-          </section>
         </div>
       </DrawerContent>
     </Drawer>

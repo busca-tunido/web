@@ -45,22 +45,16 @@ vi.mock('@/services/pensions.service', () => ({
       success: true,
       data: [
         {
-          slug: 'wifi-alta-velocidad',
-          name: 'Wi-Fi fibra óptica alta velocidad',
-          category: 'BASIC_UTILITY',
-          iconKey: 'wifi',
-        },
-        {
           slug: 'agua-caliente',
           name: 'Agua caliente 24/7',
-          category: 'BASIC_UTILITY',
+          category: 'ROOM_FEATURE',
           iconKey: 'droplet',
         },
         {
-          slug: 'gas-incluido',
-          name: 'Gas incluido',
-          category: 'BASIC_UTILITY',
-          iconKey: 'flame',
+          slug: 'calefaccion',
+          name: 'Calefacción central o estufa',
+          category: 'ROOM_FEATURE',
+          iconKey: 'thermometer',
         },
         {
           slug: 'bano-privado',
@@ -91,35 +85,32 @@ describe('AmenitiesBreakdownModal', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders active amenities as included and missing ones as unavailable', () => {
+  it('renders basic utilities and amenity categories, showing active and opaque items without filler text', () => {
     render(<AmenitiesBreakdownModal isOpen={true} onClose={vi.fn()} pension={mockPension} />);
 
     expect(screen.getByText('Servicios y Comodidades')).toBeDefined();
-    expect(screen.getByText('Wi-Fi fibra óptica alta velocidad')).toBeDefined();
+    expect(screen.getByText('Servicios Básicos')).toBeDefined();
+    expect(screen.getByText('Agua Potable')).toBeDefined();
+    expect(screen.getByText('Electricidad / Luz')).toBeDefined();
+    expect(screen.getByText('Gas / Calefón')).toBeDefined();
+    expect(screen.getByText('Internet Wi-Fi')).toBeDefined();
+
+    expect(screen.getByText('Habitación y Confort')).toBeDefined();
     expect(screen.getByText('Agua caliente 24/7')).toBeDefined();
     expect(screen.getByText('Baño privado en habitación')).toBeDefined();
-
-    expect(screen.getByText('Gas incluido')).toBeDefined();
     expect(screen.getByText('Cerradura digital en dormitorios')).toBeDefined();
 
-    const includedLabels = screen.getAllByText('Incluido en la mensualidad');
-    expect(includedLabels.length).toBeGreaterThanOrEqual(3);
-
-    const unavailableLabels = screen.getAllByText('No disponible');
-    expect(unavailableLabels.length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByText('Incluido en la mensualidad')).toBeNull();
+    expect(screen.queryByText('No disponible')).toBeNull();
   });
 
-  it('renders factual house rules without placeholder filler text', () => {
+  it('omits redundant house rules and filler text', () => {
     render(<AmenitiesBreakdownModal isOpen={true} onClose={vi.fn()} pension={mockPension} />);
 
-    expect(screen.getByText('Normas y Reglas de la Casa')).toBeDefined();
-    expect(screen.getByText('Toque de queda: 23:30 hrs')).toBeDefined();
-    expect(screen.getByText('22:00 a 07:30 hrs')).toBeDefined();
-    expect(screen.getByText('Espacio libre de humo')).toBeDefined();
-
+    expect(screen.queryByText('Normas y Reglas de la Casa')).toBeNull();
+    expect(screen.queryByText(/Toque de queda/i)).toBeNull();
     expect(screen.queryByText(/sábanas base/i)).toBeNull();
     expect(screen.queryByText(/iluminación LED natural/i)).toBeNull();
-    expect(screen.queryByText(/entorno barrial seguro/i)).toBeNull();
   });
 
   it('calls onClose when clicking back button', () => {

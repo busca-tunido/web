@@ -92,7 +92,7 @@ const FREQUENT_AMENITIES: ReadonlyArray<{
   name: string;
   icon: typeof Wifi;
 }> = [
-  { slug: 'wifi-alta-velocidad', name: 'Wi-Fi fibra óptica', icon: Wifi },
+  { slug: 'agua-caliente', name: 'Agua caliente 24/7', icon: Droplets },
   { slug: 'cocina-equipada', name: 'Cocina equipada', icon: Flame },
   { slug: 'lavadora-secadora', name: 'Lavadora disponible', icon: Droplets },
   { slug: 'sala-estudio-cowork', name: 'Sala de estudio', icon: GraduationCap },
@@ -561,14 +561,6 @@ export function PensionEditorDrawer({
         ? prev.selectedAmenitySlugs.filter((s) => s !== slug)
         : [...prev.selectedAmenitySlugs, slug];
 
-      if (slug === 'wifi-alta-velocidad') {
-        return {
-          ...prev,
-          internetIncluded: !exists,
-          selectedAmenitySlugs: nextAmenities,
-        };
-      }
-
       return {
         ...prev,
         selectedAmenitySlugs: nextAmenities,
@@ -655,11 +647,14 @@ export function PensionEditorDrawer({
           ? form.longitude
           : userLocation.longitude || SANTIAGO_COORDINATES.longitude;
 
-      const hasWifi =
-        form.internetIncluded || form.selectedAmenitySlugs.includes('wifi-alta-velocidad');
-      const alignedAmenities = hasWifi
-        ? Array.from(new Set([...form.selectedAmenitySlugs, 'wifi-alta-velocidad']))
-        : form.selectedAmenitySlugs.filter((s) => s !== 'wifi-alta-velocidad');
+      const REDUNDANT_UTILITY_SLUGS = new Set([
+        'wifi-alta-velocidad',
+        'luz-incluida',
+        'gas-incluido',
+      ]);
+      const cleanAmenities = form.selectedAmenitySlugs.filter(
+        (s) => !REDUNDANT_UTILITY_SLUGS.has(s),
+      );
 
       const payload: CreatePensionDto = {
         title: trimmedTitle,
@@ -675,7 +670,7 @@ export function PensionEditorDrawer({
         waterIncluded: form.waterIncluded,
         electricityIncluded: form.electricityIncluded,
         gasIncluded: form.gasIncluded,
-        internetIncluded: hasWifi,
+        internetIncluded: form.internetIncluded,
         genderPreference: form.genderPreference,
         guestsAllowed: form.guestsAllowed,
         smokingAllowed: form.smokingAllowed,
@@ -683,7 +678,7 @@ export function PensionEditorDrawer({
         curfewTime: formattedCurfew,
         quietHoursStart: form.quietHoursStart || undefined,
         quietHoursEnd: form.quietHoursEnd || undefined,
-        amenitySlugs: alignedAmenities.length > 0 ? alignedAmenities : undefined,
+        amenitySlugs: cleanAmenities.length > 0 ? cleanAmenities : undefined,
         images: allImages.length > 0 ? allImages : undefined,
       };
 
@@ -1145,27 +1140,10 @@ export function PensionEditorDrawer({
                       key={utility.key}
                       type="button"
                       onClick={() =>
-                        setForm((prev) => {
-                          const nextVal = !prev[utility.key];
-                          if (utility.key === 'internetIncluded') {
-                            const nextAmenities = nextVal
-                              ? Array.from(
-                                  new Set([...prev.selectedAmenitySlugs, 'wifi-alta-velocidad']),
-                                )
-                              : prev.selectedAmenitySlugs.filter(
-                                  (s) => s !== 'wifi-alta-velocidad',
-                                );
-                            return {
-                              ...prev,
-                              internetIncluded: nextVal,
-                              selectedAmenitySlugs: nextAmenities,
-                            };
-                          }
-                          return {
-                            ...prev,
-                            [utility.key]: nextVal,
-                          };
-                        })
+                        setForm((prev) => ({
+                          ...prev,
+                          [utility.key]: !prev[utility.key],
+                        }))
                       }
                       className={cn(
                         'flex flex-col items-center justify-center p-3 rounded-2xl border transition-all min-h-16 text-center cursor-pointer',

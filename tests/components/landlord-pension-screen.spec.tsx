@@ -182,22 +182,23 @@ describe('LandlordPensionScreen', () => {
     });
   });
 
-  it('renders Suministros y Conectividad category and omits redundant card subtitles', async () => {
+  it('renders amenity categories without redundant utility category or card subtitles', async () => {
     vi.mocked(pensionsService.fetchAmenitiesCatalog).mockResolvedValueOnce(
       createSuccess([
         {
-          id: 'amenity-wifi',
-          slug: 'wifi-fibra-optica',
-          name: 'Wi-Fi fibra óptica',
-          category: 'BASIC_UTILITY',
-          iconKey: 'wifi',
+          id: 'amenity-calefaccion',
+          slug: 'calefaccion',
+          name: 'Calefacción central o estufa',
+          category: 'ROOM_FEATURE',
+          iconKey: 'thermometer',
         },
       ]),
     );
 
     render(<LandlordPensionScreen pension={mockPension} />);
 
-    expect(await screen.findByText('Suministros y Conectividad')).toBeDefined();
+    expect(await screen.findByText('Habitación y Confort')).toBeDefined();
+    expect(screen.queryByText('Suministros y Conectividad')).toBeNull();
 
     expect(
       screen.queryByText(/Indica qué cuentas básicas están cubiertas en el arriendo mensual/i),

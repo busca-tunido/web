@@ -97,8 +97,9 @@ type FormState = {
   contactPhone: string;
 };
 
+const REDUNDANT_UTILITY_SLUGS = new Set(['wifi-alta-velocidad', 'luz-incluida', 'gas-incluido']);
+
 const CATEGORY_LABELS: Record<string, string> = {
-  BASIC_UTILITY: 'Suministros y Conectividad',
   ROOM_FEATURE: 'Habitación y Confort',
   COMMON_AREA: 'Áreas Comunes',
   STUDY_WORK: 'Estudio y Trabajo',
@@ -243,7 +244,14 @@ export function LandlordPensionScreen({
       setIsLoadingAmenities(true);
       const res = await pensionsService.fetchAmenitiesCatalog();
       if (isMounted && isApiSuccess(res) && Array.isArray(res.data)) {
-        setAmenitiesCatalog(res.data);
+        const cleanCatalog = res.data
+          .filter((a) => !REDUNDANT_UTILITY_SLUGS.has(a.slug))
+          .map((a) =>
+            a.slug === 'agua-caliente' || a.slug === 'calefaccion'
+              ? { ...a, category: 'ROOM_FEATURE' as const }
+              : a,
+          );
+        setAmenitiesCatalog(cleanCatalog);
       }
       if (isMounted) {
         setIsLoadingAmenities(false);
@@ -283,26 +291,22 @@ export function LandlordPensionScreen({
         ? contactConfig.phone
         : pensionContactPhone || defaultContact.phone;
 
-      const rawAmenitySlugs: string[] = Array.isArray(p.amenitySlugs)
-        ? [...p.amenitySlugs]
-        : Array.isArray(p.amenities)
-          ? p.amenities
-              .map((a) => (typeof a === 'string' ? a : a.slug))
-              .filter((s): s is string => Boolean(s))
-          : [];
-      const hasWifi = Boolean(
-        p.internetIncluded || rawAmenitySlugs.includes('wifi-alta-velocidad'),
-      );
-      const finalAmenitySlugs = hasWifi
-        ? Array.from(new Set([...rawAmenitySlugs, 'wifi-alta-velocidad']))
-        : rawAmenitySlugs.filter((s) => s !== 'wifi-alta-velocidad');
+      const rawAmenitySlugs: string[] = (
+        Array.isArray(p.amenitySlugs)
+          ? [...p.amenitySlugs]
+          : Array.isArray(p.amenities)
+            ? p.amenities
+                .map((a) => (typeof a === 'string' ? a : a.slug))
+                .filter((s): s is string => Boolean(s))
+            : []
+      ).filter((s) => !REDUNDANT_UTILITY_SLUGS.has(s));
 
       setForm({
         waterIncluded: Boolean(p.waterIncluded),
         electricityIncluded: Boolean(p.electricityIncluded),
         gasIncluded: Boolean(p.gasIncluded),
-        internetIncluded: hasWifi,
-        selectedAmenitySlugs: finalAmenitySlugs,
+        internetIncluded: Boolean(p.internetIncluded),
+        selectedAmenitySlugs: rawAmenitySlugs,
         guestsAllowed: Boolean(p.guestsAllowed),
         smokingAllowed: Boolean(p.smokingAllowed),
         petsAllowed: Boolean(p.petsAllowed),
@@ -379,23 +383,10 @@ export function LandlordPensionScreen({
   }, [propPensionId, initialPension, activePension, loadPensionData, syncFormFromPension]);
 
   const handleToggle = (field: keyof FormState) => {
-    setForm((prev) => {
-      const nextVal = !prev[field];
-      if (field === 'internetIncluded') {
-        const nextAmenities = nextVal
-          ? Array.from(new Set([...prev.selectedAmenitySlugs, 'wifi-alta-velocidad']))
-          : prev.selectedAmenitySlugs.filter((s) => s !== 'wifi-alta-velocidad');
-        return {
-          ...prev,
-          internetIncluded: Boolean(nextVal),
-          selectedAmenitySlugs: nextAmenities,
-        };
-      }
-      return {
-        ...prev,
-        [field]: nextVal,
-      };
-    });
+    setForm((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
   };
 
   const handleToggleAmenity = (slug: string) => {
@@ -404,14 +395,6 @@ export function LandlordPensionScreen({
       const nextAmenities = exists
         ? prev.selectedAmenitySlugs.filter((s) => s !== slug)
         : [...prev.selectedAmenitySlugs, slug];
-
-      if (slug === 'wifi-alta-velocidad') {
-        return {
-          ...prev,
-          internetIncluded: !exists,
-          selectedAmenitySlugs: nextAmenities,
-        };
-      }
 
       return {
         ...prev,
