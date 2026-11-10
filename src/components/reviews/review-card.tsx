@@ -125,13 +125,15 @@ export function ReviewCard({
               />
             ))}
           </div>
-          <span className="text-[10px] text-muted-foreground mt-0.5">
+          <span className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">
             {formatDate(review.createdAt)}
           </span>
         </div>
       </div>
 
-      <p className="text-xs text-foreground/90 leading-relaxed">{review.comment}</p>
+      <p className="text-xs text-foreground/90 leading-relaxed text-pretty max-w-prose">
+        {review.comment}
+      </p>
 
       {photos.length > 0 && (
         <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar shrink-0">

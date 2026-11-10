@@ -155,7 +155,7 @@ export function RoomItemCard({
             </div>
 
             <div className="mt-1 flex items-baseline gap-1">
-              <span className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+              <span className="text-base sm:text-lg font-bold text-foreground tracking-tight tabular-nums leading-none">
                 {formattedPrice}
               </span>
               <span className="text-xs text-muted-foreground font-medium">/ mes</span>

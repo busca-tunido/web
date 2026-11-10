@@ -291,7 +291,7 @@ export function LandlordReviewsScreen({
 
             <div className="flex items-center gap-1.5 rounded-lg bg-muted/30 px-2.5 py-1 border border-border/60">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span className="text-sm font-bold text-foreground">
+              <span className="text-sm font-bold text-foreground tabular-nums">
                 {averageRatingValue > 0 ? averageRatingValue.toFixed(1) : 'Nuevo'}
               </span>
               <span className="text-[10px] text-muted-foreground">/ 5.0</span>
@@ -333,7 +333,7 @@ export function LandlordReviewsScreen({
                     }}
                   />
                 </div>
-                <span className="text-xs font-bold text-foreground w-12 text-right">
+                <span className="text-xs font-bold text-foreground w-12 text-right tabular-nums">
                   {satisfactionMetrics.cleanliness > 0
                     ? `${satisfactionMetrics.cleanliness.toFixed(1)} / 5`
                     : '- / 5'}
@@ -373,7 +373,7 @@ export function LandlordReviewsScreen({
                     }}
                   />
                 </div>
-                <span className="text-xs font-bold text-foreground w-12 text-right">
+                <span className="text-xs font-bold text-foreground w-12 text-right tabular-nums">
                   {satisfactionMetrics.landlord > 0
                     ? `${satisfactionMetrics.landlord.toFixed(1)} / 5`
                     : '- / 5'}
@@ -413,7 +413,7 @@ export function LandlordReviewsScreen({
                     }}
                   />
                 </div>
-                <span className="text-xs font-bold text-foreground w-12 text-right">
+                <span className="text-xs font-bold text-foreground w-12 text-right tabular-nums">
                   {satisfactionMetrics.quietness > 0
                     ? `${satisfactionMetrics.quietness.toFixed(1)} / 5`
                     : '- / 5'}
@@ -453,7 +453,7 @@ export function LandlordReviewsScreen({
                     }}
                   />
                 </div>
-                <span className="text-xs font-bold text-foreground w-12 text-right">
+                <span className="text-xs font-bold text-foreground w-12 text-right tabular-nums">
                   {satisfactionMetrics.wifi > 0
                     ? `${satisfactionMetrics.wifi.toFixed(1)} / 5`
                     : '- / 5'}
@@ -702,7 +702,7 @@ export function LandlordReviewsScreen({
                             />
                           ))}
                         </div>
-                        <span className="text-[10px] text-muted-foreground mt-0.5">
+                        <span className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">
                           {formatDate(review.createdAt)}
                         </span>
                       </div>
@@ -710,7 +710,7 @@ export function LandlordReviewsScreen({
                   </CardHeader>
 
                   <CardContent className="p-4 pt-1 space-y-3">
-                    <p className="text-xs text-foreground/90 leading-relaxed italic">
+                    <p className="text-xs text-foreground/90 leading-relaxed text-pretty max-w-prose">
                       "{review.comment}"
                     </p>
 

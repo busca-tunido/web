@@ -148,12 +148,12 @@ export function PensionReviewsPreview({
                         }`}
                       />
                     ))}
-                    <span className="text-[10px] text-muted-foreground ml-1">
+                    <span className="text-[10px] text-muted-foreground ml-1 tabular-nums">
                       {formatDate(review.createdAt)}
                     </span>
                   </div>
 
-                  <p className="text-xs text-foreground/90 leading-relaxed line-clamp-3 italic">
+                  <p className="text-xs text-foreground/90 leading-relaxed line-clamp-3 text-pretty">
                     "{review.comment}"
                   </p>
                 </div>

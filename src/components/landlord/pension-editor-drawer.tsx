@@ -739,7 +739,7 @@ export function PensionEditorDrawer({
         >
           <div className="overflow-y-auto flex-1 px-4 py-4 space-y-6">
             <DrawerHeader className="p-0 text-center">
-              <DrawerTitle className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight text-center">
+              <DrawerTitle className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight text-center text-balance">
                 Registra tu Pensión Universitaria
               </DrawerTitle>
             </DrawerHeader>

@@ -415,8 +415,8 @@ export function RoomEditorDrawer({
         >
           <div className="overflow-y-auto flex-1 px-4 py-4 space-y-5">
             <DrawerHeader className="p-0 text-center">
-              <DrawerTitle className="text-lg font-bold text-foreground text-center">
-                {isEditing ? 'Detalles de la Habitación' : 'Configura tu nueva habitación'}
+              <DrawerTitle className="text-lg font-bold text-foreground text-center text-balance">
+                {isEditing ? 'Editar Habitación y Tarifa' : 'Registrar Nueva Habitación'}
               </DrawerTitle>
             </DrawerHeader>
 
@@ -459,7 +459,7 @@ export function RoomEditorDrawer({
                 >
                   Nombre de la Habitación <span className="text-destructive">*</span>
                 </label>
-                <span className="text-[10px] text-muted-foreground font-mono">
+                <span className="text-[10px] text-muted-foreground tabular-nums">
                   {form.title.length}/80
                 </span>
               </div>
@@ -481,9 +481,11 @@ export function RoomEditorDrawer({
                   className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
                 >
                   N° o Código Corto{' '}
-                  <span className="text-[10px] lowercase font-normal">(opcional)</span>
+                  <span className="text-[10px] lowercase font-normal ml-1.5 text-muted-foreground/70">
+                    (opcional)
+                  </span>
                 </label>
-                <span className="text-[10px] text-muted-foreground font-mono">
+                <span className="text-[10px] text-muted-foreground tabular-nums">
                   {form.roomNumber.length}/20
                 </span>
               </div>

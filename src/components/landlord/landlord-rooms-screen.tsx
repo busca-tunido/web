@@ -225,7 +225,7 @@ export function LandlordRoomsScreen({
 
               <div className="flex flex-col">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight">
+                  <span className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight tabular-nums">
                     {formattedRevenue}
                   </span>
                   <span className="text-xs text-muted-foreground font-medium">/ mes</span>
@@ -260,8 +260,8 @@ export function LandlordRoomsScreen({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-1">
         <div>
-          <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
-            Habitaciones Registradas
+          <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight text-balance">
+            Inventario de Habitaciones
           </h1>
         </div>
 

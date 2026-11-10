@@ -284,7 +284,7 @@ export function PensionDetailContent({
           </button>
         </div>
 
-        <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-tight text-balance">
           {pension.title}
         </h1>
         <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
@@ -304,7 +304,8 @@ export function PensionDetailContent({
           <div className="flex items-center gap-2 text-xs font-semibold text-sage-foreground">
             <MapPin className="h-3.5 w-3.5 shrink-0" />
             <span className="text-foreground">
-              A {pension.nearestUniversity?.distanceMeters}m de {pension.nearestUniversity?.name}
+              A <span className="tabular-nums">{pension.nearestUniversity?.distanceMeters}</span>m
+              de {pension.nearestUniversity?.name}
             </span>
           </div>
         </div>
@@ -315,7 +316,7 @@ export function PensionDetailContent({
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
             Descripción de la Pensión
           </h2>
-          <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
+          <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line text-pretty max-w-prose">
             {pension.description}
           </p>
         </div>
@@ -509,7 +510,7 @@ export function PensionDetailContent({
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs font-bold text-primary">
+                      <span className="text-xs font-bold text-primary tabular-nums">
                         ${(room.monthlyPrice ?? 0).toLocaleString('es-CL')}
                       </span>
                       <span className="block text-[10px] text-muted-foreground">CLP / mes</span>

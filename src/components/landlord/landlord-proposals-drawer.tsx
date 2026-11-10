@@ -370,7 +370,7 @@ export function LandlordProposalsDrawer({
                             <span className="font-semibold text-foreground block mb-0.5">
                               Motivo de la sugerencia:
                             </span>
-                            <p className="text-muted-foreground leading-relaxed italic">
+                            <p className="text-muted-foreground leading-relaxed text-pretty max-w-prose">
                               "{proposal.submissionNotes}"
                             </p>
                           </div>
@@ -383,7 +383,7 @@ export function LandlordProposalsDrawer({
                         </span>
 
                         {changesEntries.length === 0 ? (
-                          <p className="text-xs text-muted-foreground italic">
+                          <p className="text-xs text-muted-foreground">
                             Sin modificaciones directas en campos catalogados.
                           </p>
                         ) : (

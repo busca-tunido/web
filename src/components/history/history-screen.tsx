@@ -41,9 +41,11 @@ function HistoryContent({ onExplore }: HistoryScreenProps) {
       <div>
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold text-foreground">Donde me he alojado</h2>
+          <h2 className="text-xl font-bold tracking-tight text-foreground text-balance">
+            Historial de Estadías Universitarias
+          </h2>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground mt-1 text-pretty">
           Historial de residencias universitarias verificadas y calificaciones de convivencia
         </p>
       </div>

@@ -84,7 +84,7 @@ export function ExploreScreen({
   return (
     <div id="explore-screen-view" className="flex flex-col gap-8 pb-20 md:pb-12 pt-2">
       <div className="px-5 md:px-0">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground text-balance">
           Pensiones y Residencias Universitarias en Chile
         </h1>
       </div>
@@ -92,7 +92,7 @@ export function ExploreScreen({
       <section>
         <div className="flex items-center justify-between px-5 md:px-0 mb-3">
           <div>
-            <h2 className="text-lg font-bold text-foreground tracking-tight">
+            <h2 className="text-lg font-bold text-foreground tracking-tight text-balance">
               Ciudades Universitarias
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -192,7 +192,7 @@ export function ExploreScreen({
       <section>
         <div className="flex items-center justify-between px-5 md:px-0 mb-3">
           <div>
-            <h2 className="text-lg font-bold text-foreground tracking-tight">
+            <h2 className="text-lg font-bold text-foreground tracking-tight text-balance">
               Universidades Destacadas
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -354,10 +354,10 @@ function PensionListSection({
   return (
     <section>
       <div className="flex items-center justify-between px-5 md:px-0 mb-4">
-        <h2 className="text-lg font-bold text-foreground tracking-tight">
+        <h2 className="text-lg font-bold text-foreground tracking-tight text-balance">
           Alojamientos Disponibles
         </h2>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-muted-foreground tabular-nums">
           {totalPensions !== undefined
             ? `${totalPensions} alojamientos`
             : `${featuredPensions.length} alojamientos`}

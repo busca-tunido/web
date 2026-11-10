@@ -370,10 +370,10 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
+              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground text-balance">
                 Mis Pensiones
               </h1>
-              <Badge variant="secondary" className="font-semibold text-xs">
+              <Badge variant="secondary" className="font-semibold text-xs tabular-nums">
                 {pensions.length} {pensions.length === 1 ? 'pensión' : 'pensiones'}
               </Badge>
             </div>
@@ -512,10 +512,10 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-4">
               <Building2 className="h-8 w-8" />
             </div>
-            <h2 className="text-lg font-bold text-foreground tracking-tight">
+            <h2 className="text-lg font-bold text-foreground tracking-tight text-balance">
               Aún no tienes pensiones registradas
             </h2>
-            <p className="text-xs text-muted-foreground mt-1.5 mb-6 max-w-sm leading-relaxed">
+            <p className="text-xs text-muted-foreground mt-1.5 mb-6 max-w-sm leading-relaxed text-pretty">
               Registra tu primera pensión universitaria para comenzar a publicar habitaciones y
               recibir postulaciones de estudiantes verificados.
             </p>

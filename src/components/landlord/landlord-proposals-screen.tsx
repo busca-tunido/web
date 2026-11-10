@@ -209,13 +209,13 @@ export function LandlordProposalsScreen({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground text-balance">
               Sugerencias de la Comunidad
             </h1>
             {pendingCount > 0 && (
               <Badge
                 variant="outline"
-                className="border-border/80 bg-secondary text-muted-foreground text-xs font-semibold"
+                className="border-border/80 bg-secondary text-muted-foreground text-xs font-semibold tabular-nums"
               >
                 {pendingCount} {pendingCount === 1 ? 'pendiente' : 'pendientes'}
               </Badge>

@@ -62,13 +62,13 @@ function PensionCardComponent({
           <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
             {(pension.verificationStatus === 'OFFICIALLY_VERIFIED' ||
               pension.verificationStatus === 'COMMUNITY_VERIFIED') && (
-              <span className="flex items-center gap-1 rounded-full bg-sage/90 px-2.5 py-0.5 text-[11px] font-semibold text-white dark:text-zinc-950 backdrop-blur-md shadow-sm">
+              <span className="flex items-center gap-1 rounded-full bg-sage/90 px-2.5 py-0.5 text-[11px] font-semibold text-white dark:text-zinc-950 backdrop-blur-md shadow-sm leading-none">
                 <ShieldCheck className="h-3 w-3" />
                 Verificada
               </span>
             )}
             {isHighRelevance && (
-              <span className="flex items-center gap-1 rounded-full bg-primary/90 px-2.5 py-0.5 text-[11px] font-semibold text-primary-foreground backdrop-blur-md shadow-sm">
+              <span className="flex items-center gap-1 rounded-full bg-primary/90 px-2.5 py-0.5 text-[11px] font-semibold text-primary-foreground backdrop-blur-md shadow-sm leading-none">
                 <Award className="h-3 w-3" />
                 Recomendada
               </span>
@@ -81,7 +81,7 @@ function PensionCardComponent({
         <div className="flex items-start justify-between gap-2">
           <h3
             id={titleId}
-            className="text-base font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition"
+            className="text-base font-semibold text-foreground leading-snug line-clamp-2 text-balance group-hover:text-primary transition"
           >
             <button
               type="button"
@@ -93,7 +93,9 @@ function PensionCardComponent({
           </h3>
           <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
             <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-            <span>{pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}</span>
+            <span className="tabular-nums">
+              {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
+            </span>
           </div>
         </div>
 
@@ -106,12 +108,17 @@ function PensionCardComponent({
             <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
             <span>
               {pension.neighborhood}, {pension.city}
-              {pension.distanceKm !== undefined && <> • a {pension.distanceKm} km</>}
+              {pension.distanceKm !== undefined && (
+                <>
+                  {' '}
+                  • a <span className="tabular-nums">{pension.distanceKm}</span> km
+                </>
+              )}
             </span>
           </div>
 
           <div className="mt-0.5 flex items-baseline gap-1">
-            <span className="text-base font-bold text-foreground">
+            <span className="text-base font-bold text-foreground tabular-nums">
               ${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP
             </span>
             <span className="text-xs text-muted-foreground">/ mes</span>

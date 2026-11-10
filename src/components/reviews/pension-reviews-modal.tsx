@@ -161,7 +161,7 @@ export function PensionReviewsModal({
           <div className="flex-1 overflow-y-auto scrollbar-subtle px-5 py-4 flex flex-col gap-6">
             <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 p-5 text-center">
               <div className="flex items-center gap-3">
-                <span className="text-4xl font-black tracking-tight text-foreground">
+                <span className="text-4xl font-black tracking-tight text-foreground tabular-nums">
                   {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
                 </span>
                 <div className="flex flex-col items-start">
@@ -177,7 +177,7 @@ export function PensionReviewsModal({
                       />
                     ))}
                   </div>
-                  <span className="text-xs font-semibold text-muted-foreground mt-0.5">
+                  <span className="text-xs font-semibold text-muted-foreground mt-0.5 tabular-nums">
                     {reviews.length > 0
                       ? `${reviews.length} ${reviews.length === 1 ? 'reseña verificada' : 'reseñas verificadas'}`
                       : 'Sin reseñas registradas'}
@@ -218,7 +218,7 @@ export function PensionReviewsModal({
 
                       return (
                         <div key={`breakdown-${stars}`} className="flex items-center gap-2 text-xs">
-                          <span className="w-5 text-right font-semibold text-muted-foreground">
+                          <span className="w-5 text-right font-semibold text-muted-foreground tabular-nums">
                             {stars}
                           </span>
                           <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
@@ -228,7 +228,7 @@ export function PensionReviewsModal({
                               style={{ width: `${percent}%` }}
                             />
                           </div>
-                          <span className="w-8 text-right text-[11px] text-muted-foreground">
+                          <span className="w-8 text-right text-[11px] text-muted-foreground tabular-nums">
                             {percent}%
                           </span>
                         </div>
@@ -241,7 +241,7 @@ export function PensionReviewsModal({
                   <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-foreground">Limpieza</span>
-                      <span className="text-xs font-bold text-primary">
+                      <span className="text-xs font-bold text-primary tabular-nums">
                         {categoryAverages.cleanliness}
                       </span>
                     </div>
@@ -251,7 +251,7 @@ export function PensionReviewsModal({
                   <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-foreground">Anfitrión</span>
-                      <span className="text-xs font-bold text-primary">
+                      <span className="text-xs font-bold text-primary tabular-nums">
                         {categoryAverages.landlord}
                       </span>
                     </div>
@@ -263,7 +263,7 @@ export function PensionReviewsModal({
                       <span className="text-xs font-semibold text-foreground">
                         Silencio / Estudio
                       </span>
-                      <span className="text-xs font-bold text-primary">
+                      <span className="text-xs font-bold text-primary tabular-nums">
                         {categoryAverages.quietness}
                       </span>
                     </div>
@@ -275,7 +275,7 @@ export function PensionReviewsModal({
                       <span className="text-xs font-semibold text-foreground">
                         Conectividad Wi-Fi
                       </span>
-                      <span className="text-xs font-bold text-primary">
+                      <span className="text-xs font-bold text-primary tabular-nums">
                         {categoryAverages.wifi}
                       </span>
                     </div>

@@ -232,13 +232,13 @@ export function PriceHistogramRangeSlider({
       <div className="grid grid-cols-2 gap-3 pt-1">
         <div className="flex flex-col rounded-2xl border border-border bg-card p-3 shadow-2xs">
           <span className="text-[11px] font-medium text-muted-foreground">Mínimo</span>
-          <span className="text-sm font-semibold text-foreground tracking-tight">
+          <span className="text-sm font-semibold text-foreground tracking-tight tabular-nums">
             {formatPrice(minValue, false)}
           </span>
         </div>
         <div className="flex flex-col rounded-2xl border border-border bg-card p-3 shadow-2xs">
           <span className="text-[11px] font-medium text-muted-foreground">Máximo</span>
-          <span className="text-sm font-semibold text-foreground tracking-tight">
+          <span className="text-sm font-semibold text-foreground tracking-tight tabular-nums">
             {formatPrice(maxValue, true)}
           </span>
         </div>

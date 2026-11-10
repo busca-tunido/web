@@ -77,7 +77,7 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-foreground">Tus Favoritos</h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground tabular-nums">
             {isLoadingFavorites && remainingCount > 0
               ? knownCount > 0
                 ? `Cargando ${knownCount} ${knownCount === 1 ? 'alojamiento guardado' : 'alojamientos guardados'}...`
@@ -136,8 +136,10 @@ function FavoritesGrid({
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-3">
           <Heart className="h-6 w-6" />
         </div>
-        <h3 className="text-sm font-semibold text-foreground">No tienes favoritos guardados</h3>
-        <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+        <h3 className="text-sm font-semibold text-foreground text-balance">
+          Aún no has guardado alojamientos favoritos
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1 max-w-xs text-pretty">
           Explora las pensiones universitarias y presiona el corazón para guardar las opciones que
           te interesen.
         </p>

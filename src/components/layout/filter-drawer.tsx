@@ -138,7 +138,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
               {activeFilterCount > 0 && (
                 <Badge
                   variant="secondary"
-                  className="h-5 px-1.5 text-xs font-semibold rounded-full bg-primary/10 text-primary border-primary/20"
+                  className="h-5 px-1.5 text-xs font-semibold rounded-full bg-primary/10 text-primary border-primary/20 tabular-nums"
                 >
                   {activeFilterCount}
                 </Badge>

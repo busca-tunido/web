@@ -277,7 +277,7 @@ describe('AuthGate and Guest Incentive Screens', () => {
 
     render(<HistoryScreen onExplore={vi.fn()} />);
 
-    expect(screen.getByText('Donde me he alojado')).toBeDefined();
+    expect(screen.getByText('Historial de Estadías Universitarias')).toBeDefined();
     expect(screen.getByText('Aún no registras estadías finalizadas')).toBeDefined();
     expect(screen.queryByText('Construye tu historial de estadías')).toBeNull();
   });
@@ -300,7 +300,7 @@ describe('AuthGate and Guest Incentive Screens', () => {
 
     const { container } = render(<HistoryScreen onExplore={vi.fn()} />);
 
-    expect(screen.getByText('Donde me he alojado')).toBeDefined();
+    expect(screen.getByText('Historial de Estadías Universitarias')).toBeDefined();
     expect(screen.queryByText('Aún no registras estadías finalizadas')).toBeNull();
     const skeletons = container.querySelectorAll('.animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);
@@ -400,7 +400,7 @@ describe('AuthGate and Guest Incentive Screens', () => {
     expect(screen.getByText('Pensión Uno')).toBeDefined();
     expect(screen.getByText('Pensión Dos')).toBeDefined();
     expect(screen.getByText('Cargando 5 alojamientos guardados...')).toBeDefined();
-    expect(screen.queryByText('No tienes favoritos guardados')).toBeNull();
+    expect(screen.queryByText('Aún no has guardado alojamientos favoritos')).toBeNull();
     const skeletons = container.querySelectorAll('.animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);
   });
