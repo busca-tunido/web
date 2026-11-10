@@ -18,7 +18,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { isApiSuccess } from '@/lib/api-response';
@@ -266,7 +266,7 @@ export function LandlordReviewsScreen({
       <div className="flex flex-col gap-1 px-1">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-extrabold tracking-tight text-foreground sm:text-xl">
-            Reseñas e Inspección
+            Reseñas
           </h2>
           {totalReviewsCount > 0 && (
             <Badge
@@ -284,14 +284,9 @@ export function LandlordReviewsScreen({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <Star className="h-5 w-5 fill-amber-400 text-amber-400 shrink-0" />
-              <div>
-                <CardTitle className="text-sm font-semibold text-foreground">
-                  Satisfacción en 4 Dimensiones
-                </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                  Desglose por áreas clave evaluadas exclusivamente por universitarios
-                </CardDescription>
-              </div>
+              <CardTitle className="text-sm font-semibold text-foreground">
+                Calificaciones por Área
+              </CardTitle>
             </div>
 
             <div className="flex items-center gap-1.5 rounded-lg bg-muted/30 px-2.5 py-1 border border-border/60">
@@ -310,12 +305,7 @@ export function LandlordReviewsScreen({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Droplets className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <span className="text-xs font-semibold text-foreground block">Limpieza</span>
-                    <span className="text-[10px] text-muted-foreground">
-                      Higiene en baños y áreas comunes
-                    </span>
-                  </div>
+                  <span className="text-xs font-semibold text-foreground">Limpieza</span>
                 </div>
 
                 {(() => {
@@ -355,14 +345,7 @@ export function LandlordReviewsScreen({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <HeartHandshake className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <span className="text-xs font-semibold text-foreground block">
-                      Trato del Anfitrión
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      Disposición, amabilidad y resolución
-                    </span>
-                  </div>
+                  <span className="text-xs font-semibold text-foreground">Trato del Anfitrión</span>
                 </div>
 
                 {(() => {
@@ -402,14 +385,7 @@ export function LandlordReviewsScreen({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Moon className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <span className="text-xs font-semibold text-foreground block">
-                      Tranquilidad
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      Ambiente de silencio y estudio
-                    </span>
-                  </div>
+                  <span className="text-xs font-semibold text-foreground">Tranquilidad</span>
                 </div>
 
                 {(() => {
@@ -449,14 +425,7 @@ export function LandlordReviewsScreen({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Wifi className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <span className="text-xs font-semibold text-foreground block">
-                      Conectividad Wi-Fi
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      Estabilidad y cobertura para clases
-                    </span>
-                  </div>
+                  <span className="text-xs font-semibold text-foreground">Conectividad Wi-Fi</span>
                 </div>
 
                 {(() => {
