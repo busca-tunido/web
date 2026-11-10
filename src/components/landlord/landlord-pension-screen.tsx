@@ -18,6 +18,7 @@ import {
   Eye,
   Flame,
   Key,
+  LayoutGrid,
   Loader2,
   MessageCircle,
   MessageSquare,
@@ -30,7 +31,6 @@ import {
   RefreshCw,
   Save,
   ShieldCheck,
-  Sparkles,
   Sun,
   Trash2,
   Trees,
@@ -1332,7 +1332,7 @@ export function LandlordPensionScreen({
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <Sparkles className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
+                <LayoutGrid className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
                 <div>
                   <CardTitle className="text-sm font-semibold text-foreground">
                     Comodidades y Equipamiento
@@ -1369,7 +1369,7 @@ export function LandlordPensionScreen({
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
                         {categoryAmenities.map((am) => {
                           const isSelected = form.selectedAmenitySlugs.includes(am.slug);
-                          const Icon = (am.iconKey && AMENITY_ICON_MAP[am.iconKey]) || Sparkles;
+                          const Icon = (am.iconKey && AMENITY_ICON_MAP[am.iconKey]) || CheckCircle2;
 
                           return (
                             <button

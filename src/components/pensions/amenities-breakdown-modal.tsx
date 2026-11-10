@@ -7,6 +7,7 @@ import {
   Bed,
   BookOpen,
   Check,
+  CheckCircle2,
   ChevronLeft,
   Clock,
   Coffee,
@@ -19,7 +20,6 @@ import {
   PawPrint,
   Printer,
   ShieldCheck,
-  Sparkles,
   Sun,
   Trees,
   Users,
@@ -359,7 +359,7 @@ export function AmenitiesBreakdownModal({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {items.map((am) => {
                     const active = isAmenityActive(am.slug);
-                    const Icon = (am.iconKey && AMENITY_ICON_MAP[am.iconKey]) || Sparkles;
+                    const Icon = (am.iconKey && AMENITY_ICON_MAP[am.iconKey]) || CheckCircle2;
 
                     if (active) {
                       return (
