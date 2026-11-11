@@ -34,6 +34,8 @@ function PensionCardComponent({
   return (
     <motion.article
       aria-labelledby={titleId}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
       className="group relative flex flex-col text-left"
@@ -44,7 +46,10 @@ function PensionCardComponent({
         className="w-full flex flex-col text-left cursor-pointer focus:outline-none"
         aria-label={`Ver detalles de ${pension.title}`}
       >
-        <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm group-hover:shadow-md transition-shadow duration-300 flex items-center justify-center">
+        <motion.div
+          layoutId={`pension-hero-${pension.id}`}
+          className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm group-hover:shadow-md transition-shadow duration-300 flex items-center justify-center"
+        >
           {pension.images?.[0]?.url ? (
             <Image
               src={pension.images[0].url}
@@ -74,7 +79,7 @@ function PensionCardComponent({
               </span>
             )}
           </div>
-        </div>
+        </motion.div>
       </button>
 
       <div className="mt-2.5 flex flex-col gap-1 w-full">
@@ -142,16 +147,22 @@ function PensionCardComponent({
 
       <motion.button
         type="button"
-        whileTap={{ scale: 0.8 }}
+        whileTap={{ scale: 0.75 }}
+        whileHover={{ scale: 1.08 }}
         transition={{ type: 'spring', stiffness: 500, damping: 25 }}
         onClick={(e) => {
           e.stopPropagation();
           onToggleFavorite(pension.id);
         }}
-        className="absolute top-2.5 right-2.5 z-10 flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer"
+        className="absolute top-2.5 right-2.5 z-10 flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer origin-center"
         aria-label="Guardar en favoritos"
       >
-        <Heart className={`h-5 w-5 ${isFavorite ? 'fill-primary text-primary' : 'stroke-[2]'}`} />
+        <motion.div
+          animate={isFavorite ? { scale: [1, 1.25, 1] } : { scale: 1 }}
+          transition={{ duration: 0.25 }}
+        >
+          <Heart className={`h-5 w-5 ${isFavorite ? 'fill-primary text-primary' : 'stroke-[2]'}`} />
+        </motion.div>
       </motion.button>
     </motion.article>
   );

@@ -152,9 +152,12 @@ export function PensionDetailContent({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="relative h-64 sm:h-80 md:h-96 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm touch-pan-y select-none">
+      <motion.div
+        layoutId={`pension-hero-${pension.id}`}
+        className="relative h-64 sm:h-80 md:h-96 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm touch-pan-y select-none"
+      >
         {displayPhotos.length > 0 ? (
-          <AnimatePresence initial={false} custom={direction}>
+          <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
               key={activePhotoIdx}
               custom={direction}
@@ -260,7 +263,7 @@ export function PensionDetailContent({
             ${(pension.baseMonthlyPrice ?? 0).toLocaleString('es-CL')} CLP/mes
           </Badge>
         </div>
-      </div>
+      </motion.div>
 
       <div className="flex flex-col gap-1 mb-4">
         <div className="flex items-center gap-2 mb-1.5 flex-wrap">

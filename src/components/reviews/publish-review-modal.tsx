@@ -15,6 +15,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
 import { type ChangeEvent, useEffect, useReducer } from 'react';
 import { toast } from 'sonner';
@@ -300,21 +301,37 @@ export function PublishReviewModal({
             </DrawerDescription>
           </DrawerHeader>
 
-          {successBanner && (
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center gap-3 text-emerald-600 animate-in fade-in">
-              <CheckCircle2 className="h-5 w-5 shrink-0" />
-              <p className="text-xs font-semibold">
-                ¡Reseña publicada con éxito! Gracias por colaborar con la comunidad.
-              </p>
-            </div>
-          )}
+          <AnimatePresence>
+            {successBanner && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.94, y: 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.94, y: 8 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center gap-3 text-emerald-600"
+              >
+                <CheckCircle2 className="h-5 w-5 shrink-0" />
+                <p className="text-xs font-semibold">
+                  ¡Reseña publicada con éxito! Gracias por colaborar con la comunidad.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {errorMessage && (
-            <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 flex items-start gap-2.5 text-rose-600 animate-in fade-in">
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-              <p className="text-xs">{errorMessage}</p>
-            </div>
-          )}
+          <AnimatePresence>
+            {errorMessage && (
+              <motion.div
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: [0, -6, 6, -4, 4, 0] }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.35 }}
+                className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 flex items-start gap-2.5 text-rose-600"
+              >
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <p className="text-xs">{errorMessage}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <section className="rounded-2xl border border-border bg-muted/20 p-4 text-center">
             <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">

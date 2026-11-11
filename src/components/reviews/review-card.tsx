@@ -1,6 +1,7 @@
 'use client';
 
 import { ShieldCheck, Star, ThumbsUp } from 'lucide-react';
+import { motion } from 'motion/react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import type { PensionReview } from '@/lib/types';
@@ -170,8 +171,9 @@ export function ReviewCard({
 
       <div className="flex items-center justify-between pt-2 border-t border-border/60">
         {showHelpfulButton ? (
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.92 }}
             disabled={isVoting}
             onClick={() => onToggleHelpful?.(review.id)}
             aria-pressed={isLiked}
@@ -183,8 +185,10 @@ export function ReviewCard({
             }`}
           >
             <ThumbsUp className={`h-3 w-3 ${isLiked ? 'fill-primary' : ''}`} />
-            <span>Útil ({calculatedLikes})</span>
-          </button>
+            <span>
+              Útil (<span className="tabular-nums">{calculatedLikes}</span>)
+            </span>
+          </motion.button>
         ) : (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <ThumbsUp className="h-3 w-3" />

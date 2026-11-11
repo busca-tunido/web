@@ -321,14 +321,19 @@ export function LandlordRoomsScreen({
             ) : (
               <div className="flex flex-col gap-3">
                 <AnimatePresence mode="popLayout">
-                  {availableRooms.map((room) => (
+                  {availableRooms.map((room, index) => (
                     <motion.div
                       key={room.id}
                       layout
                       initial={{ opacity: 0, scale: 0.96 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.94 }}
-                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 350,
+                        damping: 30,
+                        delay: Math.min(index * 0.04, 0.2),
+                      }}
                       className="w-full"
                     >
                       <RoomItemCard
@@ -364,14 +369,19 @@ export function LandlordRoomsScreen({
             ) : (
               <div className="flex flex-col gap-3">
                 <AnimatePresence mode="popLayout">
-                  {occupiedRooms.map((room) => (
+                  {occupiedRooms.map((room, index) => (
                     <motion.div
                       key={room.id}
                       layout
                       initial={{ opacity: 0, scale: 0.96 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.94 }}
-                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 350,
+                        damping: 30,
+                        delay: Math.min(index * 0.04, 0.2),
+                      }}
                       className="w-full"
                     >
                       <RoomItemCard
@@ -410,14 +420,19 @@ export function LandlordRoomsScreen({
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <AnimatePresence mode="popLayout">
-                  {inactiveRooms.map((room) => (
+                  {inactiveRooms.map((room, index) => (
                     <motion.div
                       key={room.id}
                       layout
                       initial={{ opacity: 0, scale: 0.96 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.94 }}
-                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 350,
+                        damping: 30,
+                        delay: Math.min(index * 0.04, 0.2),
+                      }}
                       className="w-full"
                     >
                       <RoomItemCard

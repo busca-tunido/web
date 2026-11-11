@@ -397,47 +397,50 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
 
         {pensions.length > 0 && (
           <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-            <Card className="border-border/70 bg-card/60 shadow-2xs">
-              <CardContent className="p-3 sm:p-3.5 flex flex-col">
-                <span className="text-[11px] font-medium text-muted-foreground truncate">
-                  Propiedades
-                </span>
-                <span className="text-base sm:text-lg font-extrabold text-foreground mt-0.5 tabular-nums">
-                  {stats.totalPensions}
-                </span>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
-                  {stats.activePensions} activas
-                </span>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/70 bg-card/60 shadow-2xs">
-              <CardContent className="p-3 sm:p-3.5 flex flex-col">
-                <span className="text-[11px] font-medium text-muted-foreground truncate">
-                  Ocupación Global
-                </span>
-                <span className="text-xl sm:text-2xl font-black text-foreground mt-0.5 tabular-nums">
-                  {stats.overallOccupancyRate}%
-                </span>
-                <span className="text-[10px] text-muted-foreground truncate">
-                  {stats.totalOccupied} de {stats.totalRooms} habs
-                </span>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/70 bg-card/60 shadow-2xs">
-              <CardContent className="p-3 sm:p-3.5 flex flex-col">
-                <span className="text-[11px] font-medium text-muted-foreground truncate">
-                  Habitaciones Libres
-                </span>
-                <span className="text-xl sm:text-2xl font-black text-foreground mt-0.5 tabular-nums">
-                  {stats.totalAvailable}
-                </span>
-                <span className="text-[10px] text-muted-foreground truncate">
-                  Para nuevos residentes
-                </span>
-              </CardContent>
-            </Card>
+            {[
+              {
+                id: 'kpi-props',
+                label: 'Propiedades',
+                value: stats.totalPensions,
+                sub: `${stats.activePensions} activas`,
+                subClass: 'text-emerald-600 dark:text-emerald-400 font-medium truncate',
+                valueClass:
+                  'text-base sm:text-lg font-extrabold text-foreground mt-0.5 tabular-nums',
+              },
+              {
+                id: 'kpi-occ',
+                label: 'Ocupación Global',
+                value: `${stats.overallOccupancyRate}%`,
+                sub: `${stats.totalOccupied} de ${stats.totalRooms} habs`,
+                subClass: 'text-muted-foreground truncate',
+                valueClass: 'text-xl sm:text-2xl font-black text-foreground mt-0.5 tabular-nums',
+              },
+              {
+                id: 'kpi-free',
+                label: 'Habitaciones Libres',
+                value: stats.totalAvailable,
+                sub: 'Para nuevos residentes',
+                subClass: 'text-muted-foreground truncate',
+                valueClass: 'text-xl sm:text-2xl font-black text-foreground mt-0.5 tabular-nums',
+              },
+            ].map((kpi, idx) => (
+              <motion.div
+                key={kpi.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 350, damping: 28, delay: idx * 0.05 }}
+              >
+                <Card className="border-border/70 bg-card/60 shadow-2xs h-full">
+                  <CardContent className="p-3 sm:p-3.5 flex flex-col">
+                    <span className="text-[11px] font-medium text-muted-foreground truncate">
+                      {kpi.label}
+                    </span>
+                    <span className={kpi.valueClass}>{kpi.value}</span>
+                    <span className={cn('text-[10px]', kpi.subClass)}>{kpi.sub}</span>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
         )}
 
@@ -458,12 +461,21 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
             </div>
 
             <div className="flex items-center gap-2">
-              {contactSaveFeedback && (
-                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] self-start sm:self-auto py-0.5 px-2">
-                  <Check className="h-3 w-3 mr-1" />
-                  ¡Predeterminados guardados!
-                </Badge>
-              )}
+              <AnimatePresence>
+                {contactSaveFeedback && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                  >
+                    <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] self-start sm:self-auto py-0.5 px-2">
+                      <Check className="h-3 w-3 mr-1" />
+                      ¡Predeterminados guardados!
+                    </Badge>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
             </div>
           </summary>

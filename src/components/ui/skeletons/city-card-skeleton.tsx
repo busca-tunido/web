@@ -1,11 +1,15 @@
+import type { CSSProperties } from 'react';
+
 type CityCardSkeletonProps = {
   className?: string;
+  style?: CSSProperties;
 };
 
-export function CityCardSkeleton({ className = '' }: CityCardSkeletonProps) {
+export function CityCardSkeleton({ className = '', style }: CityCardSkeletonProps) {
   return (
     <div
       data-testid="city-card-skeleton"
+      style={style}
       className={`relative h-48 w-36 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border border-border/40 bg-muted/50 animate-pulse shadow-xs ${className}`}
       aria-hidden="true"
     >

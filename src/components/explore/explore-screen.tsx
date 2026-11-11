@@ -116,7 +116,10 @@ export function ExploreScreen({
           <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x md:grid md:grid-cols-6 md:px-0 md:gap-4 md:overflow-visible">
             {isCitiesLoading
               ? Array.from({ length: 6 }).map((_, index) => (
-                  <CityCardSkeleton key={`city-skeleton-${index}`} />
+                  <CityCardSkeleton
+                    key={`city-skeleton-${index}`}
+                    style={{ animationDelay: `${index * 80}ms` }}
+                  />
                 ))
               : sortedCities.map((city, index) => {
                   const isSelected = selectedCity?.toLowerCase() === city.name.toLowerCase();
@@ -131,6 +134,9 @@ export function ExploreScreen({
                     <motion.button
                       type="button"
                       key={city.id}
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: Math.min(index * 0.04, 0.24), duration: 0.2 }}
                       whileTap={{ scale: 0.94 }}
                       onClick={() => onSelectCity(isSelected ? null : city.name)}
                       className={`group relative h-48 w-36 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border text-left transition-colors cursor-pointer shadow-sm ${
@@ -155,11 +161,14 @@ export function ExploreScreen({
                       {Boolean(
                         selectedCity && city.name.toLowerCase() === selectedCity.toLowerCase(),
                       ) && (
-                        <div className="absolute top-2.5 left-2.5">
+                        <motion.div
+                          layoutId="active-city-indicator"
+                          className="absolute top-2.5 left-2.5 z-10"
+                        >
                           <Badge className="bg-primary text-primary-foreground font-bold text-xs px-2 py-0.5 shadow-sm">
                             Actual
                           </Badge>
-                        </div>
+                        </motion.div>
                       )}
 
                       <div className="absolute bottom-3 left-3 right-3">
@@ -220,7 +229,10 @@ export function ExploreScreen({
           <div className="flex gap-3.5 overflow-x-auto px-5 pb-3 scroll-px-5 scrollbar-none snap-x md:grid md:grid-cols-5 md:px-0 md:gap-4 md:overflow-visible">
             {isUniversitiesLoading
               ? Array.from({ length: 5 }).map((_, index) => (
-                  <UniversityCardSkeleton key={`uni-skeleton-${index}`} />
+                  <UniversityCardSkeleton
+                    key={`uni-skeleton-${index}`}
+                    style={{ animationDelay: `${index * 80}ms` }}
+                  />
                 ))
               : sortedUniversities.map((uni, index) => {
                   const uniImg =
@@ -234,6 +246,9 @@ export function ExploreScreen({
                     <motion.button
                       type="button"
                       key={uni.id}
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: Math.min(index * 0.04, 0.2), duration: 0.2 }}
                       whileTap={{ scale: 0.94 }}
                       onClick={() => onSelectUniversity(uni)}
                       className={`group relative h-48 w-44 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-colors hover:border-primary/50 cursor-pointer shadow-sm ${
