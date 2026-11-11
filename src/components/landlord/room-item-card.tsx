@@ -82,7 +82,12 @@ export function RoomItemCard({
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3.5 min-w-0 flex-1">
-          <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-lg bg-muted shadow-2xs flex items-center justify-center">
+          <button
+            type="button"
+            onClick={() => onEdit(room)}
+            className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-lg bg-muted shadow-2xs flex items-center justify-center cursor-pointer group-hover:ring-1 group-hover:ring-primary/40 transition text-left focus:outline-none"
+            aria-label={`Editar ${rawTitle}`}
+          >
             {thumbnail ? (
               <Image
                 src={thumbnail}
@@ -95,12 +100,19 @@ export function RoomItemCard({
             ) : (
               <BedDouble className="h-8 w-8 text-muted-foreground/40" />
             )}
-          </div>
+          </button>
 
           <div className="flex flex-col gap-1.5 min-w-0 flex-1 text-left">
             <div className="flex items-center justify-between gap-2">
               <h3 className="truncate text-sm sm:text-base font-bold text-foreground leading-tight">
-                {rawTitle}
+                <button
+                  type="button"
+                  onClick={() => onEdit(room)}
+                  className="truncate text-sm sm:text-base font-bold text-foreground hover:text-primary transition-colors text-left cursor-pointer focus:outline-none"
+                  aria-label={`Editar ${rawTitle}`}
+                >
+                  {rawTitle}
+                </button>
               </h3>
             </div>
 

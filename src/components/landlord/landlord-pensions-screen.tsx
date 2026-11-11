@@ -1,10 +1,11 @@
 'use client';
 
 import {
+  ArrowRight,
   BedDouble,
   Building2,
   Check,
-  ChevronRight,
+  ChevronDown,
   Eye,
   GraduationCap,
   Home,
@@ -341,8 +342,8 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                   onClick={() => handleSelectToManage(prop, 'pension')}
                   className="flex-1 sm:flex-none min-h-[40px] px-4 items-center justify-center gap-1.5 rounded-xl bg-foreground text-background hover:opacity-90 text-xs font-semibold cursor-pointer shadow-none transition"
                 >
-                  <span>Administrar</span>
-                  <ChevronRight className="h-4 w-4 shrink-0" />
+                  <span>Administrar pensión</span>
+                  <ArrowRight className="h-4 w-4 shrink-0" />
                 </Button>
               )}
 
@@ -401,7 +402,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 <span className="text-[11px] font-medium text-muted-foreground truncate">
                   Propiedades
                 </span>
-                <span className="text-base sm:text-lg font-extrabold text-foreground mt-0.5">
+                <span className="text-base sm:text-lg font-extrabold text-foreground mt-0.5 tabular-nums">
                   {stats.totalPensions}
                 </span>
                 <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
@@ -415,7 +416,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 <span className="text-[11px] font-medium text-muted-foreground truncate">
                   Ocupación Global
                 </span>
-                <span className="text-base sm:text-lg font-extrabold text-foreground mt-0.5">
+                <span className="text-xl sm:text-2xl font-black text-foreground mt-0.5 tabular-nums">
                   {stats.overallOccupancyRate}%
                 </span>
                 <span className="text-[10px] text-muted-foreground truncate">
@@ -429,7 +430,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 <span className="text-[11px] font-medium text-muted-foreground truncate">
                   Habitaciones Libres
                 </span>
-                <span className="text-base sm:text-lg font-extrabold text-foreground mt-0.5">
+                <span className="text-xl sm:text-2xl font-black text-foreground mt-0.5 tabular-nums">
                   {stats.totalAvailable}
                 </span>
                 <span className="text-[10px] text-muted-foreground truncate">
@@ -440,28 +441,38 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
           </div>
         )}
 
-        <Card className="border-border/70 bg-card/60 shadow-none rounded-xl overflow-hidden">
-          <CardContent className="p-4 sm:p-5 flex flex-col gap-3.5">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
-              <div className="flex items-center gap-2.5">
-                <Phone className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
+        <details className="group border border-border/70 bg-card/60 shadow-none rounded-xl overflow-hidden transition-colors">
+          <summary className="p-4 sm:p-5 flex items-center justify-between cursor-pointer list-none select-none hover:bg-muted/10 transition-colors">
+            <div className="flex items-center gap-2.5">
+              <Phone className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
+              <div className="flex flex-col text-left">
                 <h2 className="text-xs sm:text-sm font-semibold text-foreground">
-                  Datos de Contacto
+                  Datos de Contacto Predeterminados
                 </h2>
+                <span className="text-[11px] text-muted-foreground">
+                  {defaultContactName
+                    ? `${defaultContactName} (${defaultContactPhone || 'Sin teléfono'})`
+                    : 'Configura tus datos de contacto por defecto'}
+                </span>
               </div>
+            </div>
 
+            <div className="flex items-center gap-2">
               {contactSaveFeedback && (
                 <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] self-start sm:self-auto py-0.5 px-2">
                   <Check className="h-3 w-3 mr-1" />
                   ¡Predeterminados guardados!
                 </Badge>
               )}
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
             </div>
+          </summary>
 
+          <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-0 border-t border-border/40">
             <form
               onSubmit={handleSaveDefaultContact}
               noValidate
-              className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end pt-1"
+              className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end pt-3"
             >
               <div className="sm:col-span-5">
                 <label
@@ -509,8 +520,8 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </details>
 
         {pensions.length === 0 ? (
           <div className="flex min-h-[50vh] flex-col items-center justify-center -mt-6 px-8 pt-6 pb-12 text-center rounded-2xl border border-dashed border-border/80 bg-card/60 my-4 max-w-md mx-auto">

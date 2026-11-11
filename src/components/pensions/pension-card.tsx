@@ -44,7 +44,7 @@ function PensionCardComponent({
         className="w-full flex flex-col text-left cursor-pointer focus:outline-none"
         aria-label={`Ver detalles de ${pension.title}`}
       >
-        <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm flex items-center justify-center">
+        <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm group-hover:shadow-md transition-shadow duration-300 flex items-center justify-center">
           {pension.images?.[0]?.url ? (
             <Image
               src={pension.images[0].url}
@@ -121,14 +121,21 @@ function PensionCardComponent({
                   • a <span className="tabular-nums">{pension.distanceKm}</span> km
                 </>
               )}
+              {Boolean(pension._count?.rooms || pension.rooms?.length) && (
+                <>
+                  {' '}
+                  • {pension._count?.rooms ?? pension.rooms?.length}{' '}
+                  {(pension._count?.rooms ?? pension.rooms?.length) === 1 ? 'hab.' : 'habs.'}
+                </>
+              )}
             </span>
           </div>
 
           <div className="mt-2 pt-1 flex items-baseline gap-1">
-            <span className="text-base font-bold text-foreground tabular-nums">
+            <span className="text-lg font-black text-foreground tabular-nums">
               ${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP
             </span>
-            <span className="text-xs text-muted-foreground">/ mes</span>
+            <span className="text-xs font-medium text-muted-foreground">/ mes</span>
           </div>
         </button>
       </div>

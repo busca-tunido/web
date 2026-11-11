@@ -237,6 +237,9 @@ export function LandlordPensionScreen({
 
   const [amenitiesCatalog, setAmenitiesCatalog] = useState<PensionAmenityCatalogItemDto[]>([]);
   const [isLoadingAmenities, setIsLoadingAmenities] = useState<boolean>(false);
+  const [activeSection, setActiveSection] = useState<'all' | 'services' | 'rules' | 'contact'>(
+    'all',
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -601,6 +604,19 @@ export function LandlordPensionScreen({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          {previewPensionItem && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsPreviewModalOpen(true)}
+              className="flex min-h-[40px] items-center gap-1.5 rounded-full border border-border/80 bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary cursor-pointer shadow-2xs"
+            >
+              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+              <span>Vista Previa</span>
+            </Button>
+          )}
+
           {activePension && (
             <button
               type="button"
@@ -726,8 +742,36 @@ export function LandlordPensionScreen({
         </Button>
       </div>
 
+      <div className="flex items-center gap-1.5 p-1 bg-muted/30 rounded-xl border border-border/60 overflow-x-auto scrollbar-none">
+        {[
+          { id: 'all' as const, label: 'Todo' },
+          { id: 'services' as const, label: 'Servicios y Comodidades' },
+          { id: 'rules' as const, label: 'Normas y Horarios' },
+          { id: 'contact' as const, label: 'Contacto' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveSection(tab.id)}
+            className={cn(
+              'px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer',
+              activeSection === tab.id
+                ? 'bg-background text-foreground shadow-2xs border border-border/60'
+                : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
-        <Card className="xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+        <Card
+          className={cn(
+            'xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden',
+            !(activeSection === 'all' || activeSection === 'services') && 'hidden',
+          )}
+        >
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
               <Zap className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
@@ -844,7 +888,12 @@ export function LandlordPensionScreen({
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+        <Card
+          className={cn(
+            'xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden',
+            !(activeSection === 'all' || activeSection === 'rules') && 'hidden',
+          )}
+        >
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
               <Users className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
@@ -893,7 +942,12 @@ export function LandlordPensionScreen({
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-5 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+        <Card
+          className={cn(
+            'xl:col-span-5 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden',
+            !(activeSection === 'all' || activeSection === 'contact') && 'hidden',
+          )}
+        >
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2.5">
@@ -1016,7 +1070,12 @@ export function LandlordPensionScreen({
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-7 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+        <Card
+          className={cn(
+            'xl:col-span-7 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden',
+            !(activeSection === 'all' || activeSection === 'rules') && 'hidden',
+          )}
+        >
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
               <ShieldCheck className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
@@ -1202,7 +1261,12 @@ export function LandlordPensionScreen({
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-12 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+        <Card
+          className={cn(
+            'xl:col-span-12 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden',
+            !(activeSection === 'all' || activeSection === 'services') && 'hidden',
+          )}
+        >
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2.5">
@@ -1309,7 +1373,7 @@ export function LandlordPensionScreen({
           type="button"
           variant="outline"
           onClick={() => setIsPreviewModalOpen(true)}
-          className="w-full sm:w-52 min-h-[48px] border-border text-foreground hover:bg-secondary text-xs font-bold cursor-pointer shrink-0"
+          className="w-full sm:flex-1 min-h-[48px] border-border text-foreground hover:bg-secondary text-xs font-bold cursor-pointer shrink-0"
         >
           <Eye className="h-4 w-4 mr-1.5 text-muted-foreground" />
           Vista Previa
@@ -1320,7 +1384,7 @@ export function LandlordPensionScreen({
           variant="default"
           disabled={isSaving}
           onClick={handleSave}
-          className="w-full sm:flex-1 min-h-[48px] bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold shadow-md cursor-pointer disabled:opacity-50"
+          className="w-full sm:flex-[3] min-h-[48px] bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold shadow-md cursor-pointer disabled:opacity-50"
         >
           {isSaving ? (
             <>
