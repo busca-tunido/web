@@ -225,7 +225,7 @@ export function LandlordRoomsScreen({
 
               <div className="flex flex-col">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight tabular-nums">
+                  <span className="text-xl sm:text-2xl font-black text-foreground tracking-tight tabular-nums">
                     {formattedRevenue}
                   </span>
                   <span className="text-xs text-muted-foreground font-medium">/ mes</span>
@@ -268,7 +268,7 @@ export function LandlordRoomsScreen({
         <Button
           type="button"
           onClick={handleOpenCreateDrawer}
-          className="min-h-12 rounded-xl bg-primary hover:opacity-90 text-primary-foreground font-bold px-4 gap-2 cursor-pointer shadow-xs active:scale-[0.98] transition shrink-0"
+          className="w-full sm:w-auto min-h-12 rounded-xl bg-primary hover:opacity-95 text-primary-foreground font-bold px-5 gap-2 cursor-pointer shadow-md active:scale-[0.98] transition flex items-center justify-center shrink-0"
         >
           <Plus className="h-4 w-4" />
           <span>Agregar Habitación</span>

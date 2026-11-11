@@ -5,12 +5,15 @@ import {
   BookOpen,
   Building2,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
   Heart,
   MapPin,
+  MessageSquare,
   PenLine,
+  Phone,
   ShieldCheck,
   Star,
   Utensils,
@@ -304,12 +307,15 @@ export function PensionDetailContent({
           pension.nearestUniversity.distanceMeters > 0 &&
           pension.nearestUniversity.name,
       ) && (
-        <div className="mb-4 rounded-xl border border-sage/25 bg-sage/5 p-3 min-h-[44px] flex items-center">
-          <div className="flex items-center gap-2 text-xs font-semibold text-sage-foreground">
-            <MapPin className="h-3.5 w-3.5 shrink-0" />
+        <div className="mb-4 rounded-xl border border-sage/30 bg-sage/10 p-3.5 min-h-[48px] flex items-center shadow-2xs">
+          <div className="flex items-center gap-2 text-sm font-semibold text-sage-foreground">
+            <MapPin className="h-4 w-4 shrink-0 text-sage-foreground" />
             <span className="text-foreground">
-              A <span className="tabular-nums">{pension.nearestUniversity?.distanceMeters}</span>m
-              de {pension.nearestUniversity?.name}
+              A{' '}
+              <span className="tabular-nums font-bold">
+                {pension.nearestUniversity?.distanceMeters}
+              </span>
+              m de {pension.nearestUniversity?.name}
             </span>
           </div>
         </div>
@@ -470,16 +476,30 @@ export function PensionDetailContent({
         onOpenFullReviews={() => setIsReviewsModalOpen(true)}
       />
 
-      {Boolean(pension.curfewTime || pension.guestsAllowed !== undefined) && (
-        <div className="mb-5 rounded-xl border border-border bg-muted/30 p-3.5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-            Reglas de Convivencia
-          </h2>
-          <div className="flex flex-col gap-2 text-xs text-foreground/90">
+      {Boolean(
+        pension.curfewTime || pension.guestsAllowed !== undefined || pension.quietHoursStart,
+      ) && (
+        <details className="group mb-5 rounded-xl border border-border bg-muted/30 overflow-hidden transition-colors">
+          <summary className="flex items-center justify-between p-3.5 cursor-pointer list-none select-none font-bold text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span>Reglas de Convivencia y Horarios</span>
+            </div>
+            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
+          </summary>
+          <div className="px-3.5 pb-3.5 pt-1 flex flex-col gap-2 text-xs text-foreground/90 border-t border-border/40">
             {pension.curfewTime && (
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-2 pt-1">
                 <Clock className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                 <span>Toque de queda: {pension.curfewTime}</span>
+              </div>
+            )}
+            {Boolean(pension.quietHoursStart && pension.quietHoursEnd) && (
+              <div className="flex items-start gap-2">
+                <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <span>
+                  Horario de silencio: {pension.quietHoursStart} a {pension.quietHoursEnd}
+                </span>
               </div>
             )}
             {pension.guestsAllowed !== undefined && (
@@ -489,7 +509,7 @@ export function PensionDetailContent({
               </div>
             )}
           </div>
-        </div>
+        </details>
       )}
 
       {(() => {
@@ -504,20 +524,36 @@ export function PensionDetailContent({
                 {rooms.map((room, idx) => (
                   <div
                     key={room.id || `room-${pension.id}-${idx}`}
-                    className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3"
+                    className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3 hover:border-primary/50 hover:bg-muted/50 transition-all cursor-pointer group/room shadow-2xs"
                   >
-                    <div>
-                      <h3 className="text-xs font-semibold text-foreground">{room.title}</h3>
-                      <p className="text-[11px] text-muted-foreground">
-                        {room.hasPrivateBathroom ? 'Baño privado' : 'Baño compartido'} •{' '}
-                        {room.isAvailable ? 'Disponible' : 'Ocupada'}
-                      </p>
+                    <div className="min-w-0 pr-2">
+                      <h3 className="text-xs font-semibold text-foreground group-hover/room:text-primary transition-colors truncate">
+                        {room.title}
+                      </h3>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[11px] text-muted-foreground">
+                          {room.hasPrivateBathroom ? 'Baño privado' : 'Baño compartido'}
+                        </span>
+                        <span className="text-border">•</span>
+                        <span
+                          className={`inline-flex items-center text-[10px] font-medium ${
+                            room.isAvailable
+                              ? 'text-sage-foreground font-semibold'
+                              : 'text-muted-foreground'
+                          }`}
+                        >
+                          {room.isAvailable ? 'Disponible' : 'Ocupada'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-xs font-bold text-primary tabular-nums">
-                        ${(room.monthlyPrice ?? 0).toLocaleString('es-CL')}
-                      </span>
-                      <span className="block text-[10px] text-muted-foreground">CLP / mes</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="text-right">
+                        <span className="text-xs font-bold text-primary tabular-nums">
+                          ${(room.monthlyPrice ?? 0).toLocaleString('es-CL')}
+                        </span>
+                        <span className="block text-[10px] text-muted-foreground">CLP / mes</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover/room:text-primary transition-colors shrink-0" />
                     </div>
                   </div>
                 ))}
@@ -581,14 +617,32 @@ export function PensionDetailContent({
         </button>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-border/80">
+      <div className="mt-6 pt-4 border-t border-border/80 flex flex-col gap-2.5">
+        {pension.contactWhatsapp ? (
+          <a
+            href={`https://wa.me/${pension.contactWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola, me interesa la pensión "${pension.title}" que encontré en BuscaTuNido.`)}`}
+            target="_blank"
+            rel="noreferrer"
+            className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
+          >
+            <MessageSquare className="h-4 w-4" /> Consultar Disponibilidad
+          </a>
+        ) : pension.contactPhone ? (
+          <a
+            href={`tel:${pension.contactPhone.replace(/\s+/g, '')}`}
+            className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
+          >
+            <Phone className="h-4 w-4" /> Consultar Disponibilidad
+          </a>
+        ) : null}
+
         {user ? (
           hasAlreadyReviewed ? (
             <Button
               id="btn-view-user-review"
               variant="outline"
               onClick={() => setIsReviewsModalOpen(true)}
-              className="w-full h-12 border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-sm rounded-xl transition cursor-pointer"
+              className="w-full h-11 border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs rounded-xl transition cursor-pointer"
             >
               <Check className="mr-2 h-4 w-4 text-primary" /> Ya calificaste esta pensión (Ver
               opiniones)
@@ -596,8 +650,13 @@ export function PensionDetailContent({
           ) : (
             <Button
               id="btn-publish-review"
+              variant={pension.contactWhatsapp || pension.contactPhone ? 'outline' : 'default'}
               onClick={() => setIsPublishReviewOpen(true)}
-              className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer"
+              className={
+                pension.contactWhatsapp || pension.contactPhone
+                  ? 'w-full h-11 border-border/80 hover:bg-secondary text-foreground font-semibold text-xs rounded-xl transition cursor-pointer'
+                  : 'w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer'
+              }
             >
               <PenLine className="mr-2 h-4 w-4" /> Publicar una reseña
             </Button>
@@ -605,8 +664,13 @@ export function PensionDetailContent({
         ) : (
           <Button
             id="btn-auth-to-review"
+            variant={pension.contactWhatsapp || pension.contactPhone ? 'outline' : 'default'}
             onClick={openAuthModal}
-            className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer"
+            className={
+              pension.contactWhatsapp || pension.contactPhone
+                ? 'w-full h-11 border-border/80 hover:bg-secondary text-foreground font-semibold text-xs rounded-xl transition cursor-pointer'
+                : 'w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer'
+            }
           >
             <PenLine className="mr-2 h-4 w-4" /> Inicia sesión para opinar o guardar
           </Button>
