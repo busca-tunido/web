@@ -1,7 +1,6 @@
 'use client';
 
-import { Camera, ChevronLeft, Star, X } from 'lucide-react';
-import Image from 'next/image';
+import { Camera, ChevronLeft, Star } from 'lucide-react';
 import { Suspense, useMemo, useState } from 'react';
 import { EmailCheckStep } from '@/components/auth/email-check-step';
 import {
@@ -11,6 +10,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { ReviewsSkeleton } from '@/components/ui/skeletons/reviews-skeleton';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { useAuth } from '@/lib/auth-context';
@@ -36,7 +36,11 @@ export function PensionReviewsModal({
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('ALL');
   const [submittingVoteId, setSubmittingVoteId] = useState<string | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [enlargedPhoto, setEnlargedPhoto] = useState<string | null>(null);
+  const [viewerState, setViewerState] = useState<{
+    images: string[];
+    initialIndex: number;
+    title?: string;
+  } | null>(null);
 
   const { voteHelpful, reviews: hookReviews } = usePensionReviews(isOpen ? pension.id : null);
   const activeReviews = hookReviews.length > 0 ? hookReviews : reviews;
@@ -341,7 +345,13 @@ export function PensionReviewsModal({
                   <ReviewFeedList
                     filteredReviews={filteredReviews}
                     toggleHelpful={toggleHelpful}
-                    setEnlargedPhoto={setEnlargedPhoto}
+                    onEnlargePhoto={(url, index = 0, allPhotos) => {
+                      setViewerState({
+                        images: allPhotos && allPhotos.length > 0 ? allPhotos : [url],
+                        initialIndex: index,
+                        title: `Fotos de reseña • ${pension.title}`,
+                      });
+                    }}
                     submittingVoteId={submittingVoteId}
                   />
                 </Suspense>
@@ -349,36 +359,14 @@ export function PensionReviewsModal({
             )}
           </div>
 
-          {enlargedPhoto && (
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-label="Foto ampliada"
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
-            >
-              <button
-                type="button"
-                aria-label="Cerrar vista previa"
-                onClick={() => setEnlargedPhoto(null)}
-                className="absolute inset-0 h-full w-full cursor-default"
-              />
-              <div className="relative max-h-[85vh] max-w-[90vw] aspect-square w-[420px] overflow-hidden rounded-2xl bg-black z-10">
-                <Image
-                  src={enlargedPhoto}
-                  alt="Foto ampliada"
-                  fill
-                  unoptimized
-                  className="object-contain"
-                />
-                <button
-                  type="button"
-                  onClick={() => setEnlargedPhoto(null)}
-                  className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black cursor-pointer"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
+          {viewerState && (
+            <FullScreenImageViewer
+              isOpen={Boolean(viewerState)}
+              onClose={() => setViewerState(null)}
+              images={viewerState.images}
+              initialIndex={viewerState.initialIndex}
+              title={viewerState.title}
+            />
           )}
         </DrawerContent>
       </Drawer>
@@ -406,14 +394,14 @@ export function PensionReviewsModal({
 type ReviewFeedListProps = {
   filteredReviews: PensionReview[];
   toggleHelpful: (id: string) => void;
-  setEnlargedPhoto: (url: string | null) => void;
+  onEnlargePhoto: (url: string, index?: number, allPhotos?: string[]) => void;
   submittingVoteId: string | null;
 };
 
 function ReviewFeedList({
   filteredReviews,
   toggleHelpful,
-  setEnlargedPhoto,
+  onEnlargePhoto,
   submittingVoteId,
 }: ReviewFeedListProps) {
   if (filteredReviews.length === 0) {
@@ -434,7 +422,7 @@ function ReviewFeedList({
             isLiked={Boolean(review.userVoted)}
             likesCount={review.helpfulCount ?? 0}
             onToggleHelpful={toggleHelpful}
-            onEnlargePhoto={setEnlargedPhoto}
+            onEnlargePhoto={onEnlargePhoto}
             isVoting={submittingVoteId === review.id}
           />
         );

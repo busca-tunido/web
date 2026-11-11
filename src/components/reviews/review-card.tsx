@@ -3,7 +3,9 @@
 import { ShieldCheck, Star, ThumbsUp } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import type { PensionReview } from '@/lib/types';
 import { normalizeImageUrl } from '@/lib/utils';
 
@@ -39,7 +41,7 @@ export type ReviewCardProps = {
   isLiked?: boolean;
   likesCount?: number;
   onToggleHelpful?: (reviewId: string) => void;
-  onEnlargePhoto?: (url: string) => void;
+  onEnlargePhoto?: (url: string, index?: number, allPhotos?: string[]) => void;
   className?: string;
   showHelpfulButton?: boolean;
   isVoting?: boolean;
@@ -55,12 +57,21 @@ export function ReviewCard({
   showHelpfulButton = true,
   isVoting = false,
 }: ReviewCardProps) {
+  const [internalViewerIndex, setInternalViewerIndex] = useState<number | null>(null);
   const rating = review.overallRating ?? review.rating ?? 0;
   const photos = review.images?.slice(0, 3) || [];
   const calculatedLikes =
     likesCount !== undefined
       ? likesCount
       : Math.max(0, (review.helpfulCount ?? 0) + (isLiked && !review.userVoted ? 1 : 0));
+
+  const allValidUrls = photos
+    .map((img) => {
+      const rawUrl =
+        typeof img === 'string' ? img : (img as unknown as { url?: string })?.url || '';
+      return normalizeImageUrl(rawUrl);
+    })
+    .filter(Boolean);
 
   return (
     <div
@@ -152,7 +163,13 @@ export function ReviewCard({
               <button
                 key={`review-photo-${review.id}-${photoIdx}`}
                 type="button"
-                onClick={() => onEnlargePhoto?.(photoUrl)}
+                onClick={() => {
+                  if (onEnlargePhoto) {
+                    onEnlargePhoto(photoUrl, photoIdx, allValidUrls);
+                  } else {
+                    setInternalViewerIndex(photoIdx);
+                  }
+                }}
                 className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-muted hover:opacity-90 transition cursor-pointer"
               >
                 <Image
@@ -198,6 +215,17 @@ export function ReviewCard({
 
         <span className="text-xs text-muted-foreground">Reseña verificada por moderación</span>
       </div>
+
+      {internalViewerIndex !== null && (
+        <FullScreenImageViewer
+          isOpen={internalViewerIndex !== null}
+          onClose={() => setInternalViewerIndex(null)}
+          images={allValidUrls}
+          initialIndex={internalViewerIndex}
+          title={`Foto de reseña • ${review.user?.firstName || 'Estudiante'}`}
+          subtitle={review.comment}
+        />
+      )}
     </div>
   );
 }

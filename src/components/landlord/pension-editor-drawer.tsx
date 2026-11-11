@@ -29,6 +29,7 @@ import { toast } from 'sonner';
 import { PensionLocationPickerMap } from '@/components/landlord/pension-location-picker-map';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
 import { isSubstantivePensionDraft } from '@/lib/draft-validators';
@@ -203,11 +204,17 @@ export function PensionEditorDrawer({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState<boolean>(false);
   const [isForwardGeocoding, setIsForwardGeocoding] = useState<boolean>(false);
   const [cities, setCities] = useState<CityInfo[]>([]);
   const [citySearchQuery, setCitySearchQuery] = useState<string>('');
+
+  const allDrawerImages = useMemo(
+    () => [...form.images, ...newImagePreviews],
+    [form.images, newImagePreviews],
+  );
 
   const filteredCities = useMemo(() => {
     if (!citySearchQuery.trim()) return cities;
@@ -851,24 +858,31 @@ export function PensionEditorDrawer({
                     key={imgUrl}
                     className="group relative aspect-square rounded-xl overflow-hidden bg-muted border border-border/70 shadow-2xs"
                   >
-                    <Image
-                      src={imgUrl}
-                      alt={`Foto pensión ${idx + 1}`}
-                      fill
-                      unoptimized
-                      sizes="120px"
-                      className="object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setViewerIndex(idx)}
+                      className="relative h-full w-full cursor-pointer focus:outline-none"
+                      aria-label={`Ver foto ${idx + 1} a pantalla completa`}
+                    >
+                      <Image
+                        src={imgUrl}
+                        alt={`Foto pensión ${idx + 1}`}
+                        fill
+                        unoptimized
+                        sizes="120px"
+                        className="object-cover transition group-hover:scale-105"
+                      />
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveExistingImage(idx)}
-                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs"
+                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs z-10"
                       aria-label="Eliminar foto"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
                     {idx === 0 && (
-                      <span className="absolute bottom-1 left-1 rounded-md bg-primary text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold shadow-xs">
+                      <span className="absolute bottom-1 left-1 rounded-md bg-primary text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold shadow-xs pointer-events-none z-10">
                         Principal
                       </span>
                     )}
@@ -880,23 +894,30 @@ export function PensionEditorDrawer({
                     key={previewUrl}
                     className="group relative aspect-square rounded-xl overflow-hidden bg-muted border border-primary/40 shadow-2xs"
                   >
-                    <Image
-                      src={previewUrl}
-                      alt={`Nueva foto pensión ${idx + 1}`}
-                      fill
-                      unoptimized
-                      sizes="120px"
-                      className="object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setViewerIndex(form.images.length + idx)}
+                      className="relative h-full w-full cursor-pointer focus:outline-none"
+                      aria-label={`Ver nueva foto ${idx + 1} a pantalla completa`}
+                    >
+                      <Image
+                        src={previewUrl}
+                        alt={`Nueva foto pensión ${idx + 1}`}
+                        fill
+                        unoptimized
+                        sizes="120px"
+                        className="object-cover transition group-hover:scale-105"
+                      />
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveNewImage(idx)}
-                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs"
+                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs z-10"
                       aria-label="Eliminar nueva foto"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
-                    <span className="absolute bottom-1 left-1 rounded-md bg-primary/90 text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold shadow-xs">
+                    <span className="absolute bottom-1 left-1 rounded-md bg-primary/90 text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold shadow-xs pointer-events-none z-10">
                       {form.images.length === 0 && idx === 0 ? 'Principal' : 'Nueva'}
                     </span>
                   </div>
@@ -1422,6 +1443,17 @@ export function PensionEditorDrawer({
             </Button>
           </div>
         </form>
+
+        {viewerIndex !== null && (
+          <FullScreenImageViewer
+            isOpen={viewerIndex !== null}
+            onClose={() => setViewerIndex(null)}
+            images={allDrawerImages}
+            initialIndex={viewerIndex}
+            title={form.title || 'Fotos de la pensión'}
+            subtitle={form.city ? `${form.neighborhood}, ${form.city}` : undefined}
+          />
+        )}
       </DrawerContent>
     </Drawer>
   );

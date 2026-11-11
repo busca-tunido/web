@@ -1,11 +1,12 @@
 'use client';
 
-import { Building2, Heart, ShieldCheck, Star } from 'lucide-react';
+import { Building2, Heart, Maximize2, ShieldCheck, Star } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { FavoritesGuestIncentive } from '@/components/favorites/favorites-guest-incentive';
 import { Button } from '@/components/ui/button';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { PensionCardSkeleton } from '@/components/ui/skeletons/pension-card-skeleton';
 import { useNavigation } from '@/contexts/navigation-context';
 import { useStudentFavorites } from '@/hooks/use-student-favorites';
@@ -130,6 +131,11 @@ function FavoritesGrid({
   onExplore,
   toggleFavorite,
 }: FavoritesGridProps) {
+  const [viewerData, setViewerData] = useState<{
+    images: string[];
+    title: string;
+    subtitle?: string;
+  } | null>(null);
   if (savedPensions.length === 0 && skeletonCount === 0) {
     return (
       <div className="my-12 -mt-4 flex flex-col items-center justify-center rounded-2xl border border-border bg-card/60 px-8 pt-8 pb-12 text-center shadow-sm">
@@ -192,6 +198,24 @@ function FavoritesGrid({
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
+                {Boolean(pension.images?.length) && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setViewerData({
+                        images: (pension.images ?? []).map((img) => img.url),
+                        title: pension.title,
+                        subtitle: `${pension.neighborhood}, ${pension.city}`,
+                      });
+                    }}
+                    className="absolute top-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-black/80 active:scale-95 cursor-pointer shadow-sm"
+                    aria-label={`Ver fotos de ${pension.title} a pantalla completa`}
+                  >
+                    <Maximize2 className="h-4 w-4" />
+                  </button>
+                )}
+
                 {(pension.verificationStatus === 'OFFICIALLY_VERIFIED' ||
                   pension.verificationStatus === 'COMMUNITY_VERIFIED') && (
                   <div className="absolute bottom-3 left-3">
@@ -247,6 +271,16 @@ function FavoritesGrid({
       {Array.from({ length: skeletonCount }, (_, idx) => (
         <PensionCardSkeleton key={`fav-skel-slot-${idx}`} />
       ))}
+
+      {viewerData && (
+        <FullScreenImageViewer
+          isOpen={Boolean(viewerData)}
+          onClose={() => setViewerData(null)}
+          images={viewerData.images}
+          title={viewerData.title}
+          subtitle={viewerData.subtitle}
+        />
+      )}
     </div>
   );
 }

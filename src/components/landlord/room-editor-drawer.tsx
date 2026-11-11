@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import type { RoomItem, RoomType } from '@/components/landlord/room-item-card';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
 import { isSubstantiveRoomDraft } from '@/lib/draft-validators';
@@ -118,8 +119,11 @@ export function RoomEditorDrawer({
 
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const allDrawerImages = [...form.images, ...newImagePreviews];
 
   const handleCancel = () => {
     if (!isEditing) {
@@ -690,18 +694,25 @@ export function RoomEditorDrawer({
                     key={imgUrl}
                     className="group relative aspect-square rounded-xl overflow-hidden bg-muted border border-border/70"
                   >
-                    <Image
-                      src={imgUrl}
-                      alt={`Habitación ${idx + 1}`}
-                      fill
-                      unoptimized
-                      sizes="120px"
-                      className="object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setViewerIndex(idx)}
+                      className="relative h-full w-full cursor-pointer focus:outline-none"
+                      aria-label={`Ver foto ${idx + 1} a pantalla completa`}
+                    >
+                      <Image
+                        src={imgUrl}
+                        alt={`Habitación ${idx + 1}`}
+                        fill
+                        unoptimized
+                        sizes="120px"
+                        className="object-cover transition group-hover:scale-105"
+                      />
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveExistingImage(idx)}
-                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs"
+                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs z-10"
                       aria-label="Eliminar imagen"
                     >
                       <X className="h-3.5 w-3.5" />
@@ -714,23 +725,30 @@ export function RoomEditorDrawer({
                     key={previewUrl}
                     className="group relative aspect-square rounded-xl overflow-hidden bg-muted border border-primary/40"
                   >
-                    <Image
-                      src={previewUrl}
-                      alt={`Nueva foto ${idx + 1}`}
-                      fill
-                      unoptimized
-                      sizes="120px"
-                      className="object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setViewerIndex(form.images.length + idx)}
+                      className="relative h-full w-full cursor-pointer focus:outline-none"
+                      aria-label={`Ver nueva foto ${idx + 1} a pantalla completa`}
+                    >
+                      <Image
+                        src={previewUrl}
+                        alt={`Nueva foto ${idx + 1}`}
+                        fill
+                        unoptimized
+                        sizes="120px"
+                        className="object-cover transition group-hover:scale-105"
+                      />
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveNewImage(idx)}
-                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs"
+                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs z-10"
                       aria-label="Eliminar nueva imagen"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
-                    <span className="absolute bottom-1 left-1 rounded-md bg-primary/90 text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold">
+                    <span className="absolute bottom-1 left-1 rounded-md bg-primary/90 text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold pointer-events-none z-10">
                       Nueva
                     </span>
                   </div>
@@ -805,6 +823,17 @@ export function RoomEditorDrawer({
             </Button>
           </div>
         </form>
+
+        {viewerIndex !== null && (
+          <FullScreenImageViewer
+            isOpen={viewerIndex !== null}
+            onClose={() => setViewerIndex(null)}
+            images={allDrawerImages}
+            initialIndex={viewerIndex}
+            title={form.title || 'Fotos de la habitación'}
+            subtitle={form.roomNumber ? `Pieza #${form.roomNumber}` : undefined}
+          />
+        )}
       </DrawerContent>
     </Drawer>
   );

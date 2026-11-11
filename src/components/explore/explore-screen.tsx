@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, MapPin } from 'lucide-react';
+import { ChevronDown, MapPin, Maximize2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { Suspense, useState } from 'react';
@@ -8,6 +8,7 @@ import { NetworkErrorBanner } from '@/components/common/network-error-state';
 import { InfinitePensionList } from '@/components/pensions/infinite-pension-list';
 import { NearbyCitiesBar } from '@/components/pensions/nearby-cities-bar';
 import { Badge } from '@/components/ui/badge';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { CityCardSkeleton } from '@/components/ui/skeletons/city-card-skeleton';
 import { ExploreSkeleton } from '@/components/ui/skeletons/explore-skeleton';
 import { PensionCardSkeleton } from '@/components/ui/skeletons/pension-card-skeleton';
@@ -64,6 +65,11 @@ export function ExploreScreen({
 }: ExploreScreenProps) {
   const [isExpandedCities, setIsExpandedCities] = useState(false);
   const [isExpandedUniversities, setIsExpandedUniversities] = useState(false);
+  const [viewerData, setViewerData] = useState<{
+    images: string[];
+    title: string;
+    subtitle?: string;
+  } | null>(null);
 
   const isCitiesLoading = (isLoadingCities ?? isLoadingMetadata) && cities.length === 0;
   const isUniversitiesLoading =
@@ -131,14 +137,21 @@ export function ExploreScreen({
                   const isDesktopHidden = !isExpandedCities && index >= 6;
 
                   return (
-                    <motion.button
-                      type="button"
+                    <motion.div
+                      role="button"
+                      tabIndex={0}
                       key={city.id}
                       initial={{ opacity: 0, scale: 0.96 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: Math.min(index * 0.04, 0.24), duration: 0.2 }}
                       whileTap={{ scale: 0.94 }}
                       onClick={() => onSelectCity(isSelected ? null : city.name)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onSelectCity(isSelected ? null : city.name);
+                        }
+                      }}
                       className={`group relative h-48 w-36 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border text-left transition-colors cursor-pointer shadow-sm ${
                         isSelected
                           ? 'border-primary ring-2 ring-primary/30'
@@ -157,6 +170,24 @@ export function ExploreScreen({
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
+
+                      {cityImg && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setViewerData({
+                              images: [cityImg],
+                              title: city.name,
+                              subtitle: `${city.pensionsCount} pensiones disponibles`,
+                            });
+                          }}
+                          className="absolute top-2.5 right-2.5 z-10 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors backdrop-blur-xs cursor-pointer opacity-80 hover:opacity-100"
+                          aria-label={`Ver foto de ${city.name} a pantalla completa`}
+                        >
+                          <Maximize2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
 
                       {Boolean(
                         selectedCity && city.name.toLowerCase() === selectedCity.toLowerCase(),
@@ -177,7 +208,7 @@ export function ExploreScreen({
                           {city.pensionsCount} pensiones
                         </span>
                       </div>
-                    </motion.button>
+                    </motion.div>
                   );
                 })}
           </div>
@@ -243,14 +274,21 @@ export function ExploreScreen({
                   const isDesktopHidden = !isExpandedUniversities && index >= 5;
 
                   return (
-                    <motion.button
-                      type="button"
+                    <motion.div
+                      role="button"
+                      tabIndex={0}
                       key={uni.id}
                       initial={{ opacity: 0, scale: 0.96 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: Math.min(index * 0.04, 0.2), duration: 0.2 }}
                       whileTap={{ scale: 0.94 }}
                       onClick={() => onSelectUniversity(uni)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onSelectUniversity(uni);
+                        }
+                      }}
                       className={`group relative h-48 w-44 md:w-full shrink-0 md:shrink snap-start overflow-hidden rounded-2xl border border-border/60 bg-card text-left transition-colors hover:border-primary/50 cursor-pointer shadow-sm ${
                         isDesktopHidden ? 'md:hidden' : ''
                       }`}
@@ -267,6 +305,24 @@ export function ExploreScreen({
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+
+                      {uniImg && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setViewerData({
+                              images: [uniImg],
+                              title: uni.name,
+                              subtitle: uni.city,
+                            });
+                          }}
+                          className="absolute top-2.5 right-2.5 z-10 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors backdrop-blur-xs cursor-pointer opacity-80 hover:opacity-100"
+                          aria-label={`Ver foto de ${uni.name} a pantalla completa`}
+                        >
+                          <Maximize2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
 
                       <div className="absolute top-2.5 left-2.5">
                         <Badge
@@ -286,7 +342,7 @@ export function ExploreScreen({
                           <span>{uni.city}</span>
                         </div>
                       </div>
-                    </motion.button>
+                    </motion.div>
                   );
                 })}
           </div>
@@ -342,6 +398,16 @@ export function ExploreScreen({
           onResetFilters={onResetFilters}
         />
       </Suspense>
+
+      {viewerData && (
+        <FullScreenImageViewer
+          isOpen={Boolean(viewerData)}
+          onClose={() => setViewerData(null)}
+          images={viewerData.images}
+          title={viewerData.title}
+          subtitle={viewerData.subtitle}
+        />
+      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import {
   BedDouble,
   Home,
   Loader2,
+  Maximize2,
   PauseCircle,
   Pencil,
   PlayCircle,
@@ -16,6 +17,7 @@ import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import type { RoomDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -40,6 +42,7 @@ export function RoomItemCard({
   const [isAvailable, setIsAvailable] = useState<boolean>(room.isAvailable);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
+  const [isViewerOpen, setIsViewerOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setIsAvailable(room.isAvailable);
@@ -82,25 +85,37 @@ export function RoomItemCard({
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3.5 min-w-0 flex-1">
-          <button
-            type="button"
-            onClick={() => onEdit(room)}
-            className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-lg bg-muted shadow-2xs flex items-center justify-center cursor-pointer group-hover:ring-1 group-hover:ring-primary/40 transition text-left focus:outline-none"
-            aria-label={`Editar ${rawTitle}`}
-          >
-            {thumbnail ? (
+          {thumbnail ? (
+            <button
+              type="button"
+              onClick={() => setIsViewerOpen(true)}
+              className="group/thumb relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-lg bg-muted shadow-2xs flex items-center justify-center cursor-pointer hover:ring-1 hover:ring-primary/40 transition text-left focus:outline-none"
+              aria-label={`Ver fotos de ${rawTitle} a pantalla completa`}
+            >
               <Image
                 src={thumbnail}
                 alt={rawTitle}
                 fill
                 unoptimized
                 sizes="(max-width: 640px) 96px, 112px"
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                className="object-cover transition-transform duration-300 group-hover/thumb:scale-105"
               />
-            ) : (
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center shadow-xs">
+                  <Maximize2 className="h-3.5 w-3.5" />
+                </div>
+              </div>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onEdit(room)}
+              className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-lg bg-muted shadow-2xs flex items-center justify-center cursor-pointer hover:ring-1 hover:ring-primary/40 transition text-left focus:outline-none"
+              aria-label={`Editar ${rawTitle}`}
+            >
               <BedDouble className="h-8 w-8 text-muted-foreground/40" />
-            )}
-          </button>
+            </button>
+          )}
 
           <div className="flex flex-col gap-1.5 min-w-0 flex-1 text-left">
             <div className="flex items-center justify-between gap-2">
@@ -268,6 +283,16 @@ export function RoomItemCard({
           </div>
         </div>
       </div>
+
+      {isViewerOpen && (
+        <FullScreenImageViewer
+          isOpen={isViewerOpen}
+          onClose={() => setIsViewerOpen(false)}
+          images={room.images?.length ? room.images : thumbnail ? [thumbnail] : []}
+          title={rawTitle}
+          subtitle={`Habitación • ${formattedPrice}`}
+        />
+      )}
     </Card>
   );
 }

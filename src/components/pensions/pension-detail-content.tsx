@@ -11,6 +11,7 @@ import {
   Clock,
   Heart,
   MapPin,
+  Maximize2,
   MessageSquare,
   PenLine,
   Phone,
@@ -25,6 +26,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { useOptionalNavigation } from '@/contexts/navigation-context';
 import { useFavoriteAction } from '@/hooks/use-favorite-action';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
@@ -72,6 +74,7 @@ export function PensionDetailContent({
 
   const [activePhotoIdx, setActivePhotoIdx] = useState<number>(0);
   const [direction, setDirection] = useState<number>(0);
+  const [isViewerOpen, setIsViewerOpen] = useState<boolean>(false);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState<boolean>(false);
   const [isAmenitiesModalOpen, setIsAmenitiesModalOpen] = useState<boolean>(false);
   const [isPublishReviewOpen, setIsPublishReviewOpen] = useState<boolean>(false);
@@ -173,7 +176,8 @@ export function PensionDetailContent({
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.25}
               onDragEnd={handleDragEnd}
-              className="absolute inset-0 h-full w-full cursor-grab active:cursor-grabbing"
+              onClick={() => setIsViewerOpen(true)}
+              className="absolute inset-0 h-full w-full cursor-pointer active:cursor-grabbing"
             >
               <Image
                 src={displayPhotos[activePhotoIdx]}
@@ -206,6 +210,16 @@ export function PensionDetailContent({
         )}
 
         <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+          {displayPhotos.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsViewerOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-white hover:bg-black/80 active:scale-90 transition shadow-sm cursor-pointer"
+              aria-label="Ver fotos a pantalla completa"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
+          )}
           <button
             type="button"
             onClick={(e) => onFavoriteClick(pension.id, e)}
@@ -713,6 +727,15 @@ export function PensionDetailContent({
           pension={pension as PensionItem}
         />
       )}
+
+      <FullScreenImageViewer
+        isOpen={isViewerOpen}
+        onClose={() => setIsViewerOpen(false)}
+        images={displayPhotos}
+        initialIndex={activePhotoIdx}
+        title={pension.title}
+        subtitle={`${pension.neighborhood}, ${pension.city}`}
+      />
     </div>
   );
 }

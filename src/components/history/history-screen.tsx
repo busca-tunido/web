@@ -1,11 +1,12 @@
 'use client';
 
-import { Building2, Calendar, History, MessageSquare, Star } from 'lucide-react';
+import { Building2, Calendar, History, Maximize2, MessageSquare, Star } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { HistoryGuestIncentive } from '@/components/history/history-guest-incentive';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { HistoryCardsSkeleton } from '@/components/ui/skeletons/history-skeleton';
 import { useNavigation } from '@/contexts/navigation-context';
 import { useStayHistory } from '@/hooks/use-stay-history';
@@ -92,6 +93,12 @@ function HistoryList({
   onSelectReviewStay,
   formatDateRange,
 }: HistoryListProps) {
+  const [viewerData, setViewerData] = useState<{
+    url: string;
+    title: string;
+    subtitle?: string;
+  } | null>(null);
+
   if (isLoading) {
     return <HistoryCardsSkeleton count={expectedCount} />;
   }
@@ -138,6 +145,24 @@ function HistoryList({
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
+
+              {hasImg && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setViewerData({
+                      url: stay.imageUrl as string,
+                      title: stay.pensionTitle,
+                      subtitle: `${stay.roomTitle} • ${stay.pensionCity}`,
+                    })
+                  }
+                  className="absolute top-2.5 right-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md opacity-90 hover:opacity-100 transition-opacity hover:bg-black/80 active:scale-95 cursor-pointer shadow-sm"
+                  aria-label={`Ver foto de ${stay.pensionTitle} a pantalla completa`}
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </button>
+              )}
+
               <div className="absolute bottom-2.5 left-2.5">
                 <Badge className="bg-background/80 text-foreground border border-border text-xs backdrop-blur-md">
                   {stay.pensionCity}
@@ -189,6 +214,16 @@ function HistoryList({
           </div>
         );
       })}
+
+      {viewerData && (
+        <FullScreenImageViewer
+          isOpen={Boolean(viewerData)}
+          onClose={() => setViewerData(null)}
+          images={[viewerData.url]}
+          title={viewerData.title}
+          subtitle={viewerData.subtitle}
+        />
+      )}
     </div>
   );
 }

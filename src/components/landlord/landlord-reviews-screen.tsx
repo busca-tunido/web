@@ -19,7 +19,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { isApiSuccess } from '@/lib/api-response';
 import type { PensionDetailDto, PensionItem } from '@/lib/types';
@@ -117,7 +117,11 @@ export function LandlordReviewsScreen({
     initialPension,
   );
   const [activeFilter, setActiveFilter] = useState<ReviewFilterType>('ALL');
-  const [enlargedPhotoUrl, setEnlargedPhotoUrl] = useState<string | null>(null);
+  const [viewerState, setViewerState] = useState<{
+    images: string[];
+    initialIndex: number;
+    title?: string;
+  } | null>(null);
 
   const effectivePensionId = propPensionId || activePension?.id || '';
 
@@ -728,7 +732,22 @@ export function LandlordReviewsScreen({
                             <button
                               key={`review-photo-${review.id}-${photoIdx}`}
                               type="button"
-                              onClick={() => setEnlargedPhotoUrl(photoUrl)}
+                              onClick={() => {
+                                const allUrls = review.images
+                                  .map((p) => {
+                                    const raw =
+                                      typeof p === 'string'
+                                        ? p
+                                        : (p as unknown as { url?: string })?.url || '';
+                                    return normalizeImageUrl(raw);
+                                  })
+                                  .filter(Boolean);
+                                setViewerState({
+                                  images: allUrls.length > 0 ? allUrls : [photoUrl],
+                                  initialIndex: photoIdx,
+                                  title: `Foto de reseña • ${review.user?.firstName || 'Estudiante'}`,
+                                });
+                              }}
                               className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-muted hover:opacity-90 transition cursor-pointer select-none"
                             >
                               <Image
@@ -772,27 +791,15 @@ export function LandlordReviewsScreen({
         )}
       </div>
 
-      <Dialog
-        open={Boolean(enlargedPhotoUrl)}
-        onOpenChange={(open) => !open && setEnlargedPhotoUrl(null)}
-      >
-        <DialogContent className="max-w-md p-2 bg-background/95 backdrop-blur-md rounded-2xl overflow-hidden">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Foto de reseña</DialogTitle>
-          </DialogHeader>
-          {enlargedPhotoUrl && (
-            <div className="relative aspect-4/3 w-full overflow-hidden rounded-xl bg-black">
-              <Image
-                src={enlargedPhotoUrl}
-                alt="Foto ampliada de la pensión"
-                fill
-                unoptimized
-                className="object-contain"
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {viewerState && (
+        <FullScreenImageViewer
+          isOpen={Boolean(viewerState)}
+          onClose={() => setViewerState(null)}
+          images={viewerState.images}
+          initialIndex={viewerState.initialIndex}
+          title={viewerState.title}
+        />
+      )}
     </div>
   );
 }

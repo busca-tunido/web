@@ -1,7 +1,6 @@
 'use client';
 
-import { ChevronLeft, X } from 'lucide-react';
-import Image from 'next/image';
+import { ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 import { ReviewCard } from '@/components/reviews/review-card';
 import {
@@ -11,6 +10,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import type { PensionReview, StayHistoryItem } from '@/lib/types';
 
 type UserReviewModalProps = {
@@ -20,7 +20,11 @@ type UserReviewModalProps = {
 };
 
 export function UserReviewModal({ isOpen, onClose, stay }: UserReviewModalProps) {
-  const [enlargedPhoto, setEnlargedPhoto] = useState<string | null>(null);
+  const [viewerState, setViewerState] = useState<{
+    images: string[];
+    initialIndex: number;
+    title?: string;
+  } | null>(null);
 
   if (!stay?.review) return null;
 
@@ -118,39 +122,27 @@ export function UserReviewModal({ isOpen, onClose, stay }: UserReviewModalProps)
             </div>
           )}
 
-          <ReviewCard review={review} onEnlargePhoto={setEnlargedPhoto} showHelpfulButton={false} />
+          <ReviewCard
+            review={review}
+            onEnlargePhoto={(url, index = 0, allPhotos) => {
+              setViewerState({
+                images: allPhotos && allPhotos.length > 0 ? allPhotos : [url],
+                initialIndex: index,
+                title: `Tu reseña • ${stay.pensionTitle}`,
+              });
+            }}
+            showHelpfulButton={false}
+          />
         </div>
 
-        {enlargedPhoto && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Foto ampliada"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
-          >
-            <button
-              type="button"
-              aria-label="Cerrar vista previa"
-              onClick={() => setEnlargedPhoto(null)}
-              className="absolute inset-0 h-full w-full cursor-default"
-            />
-            <div className="relative max-h-[85vh] max-w-[90vw] aspect-square w-[420px] overflow-hidden rounded-2xl bg-black z-10">
-              <Image
-                src={enlargedPhoto}
-                alt="Foto ampliada"
-                fill
-                unoptimized
-                className="object-contain"
-              />
-              <button
-                type="button"
-                onClick={() => setEnlargedPhoto(null)}
-                className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
+        {viewerState && (
+          <FullScreenImageViewer
+            isOpen={Boolean(viewerState)}
+            onClose={() => setViewerState(null)}
+            images={viewerState.images}
+            initialIndex={viewerState.initialIndex}
+            title={viewerState.title}
+          />
         )}
       </DrawerContent>
     </Drawer>

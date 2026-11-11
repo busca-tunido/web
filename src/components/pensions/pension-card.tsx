@@ -1,9 +1,10 @@
 'use client';
 
-import { Award, Building2, Heart, MapPin, ShieldCheck, Star } from 'lucide-react';
+import { Award, Building2, Heart, MapPin, Maximize2, ShieldCheck, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
-import { memo } from 'react';
+import { memo, useState } from 'react';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import type { PensionItem } from '@/lib/types';
 
 type PensionCardProps = {
@@ -28,6 +29,7 @@ function PensionCardComponent({
   onToggleFavorite,
   onSelectPension,
 }: PensionCardProps) {
+  const [isViewerOpen, setIsViewerOpen] = useState<boolean>(false);
   const isHighRelevance = (pension.relevanceScore ?? 0) >= 75;
   const titleId = `pension-title-${pension.id}`;
 
@@ -63,6 +65,20 @@ function PensionCardComponent({
             <Building2 className="h-10 w-10 text-muted-foreground/30" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+
+          {Boolean(pension.images?.length) && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsViewerOpen(true);
+              }}
+              className="absolute top-2.5 left-2.5 z-10 flex h-9 w-9 min-h-[36px] min-w-[36px] items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-black/80 active:scale-95 cursor-pointer shadow-sm"
+              aria-label={`Ver fotos de ${pension.title} a pantalla completa`}
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
+          )}
 
           <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
             {(pension.verificationStatus === 'OFFICIALLY_VERIFIED' ||
@@ -164,6 +180,15 @@ function PensionCardComponent({
           <Heart className={`h-5 w-5 ${isFavorite ? 'fill-primary text-primary' : 'stroke-[2]'}`} />
         </motion.div>
       </motion.button>
+      {isViewerOpen && (
+        <FullScreenImageViewer
+          isOpen={isViewerOpen}
+          onClose={() => setIsViewerOpen(false)}
+          images={(pension.images ?? []).map((img) => img.url)}
+          title={pension.title}
+          subtitle={`${pension.neighborhood}, ${pension.city}`}
+        />
+      )}
     </motion.article>
   );
 }

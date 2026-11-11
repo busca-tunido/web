@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
-import { type ChangeEvent, useEffect, useReducer } from 'react';
+import { type ChangeEvent, useEffect, useReducer, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +27,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { createReviewSchema, usePensionReviews } from '@/hooks/use-pension-reviews';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
@@ -72,6 +73,7 @@ export function PublishReviewModal({
   const { user } = useAuth();
   const { publishReview } = usePensionReviews(isOpen ? pension.id : null);
   const [state, dispatch] = useReducer(publishReviewReducer, initialPublishReviewState);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const successBanner = state.successBanner;
   const errorMessage = state.errorMessage;
 
@@ -606,19 +608,26 @@ export function PublishReviewModal({
               {state.selectedFiles.map((photo, idx) => (
                 <div
                   key={`upload-thumb-${photo.previewUrl}`}
-                  className="relative h-20 w-20 rounded-xl overflow-hidden border border-border bg-muted shrink-0"
+                  className="relative h-20 w-20 rounded-xl overflow-hidden border border-border bg-muted shrink-0 group"
                 >
-                  <Image
-                    src={photo.previewUrl}
-                    alt={`Preview ${idx + 1}`}
-                    fill
-                    unoptimized
-                    className="object-cover"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setViewerIndex(idx)}
+                    className="relative h-full w-full cursor-pointer focus:outline-none"
+                    aria-label={`Ver foto ${idx + 1} a pantalla completa`}
+                  >
+                    <Image
+                      src={photo.previewUrl}
+                      alt={`Preview ${idx + 1}`}
+                      fill
+                      unoptimized
+                      className="object-cover transition group-hover:scale-105"
+                    />
+                  </button>
                   <button
                     type="button"
                     onClick={() => removePhoto(idx)}
-                    className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black transition"
+                    className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black transition z-10 cursor-pointer"
                     aria-label="Quitar foto"
                   >
                     <X className="h-3 w-3" />
@@ -661,6 +670,16 @@ export function PublishReviewModal({
             )}
           </Button>
         </div>
+
+        {viewerIndex !== null && (
+          <FullScreenImageViewer
+            isOpen={viewerIndex !== null}
+            onClose={() => setViewerIndex(null)}
+            images={state.selectedFiles.map((f) => f.previewUrl)}
+            initialIndex={viewerIndex}
+            title={`Foto de reseña • ${pension.title}`}
+          />
+        )}
       </DrawerContent>
     </Drawer>
   );

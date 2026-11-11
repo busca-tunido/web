@@ -11,6 +11,7 @@ import {
   Home,
   Loader2,
   MapPin,
+  Maximize2,
   PauseCircle,
   Phone,
   Plus,
@@ -33,6 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { useLandlord } from '@/contexts/landlord-context';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
 import type { PensionItem } from '@/lib/types';
@@ -56,6 +58,11 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
   } = useLandlord();
 
   const [previewPension, setPreviewPension] = useState<PensionItem | null>(null);
+  const [viewerData, setViewerData] = useState<{
+    images: string[];
+    title: string;
+    subtitle?: string;
+  } | null>(null);
   const [defaultContactName, setDefaultContactName] = useState(defaultContact.name);
   const [defaultContactPhone, setDefaultContactPhone] = useState(defaultContact.phone);
   const [contactSaveFeedback, setContactSaveFeedback] = useState(false);
@@ -164,14 +171,32 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
               <div className="flex items-center gap-3.5 min-w-0">
                 <div className="relative h-14 w-14 sm:h-16 sm:w-16 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-secondary/60">
                   {coverPhoto ? (
-                    <Image
-                      src={coverPhoto}
-                      alt={prop.title}
-                      fill
-                      unoptimized
-                      sizes="(max-width: 640px) 56px, 64px"
-                      className="object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setViewerData({
+                          images: prop.images?.length
+                            ? prop.images.map((img) => img.url)
+                            : [coverPhoto],
+                          title: prop.title,
+                          subtitle: `${prop.neighborhood}, ${prop.city}`,
+                        })
+                      }
+                      className="group/cover relative h-full w-full cursor-pointer focus:outline-none"
+                      aria-label={`Ver fotos de ${prop.title} a pantalla completa`}
+                    >
+                      <Image
+                        src={coverPhoto}
+                        alt={prop.title}
+                        fill
+                        unoptimized
+                        sizes="(max-width: 640px) 56px, 64px"
+                        className="object-cover transition group-hover/cover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Maximize2 className="h-4 w-4 text-white" />
+                      </div>
+                    </button>
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                       <Building2 className="h-7 w-7" />
@@ -697,6 +722,16 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
           onClose={() => setPreviewPension(null)}
           pension={previewPension}
           pensionId={previewPension.id}
+        />
+      )}
+
+      {viewerData && (
+        <FullScreenImageViewer
+          isOpen={Boolean(viewerData)}
+          onClose={() => setViewerData(null)}
+          images={viewerData.images}
+          title={viewerData.title}
+          subtitle={viewerData.subtitle}
         />
       )}
     </>
