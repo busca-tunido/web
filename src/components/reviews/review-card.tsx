@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, Star, ThumbsUp } from 'lucide-react';
+import { ShieldCheck, Star, ThumbsUp } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import type { PensionReview } from '@/lib/types';
@@ -92,15 +92,15 @@ export function ReviewCard({
               {review.isResidentVerified && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-sage/30 bg-sage/10 text-sage-foreground text-[10px] py-0 px-1.5 font-semibold"
+                  className="gap-1 border-sage/30 bg-sage/10 text-sage-foreground text-xs py-0 px-1.5 font-semibold"
                 >
-                  <CheckCircle2 className="h-3 w-3" />
+                  <ShieldCheck className="h-3 w-3" />
                   <span>Estudiante verificado</span>
                 </Badge>
               )}
             </div>
 
-            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
               <span>{formatStayDuration(review.stayDurationCategory || review.stayDuration)}</span>
               {review.user?.university?.name && (
                 <>
@@ -115,17 +115,17 @@ export function ReviewCard({
         </div>
 
         <div className="flex flex-col items-end">
-          <div className="flex items-center gap-0.5 text-amber-500">
+          <div className="flex items-center gap-0.5 text-warning">
             {[1, 2, 3, 4, 5].map((starVal) => (
               <Star
                 key={`star-${review.id}-${starVal}`}
                 className={`h-3 w-3 ${
-                  starVal <= rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'
+                  starVal <= rating ? 'fill-warning text-warning' : 'text-muted-foreground/30'
                 }`}
               />
             ))}
           </div>
-          <span className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">
+          <span className="text-xs text-muted-foreground mt-0.5 tabular-nums">
             {formatDate(review.createdAt)}
           </span>
         </div>
@@ -186,13 +186,13 @@ export function ReviewCard({
             <span>Útil ({calculatedLikes})</span>
           </button>
         ) : (
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <ThumbsUp className="h-3 w-3" />
             <span>{calculatedLikes} votos útiles</span>
           </div>
         )}
 
-        <span className="text-[10px] text-muted-foreground">Reseña verificada por moderación</span>
+        <span className="text-xs text-muted-foreground">Reseña verificada por moderación</span>
       </div>
     </div>
   );

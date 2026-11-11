@@ -47,6 +47,10 @@ export function TopSearchBar({
             <input
               id="top-search-input"
               type="text"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={Boolean(filters.query)}
+              aria-controls="top-search-filter-chips"
               maxLength={100}
               autoCapitalize="none"
               autoCorrect="off"

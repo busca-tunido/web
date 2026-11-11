@@ -13,6 +13,7 @@ import {
   Image as ImageIcon,
   Loader2,
   MapPin,
+  Search,
   ShieldCheck,
   Upload,
   User,
@@ -23,7 +24,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import type React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { PensionLocationPickerMap } from '@/components/landlord/pension-location-picker-map';
 import { Button } from '@/components/ui/button';
@@ -206,6 +207,13 @@ export function PensionEditorDrawer({
   const [isReverseGeocoding, setIsReverseGeocoding] = useState<boolean>(false);
   const [isForwardGeocoding, setIsForwardGeocoding] = useState<boolean>(false);
   const [cities, setCities] = useState<CityInfo[]>([]);
+  const [citySearchQuery, setCitySearchQuery] = useState<string>('');
+
+  const filteredCities = useMemo(() => {
+    if (!citySearchQuery.trim()) return cities;
+    const q = citySearchQuery.toLowerCase();
+    return cities.filter((c) => c.name.toLowerCase().includes(q));
+  }, [cities, citySearchQuery]);
 
   const previewsRef = useRef<string[]>([]);
   previewsRef.current = newImagePreviews;
@@ -922,13 +930,43 @@ export function PensionEditorDrawer({
 
               <div className="space-y-2">
                 <label
-                  htmlFor="city-select"
+                  htmlFor="city-combobox-input"
                   className="block text-xs font-semibold text-foreground"
                 >
                   Ciudad <span className="text-destructive">*</span>
                 </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {cities.map((c) => {
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <input
+                    id="city-combobox-input"
+                    type="text"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded={true}
+                    aria-controls="city-combobox-options"
+                    value={citySearchQuery}
+                    onChange={(e) => setCitySearchQuery(e.target.value)}
+                    placeholder="Buscar o filtrar ciudad..."
+                    className="h-9 w-full rounded-lg border border-border bg-background pl-8.5 pr-8 text-xs text-foreground placeholder:text-muted-foreground/80 focus:border-primary focus:outline-none transition-colors"
+                  />
+                  {citySearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setCitySearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                      aria-label="Limpiar búsqueda de ciudad"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                <div
+                  id="city-combobox-options"
+                  role="listbox"
+                  className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1"
+                >
+                  {filteredCities.map((c) => {
                     const isSelected = form.city.toLowerCase() === c.name.toLowerCase();
                     return (
                       <button
@@ -946,6 +984,11 @@ export function PensionEditorDrawer({
                       </button>
                     );
                   })}
+                  {filteredCities.length === 0 && (
+                    <span className="text-xs text-muted-foreground py-1">
+                      No se encontraron ciudades que coincidan.
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -1248,7 +1291,7 @@ export function PensionEditorDrawer({
                             : 'border-muted-foreground/40 bg-transparent',
                         )}
                       >
-                        {isChecked && <Check className="h-3 w-3 stroke-[3]" />}
+                        {isChecked && <Check className="h-3 w-3 stroke-2" />}
                       </div>
                     </button>
                   );

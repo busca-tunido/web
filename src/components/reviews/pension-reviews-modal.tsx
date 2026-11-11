@@ -1,6 +1,6 @@
 'use client';
 
-import { Award, Camera, ChevronLeft, Star, X } from 'lucide-react';
+import { Camera, ChevronLeft, Star, X } from 'lucide-react';
 import Image from 'next/image';
 import { Suspense, useMemo, useState } from 'react';
 import { EmailCheckStep } from '@/components/auth/email-check-step';
@@ -146,9 +146,7 @@ export function PensionReviewsModal({
               </button>
               <div>
                 <h3 className="text-base font-bold text-foreground">Reseñas de la pensión</h3>
-                <p className="text-[11px] text-muted-foreground truncate max-w-sm">
-                  {pension.title}
-                </p>
+                <p className="text-xs text-muted-foreground truncate max-w-sm">{pension.title}</p>
               </div>
             </div>
           </div>
@@ -165,13 +163,13 @@ export function PensionReviewsModal({
                   {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
                 </span>
                 <div className="flex flex-col items-start">
-                  <div className="flex items-center gap-0.5 text-amber-500">
+                  <div className="flex items-center gap-0.5 text-warning">
                     {[1, 2, 3, 4, 5].map((starVal) => (
                       <Star
                         key={`star-${starVal}`}
                         className={`h-4 w-4 ${
                           pension.ratingAverage >= starVal
-                            ? 'fill-amber-400 text-amber-400'
+                            ? 'fill-warning text-warning'
                             : 'text-muted-foreground/30'
                         }`}
                       />
@@ -184,13 +182,6 @@ export function PensionReviewsModal({
                   </span>
                 </div>
               </div>
-
-              {pension.ratingAverage >= 4.5 && reviews.length > 0 && (
-                <div className="mt-3.5 flex items-center gap-1.5 rounded-full bg-background px-3 py-1 border border-border text-xs font-semibold text-foreground shadow-xs">
-                  <Award className="h-3.5 w-3.5 text-primary" />
-                  <span>Favorito de estudiantes universitarios</span>
-                </div>
-              )}
             </div>
 
             {reviews.length === 0 ? (

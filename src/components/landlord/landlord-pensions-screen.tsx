@@ -536,19 +536,11 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
         ) : (
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Home className="h-4 w-4 text-muted-foreground" />
-                  <h2 className="text-sm sm:text-base font-semibold text-foreground">
-                    Pensión Seleccionada
-                  </h2>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="text-xs font-normal border-border/80 text-muted-foreground"
-                >
-                  Seleccionada
-                </Badge>
+              <div className="flex items-center gap-2">
+                <Home className="h-4 w-4 text-muted-foreground" />
+                <h2 className="text-sm sm:text-base font-semibold text-foreground">
+                  Pensión Seleccionada
+                </h2>
               </div>
 
               {activeSelected && renderPensionCard(activeSelected, true)}

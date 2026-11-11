@@ -45,13 +45,13 @@ export function LandlordDesktopHeader({
           <span>Panel</span>
         </div>
 
-        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
 
         <span className="truncate font-medium text-muted-foreground max-w-[140px] lg:max-w-[220px]">
           {selectedPension?.title ?? 'Mi Pensión'}
         </span>
 
-        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
 
         <span className="truncate font-bold text-foreground">
           {TAB_LABELS[activeTab] ?? 'Panel'}

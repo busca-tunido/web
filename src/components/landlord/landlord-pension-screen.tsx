@@ -1304,7 +1304,7 @@ export function LandlordPensionScreen({
         </Button>
       </div>
 
-      <div className="sticky bottom-16 md:bottom-4 z-30 p-4 border border-border/80 bg-background/95 backdrop-blur-md rounded-2xl shadow-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="sticky bottom-16 md:bottom-4 z-30 p-4 border border-border/80 bg-background/95 backdrop-blur-md rounded-2xl shadow-md flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <Button
           type="button"
           variant="outline"

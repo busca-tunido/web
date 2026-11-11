@@ -79,7 +79,7 @@ export function PensionReviewsPreview({
           <p className="text-xs font-medium text-muted-foreground">
             Esta pensión aún no tiene reseñas de estudiantes.
           </p>
-          <p className="text-[11px] text-muted-foreground/70 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Sé el primero en calificar tu experiencia.
           </p>
         </div>

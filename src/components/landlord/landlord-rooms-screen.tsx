@@ -345,17 +345,14 @@ export function LandlordRoomsScreen({
           </div>
 
           <div className="flex flex-col gap-3.5">
-            <div className="flex items-center justify-between pb-1.5 border-b border-border/50">
-              <div className="flex items-center gap-2">
-                <BedDouble className="h-4 w-4 text-muted-foreground" />
-                <h2 className="text-sm font-bold text-foreground">Habitaciones Ocupadas</h2>
-              </div>
-              <Badge
-                variant="outline"
-                className="text-xs font-semibold border-border/80 text-muted-foreground"
-              >
-                {occupiedRooms.length}
-              </Badge>
+            <div className="flex items-center gap-2 pb-1.5 border-b border-border/50">
+              <BedDouble className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-bold text-foreground">
+                Habitaciones Ocupadas{' '}
+                <span className="font-normal text-muted-foreground tabular-nums">
+                  ({occupiedRooms.length})
+                </span>
+              </h2>
             </div>
 
             {occupiedRooms.length === 0 ? (

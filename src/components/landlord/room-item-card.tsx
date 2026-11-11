@@ -3,10 +3,10 @@
 import {
   Bath,
   BedDouble,
-  Edit3,
   Home,
   Loader2,
   PauseCircle,
+  Pencil,
   PlayCircle,
   User,
   Users,
@@ -178,16 +178,12 @@ export function RoomItemCard({
               aria-label={`Cambiar disponibilidad de ${rawTitle}`}
               disabled={isUpdating}
               onClick={handleToggle}
-              className="flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-1.5 text-xs transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer disabled:opacity-60"
+              className="flex min-h-[44px] items-center gap-2 rounded-xl px-2 py-1 text-xs transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer disabled:opacity-60"
             >
-              <span className="text-xs font-medium text-muted-foreground select-none">
-                Disponibilidad
-              </span>
-
               <div
                 className={cn(
                   'relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                  isAvailable ? 'bg-emerald-500' : 'bg-muted-foreground/30',
+                  isAvailable ? 'bg-success' : 'bg-muted-foreground/30',
                 )}
               >
                 {isUpdating ? (
@@ -197,7 +193,7 @@ export function RoomItemCard({
                       isAvailable ? 'translate-x-4' : 'translate-x-0',
                     )}
                   >
-                    <Loader2 className="h-2.5 w-2.5 animate-spin text-emerald-600" />
+                    <Loader2 className="h-2.5 w-2.5 animate-spin text-success" />
                   </div>
                 ) : (
                   <span
@@ -212,7 +208,7 @@ export function RoomItemCard({
           ) : (
             <Badge
               variant="outline"
-              className="border-border/80 text-muted-foreground text-[10px] py-0.5"
+              className="border-border/80 text-muted-foreground text-xs py-0.5"
             >
               No activa
             </Badge>
@@ -228,14 +224,14 @@ export function RoomItemCard({
                 className={cn(
                   'min-h-[36px] px-2.5 text-xs font-semibold rounded-lg cursor-pointer transition',
                   room.isActive === false
-                    ? 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10'
+                    ? 'text-success hover:bg-success/10'
                     : 'text-muted-foreground hover:text-foreground',
                 )}
                 title={room.isActive === false ? 'Reactivar habitación' : 'Desactivar habitación'}
               >
                 {room.isActive === false ? (
                   <>
-                    <PlayCircle className="h-3.5 w-3.5 mr-1 text-emerald-500" />
+                    <PlayCircle className="h-3.5 w-3.5 mr-1 text-success" />
                     <span>Activar</span>
                   </>
                 ) : (
@@ -254,7 +250,7 @@ export function RoomItemCard({
               onClick={() => onEdit(room)}
               className="min-h-[36px] px-3 rounded-lg border-border/80 hover:bg-secondary font-semibold text-xs gap-1.5 shadow-2xs cursor-pointer"
             >
-              <Edit3 className="h-3.5 w-3.5 text-muted-foreground" />
+              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
               <span>Editar</span>
             </Button>
           </div>

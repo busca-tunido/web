@@ -148,13 +148,13 @@ export function ExploreScreen({
                         className="object-cover transition duration-300 group-hover:scale-105"
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
 
                     {Boolean(
                       selectedCity && city.name.toLowerCase() === selectedCity.toLowerCase(),
                     ) && (
                       <div className="absolute top-2.5 left-2.5">
-                        <Badge className="bg-primary text-primary-foreground font-bold text-[9px] px-2 py-0.5 shadow">
+                        <Badge className="bg-primary text-primary-foreground font-bold text-xs px-2 py-0.5 shadow-sm">
                           Actual
                         </Badge>
                       </div>
@@ -162,7 +162,7 @@ export function ExploreScreen({
 
                     <div className="absolute bottom-3 left-3 right-3">
                       <h3 className="text-sm font-bold text-white leading-tight">{city.name}</h3>
-                      <span className="block text-[11px] text-zinc-200 mt-1">
+                      <span className="block text-xs text-zinc-200 mt-1">
                         {city.pensionsCount} pensiones
                       </span>
                     </div>
@@ -245,12 +245,12 @@ export function ExploreScreen({
                         className="object-cover opacity-80 transition duration-300 group-hover:scale-105"
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
 
                     <div className="absolute top-2.5 left-2.5">
                       <Badge
                         variant="outline"
-                        className="border-white/20 bg-black/60 text-white font-bold text-[10px] backdrop-blur-sm"
+                        className="border-white/20 bg-black/60 text-white font-bold text-xs"
                       >
                         {uni.acronym}
                       </Badge>
@@ -260,7 +260,7 @@ export function ExploreScreen({
                       <h3 className="text-sm font-bold text-white leading-tight line-clamp-2">
                         {uni.name}
                       </h3>
-                      <div className="flex items-center gap-1 text-[11px] text-zinc-300 mt-1">
+                      <div className="flex items-center gap-1 text-xs text-zinc-300 mt-1">
                         <MapPin className="h-3 w-3" />
                         <span>{uni.city}</span>
                       </div>

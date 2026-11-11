@@ -771,7 +771,7 @@ export function RoomEditorDrawer({
                 placeholder="Ej: Incluye clóset amplio, escritorio de estudio ergonómico y ventana con luz natural..."
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                className="w-full rounded-xl border border-border bg-background p-3 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none leading-relaxed"
+                className="w-full rounded-xl border border-border bg-background p-3 text-xs text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none leading-relaxed"
               />
             </div>
           </div>

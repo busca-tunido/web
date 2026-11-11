@@ -358,17 +358,17 @@ export function AmenitiesBreakdownModal({
                 return (
                   <div
                     key={utility.key}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/10 p-3 opacity-40 select-none"
+                    className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-border/60 bg-muted/20 p-3 select-none"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground/70">
-                        <Icon className="h-4 w-4 text-muted-foreground/70" />
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                        <Icon className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <span className="text-xs font-medium text-muted-foreground truncate">
                         {utility.name}
                       </span>
                     </div>
-                    <X className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0 ml-1" />
+                    <X className="h-4 w-4 text-muted-foreground/80 shrink-0 ml-1" />
                   </div>
                 );
               })}
@@ -423,17 +423,17 @@ export function AmenitiesBreakdownModal({
                     return (
                       <div
                         key={am.slug}
-                        className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/10 p-3 opacity-40 select-none"
+                        className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-border/60 bg-muted/20 p-3 select-none"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground/70">
-                            <Icon className="h-4 w-4 text-muted-foreground/70" />
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                            <Icon className="h-4 w-4 text-muted-foreground" />
                           </div>
                           <span className="text-xs font-medium text-muted-foreground truncate">
                             {am.name}
                           </span>
                         </div>
-                        <X className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0 ml-1" />
+                        <X className="h-4 w-4 text-muted-foreground/80 shrink-0 ml-1" />
                       </div>
                     );
                   })}

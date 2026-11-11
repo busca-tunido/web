@@ -62,13 +62,13 @@ function PensionCardComponent({
           <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
             {(pension.verificationStatus === 'OFFICIALLY_VERIFIED' ||
               pension.verificationStatus === 'COMMUNITY_VERIFIED') && (
-              <span className="flex items-center gap-1 rounded-full bg-sage/90 px-2.5 py-0.5 text-[11px] font-semibold text-white dark:text-zinc-950 backdrop-blur-md shadow-sm leading-none">
+              <span className="flex items-center gap-1 rounded-full bg-sage/90 px-2.5 py-0.5 text-xs font-semibold text-white dark:text-zinc-950 shadow-sm leading-none">
                 <ShieldCheck className="h-3 w-3" />
                 Verificada
               </span>
             )}
             {isHighRelevance && (
-              <span className="flex items-center gap-1 rounded-full bg-primary/90 px-2.5 py-0.5 text-[11px] font-semibold text-primary-foreground backdrop-blur-md shadow-sm leading-none">
+              <span className="flex items-center gap-1 rounded-full bg-primary/90 px-2.5 py-0.5 text-xs font-semibold text-primary-foreground shadow-sm leading-none">
                 <Award className="h-3 w-3" />
                 Recomendada
               </span>
@@ -92,10 +92,17 @@ function PensionCardComponent({
             </button>
           </h3>
           <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
-            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-            <span className="tabular-nums">
-              {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
-            </span>
+            {pension.ratingAverage > 0 ? (
+              <>
+                <Star className="h-4 w-4 fill-warning text-warning" />
+                <span className="tabular-nums">{pension.ratingAverage.toFixed(1)}</span>
+              </>
+            ) : (
+              <>
+                <Star className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground font-normal">Sin reseñas</span>
+              </>
+            )}
           </div>
         </div>
 
