@@ -42,6 +42,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LandlordProposalsDrawer } from '@/components/landlord/landlord-proposals-drawer';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
@@ -237,6 +238,9 @@ export function LandlordPensionScreen({
 
   const [amenitiesCatalog, setAmenitiesCatalog] = useState<PensionAmenityCatalogItemDto[]>([]);
   const [isLoadingAmenities, setIsLoadingAmenities] = useState<boolean>(false);
+  const [activeSection, setActiveSection] = useState<'all' | 'services' | 'rules' | 'contact'>(
+    'all',
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -601,6 +605,19 @@ export function LandlordPensionScreen({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          {previewPensionItem && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsPreviewModalOpen(true)}
+              className="flex min-h-[40px] items-center gap-1.5 rounded-full border border-border/80 bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary cursor-pointer shadow-2xs"
+            >
+              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+              <span>Vista Previa</span>
+            </Button>
+          )}
+
           {activePension && (
             <button
               type="button"
@@ -653,40 +670,56 @@ export function LandlordPensionScreen({
         </div>
       </div>
 
-      {saveSuccessMessage && (
-        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center justify-between gap-3 text-emerald-600 dark:text-emerald-400 animate-in fade-in">
-          <div className="flex items-center gap-2.5 text-xs font-semibold">
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <span>{saveSuccessMessage}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setSaveSuccessMessage(null)}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-emerald-600/80 hover:text-emerald-600 cursor-pointer"
-            aria-label="Cerrar notificación de éxito"
+      <AnimatePresence>
+        {saveSuccessMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center justify-between gap-3 text-emerald-600 dark:text-emerald-400"
           >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
+            <div className="flex items-center gap-2.5 text-xs font-semibold">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <span>{saveSuccessMessage}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSaveSuccessMessage(null)}
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-emerald-600/80 hover:text-emerald-600 cursor-pointer"
+              aria-label="Cerrar notificación de éxito"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {saveErrorMessage && (
-        <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 flex items-start gap-3 text-destructive animate-in fade-in">
-          <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
-          <div className="flex-1 text-xs font-medium leading-relaxed">
-            <span className="font-bold block mb-0.5">Error al guardar</span>
-            {saveErrorMessage}
-          </div>
-          <button
-            type="button"
-            onClick={() => setSaveErrorMessage(null)}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-destructive/80 hover:text-destructive cursor-pointer"
-            aria-label="Cerrar alerta de error"
+      <AnimatePresence>
+        {saveErrorMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 flex items-start gap-3 text-destructive"
           >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
+            <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+            <div className="flex-1 text-xs font-medium leading-relaxed">
+              <span className="font-bold block mb-0.5">Error al guardar</span>
+              {saveErrorMessage}
+            </div>
+            <button
+              type="button"
+              onClick={() => setSaveErrorMessage(null)}
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-destructive/80 hover:text-destructive cursor-pointer"
+              aria-label="Cerrar alerta de error"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="md:hidden rounded-xl border border-border/70 bg-card p-4 shadow-none flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
@@ -726,8 +759,46 @@ export function LandlordPensionScreen({
         </Button>
       </div>
 
+      <div className="flex items-center gap-1.5 p-1 bg-muted/30 rounded-xl border border-border/60 overflow-x-auto scrollbar-none">
+        {[
+          { id: 'all' as const, label: 'Todo' },
+          { id: 'services' as const, label: 'Servicios y Comodidades' },
+          { id: 'rules' as const, label: 'Normas y Horarios' },
+          { id: 'contact' as const, label: 'Contacto' },
+        ].map((tab) => {
+          const isActive = activeSection === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveSection(tab.id)}
+              className={cn(
+                'relative px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer',
+                isActive
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50',
+              )}
+            >
+              {isActive && (
+                <motion.span
+                  layoutId="active-landlord-section-pill"
+                  className="absolute inset-0 rounded-lg bg-background shadow-2xs border border-border/60"
+                  transition={{ type: 'spring', bounce: 0.2, duration: 0.35 }}
+                />
+              )}
+              <span className="relative z-10">{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
-        <Card className="xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+        <Card
+          className={cn(
+            'xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden',
+            !(activeSection === 'all' || activeSection === 'services') && 'hidden',
+          )}
+        >
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
               <Zap className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
@@ -844,7 +915,12 @@ export function LandlordPensionScreen({
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+        <Card
+          className={cn(
+            'xl:col-span-6 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden',
+            !(activeSection === 'all' || activeSection === 'rules') && 'hidden',
+          )}
+        >
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
               <Users className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
@@ -893,7 +969,12 @@ export function LandlordPensionScreen({
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-5 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+        <Card
+          className={cn(
+            'xl:col-span-5 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden',
+            !(activeSection === 'all' || activeSection === 'contact') && 'hidden',
+          )}
+        >
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2.5">
@@ -903,7 +984,7 @@ export function LandlordPensionScreen({
                 </CardTitle>
               </div>
 
-              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 bg-muted/30 px-2.5 py-1 rounded-lg border border-border/60">
+              <div className="flex min-h-[44px] items-center gap-2 self-start sm:self-auto shrink-0 bg-muted/30 px-3 py-1.5 rounded-lg border border-border/60">
                 <span className="text-xs font-medium text-foreground">Personalizar</span>
                 <button
                   type="button"
@@ -924,14 +1005,14 @@ export function LandlordPensionScreen({
                     })
                   }
                   className={cn(
-                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     form.useCustomContact ? 'bg-foreground' : 'bg-muted-foreground/30',
                   )}
                 >
                   <span
                     className={cn(
-                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
-                      form.useCustomContact ? 'translate-x-4' : 'translate-x-0',
+                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                      form.useCustomContact ? 'translate-x-5' : 'translate-x-0',
                     )}
                   />
                 </button>
@@ -940,7 +1021,14 @@ export function LandlordPensionScreen({
           </CardHeader>
 
           <CardContent className="p-4 sm:p-5 space-y-4 flex-1 flex flex-col justify-between">
-            <div className="space-y-3.5">
+            <div
+              className={cn(
+                'space-y-3.5 rounded-xl p-3.5 transition-all duration-200',
+                form.useCustomContact
+                  ? 'border border-primary/20 bg-primary/5'
+                  : 'border border-border/40 bg-muted/20 opacity-80',
+              )}
+            >
               <div>
                 <label
                   htmlFor="landlord-contact-name"
@@ -1009,7 +1097,12 @@ export function LandlordPensionScreen({
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-7 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+        <Card
+          className={cn(
+            'xl:col-span-7 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden',
+            !(activeSection === 'all' || activeSection === 'rules') && 'hidden',
+          )}
+        >
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
               <ShieldCheck className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
@@ -1195,7 +1288,12 @@ export function LandlordPensionScreen({
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-12 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden">
+        <Card
+          className={cn(
+            'xl:col-span-12 flex flex-col border-border/70 bg-card shadow-none rounded-xl overflow-hidden',
+            !(activeSection === 'all' || activeSection === 'services') && 'hidden',
+          )}
+        >
           <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/50">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2.5">
@@ -1297,12 +1395,12 @@ export function LandlordPensionScreen({
         </Button>
       </div>
 
-      <div className="sticky bottom-16 md:bottom-4 z-30 p-4 border border-border/80 bg-background/95 backdrop-blur-md rounded-2xl shadow-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="sticky bottom-16 md:bottom-4 z-30 p-4 border border-border/80 bg-background/95 backdrop-blur-md rounded-2xl shadow-md flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <Button
           type="button"
           variant="outline"
           onClick={() => setIsPreviewModalOpen(true)}
-          className="w-full sm:w-52 min-h-[48px] border-border text-foreground hover:bg-secondary text-xs font-bold cursor-pointer shrink-0"
+          className="w-full sm:flex-1 min-h-[48px] border-border text-foreground hover:bg-secondary text-xs font-bold cursor-pointer shrink-0 transition-transform active:scale-[0.98]"
         >
           <Eye className="h-4 w-4 mr-1.5 text-muted-foreground" />
           Vista Previa
@@ -1313,12 +1411,17 @@ export function LandlordPensionScreen({
           variant="default"
           disabled={isSaving}
           onClick={handleSave}
-          className="w-full sm:flex-1 min-h-[48px] bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold shadow-md cursor-pointer disabled:opacity-50"
+          className="w-full sm:flex-[3] min-h-[48px] bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 transition-all active:scale-[0.98]"
         >
           {isSaving ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
               Guardando cambios...
+            </>
+          ) : saveSuccessMessage ? (
+            <>
+              <Check className="h-4 w-4 mr-2 text-emerald-300 animate-in zoom-in-50 duration-200" />
+              Guardar Cambios en Ficha
             </>
           ) : (
             <>

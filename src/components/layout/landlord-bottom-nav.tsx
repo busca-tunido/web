@@ -115,7 +115,7 @@ export function LandlordBottomNav({
                   </span>
                 )}
               </div>
-              <span className="mt-1 text-[11px] tracking-tight">{item.label}</span>
+              <span className="mt-1 text-[11px] tracking-normal">{item.label}</span>
               {isActive && (
                 <motion.span
                   layoutId="active-landlord-bottom-nav-indicator"

@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Home, Loader2, MapPin, X } from 'lucide-react';
+import { Check, Home, Loader2, MapPin, Maximize2, X } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import type { PensionDetailDto, PensionItem, ProposalDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -124,6 +125,11 @@ export function ProposalPreviewComparisonModal({
   isProcessing = false,
 }: ProposalPreviewComparisonModalProps) {
   const [mobileActiveTab, setMobileActiveTab] = useState<'BEFORE' | 'AFTER'>('AFTER');
+  const [viewerData, setViewerData] = useState<{
+    images: string[];
+    title: string;
+    subtitle?: string;
+  } | null>(null);
 
   const beforeData = useMemo(() => resolvePensionData(pension), [pension]);
   const afterData = useMemo(
@@ -200,14 +206,34 @@ export function ProposalPreviewComparisonModal({
         <CardContent className="p-4 sm:p-5 flex flex-col gap-4 text-left">
           <div className="relative aspect-16/9 w-full overflow-hidden rounded-lg bg-muted border border-border/60">
             {data.coverPhoto ? (
-              <Image
-                src={data.coverPhoto}
-                alt={data.title}
-                fill
-                unoptimized
-                sizes="(max-width: 640px) 100vw, 400px"
-                className="object-cover"
-              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (data.coverPhoto) {
+                    setViewerData({
+                      images: [data.coverPhoto],
+                      title: data.title,
+                      subtitle: isAfter ? 'Vista propuesta' : 'Publicación en vivo',
+                    });
+                  }
+                }}
+                className="group relative h-full w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label={`Ver foto de portada de ${data.title} a pantalla completa`}
+              >
+                <Image
+                  src={data.coverPhoto}
+                  alt={data.title}
+                  fill
+                  unoptimized
+                  sizes="(max-width: 640px) 100vw, 400px"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div className="p-2 rounded-full bg-black/60 text-white backdrop-blur-xs">
+                    <Maximize2 className="h-4 w-4" />
+                  </div>
+                </div>
+              </button>
             ) : (
               <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                 <Home className="h-8 w-8" />
@@ -554,6 +580,16 @@ export function ProposalPreviewComparisonModal({
             </div>
           )}
         </DialogFooter>
+
+        {viewerData && (
+          <FullScreenImageViewer
+            isOpen={Boolean(viewerData)}
+            onClose={() => setViewerData(null)}
+            images={viewerData.images}
+            title={viewerData.title}
+            subtitle={viewerData.subtitle}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

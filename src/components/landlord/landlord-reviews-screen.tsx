@@ -19,7 +19,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { isApiSuccess } from '@/lib/api-response';
 import type { PensionDetailDto, PensionItem } from '@/lib/types';
@@ -117,7 +117,11 @@ export function LandlordReviewsScreen({
     initialPension,
   );
   const [activeFilter, setActiveFilter] = useState<ReviewFilterType>('ALL');
-  const [enlargedPhotoUrl, setEnlargedPhotoUrl] = useState<string | null>(null);
+  const [viewerState, setViewerState] = useState<{
+    images: string[];
+    initialIndex: number;
+    title?: string;
+  } | null>(null);
 
   const effectivePensionId = propPensionId || activePension?.id || '';
 
@@ -291,7 +295,7 @@ export function LandlordReviewsScreen({
 
             <div className="flex items-center gap-1.5 rounded-lg bg-muted/30 px-2.5 py-1 border border-border/60">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span className="text-sm font-bold text-foreground">
+              <span className="text-sm font-bold text-foreground tabular-nums">
                 {averageRatingValue > 0 ? averageRatingValue.toFixed(1) : 'Nuevo'}
               </span>
               <span className="text-[10px] text-muted-foreground">/ 5.0</span>
@@ -333,7 +337,7 @@ export function LandlordReviewsScreen({
                     }}
                   />
                 </div>
-                <span className="text-xs font-bold text-foreground w-12 text-right">
+                <span className="text-xs font-bold text-foreground w-12 text-right tabular-nums">
                   {satisfactionMetrics.cleanliness > 0
                     ? `${satisfactionMetrics.cleanliness.toFixed(1)} / 5`
                     : '- / 5'}
@@ -373,7 +377,7 @@ export function LandlordReviewsScreen({
                     }}
                   />
                 </div>
-                <span className="text-xs font-bold text-foreground w-12 text-right">
+                <span className="text-xs font-bold text-foreground w-12 text-right tabular-nums">
                   {satisfactionMetrics.landlord > 0
                     ? `${satisfactionMetrics.landlord.toFixed(1)} / 5`
                     : '- / 5'}
@@ -413,7 +417,7 @@ export function LandlordReviewsScreen({
                     }}
                   />
                 </div>
-                <span className="text-xs font-bold text-foreground w-12 text-right">
+                <span className="text-xs font-bold text-foreground w-12 text-right tabular-nums">
                   {satisfactionMetrics.quietness > 0
                     ? `${satisfactionMetrics.quietness.toFixed(1)} / 5`
                     : '- / 5'}
@@ -453,7 +457,7 @@ export function LandlordReviewsScreen({
                     }}
                   />
                 </div>
-                <span className="text-xs font-bold text-foreground w-12 text-right">
+                <span className="text-xs font-bold text-foreground w-12 text-right tabular-nums">
                   {satisfactionMetrics.wifi > 0
                     ? `${satisfactionMetrics.wifi.toFixed(1)} / 5`
                     : '- / 5'}
@@ -702,7 +706,7 @@ export function LandlordReviewsScreen({
                             />
                           ))}
                         </div>
-                        <span className="text-[10px] text-muted-foreground mt-0.5">
+                        <span className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">
                           {formatDate(review.createdAt)}
                         </span>
                       </div>
@@ -710,7 +714,7 @@ export function LandlordReviewsScreen({
                   </CardHeader>
 
                   <CardContent className="p-4 pt-1 space-y-3">
-                    <p className="text-xs text-foreground/90 leading-relaxed italic">
+                    <p className="text-xs text-foreground/90 leading-relaxed text-pretty max-w-prose">
                       "{review.comment}"
                     </p>
 
@@ -728,7 +732,22 @@ export function LandlordReviewsScreen({
                             <button
                               key={`review-photo-${review.id}-${photoIdx}`}
                               type="button"
-                              onClick={() => setEnlargedPhotoUrl(photoUrl)}
+                              onClick={() => {
+                                const allUrls = review.images
+                                  .map((p) => {
+                                    const raw =
+                                      typeof p === 'string'
+                                        ? p
+                                        : (p as unknown as { url?: string })?.url || '';
+                                    return normalizeImageUrl(raw);
+                                  })
+                                  .filter(Boolean);
+                                setViewerState({
+                                  images: allUrls.length > 0 ? allUrls : [photoUrl],
+                                  initialIndex: photoIdx,
+                                  title: `Foto de reseña • ${review.user?.firstName || 'Estudiante'}`,
+                                });
+                              }}
                               className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-muted hover:opacity-90 transition cursor-pointer select-none"
                             >
                               <Image
@@ -772,27 +791,15 @@ export function LandlordReviewsScreen({
         )}
       </div>
 
-      <Dialog
-        open={Boolean(enlargedPhotoUrl)}
-        onOpenChange={(open) => !open && setEnlargedPhotoUrl(null)}
-      >
-        <DialogContent className="max-w-md p-2 bg-background/95 backdrop-blur-md rounded-2xl overflow-hidden">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Foto de reseña</DialogTitle>
-          </DialogHeader>
-          {enlargedPhotoUrl && (
-            <div className="relative aspect-4/3 w-full overflow-hidden rounded-xl bg-black">
-              <Image
-                src={enlargedPhotoUrl}
-                alt="Foto ampliada de la pensión"
-                fill
-                unoptimized
-                className="object-contain"
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {viewerState && (
+        <FullScreenImageViewer
+          isOpen={Boolean(viewerState)}
+          onClose={() => setViewerState(null)}
+          images={viewerState.images}
+          initialIndex={viewerState.initialIndex}
+          title={viewerState.title}
+        />
+      )}
     </div>
   );
 }

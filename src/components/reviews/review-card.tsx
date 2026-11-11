@@ -1,8 +1,11 @@
 'use client';
 
-import { CheckCircle2, Star, ThumbsUp } from 'lucide-react';
+import { ShieldCheck, Star, ThumbsUp } from 'lucide-react';
+import { motion } from 'motion/react';
 import Image from 'next/image';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import type { PensionReview } from '@/lib/types';
 import { normalizeImageUrl } from '@/lib/utils';
 
@@ -38,7 +41,7 @@ export type ReviewCardProps = {
   isLiked?: boolean;
   likesCount?: number;
   onToggleHelpful?: (reviewId: string) => void;
-  onEnlargePhoto?: (url: string) => void;
+  onEnlargePhoto?: (url: string, index?: number, allPhotos?: string[]) => void;
   className?: string;
   showHelpfulButton?: boolean;
   isVoting?: boolean;
@@ -54,12 +57,21 @@ export function ReviewCard({
   showHelpfulButton = true,
   isVoting = false,
 }: ReviewCardProps) {
+  const [internalViewerIndex, setInternalViewerIndex] = useState<number | null>(null);
   const rating = review.overallRating ?? review.rating ?? 0;
   const photos = review.images?.slice(0, 3) || [];
   const calculatedLikes =
     likesCount !== undefined
       ? likesCount
       : Math.max(0, (review.helpfulCount ?? 0) + (isLiked && !review.userVoted ? 1 : 0));
+
+  const allValidUrls = photos
+    .map((img) => {
+      const rawUrl =
+        typeof img === 'string' ? img : (img as unknown as { url?: string })?.url || '';
+      return normalizeImageUrl(rawUrl);
+    })
+    .filter(Boolean);
 
   return (
     <div
@@ -92,15 +104,15 @@ export function ReviewCard({
               {review.isResidentVerified && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-sage/30 bg-sage/10 text-sage-foreground text-[10px] py-0 px-1.5 font-semibold"
+                  className="gap-1 border-sage/30 bg-sage/10 text-sage-foreground text-xs py-0 px-1.5 font-semibold"
                 >
-                  <CheckCircle2 className="h-3 w-3" />
+                  <ShieldCheck className="h-3 w-3" />
                   <span>Estudiante verificado</span>
                 </Badge>
               )}
             </div>
 
-            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
               <span>{formatStayDuration(review.stayDurationCategory || review.stayDuration)}</span>
               {review.user?.university?.name && (
                 <>
@@ -115,23 +127,25 @@ export function ReviewCard({
         </div>
 
         <div className="flex flex-col items-end">
-          <div className="flex items-center gap-0.5 text-amber-500">
+          <div className="flex items-center gap-0.5 text-warning">
             {[1, 2, 3, 4, 5].map((starVal) => (
               <Star
                 key={`star-${review.id}-${starVal}`}
                 className={`h-3 w-3 ${
-                  starVal <= rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'
+                  starVal <= rating ? 'fill-warning text-warning' : 'text-muted-foreground/30'
                 }`}
               />
             ))}
           </div>
-          <span className="text-[10px] text-muted-foreground mt-0.5">
+          <span className="text-xs text-muted-foreground mt-0.5 tabular-nums">
             {formatDate(review.createdAt)}
           </span>
         </div>
       </div>
 
-      <p className="text-xs text-foreground/90 leading-relaxed">{review.comment}</p>
+      <p className="text-xs text-foreground/90 leading-relaxed text-pretty max-w-prose">
+        {review.comment}
+      </p>
 
       {photos.length > 0 && (
         <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar shrink-0">
@@ -149,7 +163,13 @@ export function ReviewCard({
               <button
                 key={`review-photo-${review.id}-${photoIdx}`}
                 type="button"
-                onClick={() => onEnlargePhoto?.(photoUrl)}
+                onClick={() => {
+                  if (onEnlargePhoto) {
+                    onEnlargePhoto(photoUrl, photoIdx, allValidUrls);
+                  } else {
+                    setInternalViewerIndex(photoIdx);
+                  }
+                }}
                 className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-muted hover:opacity-90 transition cursor-pointer"
               >
                 <Image
@@ -168,8 +188,9 @@ export function ReviewCard({
 
       <div className="flex items-center justify-between pt-2 border-t border-border/60">
         {showHelpfulButton ? (
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.92 }}
             disabled={isVoting}
             onClick={() => onToggleHelpful?.(review.id)}
             aria-pressed={isLiked}
@@ -181,17 +202,30 @@ export function ReviewCard({
             }`}
           >
             <ThumbsUp className={`h-3 w-3 ${isLiked ? 'fill-primary' : ''}`} />
-            <span>Útil ({calculatedLikes})</span>
-          </button>
+            <span>
+              Útil (<span className="tabular-nums">{calculatedLikes}</span>)
+            </span>
+          </motion.button>
         ) : (
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <ThumbsUp className="h-3 w-3" />
             <span>{calculatedLikes} votos útiles</span>
           </div>
         )}
 
-        <span className="text-[10px] text-muted-foreground">Reseña verificada por moderación</span>
+        <span className="text-xs text-muted-foreground">Reseña verificada por moderación</span>
       </div>
+
+      {internalViewerIndex !== null && (
+        <FullScreenImageViewer
+          isOpen={internalViewerIndex !== null}
+          onClose={() => setInternalViewerIndex(null)}
+          images={allValidUrls}
+          initialIndex={internalViewerIndex}
+          title={`Foto de reseña • ${review.user?.firstName || 'Estudiante'}`}
+          subtitle={review.comment}
+        />
+      )}
     </div>
   );
 }

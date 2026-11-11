@@ -1,7 +1,6 @@
 'use client';
 
-import { Award, Camera, ChevronLeft, Star, X } from 'lucide-react';
-import Image from 'next/image';
+import { Camera, ChevronLeft, Star } from 'lucide-react';
 import { Suspense, useMemo, useState } from 'react';
 import { EmailCheckStep } from '@/components/auth/email-check-step';
 import {
@@ -11,6 +10,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { ReviewsSkeleton } from '@/components/ui/skeletons/reviews-skeleton';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { useAuth } from '@/lib/auth-context';
@@ -36,7 +36,11 @@ export function PensionReviewsModal({
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('ALL');
   const [submittingVoteId, setSubmittingVoteId] = useState<string | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [enlargedPhoto, setEnlargedPhoto] = useState<string | null>(null);
+  const [viewerState, setViewerState] = useState<{
+    images: string[];
+    initialIndex: number;
+    title?: string;
+  } | null>(null);
 
   const { voteHelpful, reviews: hookReviews } = usePensionReviews(isOpen ? pension.id : null);
   const activeReviews = hookReviews.length > 0 ? hookReviews : reviews;
@@ -139,16 +143,14 @@ export function PensionReviewsModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 text-foreground transition cursor-pointer"
+                className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 text-foreground transition cursor-pointer"
                 aria-label="Volver"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <div>
                 <h3 className="text-base font-bold text-foreground">Reseñas de la pensión</h3>
-                <p className="text-[11px] text-muted-foreground truncate max-w-sm">
-                  {pension.title}
-                </p>
+                <p className="text-xs text-muted-foreground truncate max-w-sm">{pension.title}</p>
               </div>
             </div>
           </div>
@@ -158,44 +160,37 @@ export function PensionReviewsModal({
             <DrawerDescription>Comentarios y calificaciones de estudiantes</DrawerDescription>
           </DrawerHeader>
 
-          <div className="flex-1 overflow-y-auto scrollbar-subtle px-5 py-4 flex flex-col gap-6">
+          <div className="flex-1 overflow-y-auto scrollbar-subtle px-5 py-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] flex flex-col gap-6">
             <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 p-5 text-center">
               <div className="flex items-center gap-3">
-                <span className="text-4xl font-black tracking-tight text-foreground">
+                <span className="text-4xl font-black tracking-tight text-foreground tabular-nums">
                   {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
                 </span>
                 <div className="flex flex-col items-start">
-                  <div className="flex items-center gap-0.5 text-amber-500">
+                  <div className="flex items-center gap-0.5 text-warning">
                     {[1, 2, 3, 4, 5].map((starVal) => (
                       <Star
                         key={`star-${starVal}`}
                         className={`h-4 w-4 ${
                           pension.ratingAverage >= starVal
-                            ? 'fill-amber-400 text-amber-400'
+                            ? 'fill-warning text-warning'
                             : 'text-muted-foreground/30'
                         }`}
                       />
                     ))}
                   </div>
-                  <span className="text-xs font-semibold text-muted-foreground mt-0.5">
+                  <span className="text-xs font-semibold text-muted-foreground mt-0.5 tabular-nums">
                     {reviews.length > 0
                       ? `${reviews.length} ${reviews.length === 1 ? 'reseña verificada' : 'reseñas verificadas'}`
                       : 'Sin reseñas registradas'}
                   </span>
                 </div>
               </div>
-
-              {pension.ratingAverage >= 4.5 && reviews.length > 0 && (
-                <div className="mt-3.5 flex items-center gap-1.5 rounded-full bg-background px-3 py-1 border border-border text-xs font-semibold text-foreground shadow-xs">
-                  <Award className="h-3.5 w-3.5 text-primary" />
-                  <span>Favorito de estudiantes universitarios</span>
-                </div>
-              )}
             </div>
 
             {reviews.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
-                <Star className="h-8 w-8 text-muted-foreground/30 mb-2" />
+              <div className="rounded-2xl border border-dashed border-border px-8 pt-10 pb-14 -mt-2 text-center text-muted-foreground flex flex-col items-center justify-center">
+                <Star className="h-8 w-8 text-muted-foreground/30 mb-2 -translate-y-0.5" />
                 <p className="text-sm font-semibold text-foreground">
                   Esta pensión aún no tiene reseñas
                 </p>
@@ -218,7 +213,7 @@ export function PensionReviewsModal({
 
                       return (
                         <div key={`breakdown-${stars}`} className="flex items-center gap-2 text-xs">
-                          <span className="w-5 text-right font-semibold text-muted-foreground">
+                          <span className="w-5 text-right font-semibold text-muted-foreground tabular-nums">
                             {stars}
                           </span>
                           <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
@@ -228,7 +223,7 @@ export function PensionReviewsModal({
                               style={{ width: `${percent}%` }}
                             />
                           </div>
-                          <span className="w-8 text-right text-[11px] text-muted-foreground">
+                          <span className="w-8 text-right text-[11px] text-muted-foreground tabular-nums">
                             {percent}%
                           </span>
                         </div>
@@ -241,7 +236,7 @@ export function PensionReviewsModal({
                   <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-foreground">Limpieza</span>
-                      <span className="text-xs font-bold text-primary">
+                      <span className="text-xs font-bold text-primary tabular-nums">
                         {categoryAverages.cleanliness}
                       </span>
                     </div>
@@ -251,7 +246,7 @@ export function PensionReviewsModal({
                   <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-foreground">Anfitrión</span>
-                      <span className="text-xs font-bold text-primary">
+                      <span className="text-xs font-bold text-primary tabular-nums">
                         {categoryAverages.landlord}
                       </span>
                     </div>
@@ -263,7 +258,7 @@ export function PensionReviewsModal({
                       <span className="text-xs font-semibold text-foreground">
                         Silencio / Estudio
                       </span>
-                      <span className="text-xs font-bold text-primary">
+                      <span className="text-xs font-bold text-primary tabular-nums">
                         {categoryAverages.quietness}
                       </span>
                     </div>
@@ -275,7 +270,7 @@ export function PensionReviewsModal({
                       <span className="text-xs font-semibold text-foreground">
                         Conectividad Wi-Fi
                       </span>
-                      <span className="text-xs font-bold text-primary">
+                      <span className="text-xs font-bold text-primary tabular-nums">
                         {categoryAverages.wifi}
                       </span>
                     </div>
@@ -350,7 +345,13 @@ export function PensionReviewsModal({
                   <ReviewFeedList
                     filteredReviews={filteredReviews}
                     toggleHelpful={toggleHelpful}
-                    setEnlargedPhoto={setEnlargedPhoto}
+                    onEnlargePhoto={(url, index = 0, allPhotos) => {
+                      setViewerState({
+                        images: allPhotos && allPhotos.length > 0 ? allPhotos : [url],
+                        initialIndex: index,
+                        title: `Fotos de reseña • ${pension.title}`,
+                      });
+                    }}
                     submittingVoteId={submittingVoteId}
                   />
                 </Suspense>
@@ -358,36 +359,14 @@ export function PensionReviewsModal({
             )}
           </div>
 
-          {enlargedPhoto && (
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-label="Foto ampliada"
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
-            >
-              <button
-                type="button"
-                aria-label="Cerrar vista previa"
-                onClick={() => setEnlargedPhoto(null)}
-                className="absolute inset-0 h-full w-full cursor-default"
-              />
-              <div className="relative max-h-[85vh] max-w-[90vw] aspect-square w-[420px] overflow-hidden rounded-2xl bg-black z-10">
-                <Image
-                  src={enlargedPhoto}
-                  alt="Foto ampliada"
-                  fill
-                  unoptimized
-                  className="object-contain"
-                />
-                <button
-                  type="button"
-                  onClick={() => setEnlargedPhoto(null)}
-                  className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black cursor-pointer"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
+          {viewerState && (
+            <FullScreenImageViewer
+              isOpen={Boolean(viewerState)}
+              onClose={() => setViewerState(null)}
+              images={viewerState.images}
+              initialIndex={viewerState.initialIndex}
+              title={viewerState.title}
+            />
           )}
         </DrawerContent>
       </Drawer>
@@ -415,14 +394,14 @@ export function PensionReviewsModal({
 type ReviewFeedListProps = {
   filteredReviews: PensionReview[];
   toggleHelpful: (id: string) => void;
-  setEnlargedPhoto: (url: string | null) => void;
+  onEnlargePhoto: (url: string, index?: number, allPhotos?: string[]) => void;
   submittingVoteId: string | null;
 };
 
 function ReviewFeedList({
   filteredReviews,
   toggleHelpful,
-  setEnlargedPhoto,
+  onEnlargePhoto,
   submittingVoteId,
 }: ReviewFeedListProps) {
   if (filteredReviews.length === 0) {
@@ -443,7 +422,7 @@ function ReviewFeedList({
             isLiked={Boolean(review.userVoted)}
             likesCount={review.helpfulCount ?? 0}
             onToggleHelpful={toggleHelpful}
-            onEnlargePhoto={setEnlargedPhoto}
+            onEnlargePhoto={onEnlargePhoto}
             isVoting={submittingVoteId === review.id}
           />
         );

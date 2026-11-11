@@ -136,7 +136,11 @@ export function InfinitePensionList({
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-5 md:px-0">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="flex flex-col gap-2.5 animate-pulse">
+          <div
+            key={i}
+            style={{ animationDelay: `${(i - 1) * 80}ms` }}
+            className="flex flex-col gap-2.5 animate-pulse"
+          >
             <div className="aspect-[16/10] w-full rounded-2xl bg-muted" />
             <div className="h-5 w-3/4 rounded-md bg-muted" />
             <div className="h-4 w-1/2 rounded-md bg-muted" />
@@ -187,7 +191,7 @@ export function InfinitePensionList({
       <div ref={sentinelRef} className="col-span-full h-4 w-full" />
 
       {isLoadingMore && (
-        <div className="col-span-full flex items-center justify-center py-4 gap-2 text-xs font-medium text-muted-foreground">
+        <div className="col-span-full flex flex-col items-center justify-center py-4 gap-2 text-xs font-medium text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin text-primary" />
           <span>Cargando más alojamientos...</span>
         </div>

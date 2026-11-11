@@ -13,6 +13,7 @@ import {
   Image as ImageIcon,
   Loader2,
   MapPin,
+  Search,
   ShieldCheck,
   Upload,
   User,
@@ -23,11 +24,12 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import type React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { PensionLocationPickerMap } from '@/components/landlord/pension-location-picker-map';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
 import { isSubstantivePensionDraft } from '@/lib/draft-validators';
@@ -202,10 +204,23 @@ export function PensionEditorDrawer({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState<boolean>(false);
   const [isForwardGeocoding, setIsForwardGeocoding] = useState<boolean>(false);
   const [cities, setCities] = useState<CityInfo[]>([]);
+  const [citySearchQuery, setCitySearchQuery] = useState<string>('');
+
+  const allDrawerImages = useMemo(
+    () => [...form.images, ...newImagePreviews],
+    [form.images, newImagePreviews],
+  );
+
+  const filteredCities = useMemo(() => {
+    if (!citySearchQuery.trim()) return cities;
+    const q = citySearchQuery.toLowerCase();
+    return cities.filter((c) => c.name.toLowerCase().includes(q));
+  }, [cities, citySearchQuery]);
 
   const previewsRef = useRef<string[]>([]);
   previewsRef.current = newImagePreviews;
@@ -721,7 +736,7 @@ export function PensionEditorDrawer({
           <button
             type="button"
             onClick={handleClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted text-muted-foreground transition cursor-pointer"
+            className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full hover:bg-muted text-muted-foreground transition cursor-pointer"
             aria-label="Cerrar modal"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -729,7 +744,7 @@ export function PensionEditorDrawer({
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Nueva Pensión
           </span>
-          <div className="w-9" />
+          <div className="w-11" />
         </div>
 
         <form
@@ -739,13 +754,13 @@ export function PensionEditorDrawer({
         >
           <div className="overflow-y-auto flex-1 px-4 py-4 space-y-6">
             <DrawerHeader className="p-0 text-center">
-              <DrawerTitle className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight text-center">
+              <DrawerTitle className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight text-center text-balance">
                 Registra tu Pensión Universitaria
               </DrawerTitle>
             </DrawerHeader>
 
             {isBannerVisible && (
-              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs">
+              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs transition-all duration-200 overflow-hidden">
                 <span className="text-foreground">Tienes un borrador previo no publicado.</span>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
@@ -843,24 +858,31 @@ export function PensionEditorDrawer({
                     key={imgUrl}
                     className="group relative aspect-square rounded-xl overflow-hidden bg-muted border border-border/70 shadow-2xs"
                   >
-                    <Image
-                      src={imgUrl}
-                      alt={`Foto pensión ${idx + 1}`}
-                      fill
-                      unoptimized
-                      sizes="120px"
-                      className="object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setViewerIndex(idx)}
+                      className="relative h-full w-full cursor-pointer focus:outline-none"
+                      aria-label={`Ver foto ${idx + 1} a pantalla completa`}
+                    >
+                      <Image
+                        src={imgUrl}
+                        alt={`Foto pensión ${idx + 1}`}
+                        fill
+                        unoptimized
+                        sizes="120px"
+                        className="object-cover transition group-hover:scale-105"
+                      />
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveExistingImage(idx)}
-                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs"
+                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs z-10"
                       aria-label="Eliminar foto"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
                     {idx === 0 && (
-                      <span className="absolute bottom-1 left-1 rounded-md bg-primary text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold shadow-xs">
+                      <span className="absolute bottom-1 left-1 rounded-md bg-primary text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold shadow-xs pointer-events-none z-10">
                         Principal
                       </span>
                     )}
@@ -872,23 +894,30 @@ export function PensionEditorDrawer({
                     key={previewUrl}
                     className="group relative aspect-square rounded-xl overflow-hidden bg-muted border border-primary/40 shadow-2xs"
                   >
-                    <Image
-                      src={previewUrl}
-                      alt={`Nueva foto pensión ${idx + 1}`}
-                      fill
-                      unoptimized
-                      sizes="120px"
-                      className="object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setViewerIndex(form.images.length + idx)}
+                      className="relative h-full w-full cursor-pointer focus:outline-none"
+                      aria-label={`Ver nueva foto ${idx + 1} a pantalla completa`}
+                    >
+                      <Image
+                        src={previewUrl}
+                        alt={`Nueva foto pensión ${idx + 1}`}
+                        fill
+                        unoptimized
+                        sizes="120px"
+                        className="object-cover transition group-hover:scale-105"
+                      />
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveNewImage(idx)}
-                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs"
+                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs z-10"
                       aria-label="Eliminar nueva foto"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
-                    <span className="absolute bottom-1 left-1 rounded-md bg-primary/90 text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold shadow-xs">
+                    <span className="absolute bottom-1 left-1 rounded-md bg-primary/90 text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold shadow-xs pointer-events-none z-10">
                       {form.images.length === 0 && idx === 0 ? 'Principal' : 'Nueva'}
                     </span>
                   </div>
@@ -922,13 +951,43 @@ export function PensionEditorDrawer({
 
               <div className="space-y-2">
                 <label
-                  htmlFor="city-select"
+                  htmlFor="city-combobox-input"
                   className="block text-xs font-semibold text-foreground"
                 >
                   Ciudad <span className="text-destructive">*</span>
                 </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {cities.map((c) => {
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <input
+                    id="city-combobox-input"
+                    type="text"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded={true}
+                    aria-controls="city-combobox-options"
+                    value={citySearchQuery}
+                    onChange={(e) => setCitySearchQuery(e.target.value)}
+                    placeholder="Buscar o filtrar ciudad..."
+                    className="h-9 w-full rounded-lg border border-border bg-background pl-8.5 pr-8 text-xs text-foreground placeholder:text-muted-foreground/80 focus:border-primary focus:outline-none transition-colors"
+                  />
+                  {citySearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setCitySearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                      aria-label="Limpiar búsqueda de ciudad"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                <div
+                  id="city-combobox-options"
+                  role="listbox"
+                  className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1"
+                >
+                  {filteredCities.map((c) => {
                     const isSelected = form.city.toLowerCase() === c.name.toLowerCase();
                     return (
                       <button
@@ -946,6 +1005,11 @@ export function PensionEditorDrawer({
                       </button>
                     );
                   })}
+                  {filteredCities.length === 0 && (
+                    <span className="text-xs text-muted-foreground py-1">
+                      No se encontraron ciudades que coincidan.
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -1248,7 +1312,7 @@ export function PensionEditorDrawer({
                             : 'border-muted-foreground/40 bg-transparent',
                         )}
                       >
-                        {isChecked && <Check className="h-3 w-3 stroke-[3]" />}
+                        {isChecked && <Check className="h-3 w-3 stroke-2" />}
                       </div>
                     </button>
                   );
@@ -1350,7 +1414,7 @@ export function PensionEditorDrawer({
             </div>
           </div>
 
-          <div className="p-4 border-t border-border/80 bg-background/95 backdrop-blur-md flex items-center justify-end gap-3 shrink-0">
+          <div className="px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1rem)] border-t border-border/80 bg-background/95 backdrop-blur-md flex items-center justify-end gap-3 shrink-0">
             <Button
               type="button"
               variant="outline"
@@ -1379,6 +1443,17 @@ export function PensionEditorDrawer({
             </Button>
           </div>
         </form>
+
+        {viewerIndex !== null && (
+          <FullScreenImageViewer
+            isOpen={viewerIndex !== null}
+            onClose={() => setViewerIndex(null)}
+            images={allDrawerImages}
+            initialIndex={viewerIndex}
+            title={form.title || 'Fotos de la pensión'}
+            subtitle={form.city ? `${form.neighborhood}, ${form.city}` : undefined}
+          />
+        )}
       </DrawerContent>
     </Drawer>
   );

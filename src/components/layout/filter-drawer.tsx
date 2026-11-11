@@ -1,6 +1,17 @@
 'use client';
 
-import { Bath, ChefHat, Home, Shirt, User, Users, Utensils, Wifi, X } from 'lucide-react';
+import {
+  Bath,
+  ChefHat,
+  ChevronDown,
+  Home,
+  Shirt,
+  User,
+  Users,
+  Utensils,
+  Wifi,
+  X,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { PriceHistogramRangeSlider } from '@/components/search/price-histogram-range-slider';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +43,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
     laundry: false,
     wifi: false,
   });
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState<boolean>(false);
 
   useEffect(() => {
     setLocalFilters(filters);
@@ -138,7 +150,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
               {activeFilterCount > 0 && (
                 <Badge
                   variant="secondary"
-                  className="h-5 px-1.5 text-xs font-semibold rounded-full bg-primary/10 text-primary border-primary/20"
+                  className="h-5 px-1.5 text-xs font-semibold rounded-full bg-primary/10 text-primary border-primary/20 tabular-nums"
                 >
                   {activeFilterCount}
                 </Badge>
@@ -314,98 +326,142 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 pt-6 pb-2">
-            <h3 className="text-base font-semibold text-foreground">
-              Reglas de Convivencia y Género
-            </h3>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { id: 'MIXED' as const, label: 'Mixto' },
-                { id: 'FEMALE_ONLY' as const, label: 'Solo Mujeres' },
-                { id: 'MALE_ONLY' as const, label: 'Solo Hombres' },
-              ].map((opt) => {
-                const isSelected = localFilters.genderPreference === opt.id;
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() =>
-                      setLocalFilters((prev) => ({
-                        ...prev,
-                        genderPreference: prev.genderPreference === opt.id ? 'ALL' : opt.id,
-                      }))
-                    }
-                    className={`flex items-center justify-center p-3 min-h-[48px] rounded-xl border text-xs font-semibold transition active:scale-95 ${
-                      isSelected
-                        ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary'
-                        : 'border-border bg-card text-foreground hover:bg-muted hover:border-muted-foreground/30'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          {(() => {
+            const hasAdvancedActive =
+              Boolean(localFilters.genderPreference && localFilters.genderPreference !== 'ALL') ||
+              Boolean(localFilters.ratingTier);
+            const isVisible = showAdvancedFilters || hasAdvancedActive;
 
-          <div className="flex flex-col gap-3 pt-6 pb-2">
-            <h3 className="text-base font-semibold text-foreground">
-              Calificación de la Comunidad
-            </h3>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                {
-                  id: 'high' as const,
-                  label: 'Favoritas de la comunidad',
-                  subtitle: 'Top valoradas',
-                  colorClass: 'text-[#2d5e49] dark:text-[#72bca0]',
-                  activeBorderClass:
-                    'border-[#2d5e49] bg-[#2d5e49]/15 text-[#2d5e49] dark:text-[#72bca0] ring-1 ring-[#2d5e49]',
-                },
-                {
-                  id: 'medium' as const,
-                  label: 'Experiencia positiva',
-                  subtitle: 'Buenas opiniones',
-                  colorClass: 'text-[#945d0c] dark:text-[#e09d32]',
-                  activeBorderClass:
-                    'border-[#a26510] bg-[#a26510]/15 text-[#945d0c] dark:text-[#e09d32] ring-1 ring-[#a26510]',
-                },
-                {
-                  id: 'low' as const,
-                  label: 'Otras alternativas',
-                  subtitle: 'Nuevas o por evaluar',
-                  colorClass: 'text-[#57534e] dark:text-[#a8a29e]',
-                  activeBorderClass:
-                    'border-[#78716c] bg-[#78716c]/15 text-[#57534e] dark:text-[#a8a29e] ring-1 ring-[#78716c]',
-                },
-              ].map((opt) => {
-                const isSelected = localFilters.ratingTier === opt.id;
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() =>
-                      setLocalFilters((prev) => ({
-                        ...prev,
-                        ratingTier: prev.ratingTier === opt.id ? undefined : opt.id,
-                      }))
-                    }
-                    className={`flex flex-col items-center justify-center p-3 min-h-[48px] rounded-xl border text-xs font-semibold text-center transition active:scale-95 ${
-                      isSelected
-                        ? opt.activeBorderClass
-                        : `border-border bg-card ${opt.colorClass} hover:bg-muted hover:border-muted-foreground/30`
+            return (
+              <div className="flex flex-col pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedFilters((prev) => !prev)}
+                  className="flex items-center justify-between w-full py-3 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <span className="flex items-center gap-2">
+                    <span>Filtros adicionales (Normas y Calificación)</span>
+                    {hasAdvancedActive && (
+                      <Badge
+                        variant="secondary"
+                        className="h-4 px-1.5 text-[10px] bg-primary/10 text-primary border-primary/20"
+                      >
+                        Activos
+                      </Badge>
+                    )}
+                  </span>
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform duration-200 ${
+                      isVisible ? 'rotate-180' : ''
                     }`}
-                  >
-                    <span className="font-bold text-xs sm:text-sm leading-tight">{opt.label}</span>
-                    <span className="text-[10px] text-muted-foreground mt-0.5">{opt.subtitle}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                  />
+                </button>
+
+                <div
+                  className={
+                    isVisible ? 'flex flex-col gap-6 divide-y divide-border pt-2' : 'hidden'
+                  }
+                >
+                  <div className="flex flex-col gap-3 pt-4 pb-2">
+                    <h3 className="text-base font-semibold text-foreground">
+                      Reglas de Convivencia y Género
+                    </h3>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { id: 'MIXED' as const, label: 'Mixto' },
+                        { id: 'FEMALE_ONLY' as const, label: 'Solo Mujeres' },
+                        { id: 'MALE_ONLY' as const, label: 'Solo Hombres' },
+                      ].map((opt) => {
+                        const isSelected = localFilters.genderPreference === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() =>
+                              setLocalFilters((prev) => ({
+                                ...prev,
+                                genderPreference: prev.genderPreference === opt.id ? 'ALL' : opt.id,
+                              }))
+                            }
+                            className={`flex items-center justify-center p-3 min-h-[48px] rounded-xl border text-xs font-semibold transition active:scale-95 ${
+                              isSelected
+                                ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary'
+                                : 'border-border bg-card text-foreground hover:bg-muted hover:border-muted-foreground/30'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3 pt-6 pb-2">
+                    <h3 className="text-base font-semibold text-foreground">
+                      Calificación de la Comunidad
+                    </h3>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        {
+                          id: 'high' as const,
+                          label: 'Favoritas de la comunidad',
+                          subtitle: 'Top valoradas',
+                          colorClass: 'text-[#2d5e49] dark:text-[#72bca0]',
+                          activeBorderClass:
+                            'border-[#2d5e49] bg-[#2d5e49]/15 text-[#2d5e49] dark:text-[#72bca0] ring-1 ring-[#2d5e49]',
+                        },
+                        {
+                          id: 'medium' as const,
+                          label: 'Experiencia positiva',
+                          subtitle: 'Buenas opiniones',
+                          colorClass: 'text-[#945d0c] dark:text-[#e09d32]',
+                          activeBorderClass:
+                            'border-[#a26510] bg-[#a26510]/15 text-[#945d0c] dark:text-[#e09d32] ring-1 ring-[#a26510]',
+                        },
+                        {
+                          id: 'low' as const,
+                          label: 'Otras alternativas',
+                          subtitle: 'Nuevas o por evaluar',
+                          colorClass: 'text-[#57534e] dark:text-[#a8a29e]',
+                          activeBorderClass:
+                            'border-[#78716c] bg-[#78716c]/15 text-[#57534e] dark:text-[#a8a29e] ring-1 ring-[#78716c]',
+                        },
+                      ].map((opt) => {
+                        const isSelected = localFilters.ratingTier === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() =>
+                              setLocalFilters((prev) => ({
+                                ...prev,
+                                ratingTier: prev.ratingTier === opt.id ? undefined : opt.id,
+                              }))
+                            }
+                            className={`flex flex-col items-center justify-center p-3 min-h-[48px] rounded-xl border text-xs font-semibold text-center transition active:scale-95 ${
+                              isSelected
+                                ? opt.activeBorderClass
+                                : `border-border bg-card ${opt.colorClass} hover:bg-muted hover:border-muted-foreground/30`
+                            }`}
+                          >
+                            <span className="font-bold text-xs sm:text-sm leading-tight">
+                              {opt.label}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground mt-0.5">
+                              {opt.subtitle}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
-        <div className="sticky bottom-0 z-20 border-t border-border bg-card p-4 flex items-center justify-between gap-4">
+        <div className="sticky bottom-0 z-20 border-t border-border bg-card px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1rem)] flex items-center justify-between gap-4">
           <Button
             variant="ghost"
             onClick={handleReset}

@@ -48,20 +48,23 @@ export function RoomOccupancyBar({
         </span>
 
         {totalRooms === 0 ? (
-          <Badge variant="outline" className="text-[10px] text-muted-foreground py-0 font-normal">
+          <Badge
+            variant="outline"
+            className="text-[10px] text-muted-foreground py-0 font-normal tabular-nums"
+          >
             0 habitaciones
           </Badge>
         ) : isFullyOccupied ? (
           <Badge
             variant="outline"
-            className="border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-semibold py-0 shrink-0"
+            className="border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-semibold py-0 shrink-0 tabular-nums"
           >
             100% Ocupada
           </Badge>
         ) : (
           <Badge
             variant="outline"
-            className="text-[10px] font-semibold py-0 shrink-0 text-sage-foreground bg-sage/10 border-sage/30"
+            className="text-[10px] font-semibold py-0 shrink-0 text-sage-foreground bg-sage/10 border-sage/30 tabular-nums"
           >
             {availableRooms} {availableRooms === 1 ? 'habitación libre' : 'habitaciones libres'}
           </Badge>
@@ -100,7 +103,7 @@ export function RoomOccupancyBar({
 
       {totalRooms > 0 && (
         <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5 font-normal">
-          <span>{totalRooms} en total</span>
+          <span className="tabular-nums">{totalRooms} en total</span>
         </div>
       )}
     </div>

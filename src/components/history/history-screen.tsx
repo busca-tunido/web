@@ -1,11 +1,12 @@
 'use client';
 
-import { Building2, Calendar, CheckCircle2, History, MessageSquare, Star } from 'lucide-react';
+import { Building2, Calendar, History, Maximize2, MessageSquare, Star } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { HistoryGuestIncentive } from '@/components/history/history-guest-incentive';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { HistoryCardsSkeleton } from '@/components/ui/skeletons/history-skeleton';
 import { useNavigation } from '@/contexts/navigation-context';
 import { useStayHistory } from '@/hooks/use-stay-history';
@@ -37,27 +38,20 @@ function HistoryContent({ onExplore }: HistoryScreenProps) {
   const [selectedReviewStay, setSelectedReviewStay] = useState<StayHistoryItem | null>(null);
 
   return (
-    <div id="history-screen-view" className="flex flex-col gap-5 px-4 md:px-0 pb-20 md:pb-12 pt-2">
+    <div
+      id="history-screen-view"
+      className="flex flex-col gap-5 px-4 md:px-0 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-12 pt-2"
+    >
       <div>
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold text-foreground">Donde me he alojado</h2>
+          <h2 className="text-xl font-bold tracking-tight text-foreground text-balance">
+            Historial de Estadías Universitarias
+          </h2>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground mt-1 text-pretty">
           Historial de residencias universitarias verificadas y calificaciones de convivencia
         </p>
-      </div>
-
-      <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3.5 shadow-sm">
-        <div className="flex items-center gap-2.5">
-          <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-          <div>
-            <h4 className="text-xs font-bold text-primary">Estudiante Verificado</h4>
-            <p className="text-[11px] text-foreground/80">
-              Cumplimiento impecable en pagos y convivencia en tus últimas estadías
-            </p>
-          </div>
-        </div>
       </div>
 
       <HistoryList
@@ -99,6 +93,12 @@ function HistoryList({
   onSelectReviewStay,
   formatDateRange,
 }: HistoryListProps) {
+  const [viewerData, setViewerData] = useState<{
+    url: string;
+    title: string;
+    subtitle?: string;
+  } | null>(null);
+
   if (isLoading) {
     return <HistoryCardsSkeleton count={expectedCount} />;
   }
@@ -140,13 +140,31 @@ function HistoryList({
                   className="object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 via-card to-secondary/30 text-muted-foreground">
-                  <Building2 className="h-10 w-10 text-primary/40" />
+                <div className="flex h-full w-full items-center justify-center bg-muted/40 text-muted-foreground">
+                  <Building2 className="h-10 w-10 text-muted-foreground/40" />
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
+
+              {hasImg && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setViewerData({
+                      url: stay.imageUrl as string,
+                      title: stay.pensionTitle,
+                      subtitle: `${stay.roomTitle} • ${stay.pensionCity}`,
+                    })
+                  }
+                  className="absolute top-2.5 right-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md opacity-90 hover:opacity-100 transition-opacity hover:bg-black/80 active:scale-95 cursor-pointer shadow-sm"
+                  aria-label={`Ver foto de ${stay.pensionTitle} a pantalla completa`}
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </button>
+              )}
+
               <div className="absolute bottom-2.5 left-2.5">
-                <Badge className="bg-background/80 text-foreground border border-border text-[10px] backdrop-blur-md">
+                <Badge className="bg-background/80 text-foreground border border-border text-xs backdrop-blur-md">
                   {stay.pensionCity}
                 </Badge>
               </div>
@@ -162,7 +180,7 @@ function HistoryList({
                   <span className="text-xs font-bold text-primary">
                     ${stay.monthlyPaidClp.toLocaleString('es-CL')}
                   </span>
-                  <span className="block text-[10px] text-muted-foreground">CLP/mes</span>
+                  <span className="block text-xs text-muted-foreground">CLP/mes</span>
                 </div>
               </div>
 
@@ -196,6 +214,16 @@ function HistoryList({
           </div>
         );
       })}
+
+      {viewerData && (
+        <FullScreenImageViewer
+          isOpen={Boolean(viewerData)}
+          onClose={() => setViewerData(null)}
+          images={[viewerData.url]}
+          title={viewerData.title}
+          subtitle={viewerData.subtitle}
+        />
+      )}
     </div>
   );
 }

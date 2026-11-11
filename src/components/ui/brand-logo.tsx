@@ -42,7 +42,12 @@ export function BrandLogo({
           loading="eager"
           suppressHydrationWarning
         />
-        <span className={cn('font-black tracking-tight text-foreground leading-none', textClasses)}>
+        <span
+          className={cn(
+            "font-black tracking-tight text-foreground leading-none [font-feature-settings:'kern'_1]",
+            textClasses,
+          )}
+        >
           BuscaTuNido
         </span>
       </div>

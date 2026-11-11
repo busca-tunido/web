@@ -53,7 +53,7 @@ export function LandlordMobileHeader({
               {displayTitle}
             </span>
             {displayCity && (
-              <span className="truncate text-[10px] font-medium text-muted-foreground">
+              <span className="truncate text-xs font-medium text-muted-foreground">
                 {displayCity}
               </span>
             )}
@@ -65,15 +65,13 @@ export function LandlordMobileHeader({
             <span
               className={cn(
                 'h-2 w-2 rounded-full transition-colors',
-                isActive
-                  ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
-                  : 'bg-muted-foreground/40',
+                isActive ? 'bg-success' : 'bg-muted-foreground/40',
               )}
             />
             <span
               className={cn(
-                'text-[10px] font-semibold leading-none',
-                isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground',
+                'text-xs font-semibold leading-none',
+                isActive ? 'text-success' : 'text-muted-foreground',
               )}
             >
               {isActive ? 'Activa' : 'Pausada'}

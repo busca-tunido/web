@@ -1,11 +1,12 @@
 'use client';
 
-import { Building2, Heart, ShieldCheck, Star } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Building2, Heart, Maximize2, ShieldCheck, Star } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { FavoritesGuestIncentive } from '@/components/favorites/favorites-guest-incentive';
 import { Button } from '@/components/ui/button';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { PensionCardSkeleton } from '@/components/ui/skeletons/pension-card-skeleton';
 import { useNavigation } from '@/contexts/navigation-context';
 import { useStudentFavorites } from '@/hooks/use-student-favorites';
@@ -72,12 +73,12 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
   return (
     <div
       id="favorites-screen-view"
-      className="flex flex-col gap-6 px-4 md:px-0 pb-20 md:pb-12 pt-2"
+      className="flex flex-col gap-6 px-4 md:px-0 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-12 pt-2"
     >
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-foreground">Tus Favoritos</h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground tabular-nums">
             {isLoadingFavorites && remainingCount > 0
               ? knownCount > 0
                 ? `Cargando ${knownCount} ${knownCount === 1 ? 'alojamiento guardado' : 'alojamientos guardados'}...`
@@ -100,7 +101,7 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
       />
 
       {errorMessage && (
-        <div className="fixed bottom-20 left-4 right-4 z-50 flex items-center justify-between rounded-xl bg-destructive text-destructive-foreground px-4 py-3 text-xs font-semibold shadow-lg">
+        <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:bottom-12 left-4 right-4 z-50 flex items-center justify-between rounded-xl bg-destructive text-destructive-foreground px-4 py-3 text-xs font-semibold shadow-lg">
           <span>{errorMessage}</span>
           <button
             type="button"
@@ -130,14 +131,21 @@ function FavoritesGrid({
   onExplore,
   toggleFavorite,
 }: FavoritesGridProps) {
+  const [viewerData, setViewerData] = useState<{
+    images: string[];
+    title: string;
+    subtitle?: string;
+  } | null>(null);
   if (savedPensions.length === 0 && skeletonCount === 0) {
     return (
-      <div className="my-12 flex flex-col items-center justify-center rounded-2xl border border-border bg-card/60 p-8 text-center shadow-sm">
+      <div className="my-12 -mt-4 flex flex-col items-center justify-center rounded-2xl border border-border bg-card/60 px-8 pt-8 pb-12 text-center shadow-sm">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-3">
-          <Heart className="h-6 w-6" />
+          <Heart className="h-6 w-6 -translate-y-0.5" />
         </div>
-        <h3 className="text-sm font-semibold text-foreground">No tienes favoritos guardados</h3>
-        <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+        <h3 className="text-sm font-semibold text-foreground text-balance">
+          Aún no has guardado alojamientos favoritos
+        </h3>
+        <p className="text-xs text-muted-foreground mt-1 max-w-xs text-pretty">
           Explora las pensiones universitarias y presiona el corazón para guardar las opciones que
           te interesen.
         </p>
@@ -153,87 +161,126 @@ function FavoritesGrid({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {savedPensions.map((pension) => (
-        <motion.div
-          key={pension.id}
-          whileHover={{ y: -2 }}
-          transition={{ duration: 0.2 }}
-          className="group relative flex flex-col text-left"
-        >
-          <button
-            type="button"
-            onClick={() => onSelectPension(pension)}
-            className="w-full flex flex-col text-left cursor-pointer"
+      <AnimatePresence mode="popLayout">
+        {savedPensions.map((pension, index) => (
+          <motion.div
+            key={pension.id}
+            layout
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+            whileHover={{ y: -2 }}
+            transition={{
+              type: 'spring',
+              stiffness: 350,
+              damping: 28,
+              delay: Math.min(index * 0.04, 0.2),
+            }}
+            className="group relative flex flex-col text-left"
           >
-            <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm flex items-center justify-center">
-              {pension.images?.[0]?.url ? (
-                <Image
-                  src={pension.images[0].url}
-                  alt={pension.title}
-                  fill
-                  unoptimized
-                  sizes="(max-width: 640px) 100vw, 480px"
-                  className="object-cover transition duration-300 group-hover:scale-105"
-                />
-              ) : (
-                <Building2 className="h-10 w-10 text-muted-foreground/30" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+            <button
+              type="button"
+              onClick={() => onSelectPension(pension)}
+              className="w-full flex flex-col text-left cursor-pointer"
+            >
+              <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm flex items-center justify-center">
+                {pension.images?.[0]?.url ? (
+                  <Image
+                    src={pension.images[0].url}
+                    alt={pension.title}
+                    fill
+                    unoptimized
+                    sizes="(max-width: 640px) 100vw, 480px"
+                    className="object-cover transition duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <Building2 className="h-10 w-10 text-muted-foreground/30" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
-              {(pension.verificationStatus === 'OFFICIALLY_VERIFIED' ||
-                pension.verificationStatus === 'COMMUNITY_VERIFIED') && (
-                <div className="absolute bottom-3 left-3">
-                  <span className="flex items-center gap-1 rounded-full bg-sage/90 px-2.5 py-0.5 text-[11px] font-semibold text-white dark:text-zinc-950 backdrop-blur-md shadow-sm">
-                    <ShieldCheck className="h-3 w-3" />
-                    Verificada
-                  </span>
-                </div>
-              )}
-            </div>
+                {Boolean(pension.images?.length) && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setViewerData({
+                        images: (pension.images ?? []).map((img) => img.url),
+                        title: pension.title,
+                        subtitle: `${pension.neighborhood}, ${pension.city}`,
+                      });
+                    }}
+                    className="absolute top-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-black/80 active:scale-95 cursor-pointer shadow-sm"
+                    aria-label={`Ver fotos de ${pension.title} a pantalla completa`}
+                  >
+                    <Maximize2 className="h-4 w-4" />
+                  </button>
+                )}
 
-            <div className="mt-2.5 flex flex-col gap-1 w-full">
-              <div className="flex items-start justify-between gap-2">
-                <h4 className="text-base font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition">
-                  {pension.title}
-                </h4>
-                <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
-                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                  <span>
-                    {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
-                  </span>
-                </div>
+                {(pension.verificationStatus === 'OFFICIALLY_VERIFIED' ||
+                  pension.verificationStatus === 'COMMUNITY_VERIFIED') && (
+                  <div className="absolute bottom-3 left-3">
+                    <span className="flex items-center gap-1 rounded-full bg-sage/90 px-2.5 py-0.5 text-[11px] font-semibold text-white dark:text-zinc-950 backdrop-blur-md shadow-sm">
+                      <ShieldCheck className="h-3 w-3" />
+                      Verificada
+                    </span>
+                  </div>
+                )}
               </div>
 
-              <p className="text-xs text-muted-foreground line-clamp-1">
-                {pension.neighborhood}, {pension.city}
-              </p>
+              <div className="mt-2.5 flex flex-col gap-1 w-full">
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="text-base font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition">
+                    {pension.title}
+                  </h4>
+                  <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <span>
+                      {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
+                    </span>
+                  </div>
+                </div>
 
-              <div className="mt-0.5 flex items-baseline gap-1">
-                <span className="text-base font-bold text-foreground">
-                  ${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP
-                </span>
-                <span className="text-xs text-muted-foreground">/ mes</span>
+                <p className="text-xs text-muted-foreground line-clamp-1">
+                  {pension.neighborhood}, {pension.city}
+                </p>
+
+                <div className="mt-0.5 flex items-baseline gap-1">
+                  <span className="text-base font-bold text-foreground">
+                    ${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP
+                  </span>
+                  <span className="text-xs text-muted-foreground">/ mes</span>
+                </div>
               </div>
-            </div>
-          </button>
+            </button>
 
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.8 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-            onClick={() => toggleFavorite(pension.id)}
-            className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer"
-            aria-label="Quitar de favoritos"
-            title="Quitar de favoritos"
-          >
-            <Heart className="h-5 w-5 fill-primary text-primary" />
-          </motion.button>
-        </motion.div>
-      ))}
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.8 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+              onClick={() => toggleFavorite(pension.id)}
+              className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer"
+              aria-label="Quitar de favoritos"
+              title="Quitar de favoritos"
+            >
+              <Heart className="h-5 w-5 fill-primary text-primary" />
+            </motion.button>
+          </motion.div>
+        ))}
+      </AnimatePresence>
 
       {Array.from({ length: skeletonCount }, (_, idx) => (
         <PensionCardSkeleton key={`fav-skel-slot-${idx}`} />
       ))}
+
+      {viewerData && (
+        <FullScreenImageViewer
+          isOpen={Boolean(viewerData)}
+          onClose={() => setViewerData(null)}
+          images={viewerData.images}
+          title={viewerData.title}
+          subtitle={viewerData.subtitle}
+        />
+      )}
     </div>
   );
 }

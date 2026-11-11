@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import type { RoomItem, RoomType } from '@/components/landlord/room-item-card';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
 import { isSubstantiveRoomDraft } from '@/lib/draft-validators';
@@ -118,8 +119,11 @@ export function RoomEditorDrawer({
 
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const allDrawerImages = [...form.images, ...newImagePreviews];
 
   const handleCancel = () => {
     if (!isEditing) {
@@ -415,13 +419,13 @@ export function RoomEditorDrawer({
         >
           <div className="overflow-y-auto flex-1 px-4 py-4 space-y-5">
             <DrawerHeader className="p-0 text-center">
-              <DrawerTitle className="text-lg font-bold text-foreground text-center">
-                {isEditing ? 'Detalles de la Habitación' : 'Configura tu nueva habitación'}
+              <DrawerTitle className="text-lg font-bold text-foreground text-center text-balance">
+                {isEditing ? 'Editar Habitación y Tarifa' : 'Registrar Nueva Habitación'}
               </DrawerTitle>
             </DrawerHeader>
 
             {isBannerVisible && !isEditing && (
-              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs">
+              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs transition-all duration-200 overflow-hidden">
                 <span className="text-foreground">
                   Tienes un borrador de habitación no guardado.
                 </span>
@@ -459,7 +463,7 @@ export function RoomEditorDrawer({
                 >
                   Nombre de la Habitación <span className="text-destructive">*</span>
                 </label>
-                <span className="text-[10px] text-muted-foreground font-mono">
+                <span className="text-[10px] text-muted-foreground tabular-nums">
                   {form.title.length}/80
                 </span>
               </div>
@@ -481,9 +485,11 @@ export function RoomEditorDrawer({
                   className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
                 >
                   N° o Código Corto{' '}
-                  <span className="text-[10px] lowercase font-normal">(opcional)</span>
+                  <span className="text-[10px] lowercase font-normal ml-1.5 text-muted-foreground/70">
+                    (opcional)
+                  </span>
                 </label>
-                <span className="text-[10px] text-muted-foreground font-mono">
+                <span className="text-[10px] text-muted-foreground tabular-nums">
                   {form.roomNumber.length}/20
                 </span>
               </div>
@@ -688,18 +694,25 @@ export function RoomEditorDrawer({
                     key={imgUrl}
                     className="group relative aspect-square rounded-xl overflow-hidden bg-muted border border-border/70"
                   >
-                    <Image
-                      src={imgUrl}
-                      alt={`Habitación ${idx + 1}`}
-                      fill
-                      unoptimized
-                      sizes="120px"
-                      className="object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setViewerIndex(idx)}
+                      className="relative h-full w-full cursor-pointer focus:outline-none"
+                      aria-label={`Ver foto ${idx + 1} a pantalla completa`}
+                    >
+                      <Image
+                        src={imgUrl}
+                        alt={`Habitación ${idx + 1}`}
+                        fill
+                        unoptimized
+                        sizes="120px"
+                        className="object-cover transition group-hover:scale-105"
+                      />
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveExistingImage(idx)}
-                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs"
+                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs z-10"
                       aria-label="Eliminar imagen"
                     >
                       <X className="h-3.5 w-3.5" />
@@ -712,23 +725,30 @@ export function RoomEditorDrawer({
                     key={previewUrl}
                     className="group relative aspect-square rounded-xl overflow-hidden bg-muted border border-primary/40"
                   >
-                    <Image
-                      src={previewUrl}
-                      alt={`Nueva foto ${idx + 1}`}
-                      fill
-                      unoptimized
-                      sizes="120px"
-                      className="object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setViewerIndex(form.images.length + idx)}
+                      className="relative h-full w-full cursor-pointer focus:outline-none"
+                      aria-label={`Ver nueva foto ${idx + 1} a pantalla completa`}
+                    >
+                      <Image
+                        src={previewUrl}
+                        alt={`Nueva foto ${idx + 1}`}
+                        fill
+                        unoptimized
+                        sizes="120px"
+                        className="object-cover transition group-hover:scale-105"
+                      />
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveNewImage(idx)}
-                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs"
+                      className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-destructive transition cursor-pointer shadow-xs z-10"
                       aria-label="Eliminar nueva imagen"
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
-                    <span className="absolute bottom-1 left-1 rounded-md bg-primary/90 text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold">
+                    <span className="absolute bottom-1 left-1 rounded-md bg-primary/90 text-primary-foreground px-1.5 py-0.5 text-[9px] font-bold pointer-events-none z-10">
                       Nueva
                     </span>
                   </div>
@@ -769,12 +789,12 @@ export function RoomEditorDrawer({
                 placeholder="Ej: Incluye clóset amplio, escritorio de estudio ergonómico y ventana con luz natural..."
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                className="w-full rounded-xl border border-border bg-background p-3 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none leading-relaxed"
+                className="w-full rounded-xl border border-border bg-background p-3 text-xs text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none leading-relaxed"
               />
             </div>
           </div>
 
-          <div className="border-t border-border/80 bg-card p-4 flex items-center gap-2.5 shrink-0">
+          <div className="border-t border-border/80 bg-card px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1rem)] flex items-center gap-2.5 shrink-0">
             <Button
               type="button"
               variant="outline"
@@ -803,6 +823,17 @@ export function RoomEditorDrawer({
             </Button>
           </div>
         </form>
+
+        {viewerIndex !== null && (
+          <FullScreenImageViewer
+            isOpen={viewerIndex !== null}
+            onClose={() => setViewerIndex(null)}
+            images={allDrawerImages}
+            initialIndex={viewerIndex}
+            title={form.title || 'Fotos de la habitación'}
+            subtitle={form.roomNumber ? `Pieza #${form.roomNumber}` : undefined}
+          />
+        )}
       </DrawerContent>
     </Drawer>
   );

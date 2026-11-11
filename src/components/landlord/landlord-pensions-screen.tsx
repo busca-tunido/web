@@ -1,15 +1,17 @@
 'use client';
 
 import {
+  ArrowRight,
   BedDouble,
   Building2,
   Check,
-  ChevronRight,
+  ChevronDown,
   Eye,
   GraduationCap,
   Home,
   Loader2,
   MapPin,
+  Maximize2,
   PauseCircle,
   Phone,
   Plus,
@@ -32,6 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { useLandlord } from '@/contexts/landlord-context';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
 import type { PensionItem } from '@/lib/types';
@@ -55,6 +58,11 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
   } = useLandlord();
 
   const [previewPension, setPreviewPension] = useState<PensionItem | null>(null);
+  const [viewerData, setViewerData] = useState<{
+    images: string[];
+    title: string;
+    subtitle?: string;
+  } | null>(null);
   const [defaultContactName, setDefaultContactName] = useState(defaultContact.name);
   const [defaultContactPhone, setDefaultContactPhone] = useState(defaultContact.phone);
   const [contactSaveFeedback, setContactSaveFeedback] = useState(false);
@@ -163,14 +171,32 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
               <div className="flex items-center gap-3.5 min-w-0">
                 <div className="relative h-14 w-14 sm:h-16 sm:w-16 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-secondary/60">
                   {coverPhoto ? (
-                    <Image
-                      src={coverPhoto}
-                      alt={prop.title}
-                      fill
-                      unoptimized
-                      sizes="(max-width: 640px) 56px, 64px"
-                      className="object-cover"
-                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setViewerData({
+                          images: prop.images?.length
+                            ? prop.images.map((img) => img.url)
+                            : [coverPhoto],
+                          title: prop.title,
+                          subtitle: `${prop.neighborhood}, ${prop.city}`,
+                        })
+                      }
+                      className="group/cover relative h-full w-full cursor-pointer focus:outline-none"
+                      aria-label={`Ver fotos de ${prop.title} a pantalla completa`}
+                    >
+                      <Image
+                        src={coverPhoto}
+                        alt={prop.title}
+                        fill
+                        unoptimized
+                        sizes="(max-width: 640px) 56px, 64px"
+                        className="object-cover transition group-hover/cover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Maximize2 className="h-4 w-4 text-white" />
+                      </div>
+                    </button>
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                       <Building2 className="h-7 w-7" />
@@ -341,8 +367,8 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                   onClick={() => handleSelectToManage(prop, 'pension')}
                   className="flex-1 sm:flex-none min-h-[40px] px-4 items-center justify-center gap-1.5 rounded-xl bg-foreground text-background hover:opacity-90 text-xs font-semibold cursor-pointer shadow-none transition"
                 >
-                  <span>Administrar</span>
-                  <ChevronRight className="h-4 w-4 shrink-0" />
+                  <span>Administrar pensión</span>
+                  <ArrowRight className="h-4 w-4 shrink-0" />
                 </Button>
               )}
 
@@ -366,14 +392,19 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
 
   return (
     <>
-      <div className={cn('flex flex-col gap-6 text-left pb-28 md:pb-12', className)}>
+      <div
+        className={cn(
+          'flex flex-col gap-6 text-left pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12',
+          className,
+        )}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
+              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground text-balance">
                 Mis Pensiones
               </h1>
-              <Badge variant="secondary" className="font-semibold text-xs">
+              <Badge variant="secondary" className="font-semibold text-xs tabular-nums">
                 {pensions.length} {pensions.length === 1 ? 'pensión' : 'pensiones'}
               </Badge>
             </div>
@@ -391,72 +422,94 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
 
         {pensions.length > 0 && (
           <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-            <Card className="border-border/70 bg-card/60 shadow-2xs">
-              <CardContent className="p-3 sm:p-3.5 flex flex-col">
-                <span className="text-[11px] font-medium text-muted-foreground truncate">
-                  Propiedades
-                </span>
-                <span className="text-base sm:text-lg font-extrabold text-foreground mt-0.5">
-                  {stats.totalPensions}
-                </span>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
-                  {stats.activePensions} activas
-                </span>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/70 bg-card/60 shadow-2xs">
-              <CardContent className="p-3 sm:p-3.5 flex flex-col">
-                <span className="text-[11px] font-medium text-muted-foreground truncate">
-                  Ocupación Global
-                </span>
-                <span className="text-base sm:text-lg font-extrabold text-foreground mt-0.5">
-                  {stats.overallOccupancyRate}%
-                </span>
-                <span className="text-[10px] text-muted-foreground truncate">
-                  {stats.totalOccupied} de {stats.totalRooms} habs
-                </span>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/70 bg-card/60 shadow-2xs">
-              <CardContent className="p-3 sm:p-3.5 flex flex-col">
-                <span className="text-[11px] font-medium text-muted-foreground truncate">
-                  Habitaciones Libres
-                </span>
-                <span className="text-base sm:text-lg font-extrabold text-foreground mt-0.5">
-                  {stats.totalAvailable}
-                </span>
-                <span className="text-[10px] text-muted-foreground truncate">
-                  Para nuevos residentes
-                </span>
-              </CardContent>
-            </Card>
+            {[
+              {
+                id: 'kpi-props',
+                label: 'Propiedades',
+                value: stats.totalPensions,
+                sub: `${stats.activePensions} activas`,
+                subClass: 'text-emerald-600 dark:text-emerald-400 font-medium truncate',
+                valueClass:
+                  'text-base sm:text-lg font-extrabold text-foreground mt-0.5 tabular-nums',
+              },
+              {
+                id: 'kpi-occ',
+                label: 'Ocupación Global',
+                value: `${stats.overallOccupancyRate}%`,
+                sub: `${stats.totalOccupied} de ${stats.totalRooms} habs`,
+                subClass: 'text-muted-foreground truncate',
+                valueClass: 'text-xl sm:text-2xl font-black text-foreground mt-0.5 tabular-nums',
+              },
+              {
+                id: 'kpi-free',
+                label: 'Habitaciones Libres',
+                value: stats.totalAvailable,
+                sub: 'Para nuevos residentes',
+                subClass: 'text-muted-foreground truncate',
+                valueClass: 'text-xl sm:text-2xl font-black text-foreground mt-0.5 tabular-nums',
+              },
+            ].map((kpi, idx) => (
+              <motion.div
+                key={kpi.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 350, damping: 28, delay: idx * 0.05 }}
+              >
+                <Card className="border-border/70 bg-card/60 shadow-2xs h-full">
+                  <CardContent className="p-3 sm:p-3.5 flex flex-col">
+                    <span className="text-[11px] font-medium text-muted-foreground truncate">
+                      {kpi.label}
+                    </span>
+                    <span className={kpi.valueClass}>{kpi.value}</span>
+                    <span className={cn('text-[10px]', kpi.subClass)}>{kpi.sub}</span>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
         )}
 
-        <Card className="border-border/70 bg-card/60 shadow-none rounded-xl overflow-hidden">
-          <CardContent className="p-4 sm:p-5 flex flex-col gap-3.5">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
-              <div className="flex items-center gap-2.5">
-                <Phone className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
+        <details className="group border border-border/70 bg-card/60 shadow-none rounded-xl overflow-hidden transition-colors">
+          <summary className="p-4 sm:p-5 flex items-center justify-between cursor-pointer list-none select-none hover:bg-muted/10 transition-colors">
+            <div className="flex items-center gap-2.5">
+              <Phone className="h-4.5 w-4.5 text-muted-foreground shrink-0" />
+              <div className="flex flex-col text-left">
                 <h2 className="text-xs sm:text-sm font-semibold text-foreground">
-                  Datos de Contacto
+                  Datos de Contacto Predeterminados
                 </h2>
+                <span className="text-[11px] text-muted-foreground">
+                  {defaultContactName
+                    ? `${defaultContactName} (${defaultContactPhone || 'Sin teléfono'})`
+                    : 'Configura tus datos de contacto por defecto'}
+                </span>
               </div>
-
-              {contactSaveFeedback && (
-                <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] self-start sm:self-auto py-0.5 px-2">
-                  <Check className="h-3 w-3 mr-1" />
-                  ¡Predeterminados guardados!
-                </Badge>
-              )}
             </div>
 
+            <div className="flex items-center gap-2">
+              <AnimatePresence>
+                {contactSaveFeedback && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                  >
+                    <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[11px] self-start sm:self-auto py-0.5 px-2">
+                      <Check className="h-3 w-3 mr-1" />
+                      ¡Predeterminados guardados!
+                    </Badge>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
+            </div>
+          </summary>
+
+          <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-0 border-t border-border/40">
             <form
               onSubmit={handleSaveDefaultContact}
               noValidate
-              className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end pt-1"
+              className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end pt-3"
             >
               <div className="sm:col-span-5">
                 <label
@@ -504,18 +557,18 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </details>
 
         {pensions.length === 0 ? (
-          <div className="flex min-h-[50vh] flex-col items-center justify-center p-8 text-center rounded-2xl border border-dashed border-border/80 bg-card/60 my-4 max-w-md mx-auto">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-4">
+          <div className="flex min-h-[50vh] flex-col items-center justify-center -mt-6 px-8 pt-6 pb-12 text-center rounded-2xl border border-dashed border-border/80 bg-card/60 my-4 max-w-md mx-auto">
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-muted text-muted-foreground mb-4">
               <Building2 className="h-8 w-8" />
             </div>
-            <h2 className="text-lg font-bold text-foreground tracking-tight">
+            <h2 className="text-lg font-bold text-foreground tracking-tight text-balance">
               Aún no tienes pensiones registradas
             </h2>
-            <p className="text-xs text-muted-foreground mt-1.5 mb-6 max-w-sm leading-relaxed">
+            <p className="text-xs text-muted-foreground mt-1.5 mb-6 max-w-sm leading-relaxed text-pretty">
               Registra tu primera pensión universitaria para comenzar a publicar habitaciones y
               recibir postulaciones de estudiantes verificados.
             </p>
@@ -531,19 +584,11 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
         ) : (
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Home className="h-4 w-4 text-muted-foreground" />
-                  <h2 className="text-sm sm:text-base font-semibold text-foreground">
-                    Pensión Seleccionada
-                  </h2>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="text-xs font-normal border-border/80 text-muted-foreground"
-                >
-                  Seleccionada
-                </Badge>
+              <div className="flex items-center gap-2">
+                <Home className="h-4 w-4 text-muted-foreground" />
+                <h2 className="text-sm sm:text-base font-semibold text-foreground">
+                  Pensión Seleccionada
+                </h2>
               </div>
 
               {activeSelected && renderPensionCard(activeSelected, true)}
@@ -677,6 +722,16 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
           onClose={() => setPreviewPension(null)}
           pension={previewPension}
           pensionId={previewPension.id}
+        />
+      )}
+
+      {viewerData && (
+        <FullScreenImageViewer
+          isOpen={Boolean(viewerData)}
+          onClose={() => setViewerData(null)}
+          images={viewerData.images}
+          title={viewerData.title}
+          subtitle={viewerData.subtitle}
         />
       )}
     </>

@@ -15,8 +15,9 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
-import { type ChangeEvent, useEffect, useReducer } from 'react';
+import { type ChangeEvent, useEffect, useReducer, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +27,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { createReviewSchema, usePensionReviews } from '@/hooks/use-pension-reviews';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
@@ -71,6 +73,7 @@ export function PublishReviewModal({
   const { user } = useAuth();
   const { publishReview } = usePensionReviews(isOpen ? pension.id : null);
   const [state, dispatch] = useReducer(publishReviewReducer, initialPublishReviewState);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const successBanner = state.successBanner;
   const errorMessage = state.errorMessage;
 
@@ -300,21 +303,37 @@ export function PublishReviewModal({
             </DrawerDescription>
           </DrawerHeader>
 
-          {successBanner && (
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center gap-3 text-emerald-600 animate-in fade-in">
-              <CheckCircle2 className="h-5 w-5 shrink-0" />
-              <p className="text-xs font-semibold">
-                ¡Reseña publicada con éxito! Gracias por colaborar con la comunidad.
-              </p>
-            </div>
-          )}
+          <AnimatePresence>
+            {successBanner && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.94, y: 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.94, y: 8 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center gap-3 text-emerald-600"
+              >
+                <CheckCircle2 className="h-5 w-5 shrink-0" />
+                <p className="text-xs font-semibold">
+                  ¡Reseña publicada con éxito! Gracias por colaborar con la comunidad.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {errorMessage && (
-            <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 flex items-start gap-2.5 text-rose-600 animate-in fade-in">
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-              <p className="text-xs">{errorMessage}</p>
-            </div>
-          )}
+          <AnimatePresence>
+            {errorMessage && (
+              <motion.div
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: [0, -6, 6, -4, 4, 0] }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.35 }}
+                className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 flex items-start gap-2.5 text-rose-600"
+              >
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <p className="text-xs">{errorMessage}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <section className="rounded-2xl border border-border bg-muted/20 p-4 text-center">
             <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
@@ -589,19 +608,26 @@ export function PublishReviewModal({
               {state.selectedFiles.map((photo, idx) => (
                 <div
                   key={`upload-thumb-${photo.previewUrl}`}
-                  className="relative h-20 w-20 rounded-xl overflow-hidden border border-border bg-muted shrink-0"
+                  className="relative h-20 w-20 rounded-xl overflow-hidden border border-border bg-muted shrink-0 group"
                 >
-                  <Image
-                    src={photo.previewUrl}
-                    alt={`Preview ${idx + 1}`}
-                    fill
-                    unoptimized
-                    className="object-cover"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setViewerIndex(idx)}
+                    className="relative h-full w-full cursor-pointer focus:outline-none"
+                    aria-label={`Ver foto ${idx + 1} a pantalla completa`}
+                  >
+                    <Image
+                      src={photo.previewUrl}
+                      alt={`Preview ${idx + 1}`}
+                      fill
+                      unoptimized
+                      className="object-cover transition group-hover:scale-105"
+                    />
+                  </button>
                   <button
                     type="button"
                     onClick={() => removePhoto(idx)}
-                    className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black transition"
+                    className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black transition z-10 cursor-pointer"
                     aria-label="Quitar foto"
                   >
                     <X className="h-3 w-3" />
@@ -644,6 +670,16 @@ export function PublishReviewModal({
             )}
           </Button>
         </div>
+
+        {viewerIndex !== null && (
+          <FullScreenImageViewer
+            isOpen={viewerIndex !== null}
+            onClose={() => setViewerIndex(null)}
+            images={state.selectedFiles.map((f) => f.previewUrl)}
+            initialIndex={viewerIndex}
+            title={`Foto de reseña • ${pension.title}`}
+          />
+        )}
       </DrawerContent>
     </Drawer>
   );

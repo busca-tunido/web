@@ -5,12 +5,16 @@ import {
   BookOpen,
   Building2,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
   Heart,
   MapPin,
+  Maximize2,
+  MessageSquare,
   PenLine,
+  Phone,
   ShieldCheck,
   Star,
   Utensils,
@@ -22,6 +26,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { useOptionalNavigation } from '@/contexts/navigation-context';
 import { useFavoriteAction } from '@/hooks/use-favorite-action';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
@@ -69,6 +74,7 @@ export function PensionDetailContent({
 
   const [activePhotoIdx, setActivePhotoIdx] = useState<number>(0);
   const [direction, setDirection] = useState<number>(0);
+  const [isViewerOpen, setIsViewerOpen] = useState<boolean>(false);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState<boolean>(false);
   const [isAmenitiesModalOpen, setIsAmenitiesModalOpen] = useState<boolean>(false);
   const [isPublishReviewOpen, setIsPublishReviewOpen] = useState<boolean>(false);
@@ -149,9 +155,12 @@ export function PensionDetailContent({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="relative h-64 sm:h-80 md:h-96 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm touch-pan-y select-none">
+      <motion.div
+        layoutId={`pension-hero-${pension.id}`}
+        className="relative h-64 sm:h-80 md:h-96 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm touch-pan-y select-none"
+      >
         {displayPhotos.length > 0 ? (
-          <AnimatePresence initial={false} custom={direction}>
+          <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
               key={activePhotoIdx}
               custom={direction}
@@ -167,7 +176,8 @@ export function PensionDetailContent({
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.25}
               onDragEnd={handleDragEnd}
-              className="absolute inset-0 h-full w-full cursor-grab active:cursor-grabbing"
+              onClick={() => setIsViewerOpen(true)}
+              className="absolute inset-0 h-full w-full cursor-pointer active:cursor-grabbing"
             >
               <Image
                 src={displayPhotos[activePhotoIdx]}
@@ -200,6 +210,16 @@ export function PensionDetailContent({
         )}
 
         <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+          {displayPhotos.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsViewerOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-white hover:bg-black/80 active:scale-90 transition shadow-sm cursor-pointer"
+              aria-label="Ver fotos a pantalla completa"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
+          )}
           <button
             type="button"
             onClick={(e) => onFavoriteClick(pension.id, e)}
@@ -215,7 +235,7 @@ export function PensionDetailContent({
             <button
               type="button"
               onClick={() => paginate(-1)}
-              className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 active:scale-95 transition shadow-sm cursor-pointer"
+              className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 active:scale-95 transition shadow-sm cursor-pointer"
               aria-label="Foto anterior"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -223,7 +243,7 @@ export function PensionDetailContent({
             <button
               type="button"
               onClick={() => paginate(1)}
-              className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 active:scale-95 transition shadow-sm cursor-pointer"
+              className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-20 h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 active:scale-95 transition shadow-sm cursor-pointer"
               aria-label="Siguiente foto"
             >
               <ChevronRight className="h-5 w-5" />
@@ -232,7 +252,7 @@ export function PensionDetailContent({
         )}
 
         <div className="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
-          <div className="flex gap-1.5 pointer-events-auto">
+          <div className="flex gap-1.5 pointer-events-auto items-center py-1">
             {displayPhotos.map((photoUrl, i) => (
               <button
                 key={`photo-dot-${pension.id}-${i}-${photoUrl}`}
@@ -242,18 +262,22 @@ export function PensionDetailContent({
                   setDirection(i > activePhotoIdx ? 1 : -1);
                   setActivePhotoIdx(i);
                 }}
-                className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                  i === activePhotoIdx ? 'w-6 bg-primary' : 'w-2 bg-white/40'
-                }`}
+                className="relative py-2 px-0.5 -my-2 flex items-center cursor-pointer min-h-[32px]"
                 aria-label={`Ver foto ${i + 1}`}
-              />
+              >
+                <span
+                  className={`block h-1.5 rounded-full transition-all ${
+                    i === activePhotoIdx ? 'w-6 bg-primary' : 'w-2 bg-white/40'
+                  }`}
+                />
+              </button>
             ))}
           </div>
           <Badge className="bg-primary text-primary-foreground font-bold text-xs shadow pointer-events-auto">
             ${(pension.baseMonthlyPrice ?? 0).toLocaleString('es-CL')} CLP/mes
           </Badge>
         </div>
-      </div>
+      </motion.div>
 
       <div className="flex flex-col gap-1 mb-4">
         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -284,7 +308,7 @@ export function PensionDetailContent({
           </button>
         </div>
 
-        <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-tight text-balance">
           {pension.title}
         </h1>
         <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
@@ -300,11 +324,15 @@ export function PensionDetailContent({
           pension.nearestUniversity.distanceMeters > 0 &&
           pension.nearestUniversity.name,
       ) && (
-        <div className="mb-4 rounded-xl border border-sage/25 bg-sage/5 p-3">
-          <div className="flex items-center gap-2 text-xs font-semibold text-sage-foreground">
-            <MapPin className="h-3.5 w-3.5 shrink-0" />
+        <div className="mb-4 rounded-xl border border-sage/30 bg-sage/10 p-3.5 min-h-[48px] flex items-center shadow-2xs">
+          <div className="flex items-center gap-2 text-sm font-semibold text-sage-foreground">
+            <MapPin className="h-4 w-4 shrink-0 text-sage-foreground" />
             <span className="text-foreground">
-              A {pension.nearestUniversity?.distanceMeters}m de {pension.nearestUniversity?.name}
+              A{' '}
+              <span className="tabular-nums font-bold">
+                {pension.nearestUniversity?.distanceMeters}
+              </span>
+              m de {pension.nearestUniversity?.name}
             </span>
           </div>
         </div>
@@ -315,7 +343,7 @@ export function PensionDetailContent({
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
             Descripción de la Pensión
           </h2>
-          <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
+          <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line text-pretty max-w-prose">
             {pension.description}
           </p>
         </div>
@@ -465,16 +493,30 @@ export function PensionDetailContent({
         onOpenFullReviews={() => setIsReviewsModalOpen(true)}
       />
 
-      {Boolean(pension.curfewTime || pension.guestsAllowed !== undefined) && (
-        <div className="mb-5 rounded-xl border border-border bg-muted/30 p-3.5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-            Reglas de Convivencia
-          </h2>
-          <div className="flex flex-col gap-2 text-xs text-foreground/90">
+      {Boolean(
+        pension.curfewTime || pension.guestsAllowed !== undefined || pension.quietHoursStart,
+      ) && (
+        <details className="group mb-5 rounded-xl border border-border bg-muted/30 overflow-hidden transition-colors">
+          <summary className="flex items-center justify-between p-3.5 cursor-pointer list-none select-none font-bold text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span>Reglas de Convivencia y Horarios</span>
+            </div>
+            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
+          </summary>
+          <div className="px-3.5 pb-3.5 pt-1 flex flex-col gap-2 text-xs text-foreground/90 border-t border-border/40">
             {pension.curfewTime && (
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-2 pt-1">
                 <Clock className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                 <span>Toque de queda: {pension.curfewTime}</span>
+              </div>
+            )}
+            {Boolean(pension.quietHoursStart && pension.quietHoursEnd) && (
+              <div className="flex items-start gap-2">
+                <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <span>
+                  Horario de silencio: {pension.quietHoursStart} a {pension.quietHoursEnd}
+                </span>
               </div>
             )}
             {pension.guestsAllowed !== undefined && (
@@ -484,7 +526,7 @@ export function PensionDetailContent({
               </div>
             )}
           </div>
-        </div>
+        </details>
       )}
 
       {(() => {
@@ -499,20 +541,36 @@ export function PensionDetailContent({
                 {rooms.map((room, idx) => (
                   <div
                     key={room.id || `room-${pension.id}-${idx}`}
-                    className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3"
+                    className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3 hover:border-primary/50 hover:bg-muted/50 transition-all cursor-pointer group/room shadow-2xs"
                   >
-                    <div>
-                      <h3 className="text-xs font-semibold text-foreground">{room.title}</h3>
-                      <p className="text-[11px] text-muted-foreground">
-                        {room.hasPrivateBathroom ? 'Baño privado' : 'Baño compartido'} •{' '}
-                        {room.isAvailable ? 'Disponible' : 'Ocupada'}
-                      </p>
+                    <div className="min-w-0 pr-2">
+                      <h3 className="text-xs font-semibold text-foreground group-hover/room:text-primary transition-colors truncate">
+                        {room.title}
+                      </h3>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[11px] text-muted-foreground">
+                          {room.hasPrivateBathroom ? 'Baño privado' : 'Baño compartido'}
+                        </span>
+                        <span className="text-border">•</span>
+                        <span
+                          className={`inline-flex items-center text-[10px] font-medium ${
+                            room.isAvailable
+                              ? 'text-sage-foreground font-semibold'
+                              : 'text-muted-foreground'
+                          }`}
+                        >
+                          {room.isAvailable ? 'Disponible' : 'Ocupada'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-xs font-bold text-primary">
-                        ${(room.monthlyPrice ?? 0).toLocaleString('es-CL')}
-                      </span>
-                      <span className="block text-[10px] text-muted-foreground">CLP / mes</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="text-right">
+                        <span className="text-xs font-bold text-primary tabular-nums">
+                          ${(room.monthlyPrice ?? 0).toLocaleString('es-CL')}
+                        </span>
+                        <span className="block text-[10px] text-muted-foreground">CLP / mes</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover/room:text-primary transition-colors shrink-0" />
                     </div>
                   </div>
                 ))}
@@ -576,14 +634,32 @@ export function PensionDetailContent({
         </button>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-border/80">
+      <div className="mt-6 pt-4 border-t border-border/80 flex flex-col gap-2.5">
+        {pension.contactWhatsapp ? (
+          <a
+            href={`https://wa.me/${pension.contactWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola, me interesa la pensión "${pension.title}" que encontré en BuscaTuNido.`)}`}
+            target="_blank"
+            rel="noreferrer"
+            className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
+          >
+            <MessageSquare className="h-4 w-4" /> Consultar Disponibilidad
+          </a>
+        ) : pension.contactPhone ? (
+          <a
+            href={`tel:${pension.contactPhone.replace(/\s+/g, '')}`}
+            className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
+          >
+            <Phone className="h-4 w-4" /> Consultar Disponibilidad
+          </a>
+        ) : null}
+
         {user ? (
           hasAlreadyReviewed ? (
             <Button
               id="btn-view-user-review"
               variant="outline"
               onClick={() => setIsReviewsModalOpen(true)}
-              className="w-full h-12 border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-sm rounded-xl transition cursor-pointer"
+              className="w-full h-11 border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs rounded-xl transition cursor-pointer"
             >
               <Check className="mr-2 h-4 w-4 text-primary" /> Ya calificaste esta pensión (Ver
               opiniones)
@@ -591,8 +667,13 @@ export function PensionDetailContent({
           ) : (
             <Button
               id="btn-publish-review"
+              variant={pension.contactWhatsapp || pension.contactPhone ? 'outline' : 'default'}
               onClick={() => setIsPublishReviewOpen(true)}
-              className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer"
+              className={
+                pension.contactWhatsapp || pension.contactPhone
+                  ? 'w-full h-11 border-border/80 hover:bg-secondary text-foreground font-semibold text-xs rounded-xl transition cursor-pointer'
+                  : 'w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer'
+              }
             >
               <PenLine className="mr-2 h-4 w-4" /> Publicar una reseña
             </Button>
@@ -600,8 +681,13 @@ export function PensionDetailContent({
         ) : (
           <Button
             id="btn-auth-to-review"
+            variant={pension.contactWhatsapp || pension.contactPhone ? 'outline' : 'default'}
             onClick={openAuthModal}
-            className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer"
+            className={
+              pension.contactWhatsapp || pension.contactPhone
+                ? 'w-full h-11 border-border/80 hover:bg-secondary text-foreground font-semibold text-xs rounded-xl transition cursor-pointer'
+                : 'w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer'
+            }
           >
             <PenLine className="mr-2 h-4 w-4" /> Inicia sesión para opinar o guardar
           </Button>
@@ -641,6 +727,15 @@ export function PensionDetailContent({
           pension={pension as PensionItem}
         />
       )}
+
+      <FullScreenImageViewer
+        isOpen={isViewerOpen}
+        onClose={() => setIsViewerOpen(false)}
+        images={displayPhotos}
+        initialIndex={activePhotoIdx}
+        title={pension.title}
+        subtitle={`${pension.neighborhood}, ${pension.city}`}
+      />
     </div>
   );
 }

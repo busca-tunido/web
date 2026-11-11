@@ -244,14 +244,14 @@ export function LandlordDesktopSidebar({
               >
                 <Icon
                   className={cn(
-                    'h-4.5 w-4.5 shrink-0 transition-transform duration-200',
-                    isActive ? 'text-sage-foreground stroke-[2.2]' : 'stroke-[1.75]',
+                    'h-4.5 w-4.5 shrink-0 stroke-2 transition-transform duration-200',
+                    isActive ? 'text-sage-foreground' : '',
                   )}
                 />
                 <span className="flex-1 text-left">{item.label}</span>
 
                 {item.badge !== undefined && (
-                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-[10px] font-medium text-muted-foreground tabular-nums">
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-xs font-medium text-muted-foreground tabular-nums">
                     {item.badge}
                   </span>
                 )}
@@ -281,12 +281,12 @@ export function LandlordDesktopSidebar({
           >
             <Building2
               className={cn(
-                'h-4.5 w-4.5 shrink-0 transition-transform duration-200',
-                activeTab === 'pensions' ? 'text-sage-foreground stroke-[2.2]' : 'stroke-[1.75]',
+                'h-4.5 w-4.5 shrink-0 stroke-2 transition-transform duration-200',
+                activeTab === 'pensions' ? 'text-sage-foreground' : '',
               )}
             />
             <span className="flex-1 text-left">Mis Pensiones</span>
-            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-[10px] font-medium text-muted-foreground tabular-nums">
+            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-xs font-medium text-muted-foreground tabular-nums">
               {pensions.length}
             </span>
             {activeTab === 'pensions' && (
@@ -421,9 +421,7 @@ export function LandlordDesktopSidebar({
                               <span
                                 className={cn(
                                   'h-2.5 w-2.5 rounded-full shrink-0',
-                                  prop.isActive
-                                    ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]'
-                                    : 'bg-muted-foreground/30',
+                                  prop.isActive ? 'bg-success' : 'bg-muted-foreground/30',
                                 )}
                               />
                               <div className="min-w-0 flex-1">

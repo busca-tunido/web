@@ -3,10 +3,11 @@
 import {
   Bath,
   BedDouble,
-  Edit3,
   Home,
   Loader2,
+  Maximize2,
   PauseCircle,
+  Pencil,
   PlayCircle,
   User,
   Users,
@@ -16,6 +17,7 @@ import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import type { RoomDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -40,6 +42,7 @@ export function RoomItemCard({
   const [isAvailable, setIsAvailable] = useState<boolean>(room.isAvailable);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [hasError, setHasError] = useState<boolean>(false);
+  const [isViewerOpen, setIsViewerOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setIsAvailable(room.isAvailable);
@@ -82,25 +85,49 @@ export function RoomItemCard({
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3.5 min-w-0 flex-1">
-          <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-xl bg-muted shadow-2xs flex items-center justify-center">
-            {thumbnail ? (
+          {thumbnail ? (
+            <button
+              type="button"
+              onClick={() => setIsViewerOpen(true)}
+              className="group/thumb relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-lg bg-muted shadow-2xs flex items-center justify-center cursor-pointer hover:ring-1 hover:ring-primary/40 transition text-left focus:outline-none"
+              aria-label={`Ver fotos de ${rawTitle} a pantalla completa`}
+            >
               <Image
                 src={thumbnail}
                 alt={rawTitle}
                 fill
                 unoptimized
                 sizes="(max-width: 640px) 96px, 112px"
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                className="object-cover transition-transform duration-300 group-hover/thumb:scale-105"
               />
-            ) : (
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center shadow-xs">
+                  <Maximize2 className="h-3.5 w-3.5" />
+                </div>
+              </div>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onEdit(room)}
+              className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-lg bg-muted shadow-2xs flex items-center justify-center cursor-pointer hover:ring-1 hover:ring-primary/40 transition text-left focus:outline-none"
+              aria-label={`Editar ${rawTitle}`}
+            >
               <BedDouble className="h-8 w-8 text-muted-foreground/40" />
-            )}
-          </div>
+            </button>
+          )}
 
           <div className="flex flex-col gap-1.5 min-w-0 flex-1 text-left">
             <div className="flex items-center justify-between gap-2">
               <h3 className="truncate text-sm sm:text-base font-bold text-foreground leading-tight">
-                {rawTitle}
+                <button
+                  type="button"
+                  onClick={() => onEdit(room)}
+                  className="truncate text-sm sm:text-base font-bold text-foreground hover:text-primary transition-colors text-left cursor-pointer focus:outline-none"
+                  aria-label={`Editar ${rawTitle}`}
+                >
+                  {rawTitle}
+                </button>
               </h3>
             </div>
 
@@ -155,7 +182,7 @@ export function RoomItemCard({
             </div>
 
             <div className="mt-1 flex items-baseline gap-1">
-              <span className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+              <span className="text-base sm:text-lg font-bold text-foreground tracking-tight tabular-nums leading-none">
                 {formattedPrice}
               </span>
               <span className="text-xs text-muted-foreground font-medium">/ mes</span>
@@ -178,16 +205,12 @@ export function RoomItemCard({
               aria-label={`Cambiar disponibilidad de ${rawTitle}`}
               disabled={isUpdating}
               onClick={handleToggle}
-              className="flex min-h-[40px] items-center gap-2 rounded-xl px-2 py-1 text-xs transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer disabled:opacity-60"
+              className="flex min-h-[44px] items-center gap-2 rounded-xl px-2 py-1 text-xs transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer disabled:opacity-60"
             >
-              <span className="text-xs font-medium text-muted-foreground select-none">
-                Disponibilidad
-              </span>
-
               <div
                 className={cn(
                   'relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-                  isAvailable ? 'bg-emerald-500' : 'bg-muted-foreground/30',
+                  isAvailable ? 'bg-success' : 'bg-muted-foreground/30',
                 )}
               >
                 {isUpdating ? (
@@ -197,7 +220,7 @@ export function RoomItemCard({
                       isAvailable ? 'translate-x-4' : 'translate-x-0',
                     )}
                   >
-                    <Loader2 className="h-2.5 w-2.5 animate-spin text-emerald-600" />
+                    <Loader2 className="h-2.5 w-2.5 animate-spin text-success" />
                   </div>
                 ) : (
                   <span
@@ -212,7 +235,7 @@ export function RoomItemCard({
           ) : (
             <Badge
               variant="outline"
-              className="border-border/80 text-muted-foreground text-[10px] py-0.5"
+              className="border-border/80 text-muted-foreground text-xs py-0.5"
             >
               No activa
             </Badge>
@@ -228,14 +251,14 @@ export function RoomItemCard({
                 className={cn(
                   'min-h-[36px] px-2.5 text-xs font-semibold rounded-lg cursor-pointer transition',
                   room.isActive === false
-                    ? 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10'
+                    ? 'text-success hover:bg-success/10'
                     : 'text-muted-foreground hover:text-foreground',
                 )}
                 title={room.isActive === false ? 'Reactivar habitación' : 'Desactivar habitación'}
               >
                 {room.isActive === false ? (
                   <>
-                    <PlayCircle className="h-3.5 w-3.5 mr-1 text-emerald-500" />
+                    <PlayCircle className="h-3.5 w-3.5 mr-1 text-success" />
                     <span>Activar</span>
                   </>
                 ) : (
@@ -254,12 +277,22 @@ export function RoomItemCard({
               onClick={() => onEdit(room)}
               className="min-h-[36px] px-3 rounded-lg border-border/80 hover:bg-secondary font-semibold text-xs gap-1.5 shadow-2xs cursor-pointer"
             >
-              <Edit3 className="h-3.5 w-3.5 text-muted-foreground" />
+              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
               <span>Editar</span>
             </Button>
           </div>
         </div>
       </div>
+
+      {isViewerOpen && (
+        <FullScreenImageViewer
+          isOpen={isViewerOpen}
+          onClose={() => setIsViewerOpen(false)}
+          images={room.images?.length ? room.images : thumbnail ? [thumbnail] : []}
+          title={rawTitle}
+          subtitle={`Habitación • ${formattedPrice}`}
+        />
+      )}
     </Card>
   );
 }

@@ -63,7 +63,7 @@ export function AccountProfileHeader({ user, roleLabel, children }: AccountProfi
           </h2>
           <Badge
             variant="outline"
-            className="border-primary/40 bg-primary/10 text-primary text-[10px] font-semibold shrink-0"
+            className="border-primary/40 bg-primary/10 text-primary text-xs font-semibold shrink-0"
           >
             {roleLabel}
           </Badge>
@@ -91,7 +91,7 @@ export function AccountThemeCard() {
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Modo Visual
           </h3>
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             Activo: <strong className="text-foreground capitalize">{resolvedTheme}</strong>
           </span>
         </div>
@@ -106,7 +106,7 @@ export function AccountThemeCard() {
                 type="button"
                 onClick={() => setTheme(opt.id)}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 rounded-xl border p-2.5 text-xs font-semibold transition active:scale-95 cursor-pointer',
+                  'flex flex-col items-center justify-center gap-1 rounded-lg border p-2.5 text-xs font-semibold transition active:scale-95 cursor-pointer',
                   isSelected
                     ? 'border-primary bg-primary/15 text-primary shadow-xs'
                     : 'border-border/80 bg-background/60 text-muted-foreground hover:text-foreground hover:bg-secondary',
@@ -114,7 +114,7 @@ export function AccountThemeCard() {
               >
                 <Icon className="h-4 w-4" />
                 <span className="leading-tight">{opt.label}</span>
-                <span className="text-[10px] font-normal opacity-70">{opt.sublabel}</span>
+                <span className="text-xs font-normal opacity-70">{opt.sublabel}</span>
               </button>
             );
           })}

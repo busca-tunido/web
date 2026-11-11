@@ -225,7 +225,7 @@ export function LandlordRoomsScreen({
 
               <div className="flex flex-col">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight">
+                  <span className="text-xl sm:text-2xl font-black text-foreground tracking-tight tabular-nums">
                     {formattedRevenue}
                   </span>
                   <span className="text-xs text-muted-foreground font-medium">/ mes</span>
@@ -260,15 +260,15 @@ export function LandlordRoomsScreen({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-1">
         <div>
-          <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight">
-            Habitaciones Registradas
+          <h1 className="text-base sm:text-lg font-bold text-foreground tracking-tight text-balance">
+            Inventario de Habitaciones
           </h1>
         </div>
 
         <Button
           type="button"
           onClick={handleOpenCreateDrawer}
-          className="min-h-12 rounded-xl bg-primary hover:opacity-90 text-primary-foreground font-bold px-4 gap-2 cursor-pointer shadow-xs active:scale-[0.98] transition shrink-0"
+          className="w-full sm:w-auto min-h-12 rounded-xl bg-primary hover:opacity-95 text-primary-foreground font-bold px-5 gap-2 cursor-pointer shadow-md active:scale-[0.98] transition flex items-center justify-center shrink-0"
         >
           <Plus className="h-4 w-4" />
           <span>Agregar Habitación</span>
@@ -321,14 +321,19 @@ export function LandlordRoomsScreen({
             ) : (
               <div className="flex flex-col gap-3">
                 <AnimatePresence mode="popLayout">
-                  {availableRooms.map((room) => (
+                  {availableRooms.map((room, index) => (
                     <motion.div
                       key={room.id}
                       layout
                       initial={{ opacity: 0, scale: 0.96 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.94 }}
-                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 350,
+                        damping: 30,
+                        delay: Math.min(index * 0.04, 0.2),
+                      }}
                       className="w-full"
                     >
                       <RoomItemCard
@@ -345,17 +350,14 @@ export function LandlordRoomsScreen({
           </div>
 
           <div className="flex flex-col gap-3.5">
-            <div className="flex items-center justify-between pb-1.5 border-b border-border/50">
-              <div className="flex items-center gap-2">
-                <BedDouble className="h-4 w-4 text-muted-foreground" />
-                <h2 className="text-sm font-bold text-foreground">Habitaciones Ocupadas</h2>
-              </div>
-              <Badge
-                variant="outline"
-                className="text-xs font-semibold border-border/80 text-muted-foreground"
-              >
-                {occupiedRooms.length}
-              </Badge>
+            <div className="flex items-center gap-2 pb-1.5 border-b border-border/50">
+              <BedDouble className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-bold text-foreground">
+                Habitaciones Ocupadas{' '}
+                <span className="font-normal text-muted-foreground tabular-nums">
+                  ({occupiedRooms.length})
+                </span>
+              </h2>
             </div>
 
             {occupiedRooms.length === 0 ? (
@@ -367,14 +369,19 @@ export function LandlordRoomsScreen({
             ) : (
               <div className="flex flex-col gap-3">
                 <AnimatePresence mode="popLayout">
-                  {occupiedRooms.map((room) => (
+                  {occupiedRooms.map((room, index) => (
                     <motion.div
                       key={room.id}
                       layout
                       initial={{ opacity: 0, scale: 0.96 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.94 }}
-                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 350,
+                        damping: 30,
+                        delay: Math.min(index * 0.04, 0.2),
+                      }}
                       className="w-full"
                     >
                       <RoomItemCard
@@ -413,14 +420,19 @@ export function LandlordRoomsScreen({
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <AnimatePresence mode="popLayout">
-                  {inactiveRooms.map((room) => (
+                  {inactiveRooms.map((room, index) => (
                     <motion.div
                       key={room.id}
                       layout
                       initial={{ opacity: 0, scale: 0.96 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.94 }}
-                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 350,
+                        damping: 30,
+                        delay: Math.min(index * 0.04, 0.2),
+                      }}
                       className="w-full"
                     >
                       <RoomItemCard
