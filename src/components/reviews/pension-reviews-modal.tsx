@@ -139,7 +139,7 @@ export function PensionReviewsModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 text-foreground transition cursor-pointer"
+                className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 text-foreground transition cursor-pointer"
                 aria-label="Volver"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -158,7 +158,7 @@ export function PensionReviewsModal({
             <DrawerDescription>Comentarios y calificaciones de estudiantes</DrawerDescription>
           </DrawerHeader>
 
-          <div className="flex-1 overflow-y-auto scrollbar-subtle px-5 py-4 flex flex-col gap-6">
+          <div className="flex-1 overflow-y-auto scrollbar-subtle px-5 py-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] flex flex-col gap-6">
             <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 p-5 text-center">
               <div className="flex items-center gap-3">
                 <span className="text-4xl font-black tracking-tight text-foreground tabular-nums">
@@ -194,8 +194,8 @@ export function PensionReviewsModal({
             </div>
 
             {reviews.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground flex flex-col items-center justify-center">
-                <Star className="h-8 w-8 text-muted-foreground/30 mb-2" />
+              <div className="rounded-2xl border border-dashed border-border px-8 pt-10 pb-14 -mt-2 text-center text-muted-foreground flex flex-col items-center justify-center">
+                <Star className="h-8 w-8 text-muted-foreground/30 mb-2 -translate-y-0.5" />
                 <p className="text-sm font-semibold text-foreground">
                   Esta pensión aún no tiene reseñas
                 </p>

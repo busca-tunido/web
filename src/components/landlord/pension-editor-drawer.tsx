@@ -721,7 +721,7 @@ export function PensionEditorDrawer({
           <button
             type="button"
             onClick={handleClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted text-muted-foreground transition cursor-pointer"
+            className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full hover:bg-muted text-muted-foreground transition cursor-pointer"
             aria-label="Cerrar modal"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -729,7 +729,7 @@ export function PensionEditorDrawer({
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Nueva Pensión
           </span>
-          <div className="w-9" />
+          <div className="w-11" />
         </div>
 
         <form
@@ -745,7 +745,7 @@ export function PensionEditorDrawer({
             </DrawerHeader>
 
             {isBannerVisible && (
-              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs">
+              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs transition-all duration-200 overflow-hidden">
                 <span className="text-foreground">Tienes un borrador previo no publicado.</span>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
@@ -1350,7 +1350,7 @@ export function PensionEditorDrawer({
             </div>
           </div>
 
-          <div className="p-4 border-t border-border/80 bg-background/95 backdrop-blur-md flex items-center justify-end gap-3 shrink-0">
+          <div className="px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1rem)] border-t border-border/80 bg-background/95 backdrop-blur-md flex items-center justify-end gap-3 shrink-0">
             <Button
               type="button"
               variant="outline"

@@ -117,7 +117,7 @@ function PensionCardComponent({
             </span>
           </div>
 
-          <div className="mt-0.5 flex items-baseline gap-1">
+          <div className="mt-2 pt-1 flex items-baseline gap-1">
             <span className="text-base font-bold text-foreground tabular-nums">
               ${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP
             </span>
@@ -134,7 +134,7 @@ function PensionCardComponent({
           e.stopPropagation();
           onToggleFavorite(pension.id);
         }}
-        className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer"
+        className="absolute top-2.5 right-2.5 z-10 flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer"
         aria-label="Guardar en favoritos"
       >
         <Heart className={`h-5 w-5 ${isFavorite ? 'fill-primary text-primary' : 'stroke-[2]'}`} />

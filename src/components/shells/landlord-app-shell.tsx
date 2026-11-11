@@ -109,7 +109,7 @@ function LandlordAppShellContent() {
           onOpenCreatePension={openCreatePensionModal}
         />
         <LandlordDesktopHeader className="hidden md:flex" />
-        <main className="flex-1 p-4 md:p-8 max-w-6xl w-full mx-auto pb-24 md:pb-12">
+        <main className="flex-1 p-4 md:p-8 max-w-6xl w-full mx-auto pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:pb-12">
           {activeTab === 'rooms' && (
             <LandlordRoomsScreen
               selectedPension={selectedPension}

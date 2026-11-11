@@ -903,7 +903,7 @@ export function LandlordPensionScreen({
                 </CardTitle>
               </div>
 
-              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 bg-muted/30 px-2.5 py-1 rounded-lg border border-border/60">
+              <div className="flex min-h-[44px] items-center gap-2 self-start sm:self-auto shrink-0 bg-muted/30 px-3 py-1.5 rounded-lg border border-border/60">
                 <span className="text-xs font-medium text-foreground">Personalizar</span>
                 <button
                   type="button"
@@ -924,14 +924,14 @@ export function LandlordPensionScreen({
                     })
                   }
                   className={cn(
-                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     form.useCustomContact ? 'bg-foreground' : 'bg-muted-foreground/30',
                   )}
                 >
                   <span
                     className={cn(
-                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
-                      form.useCustomContact ? 'translate-x-4' : 'translate-x-0',
+                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow-xs ring-0 transition duration-200 ease-in-out',
+                      form.useCustomContact ? 'translate-x-5' : 'translate-x-0',
                     )}
                   />
                 </button>
@@ -940,7 +940,14 @@ export function LandlordPensionScreen({
           </CardHeader>
 
           <CardContent className="p-4 sm:p-5 space-y-4 flex-1 flex flex-col justify-between">
-            <div className="space-y-3.5">
+            <div
+              className={cn(
+                'space-y-3.5 rounded-xl p-3.5 transition-all duration-200',
+                form.useCustomContact
+                  ? 'border border-primary/20 bg-primary/5'
+                  : 'border border-border/40 bg-muted/20 opacity-80',
+              )}
+            >
               <div>
                 <label
                   htmlFor="landlord-contact-name"

@@ -405,7 +405,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
           </div>
         </div>
 
-        <div className="sticky bottom-0 z-20 border-t border-border bg-card p-4 flex items-center justify-between gap-4">
+        <div className="sticky bottom-0 z-20 border-t border-border bg-card px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1rem)] flex items-center justify-between gap-4">
           <Button
             variant="ghost"
             onClick={handleReset}

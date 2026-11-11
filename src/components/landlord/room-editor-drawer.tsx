@@ -421,7 +421,7 @@ export function RoomEditorDrawer({
             </DrawerHeader>
 
             {isBannerVisible && !isEditing && (
-              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs">
+              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs transition-all duration-200 overflow-hidden">
                 <span className="text-foreground">
                   Tienes un borrador de habitación no guardado.
                 </span>
@@ -776,7 +776,7 @@ export function RoomEditorDrawer({
             </div>
           </div>
 
-          <div className="border-t border-border/80 bg-card p-4 flex items-center gap-2.5 shrink-0">
+          <div className="border-t border-border/80 bg-card px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1rem)] flex items-center gap-2.5 shrink-0">
             <Button
               type="button"
               variant="outline"

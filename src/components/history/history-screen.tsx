@@ -37,7 +37,10 @@ function HistoryContent({ onExplore }: HistoryScreenProps) {
   const [selectedReviewStay, setSelectedReviewStay] = useState<StayHistoryItem | null>(null);
 
   return (
-    <div id="history-screen-view" className="flex flex-col gap-5 px-4 md:px-0 pb-20 md:pb-12 pt-2">
+    <div
+      id="history-screen-view"
+      className="flex flex-col gap-5 px-4 md:px-0 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-12 pt-2"
+    >
       <div>
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-primary" />

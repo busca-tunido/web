@@ -82,7 +82,7 @@ export function RoomItemCard({
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3.5 min-w-0 flex-1">
-          <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-xl bg-muted shadow-2xs flex items-center justify-center">
+          <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-lg bg-muted shadow-2xs flex items-center justify-center">
             {thumbnail ? (
               <Image
                 src={thumbnail}
@@ -178,7 +178,7 @@ export function RoomItemCard({
               aria-label={`Cambiar disponibilidad de ${rawTitle}`}
               disabled={isUpdating}
               onClick={handleToggle}
-              className="flex min-h-[40px] items-center gap-2 rounded-xl px-2 py-1 text-xs transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer disabled:opacity-60"
+              className="flex min-h-[44px] items-center gap-2 rounded-xl px-3 py-1.5 text-xs transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer disabled:opacity-60"
             >
               <span className="text-xs font-medium text-muted-foreground select-none">
                 Disponibilidad

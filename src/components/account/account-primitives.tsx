@@ -106,7 +106,7 @@ export function AccountThemeCard() {
                 type="button"
                 onClick={() => setTheme(opt.id)}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 rounded-xl border p-2.5 text-xs font-semibold transition active:scale-95 cursor-pointer',
+                  'flex flex-col items-center justify-center gap-1 rounded-lg border p-2.5 text-xs font-semibold transition active:scale-95 cursor-pointer',
                   isSelected
                     ? 'border-primary bg-primary/15 text-primary shadow-xs'
                     : 'border-border/80 bg-background/60 text-muted-foreground hover:text-foreground hover:bg-secondary',

@@ -82,7 +82,10 @@ export function ExploreScreen({
   );
 
   return (
-    <div id="explore-screen-view" className="flex flex-col gap-8 pb-20 md:pb-12 pt-2">
+    <div
+      id="explore-screen-view"
+      className="flex flex-col gap-8 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-12 pt-2"
+    >
       <div className="px-5 md:px-0">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground text-balance">
           Pensiones y Residencias Universitarias en Chile

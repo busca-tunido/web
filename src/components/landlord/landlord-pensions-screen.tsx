@@ -366,7 +366,12 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
 
   return (
     <>
-      <div className={cn('flex flex-col gap-6 text-left pb-28 md:pb-12', className)}>
+      <div
+        className={cn(
+          'flex flex-col gap-6 text-left pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12',
+          className,
+        )}
+      >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -508,8 +513,8 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
         </Card>
 
         {pensions.length === 0 ? (
-          <div className="flex min-h-[50vh] flex-col items-center justify-center p-8 text-center rounded-2xl border border-dashed border-border/80 bg-card/60 my-4 max-w-md mx-auto">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-4">
+          <div className="flex min-h-[50vh] flex-col items-center justify-center -mt-6 px-8 pt-6 pb-12 text-center rounded-2xl border border-dashed border-border/80 bg-card/60 my-4 max-w-md mx-auto">
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-muted text-muted-foreground mb-4">
               <Building2 className="h-8 w-8" />
             </div>
             <h2 className="text-lg font-bold text-foreground tracking-tight text-balance">

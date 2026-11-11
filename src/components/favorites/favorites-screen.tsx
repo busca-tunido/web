@@ -72,7 +72,7 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
   return (
     <div
       id="favorites-screen-view"
-      className="flex flex-col gap-6 px-4 md:px-0 pb-20 md:pb-12 pt-2"
+      className="flex flex-col gap-6 px-4 md:px-0 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-12 pt-2"
     >
       <div className="flex items-center justify-between">
         <div>
@@ -100,7 +100,7 @@ function FavoritesContent({ allPensions, onSelectPension, onExplore }: Favorites
       />
 
       {errorMessage && (
-        <div className="fixed bottom-20 left-4 right-4 z-50 flex items-center justify-between rounded-xl bg-destructive text-destructive-foreground px-4 py-3 text-xs font-semibold shadow-lg">
+        <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] md:bottom-12 left-4 right-4 z-50 flex items-center justify-between rounded-xl bg-destructive text-destructive-foreground px-4 py-3 text-xs font-semibold shadow-lg">
           <span>{errorMessage}</span>
           <button
             type="button"
@@ -132,9 +132,9 @@ function FavoritesGrid({
 }: FavoritesGridProps) {
   if (savedPensions.length === 0 && skeletonCount === 0) {
     return (
-      <div className="my-12 flex flex-col items-center justify-center rounded-2xl border border-border bg-card/60 p-8 text-center shadow-sm">
+      <div className="my-12 -mt-4 flex flex-col items-center justify-center rounded-2xl border border-border bg-card/60 px-8 pt-8 pb-12 text-center shadow-sm">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground mb-3">
-          <Heart className="h-6 w-6" />
+          <Heart className="h-6 w-6 -translate-y-0.5" />
         </div>
         <h3 className="text-sm font-semibold text-foreground text-balance">
           Aún no has guardado alojamientos favoritos

@@ -215,7 +215,7 @@ export function PensionDetailContent({
             <button
               type="button"
               onClick={() => paginate(-1)}
-              className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 active:scale-95 transition shadow-sm cursor-pointer"
+              className="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 active:scale-95 transition shadow-sm cursor-pointer"
               aria-label="Foto anterior"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -223,7 +223,7 @@ export function PensionDetailContent({
             <button
               type="button"
               onClick={() => paginate(1)}
-              className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-20 h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 active:scale-95 transition shadow-sm cursor-pointer"
+              className="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-20 h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 active:scale-95 transition shadow-sm cursor-pointer"
               aria-label="Siguiente foto"
             >
               <ChevronRight className="h-5 w-5" />
@@ -232,7 +232,7 @@ export function PensionDetailContent({
         )}
 
         <div className="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
-          <div className="flex gap-1.5 pointer-events-auto">
+          <div className="flex gap-1.5 pointer-events-auto items-center py-1">
             {displayPhotos.map((photoUrl, i) => (
               <button
                 key={`photo-dot-${pension.id}-${i}-${photoUrl}`}
@@ -242,11 +242,15 @@ export function PensionDetailContent({
                   setDirection(i > activePhotoIdx ? 1 : -1);
                   setActivePhotoIdx(i);
                 }}
-                className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                  i === activePhotoIdx ? 'w-6 bg-primary' : 'w-2 bg-white/40'
-                }`}
+                className="relative py-2 px-0.5 -my-2 flex items-center cursor-pointer min-h-[32px]"
                 aria-label={`Ver foto ${i + 1}`}
-              />
+              >
+                <span
+                  className={`block h-1.5 rounded-full transition-all ${
+                    i === activePhotoIdx ? 'w-6 bg-primary' : 'w-2 bg-white/40'
+                  }`}
+                />
+              </button>
             ))}
           </div>
           <Badge className="bg-primary text-primary-foreground font-bold text-xs shadow pointer-events-auto">
@@ -300,7 +304,7 @@ export function PensionDetailContent({
           pension.nearestUniversity.distanceMeters > 0 &&
           pension.nearestUniversity.name,
       ) && (
-        <div className="mb-4 rounded-xl border border-sage/25 bg-sage/5 p-3">
+        <div className="mb-4 rounded-xl border border-sage/25 bg-sage/5 p-3 min-h-[44px] flex items-center">
           <div className="flex items-center gap-2 text-xs font-semibold text-sage-foreground">
             <MapPin className="h-3.5 w-3.5 shrink-0" />
             <span className="text-foreground">
