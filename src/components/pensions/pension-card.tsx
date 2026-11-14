@@ -1,10 +1,11 @@
 'use client';
 
-import { Award, Building2, Heart, MapPin, Maximize2, ShieldCheck, Star } from 'lucide-react';
+import { ArrowLeftRight, Award, Building2, Heart, MapPin, Maximize2, ShieldCheck, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { memo, useState } from 'react';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
+import { COMPARISON_LIMIT, usePensionComparison } from '@/contexts/pension-comparison-context';
 import type { PensionItem } from '@/lib/types';
 
 type PensionCardProps = {
@@ -30,6 +31,9 @@ function PensionCardComponent({
   onSelectPension,
 }: PensionCardProps) {
   const [isViewerOpen, setIsViewerOpen] = useState<boolean>(false);
+  const comparison = usePensionComparison();
+  const isCompared = comparison?.selected.some((item) => item.id === pension.id) ?? false;
+  const comparisonFull = !isCompared && comparison?.selected.length === COMPARISON_LIMIT;
   const isHighRelevance = (pension.relevanceScore ?? 0) >= 75;
   const titleId = `pension-title-${pension.id}`;
 
@@ -161,6 +165,19 @@ function PensionCardComponent({
         </button>
       </div>
 
+      {comparison && (
+        <button
+          type="button"
+          aria-pressed={isCompared}
+          aria-label={`${isCompared ? 'Quitar de comparación' : 'Comparar'}: ${pension.title}`}
+          disabled={comparisonFull}
+          onClick={() => comparison.toggle(pension)}
+          className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-border px-3 text-sm font-semibold transition hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary"
+        >
+          <ArrowLeftRight aria-hidden="true" className="size-4" />
+          {isCompared ? 'Seleccionada para comparar' : comparisonFull ? 'Máximo dos pensiones' : 'Comparar pensión'}
+        </button>
+      )}
       <motion.button
         type="button"
         whileTap={{ scale: 0.75 }}
