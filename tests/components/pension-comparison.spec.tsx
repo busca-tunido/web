@@ -1,14 +1,15 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { useEffect } from 'react';
+import { useEffect, type ComponentProps } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MapPensionComparison } from '@/components/pensions/map-pension-comparison';
 import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
+import { PensionDetailContent } from '@/components/pensions/pension-detail-content';
 import { PensionComparisonProvider, usePensionComparison } from '@/contexts/pension-comparison-context';
 import { NavigationProvider, useNavigation } from '@/contexts/navigation-context';
 import { createError, createSuccess } from '@/lib/api-response';
 import type { UserRole } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
-import { comparisonPension, comparisonPensions } from '../fixtures/comparison-pensions';
+import { comparisonPension, comparisonPensions, comparisonReview } from '../fixtures/comparison-pensions';
 
 const auth = vi.hoisted(() => ({
   user: { id: 'student-a', role: 'STUDENT' as UserRole } as { id: string; role: UserRole } | null,
@@ -16,7 +17,16 @@ const auth = vi.hoisted(() => ({
 }));
 vi.mock('@/lib/auth-context', () => ({ useAuth: () => auth }));
 vi.mock('@/services/pensions.service', () => ({ pensionsService: { fetchPensionDetail: vi.fn() } }));
+vi.mock('@/hooks/use-pension-reviews', () => ({ usePensionReviews: () => ({
+  reviews: [comparisonReview], ratingStats: { average: 5, count: 1 }, refetch: vi.fn(),
+}) }));
+vi.mock('@/components/pensions/pension-location-map', () => ({ PensionLocationMap: () => <div>Ubicación de la ficha</div> }));
+vi.mock('@/components/reviews/publish-review-modal', () => ({ PublishReviewModal: () => <div role="dialog" aria-label="Publicar reseña">Formulario de publicación</div> }));
+vi.mock('motion/react', () => ({ motion: {
+  div: (props: ComponentProps<'div'>) => <div className={props.className}>{props.children}</div>,
+}, AnimatePresence: (props: { children: React.ReactNode }) => props.children }));
 
+const chooseAnother = vi.fn();
 function MapHarness({ visible = true }: { visible?: boolean }) {
   const comparison = usePensionComparison();
   const setMapVisible = comparison?.setMapVisible;
@@ -26,7 +36,7 @@ function MapHarness({ visible = true }: { visible?: boolean }) {
       <PensionCompareButton pension={pension} />
       <button type="button" onClick={() => comparison?.select(pension)}>Abrir marcador {pension.title}</button>
     </div>)}
-    {visible && comparison?.selected.length ? <MapPensionComparison mapOnly={false} onToggleMap={vi.fn()} /> : null}
+    {visible && comparison?.selected.length ? <MapPensionComparison mapOnly={false} onToggleMap={vi.fn()} onChooseAnother={chooseAnother} /> : null}
   </>;
 }
 function App({ visible = true }: { visible?: boolean }) {
@@ -41,18 +51,25 @@ function DetailNavigation() {
 }
 function selectA() { fireEvent.click(screen.getByRole('button', { name: 'Comparar: Pensión A' })); }
 function selectB() { fireEvent.click(screen.getByRole('button', { name: 'Abrir marcador Pensión B' })); }
+async function openPair() {
+  selectA();
+  await screen.findByRole('heading', { name: 'Pensión A' });
+  selectB();
+  return screen.findByRole('dialog', { name: 'Comparación de dos pensiones' });
+}
 
 beforeEach(() => {
   auth.user = { id: 'student-a', role: 'STUDENT' };
   auth.isLoading = false;
   auth.toggleFavorite.mockReset();
+  chooseAnother.mockReset();
   vi.mocked(pensionsService.fetchPensionDetail).mockReset();
   vi.mocked(pensionsService.fetchPensionDetail).mockImplementation(async id => createSuccess(comparisonPensions.find(p => p.id === id) ?? comparisonPension));
 });
 afterEach(cleanup);
 
-describe('Integrated map comparison', () => {
-  it('moves the open detail to the map atomically without a history-back race', () => {
+describe('Fullscreen comparison with a fixed left pension', () => {
+  it('moves the open detail to the map without a history-back race', () => {
     const back = vi.spyOn(window.history, 'back');
     render(<PensionComparisonProvider><NavigationProvider initialTab="explore" initialNavigationState={{ tab: 'explore' }}><DetailNavigation /></NavigationProvider></PensionComparisonProvider>);
     fireEvent.click(screen.getByRole('button', { name: 'Abrir ficha' }));
@@ -61,119 +78,107 @@ describe('Integrated map comparison', () => {
     expect(back).not.toHaveBeenCalled();
     back.mockRestore();
   });
+
   it.each([null, { id: 'landlord', role: 'LANDLORD' as const }])('restricts comparison to students: %s', user => {
     auth.user = user;
     render(<App />);
     expect(screen.queryByRole('button', { name: 'Comparar: Pensión A' })).toBeNull();
   });
 
-  it('pins A immediately and opens B without a comparison modal or duplicate selection', async () => {
+  it('uses the normal detail and real review preview in a fullscreen comparison', async () => {
     render(<App />);
-    selectA();
+    const dialog = await openPair();
+    await within(dialog).findByRole('heading', { name: 'Pensión B' });
+    expect(dialog.className).toContain('max-w-none');
+    expect(within(dialog).getAllByText('Descripción de la Pensión')).toHaveLength(2);
+    expect(within(dialog).getAllByText(comparisonReview.comment, { exact: false })).toHaveLength(2);
+    expect(within(dialog).getByText('Más económica')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Quitar Pensión A' })).toBeNull();
+  });
+
+  it('the X removes only B and keeps A for repeated comparisons without refetching A', async () => {
+    render(<App />);
+    await openPair();
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar Pensión B y volver al mapa' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('heading', { name: 'Pensión A' })).toBeTruthy();
     expect(screen.getByText('1 de 2 seleccionadas')).toBeTruthy();
-    expect(screen.getAllByText('Selecciona otra pensión para comparar').length).toBeGreaterThan(0);
-    await screen.findByText('250.000 CLP');
-    selectB();
-    expect(screen.getByText('2 de 2 seleccionadas')).toBeTruthy();
-    await screen.findByText('300.000 CLP');
-    expect(screen.queryByRole('dialog')).toBeNull();
-    expect(screen.getByText('Más económica')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir marcador Pensión A' }));
-    expect(screen.getByText('2 de 2 seleccionadas')).toBeTruthy();
+    expect(chooseAnother).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir marcador Pensión C' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Comparación de dos pensiones' });
+    await within(dialog).findByRole('heading', { name: 'Pensión C' });
+    expect(within(dialog).getByRole('heading', { name: 'Pensión A' })).toBeTruthy();
     expect(vi.mocked(pensionsService.fetchPensionDetail).mock.calls.filter(([id]) => id === 'pension-a')).toHaveLength(1);
   });
 
-  it('keeps B in its slot, fills empty A, and replaces either slot explicitly', async () => {
+  it('unmarks A only through its comparison toggle and preserves B in its own slot', async () => {
     render(<App />);
-    selectA(); selectB();
-    await screen.findByText('300.000 CLP');
-    fireEvent.click(screen.getByRole('button', { name: 'Quitar Pensión A' }));
-    expect(screen.getByRole('button', { name: 'Reemplazar B' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir marcador Pensión C' }));
-    await screen.findByRole('heading', { name: 'Pensión C' });
-    fireEvent.click(screen.getByRole('button', { name: 'Reemplazar A' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir marcador Pensión A' }));
-    await screen.findByRole('heading', { name: 'Pensión A' });
-    expect(screen.getAllByRole('tab')[0].getAttribute('aria-selected')).toBe('true');
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir marcador Pensión C' }));
-    await screen.findByRole('heading', { name: 'Pensión C' });
-    expect(screen.queryByRole('heading', { name: 'Pensión B' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Limpiar comparación' }));
-    expect(screen.queryByRole('region', { name: 'Comparación de pensiones en el mapa' })).toBeNull();
+    const dialog = await openPair();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Quitar de comparación: Pensión A' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('heading', { name: 'Pensión B' })).toBeTruthy();
+    expect(screen.getByText('Selecciona la pensión que quieres fijar a la izquierda.')).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Pensión A' })).toBeNull();
   });
 
-  it('preserves selection when leaving and returning to the map', async () => {
+  it('preserves comparisons when leaving the map and resets on user changes', async () => {
     const app = render(<App />);
-    selectA(); selectB();
-    await screen.findByText('300.000 CLP');
+    await openPair();
     app.rerender(<App visible={false} />);
-    expect(screen.getByRole('link', { name: 'Ver comparación' })).toBeTruthy();
+    await screen.findByRole('link', { name: 'Ver comparación' });
     app.rerender(<App />);
-    expect(screen.getByText('2 de 2 seleccionadas')).toBeTruthy();
-    await screen.findByRole('heading', { name: 'Pensión A' });
+    await screen.findByRole('dialog', { name: 'Comparación de dos pensiones' });
+    auth.user = { id: 'student-b', role: 'STUDENT' };
+    app.rerender(<App />);
+    expect(screen.queryByText('2 de 2 seleccionadas')).toBeNull();
   });
 
-  it('supports mobile tabs with arrow keys and preserves favorites', async () => {
+  it('supports keyboard mobile tabs and keeps favorites available', async () => {
     render(<App />);
-    selectA(); selectB();
-    await screen.findByText('300.000 CLP');
-    const [a, b] = screen.getAllByRole('tab');
-    expect(b.getAttribute('aria-selected')).toBe('true');
+    const dialog = await openPair();
+    await within(dialog).findByRole('heading', { name: 'Pensión B' });
+    const [a, b] = within(dialog).getAllByRole('tab');
     fireEvent.keyDown(b, { key: 'ArrowLeft' });
     expect(a.getAttribute('aria-selected')).toBe('true');
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar en favoritos: Pensión A' }));
+    fireEvent.click(within(dialog).getAllByRole('button', { name: 'Guardar en favoritos' })[0]);
     expect(auth.toggleFavorite).toHaveBeenCalledWith('pension-a');
     expect(screen.getByText('2 de 2 seleccionadas')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Volver al modo normal' }));
-    expect(screen.queryByRole('tablist')).toBeNull();
   });
 
-  it('shows published zero guarantee and unknown services instead of fabricated values', async () => {
-    render(<App />); selectA(); selectB();
-    await screen.findByText('300.000 CLP');
-    expect(screen.getByText('0 CLP')).toBeTruthy();
-    const services = screen.getByRole('region', { name: 'Servicios' });
-    expect(within(services).getAllByText('No informado').length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Solo diferencias' }));
-    expect(screen.queryByText('Comidas incluidas')).toBeNull();
-  });
-
-  it('handles errors per slot and retries; inactive publications never produce winners', async () => {
+  it('keeps per-slot errors retryable and excludes inactive publications from advantages', async () => {
     vi.mocked(pensionsService.fetchPensionDetail).mockResolvedValue(createError('No disponible', 404));
     render(<App />); selectA();
-    expect(await screen.findByRole('alert')).toBeTruthy();
-    expect(screen.queryByText('250.000 CLP')).toBeNull();
+    await screen.findByRole('alert');
     vi.mocked(pensionsService.fetchPensionDetail).mockResolvedValue(createSuccess(comparisonPension));
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar Pensión A' }));
-    await screen.findByText('250.000 CLP');
+    await screen.findByRole('heading', { name: 'Pensión A' });
     vi.mocked(pensionsService.fetchPensionDetail).mockResolvedValue(createSuccess({ ...comparisonPensions[1], isActive: false }));
     selectB();
     await screen.findByText('Esta publicación ya no está disponible. Reemplázala por otra.');
     expect(screen.queryByText('Más económica')).toBeNull();
   });
 
-  it('ignores late responses after replacing a pension', async () => {
-    let resolveOld: (value: ReturnType<typeof createSuccess<typeof comparisonPension>>) => void = () => {};
-    vi.mocked(pensionsService.fetchPensionDetail).mockImplementation(id => id === 'pension-a'
-      ? new Promise(resolve => { resolveOld = resolve; })
-      : Promise.resolve(createSuccess(comparisonPensions.find(p => p.id === id) ?? comparisonPension)));
-    render(<App />); selectA();
-    fireEvent.click(screen.getByRole('button', { name: 'Reemplazar A' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir marcador Pensión C' }));
-    await screen.findByRole('heading', { name: 'Pensión C' });
-    resolveOld(createSuccess({ ...comparisonPension, title: 'Respuesta antigua' }));
-    await waitFor(() => expect(screen.queryByRole('heading', { name: 'Respuesta antigua' })).toBeNull());
+  it.each(['contactPhone', 'contactWhatsapp'] as const)('blocks %s and publishing with a visible comparison notice', async field => {
+    render(<PensionComparisonProvider><PensionDetailContent pension={{ ...comparisonPension, [field]: '+56 9 1234 5678' }} mode="comparison" /></PensionComparisonProvider>);
+    fireEvent.click(screen.getByRole('button', { name: 'Consultar Disponibilidad' }));
+    expect(screen.getByRole('alert').textContent).toContain('Estás en modo comparación');
+    expect(screen.queryByRole('link', { name: 'Consultar Disponibilidad' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Publicar una reseña' }));
+    expect(screen.queryByRole('dialog', { name: 'Publicar reseña' })).toBeNull();
   });
 
-  it('resets selection on user change and logout', () => {
-    const app = render(<App />); selectA();
-    auth.user = { id: 'student-b', role: 'STUDENT' };
-    app.rerender(<App />);
-    expect(screen.queryByText('1 de 2 seleccionadas')).toBeNull();
-    selectA();
-    auth.user = null;
-    app.rerender(<App />);
-    expect(screen.queryByText('1 de 2 seleccionadas')).toBeNull();
+  it('keeps API rating aggregates consistent with comparison badges while reviews load', () => {
+    render(<PensionComparisonProvider><PensionDetailContent pension={{ ...comparisonPension, ratingAverage: 4.2, ratingCount: 12, reviewsCount: 12 }} mode="comparison" /></PensionComparisonProvider>);
+    expect(screen.getByRole('button', { name: /4.2.*12 reseñas/ })).toBeTruthy();
+    expect(screen.queryByText('5.0')).toBeNull();
+  });
+
+  it('normal details retain contact links and review publishing', () => {
+    render(<PensionComparisonProvider><PensionDetailContent pension={{ ...comparisonPension, contactPhone: '+56 9 1234 5678' }} /></PensionComparisonProvider>);
+    expect(screen.getByRole('link', { name: 'Consultar Disponibilidad' }).getAttribute('href')).toBe('tel:+56912345678');
+    fireEvent.click(screen.getByRole('button', { name: 'Publicar una reseña' }));
+    expect(screen.getByRole('dialog', { name: 'Publicar reseña' })).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 });
 

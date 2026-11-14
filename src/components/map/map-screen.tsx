@@ -429,7 +429,7 @@ export function MapScreen({
   const [comparisonMinimized, setComparisonMinimized] = useState(false);
   const comparisonIds = comparison?.slots.map((item) => item?.id ?? '').join(':');
   useEffect(() => {
-    if (comparisonIds) setComparisonMinimized(false);
+    if (comparisonIds?.split(':').every(Boolean)) setComparisonMinimized(false);
   }, [comparisonIds]);
   const setMapVisible = comparison?.setMapVisible;
   useEffect(() => {
@@ -1322,13 +1322,14 @@ export function MapScreen({
     >
       {comparisonActive && (
         <aside
-          className={`order-last shrink-0 overflow-hidden border-t border-border lg:order-first lg:border-r lg:border-t-0 lg:h-full ${comparisonMinimized ? 'h-auto' : 'h-[75%]'} ${comparison?.selected.length === 2 ? 'lg:w-[66%] 2xl:w-[62%] lg:max-w-4xl' : 'lg:w-[380px]'}`}
+          className={`order-last shrink-0 overflow-hidden border-t border-border lg:order-first lg:border-r lg:border-t-0 lg:h-full lg:w-[380px] ${comparisonMinimized ? 'h-auto' : 'h-[75%]'}`}
         >
           <MapPensionComparison
             universityId={selectedUniversity?.id}
             universityName={selectedUniversity?.name}
             mapOnly={comparisonMinimized}
             onToggleMap={() => setComparisonMinimized((value) => !value)}
+            onChooseAnother={() => setComparisonMinimized(true)}
           />
         </aside>
       )}

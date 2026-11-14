@@ -38,17 +38,22 @@ function DialogContent({
   className,
   children,
   showClose = true,
+  fullScreen = false,
   ...props
-}: DialogPrimitive.Popup.Props & { showClose?: boolean }) {
+}: DialogPrimitive.Popup.Props & { showClose?: boolean; fullScreen?: boolean }) {
   return (
     <DialogPortal>
       <DialogOverlay />
-      <DialogPrimitive.Viewport className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <DialogPrimitive.Viewport
+        className={cn('fixed inset-0 z-50 flex items-center justify-center', !fullScreen && 'p-4')}
+      >
         <DialogPrimitive.Popup
           data-slot="dialog-content"
           className={cn(
             'relative z-50 flex w-full max-w-lg flex-col gap-4 rounded-2xl border border-border bg-card p-6 text-foreground shadow-2xl duration-200 data-[ending-style]:scale-95 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 data-[starting-style]:opacity-0 transition-[transform,opacity]',
             className,
+            fullScreen &&
+              'h-dvh max-h-dvh max-w-none gap-0 overflow-hidden rounded-none border-0 p-0 data-[starting-style]:scale-100 data-[ending-style]:scale-100',
           )}
           {...props}
         >
