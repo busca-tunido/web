@@ -278,8 +278,14 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
                   locationSource={locationSource}
                   locationError={locationError}
                   onRequestLocation={requestLocation}
-                  onSelectPension={selectPension}
-                  onOpenPensionDetail={openPensionDetail}
+                  onSelectPension={(pension) => {
+                    selectPension(pension);
+                    if (comparison?.selected.length) comparison.select(pension);
+                  }}
+                  onOpenPensionDetail={(pension) => {
+                    if (comparison?.selected.length) comparison.select(pension);
+                    else openPensionDetail(pension);
+                  }}
                   filters={effectiveFilters}
                 />
               )}
@@ -306,7 +312,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
 
       <PensionDetailModal
         pension={selectedPension}
-        isOpen={isPensionDetailOpen}
+        isOpen={isPensionDetailOpen && !(activeTab === 'map' && comparison?.selected.length)}
         onClose={closePensionDetail}
       />
 

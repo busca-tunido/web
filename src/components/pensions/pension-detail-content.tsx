@@ -36,6 +36,7 @@ import { PensionReviewsModal } from '../reviews/pension-reviews-modal';
 import { PensionReviewsPreview } from '../reviews/pension-reviews-preview';
 import { PublishReviewModal } from '../reviews/publish-review-modal';
 import { AmenitiesBreakdownModal } from './amenities-breakdown-modal';
+import { PensionCompareButton } from './pension-compare-button';
 import { PensionLocationMap } from './pension-location-map';
 import { SuggestEditModal } from './suggest-edit-modal';
 
@@ -210,6 +211,7 @@ export function PensionDetailContent({
         )}
 
         <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+          <PensionCompareButton pension={pension} variant="detail" />
           {displayPhotos.length > 0 && (
             <button
               type="button"
@@ -223,7 +225,7 @@ export function PensionDetailContent({
           <button
             type="button"
             onClick={(e) => onFavoriteClick(pension.id, e)}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-white hover:text-primary active:scale-90 transition shadow-sm cursor-pointer"
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-white hover:text-primary active:scale-90 transition shadow-sm cursor-pointer"
             aria-label="Guardar en favoritos"
           >
             <Heart className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : ''}`} />
