@@ -497,6 +497,8 @@ export function MapScreen({
   const renderTimerRef = useRef<number | null>(null);
   const userMarkerRef = useRef<import('leaflet').Marker | null>(null);
   const userAccuracyCircleRef = useRef<import('leaflet').Circle | null>(null);
+  const hasCenteredOnDeviceRef = useRef(false);
+  const hasDraggedMapRef = useRef(false);
   const leafletModuleRef = useRef<typeof import('leaflet') | null>(null);
 
   useEffect(() => {
@@ -713,13 +715,19 @@ export function MapScreen({
           },
         ).addTo(map);
       }
+      if (!hasCenteredOnDeviceRef.current) {
+        hasCenteredOnDeviceRef.current = true;
+        if (!selectedCity && !selectedUniversity && !selectedPension && !hasDraggedMapRef.current) {
+          map.flyTo([browserLocation.latitude, browserLocation.longitude], 15, { duration: 1.2 });
+        }
+      }
     } else {
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
       userAccuracyCircleRef.current?.remove();
       userAccuracyCircleRef.current = null;
     }
-  }, [browserLocation]);
+  }, [browserLocation, selectedCity, selectedUniversity, selectedPension]);
 
   const renderCampuses = useCallback(() => {
     const L = leafletModuleRef.current;
@@ -1049,6 +1057,9 @@ export function MapScreen({
 
       tileLayerRef.current = tileLayer;
       mapInstanceRef.current = map;
+      map.on('dragstart', () => {
+        hasDraggedMapRef.current = true;
+      });
 
       map.on('moveend', () => {
         const center = map.getCenter();
@@ -1121,6 +1132,8 @@ export function MapScreen({
       markersLayerRef.current = null;
       userMarkerRef.current = null;
       userAccuracyCircleRef.current = null;
+      hasCenteredOnDeviceRef.current = false;
+      hasDraggedMapRef.current = false;
     };
   }, []);
 
