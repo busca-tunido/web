@@ -25,10 +25,14 @@ export function PensionCompareButton({
     <button
       type="button"
       aria-pressed={isCompared}
-      aria-label={`${isCompared ? (variant === 'detail' ? 'Ver comparación' : 'Quitar de comparación') : 'Comparar'}: ${pension.title}`}
+      aria-label={`${isCompared ? 'Dejar de comparar' : 'Comparar'}: ${pension.title}`}
       disabled={comparisonFull && variant === 'card' && comparison.replacing === null}
       onClick={(event) => {
         event.stopPropagation();
+        if (isCompared) {
+          comparison.toggle(pension);
+          return;
+        }
         if (variant === 'detail') {
           comparison.select(pension);
           navigation?.navigateTab('map');
@@ -43,10 +47,10 @@ export function PensionCompareButton({
       <ArrowLeftRight aria-hidden="true" className="size-4" />
       {variant !== 'card'
         ? isCompared
-          ? 'Comparando'
+          ? 'Dejar de comparar'
           : 'Comparar'
         : isCompared
-          ? 'Comparando'
+          ? 'Dejar de comparar'
           : comparison.replacing !== null
             ? `Reemplazar Pensión ${comparison.replacing === 0 ? 'A' : 'B'}`
             : comparisonFull

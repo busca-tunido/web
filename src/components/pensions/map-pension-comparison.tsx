@@ -210,7 +210,7 @@ export function MapPensionComparison({
         </div>
         {fullscreen ? (
           <p className="text-xs text-muted-foreground">
-            La pensión A permanece fija hasta que desmarques «Comparando». La X quita solo la
+            La pensión A permanece fija hasta que pulses «Dejar de comparar». La X quita solo la
             pensión B.
           </p>
         ) : (

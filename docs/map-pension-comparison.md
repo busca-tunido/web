@@ -7,7 +7,7 @@
 3. En desktop, A y B ocupan cada una el 50 % del ancho disponible. Cada ficha tiene su propio desplazamiento.
 4. La X superior derecha quita únicamente B, cierra la vista completa y deja el mapa disponible. A conserva su identidad y selección.
 5. Al elegir otra publicación, se abre otra comparación con la misma A.
-6. A solo se retira al desmarcar su botón Comparando. No tiene un botón X propio.
+6. A solo se retira al pulsar su botón Dejar de comparar. No tiene un botón X propio.
 7. En mobile se conserva la pantalla completa con pestañas A/B, sin forzar dos columnas estrechas. La X sigue visible en ambas pestañas.
 
 El mapa permanece montado detrás del comparador. En mobile, al cerrar B se contrae el panel de A para dejar espacio al mapa; Ver pensión fija permite consultarla sin desmarcarla.
