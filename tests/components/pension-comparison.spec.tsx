@@ -114,7 +114,7 @@ describe('Fullscreen comparison with a fixed left pension', () => {
   it('unmarks A only through its comparison toggle and preserves B in its own slot', async () => {
     render(<App />);
     const dialog = await openPair();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Quitar de comparación: Pensión A' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Dejar de comparar: Pensión A' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(screen.getByRole('heading', { name: 'Pensión B' })).toBeTruthy();
     expect(screen.getByText('Selecciona la pensión que quieres fijar a la izquierda.')).toBeTruthy();
