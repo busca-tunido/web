@@ -30,11 +30,12 @@ Mobile (diseñado después de desktop): bandeja compacta por encima de la navega
 
 ## Checklist
 
-- [ ] Preparar dependencias y analizar AGENTS.md y arquitectura.
-- [ ] Implementar desktop y registrar commit.
-- [ ] Diseñar e implementar adaptación mobile y registrar commit.
-- [ ] Verificar selección, roles, errores, datos faltantes y adaptación responsive.
-- [ ] Ejecutar Biome, TypeScript y Vitest; integrar y publicar según autorización del usuario.
+- [x] Preparar dependencias y analizar AGENTS.md y arquitectura.
+- [x] Implementar desktop y registrar commit.
+- [x] Diseñar e implementar adaptación mobile y registrar commit.
+- [x] Verificar selección, roles, errores, datos faltantes y adaptación responsive.
+- [x] Ejecutar Biome, TypeScript y Vitest; realizar merge local a main.
+- [ ] Publicar web y monorepo: pendiente de permisos de escritura de GitHub (403).
 
 ## Verification
 
