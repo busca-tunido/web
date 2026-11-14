@@ -125,7 +125,6 @@ type PensionFormState = {
 const CHILE_CITY_COORDINATES: Readonly<Record<string, { latitude: number; longitude: number }>> = {
   santiago: { latitude: -33.4489, longitude: -70.6693 },
   concepcion: { latitude: -36.827, longitude: -73.0503 },
-  valparaiso: { latitude: -33.0472, longitude: -71.6127 },
   'vina del mar': { latitude: -33.0245, longitude: -71.5518 },
   valdivia: { latitude: -39.8142, longitude: -73.2459 },
   antofagasta: { latitude: -23.6509, longitude: -70.3975 },
