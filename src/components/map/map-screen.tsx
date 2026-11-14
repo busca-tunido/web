@@ -20,8 +20,10 @@ import {
 } from 'motion/react';
 import Image from 'next/image';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
+import { usePensionComparison } from '@/contexts/pension-comparison-context';
 import { env } from '@/env';
 import { useFavoriteAction } from '@/hooks/use-favorite-action';
 import { useMapViewportPensions } from '@/hooks/use-map-viewport-pensions';
@@ -403,6 +405,7 @@ export function MapScreen({
   onOpenPensionDetail,
   filters,
 }: MapScreenProps) {
+  const comparison = usePensionComparison();
   const { isFavorite, onFavoriteClick } = useFavoriteAction();
   const { resolvedTheme } = useTheme();
 
@@ -1252,7 +1255,7 @@ export function MapScreen({
 
         <div
           ref={desktopListRef}
-          className="flex-1 overflow-y-auto scrollbar-sage p-4 flex flex-col gap-5"
+          className={`flex-1 overflow-y-auto scrollbar-sage p-4 flex flex-col gap-5 ${comparison?.selected.length ? 'pb-40' : ''}`}
         >
           <Suspense fallback={<MapDrawerSkeleton />}>
             <MapDrawerPensionList
@@ -1359,7 +1362,7 @@ export function MapScreen({
 
           <div
             ref={cardListRef}
-            className="relative flex-1 overflow-y-auto scrollbar-subtle px-5 pb-24 pt-2 flex flex-col gap-6"
+            className={`relative flex-1 overflow-y-auto scrollbar-subtle px-5 pt-2 flex flex-col gap-6 ${comparison?.selected.length ? 'pb-80' : 'pb-24'}`}
           >
             <Suspense fallback={<MapDrawerSkeleton />}>
               <MapDrawerPensionList
@@ -1514,6 +1517,7 @@ function MapDrawerPensionList({
             >
               <Heart className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : 'stroke-[2]'}`} />
             </button>
+            <PensionCompareButton pension={pension} />
           </div>
         );
       })}

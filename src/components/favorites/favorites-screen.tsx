@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { FavoritesGuestIncentive } from '@/components/favorites/favorites-guest-incentive';
+import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
 import { Button } from '@/components/ui/button';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { PensionCardSkeleton } from '@/components/ui/skeletons/pension-card-skeleton';
@@ -253,6 +254,7 @@ function FavoritesGrid({
               </div>
             </button>
 
+            <PensionCompareButton pension={pension} />
             <motion.button
               type="button"
               whileTap={{ scale: 0.8 }}

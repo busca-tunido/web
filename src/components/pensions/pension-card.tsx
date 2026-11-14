@@ -4,6 +4,7 @@ import { Award, Building2, Heart, MapPin, Maximize2, ShieldCheck, Star } from 'l
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { memo, useState } from 'react';
+import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import type { PensionItem } from '@/lib/types';
 
@@ -161,6 +162,7 @@ function PensionCardComponent({
         </button>
       </div>
 
+      <PensionCompareButton pension={pension} />
       <motion.button
         type="button"
         whileTap={{ scale: 0.75 }}

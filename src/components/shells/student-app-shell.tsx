@@ -55,6 +55,7 @@ const AuthModal = dynamic(
 );
 
 import { NavigationProvider, useNavigation } from '@/contexts/navigation-context';
+import { usePensionComparison } from '@/contexts/pension-comparison-context';
 import { SearchFiltersProvider, useSearchFilters } from '@/contexts/search-filters-context';
 import { useStudentPensionsFeed } from '@/hooks/use-student-pensions-feed';
 import type { UrlNavigationState } from '@/hooks/use-url-navigation-state';
@@ -68,6 +69,7 @@ export type StudentAppShellProps = {
 };
 
 function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetchData }) {
+  const comparison = usePensionComparison();
   const {
     activeTab,
     navigateTab,
@@ -199,7 +201,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
         className={`w-full flex-1 flex flex-col ${
           activeTab === 'map'
             ? 'h-full overflow-hidden pb-[68px] md:pb-0'
-            : 'mx-auto max-w-lg md:max-w-7xl md:px-6 lg:px-8 pb-20 md:pb-12'
+            : `mx-auto max-w-lg md:max-w-7xl md:px-6 lg:px-8 ${comparison?.selected.length ? 'pb-80 md:pb-40' : 'pb-20 md:pb-12'}`
         }`}
       >
         {activeTab !== 'account' && (
