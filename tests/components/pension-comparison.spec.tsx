@@ -167,6 +167,12 @@ describe('Fullscreen comparison with a fixed left pension', () => {
     expect(screen.queryByRole('dialog', { name: 'Publicar reseña' })).toBeNull();
   });
 
+  it('keeps API rating aggregates consistent with comparison badges while reviews load', () => {
+    render(<PensionComparisonProvider><PensionDetailContent pension={{ ...comparisonPension, ratingAverage: 4.2, ratingCount: 12, reviewsCount: 12 }} mode="comparison" /></PensionComparisonProvider>);
+    expect(screen.getByRole('button', { name: /4.2.*12 reseñas/ })).toBeTruthy();
+    expect(screen.queryByText('5.0')).toBeNull();
+  });
+
   it('normal details retain contact links and review publishing', () => {
     render(<PensionComparisonProvider><PensionDetailContent pension={{ ...comparisonPension, contactPhone: '+56 9 1234 5678' }} /></PensionComparisonProvider>);
     expect(screen.getByRole('link', { name: 'Consultar Disponibilidad' }).getAttribute('href')).toBe('tel:+56912345678');

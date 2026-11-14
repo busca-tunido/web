@@ -108,15 +108,17 @@ export function PensionDetailContent({
 
   const pension: PensionDetailViewItem = useMemo(() => {
     const effectiveAverage =
-      ratingStats.average > 0 ? ratingStats.average : (initialPension.ratingAverage ?? 0);
-    const effectiveCount = ratingStats.count > 0 ? ratingStats.count : initialCount;
+      isComparing || ratingStats.average <= 0
+        ? (initialPension.ratingAverage ?? 0)
+        : ratingStats.average;
+    const effectiveCount = isComparing || ratingStats.count <= 0 ? initialCount : ratingStats.count;
 
     return {
       ...initialPension,
       ratingAverage: effectiveAverage,
       reviewsCount: effectiveCount,
     };
-  }, [initialPension, ratingStats, initialCount]);
+  }, [initialPension, ratingStats, initialCount, isComparing]);
 
   const isFav = isFavorite(pension.id);
   const hasAlreadyReviewed = Boolean(user && reviews.some((r) => r.user?.id === user.id));
