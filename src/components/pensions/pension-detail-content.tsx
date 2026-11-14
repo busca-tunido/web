@@ -45,6 +45,7 @@ export type PensionDetailContentProps = {
   isLoadingDetail?: boolean;
   onBack?: () => void;
   showBackButton?: boolean;
+  mode?: 'detail' | 'comparison';
 };
 
 const slideVariants = {
@@ -67,7 +68,14 @@ export function PensionDetailContent({
   isLoadingDetail = false,
   onBack,
   showBackButton = false,
+  mode = 'detail',
 }: PensionDetailContentProps) {
+  const isComparing = mode === 'comparison';
+  const [comparisonNotice, setComparisonNotice] = useState<string | null>(null);
+  const showComparisonNotice = () =>
+    setComparisonNotice(
+      'Estás en modo comparación. Sal de la comparación y abre la ficha para contactar o publicar una reseña.',
+    );
   const { user } = useAuth();
   const { isFavorite, onFavoriteClick } = useFavoriteAction();
   const navigation = useOptionalNavigation();
@@ -211,7 +219,7 @@ export function PensionDetailContent({
         )}
 
         <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
-          <PensionCompareButton pension={pension} variant="detail" />
+          <PensionCompareButton pension={pension} variant={isComparing ? 'comparison' : 'detail'} />
           {displayPhotos.length > 0 && (
             <button
               type="button"
@@ -622,7 +630,7 @@ export function PensionDetailContent({
         </span>
         <button
           type="button"
-          id="btn-suggest-edit"
+          id={`btn-suggest-edit-${pension.id}`}
           onClick={() => {
             if (!user) {
               openAuthModal?.();
@@ -637,7 +645,29 @@ export function PensionDetailContent({
       </div>
 
       <div className="mt-6 pt-4 border-t border-border/80 flex flex-col gap-2.5">
-        {pension.contactWhatsapp ? (
+        {comparisonNotice && (
+          <p
+            role="alert"
+            className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm text-foreground"
+          >
+            {comparisonNotice}
+          </p>
+        )}
+        {isComparing && (pension.contactWhatsapp || pension.contactPhone) ? (
+          <button
+            type="button"
+            title="No disponible en modo comparación"
+            onClick={showComparisonNotice}
+            className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
+          >
+            {pension.contactWhatsapp ? (
+              <MessageSquare className="h-4 w-4" />
+            ) : (
+              <Phone className="h-4 w-4" />
+            )}{' '}
+            Consultar Disponibilidad
+          </button>
+        ) : pension.contactWhatsapp ? (
           <a
             href={`https://wa.me/${pension.contactWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola, me interesa la pensión "${pension.title}" que encontré en BuscaTuNido.`)}`}
             target="_blank"
@@ -658,7 +688,7 @@ export function PensionDetailContent({
         {user ? (
           hasAlreadyReviewed ? (
             <Button
-              id="btn-view-user-review"
+              id={`btn-view-user-review-${pension.id}`}
               variant="outline"
               onClick={() => setIsReviewsModalOpen(true)}
               className="w-full h-11 border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs rounded-xl transition cursor-pointer"
@@ -668,9 +698,13 @@ export function PensionDetailContent({
             </Button>
           ) : (
             <Button
-              id="btn-publish-review"
+              id={`btn-publish-review-${pension.id}`}
               variant={pension.contactWhatsapp || pension.contactPhone ? 'outline' : 'default'}
-              onClick={() => setIsPublishReviewOpen(true)}
+              title={isComparing ? 'No disponible en modo comparación' : undefined}
+              onClick={() => {
+                if (isComparing) showComparisonNotice();
+                else setIsPublishReviewOpen(true);
+              }}
               className={
                 pension.contactWhatsapp || pension.contactPhone
                   ? 'w-full h-11 border-border/80 hover:bg-secondary text-foreground font-semibold text-xs rounded-xl transition cursor-pointer'
@@ -682,7 +716,7 @@ export function PensionDetailContent({
           )
         ) : (
           <Button
-            id="btn-auth-to-review"
+            id={`btn-auth-to-review-${pension.id}`}
             variant={pension.contactWhatsapp || pension.contactPhone ? 'outline' : 'default'}
             onClick={openAuthModal}
             className={
@@ -713,7 +747,7 @@ export function PensionDetailContent({
         />
       )}
 
-      {isPublishReviewOpen && (
+      {isPublishReviewOpen && !isComparing && (
         <PublishReviewModal
           isOpen={isPublishReviewOpen}
           onClose={() => setIsPublishReviewOpen(false)}

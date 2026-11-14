@@ -16,3 +16,10 @@ export const comparisonPensions: readonly PensionItem[] = [
   { ...comparisonPension, id: 'pension-b', slug: 'pension-b', title: 'Pensión B', baseMonthlyPrice: 300000, deposit: 0, waterIncluded: false },
   { ...comparisonPension, id: 'pension-c', slug: 'pension-c', title: 'Pensión C' },
 ];
+
+export const comparisonReview: import('@/lib/types').PensionReview = {
+  id: 'review-a', pensionId: 'pension-a', userId: 'review-author', rating: 5, overallRating: 5,
+  comment: 'Una experiencia de prueba cerca de la universidad.', isVerifiedStay: true,
+  isResidentVerified: true, isAnonymous: false, helpfulCount: 0, images: [], createdAt: '2026-01-01T00:00:00.000Z',
+  user: { id: 'review-author', firstName: 'Estudiante', lastName: 'Prueba' },
+};

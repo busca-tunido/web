@@ -13,7 +13,7 @@ export function PensionCompareButton({
   variant = 'card',
 }: {
   pension: ComparisonSelection;
-  variant?: 'card' | 'detail';
+  variant?: 'card' | 'detail' | 'comparison';
 }) {
   const navigation = useOptionalNavigation();
   const comparison = usePensionComparison();
@@ -35,13 +35,13 @@ export function PensionCompareButton({
         } else comparison.toggle(pension);
       }}
       className={
-        variant === 'detail'
+        variant !== 'card'
           ? 'flex min-h-12 items-center justify-center gap-2 rounded-full bg-black/60 px-3 text-sm font-semibold text-white backdrop-blur-md hover:bg-black/80 focus-visible:outline-2 focus-visible:outline-primary'
           : 'mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-border px-3 text-sm font-semibold transition hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary'
       }
     >
       <ArrowLeftRight aria-hidden="true" className="size-4" />
-      {variant === 'detail'
+      {variant !== 'card'
         ? isCompared
           ? 'Comparando'
           : 'Comparar'
