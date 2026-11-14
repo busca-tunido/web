@@ -6,18 +6,19 @@ import { useAuth } from '@/lib/auth-context';
 import type { PensionItem } from '@/lib/types';
 
 export const COMPARISON_LIMIT = 2;
+export type ComparisonSelection = Pick<PensionItem, 'id' | 'title'>;
 
 type ComparisonContext = {
-  selected: readonly PensionItem[];
-  toggle: (pension: PensionItem) => void;
+  selected: readonly ComparisonSelection[];
+  toggle: (pension: ComparisonSelection) => void;
 };
 
 const PensionComparisonContext = createContext<ComparisonContext | null>(null);
 
 function StudentComparisonSession({ children }: { children: React.ReactNode }) {
-  const [selected, setSelected] = useState<readonly PensionItem[]>([]);
+  const [selected, setSelected] = useState<readonly ComparisonSelection[]>([]);
 
-  const toggle = (pension: PensionItem): void => {
+  const toggle = (pension: ComparisonSelection): void => {
     setSelected((current) =>
       current.some((item) => item.id === pension.id)
         ? current.filter((item) => item.id !== pension.id)

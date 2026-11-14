@@ -20,6 +20,7 @@ import {
 } from 'motion/react';
 import Image from 'next/image';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
 import { env } from '@/env';
@@ -1514,6 +1515,7 @@ function MapDrawerPensionList({
             >
               <Heart className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : 'stroke-[2]'}`} />
             </button>
+            <PensionCompareButton pension={pension} />
           </div>
         );
       })}
