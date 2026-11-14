@@ -97,10 +97,15 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
   const { filters, setFilters, resetFilters, clearCity } = useSearchFilters();
 
   const [tentativeCities, setTentativeCities] = useState<CityInfo[]>(initialData?.cities ?? []);
-  const { userLocation, currentCity, requestLocation } = useUserLocation(
-    tentativeCities,
-    initialData?.serverGeo,
-  );
+  const {
+    userLocation,
+    browserLocation,
+    locationStatus,
+    locationSource,
+    locationError,
+    currentCity,
+    requestLocation,
+  } = useUserLocation(tentativeCities, initialData?.serverGeo);
 
   const effectiveFilters = useMemo(
     () => ({
@@ -268,6 +273,10 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
                   selectedCity={mapTargetCity}
                   selectedUniversity={selectedUniversity}
                   userLocation={userLocation}
+                  browserLocation={browserLocation}
+                  locationStatus={locationStatus}
+                  locationSource={locationSource}
+                  locationError={locationError}
                   onRequestLocation={requestLocation}
                   onSelectPension={selectPension}
                   onOpenPensionDetail={openPensionDetail}

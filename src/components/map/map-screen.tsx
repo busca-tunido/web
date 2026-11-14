@@ -6,7 +6,6 @@ import {
   ChevronUp,
   Heart,
   Loader2,
-  Locate,
   Maximize2,
   ShieldCheck,
   Star,
@@ -20,6 +19,7 @@ import {
 } from 'motion/react';
 import Image from 'next/image';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { UserLocationControl } from '@/components/map/user-location-control';
 import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
@@ -43,7 +43,13 @@ import type {
   SearchFilters,
   UniversityInfo,
 } from '@/lib/types';
-import { findClosestCity, type UserCoordinates } from '@/lib/use-user-location';
+import {
+  type BrowserLocation,
+  findClosestCity,
+  type LocationSource,
+  type LocationStatus,
+  type UserCoordinates,
+} from '@/lib/use-user-location';
 import { fetchCampusAreas } from '@/services/universities.service';
 
 type MapScreenProps = {
@@ -53,7 +59,11 @@ type MapScreenProps = {
   selectedCity: string | null;
   selectedUniversity: UniversityInfo | null;
   userLocation: UserCoordinates | null;
-  onRequestLocation: () => void;
+  browserLocation: BrowserLocation | null;
+  locationStatus: LocationStatus;
+  locationSource: LocationSource;
+  locationError: string | null;
+  onRequestLocation: () => Promise<BrowserLocation | null>;
   onSelectPension: (pension: PensionItem) => void;
   onOpenPensionDetail: (pension: PensionItem) => void;
   filters?: SearchFilters;
@@ -400,6 +410,10 @@ export function MapScreen({
   selectedCity,
   selectedUniversity,
   userLocation,
+  browserLocation,
+  locationStatus,
+  locationSource,
+  locationError,
   onRequestLocation,
   onSelectPension,
   onOpenPensionDetail,
@@ -482,6 +496,9 @@ export function MapScreen({
   const activeMarkersMapRef = useRef<Map<string, import('leaflet').Marker>>(new Map());
   const renderTimerRef = useRef<number | null>(null);
   const userMarkerRef = useRef<import('leaflet').Marker | null>(null);
+  const userAccuracyCircleRef = useRef<import('leaflet').Circle | null>(null);
+  const hasCenteredOnDeviceRef = useRef(false);
+  const hasDraggedMapRef = useRef(false);
   const leafletModuleRef = useRef<typeof import('leaflet') | null>(null);
 
   useEffect(() => {
@@ -658,35 +675,59 @@ export function MapScreen({
     const map = mapInstanceRef.current;
     if (!L || !map) return;
 
-    if (userLocation) {
+    if (browserLocation) {
       const userIconHtml = `
-        <div style="position: relative; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; pointer-events: none;">
-          <div style="position: absolute; width: 68px; height: 68px; border-radius: 9999px; background: rgba(0, 122, 255, 0.18); border: 1.5px solid rgba(0, 122, 255, 0.35);"></div>
-          <div style="position: relative; width: 18px; height: 18px; border-radius: 9999px; background: #007aff; border: 3px solid #ffffff; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);"></div>
-        </div>
+        <div data-device-location="true" style="width: 18px; height: 18px; border-radius: 9999px; background: #007aff; border: 3px solid #ffffff; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); pointer-events: none;"></div>
       `;
 
       const userIcon = L.divIcon({
         className: 'custom-div-icon',
         html: userIconHtml,
-        iconSize: [68, 68],
-        iconAnchor: [34, 34],
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
       });
 
       if (userMarkerRef.current) {
-        userMarkerRef.current.setLatLng([userLocation.latitude, userLocation.longitude]);
+        userMarkerRef.current.setLatLng([browserLocation.latitude, browserLocation.longitude]);
         userMarkerRef.current.setIcon(userIcon);
       } else {
-        userMarkerRef.current = L.marker([userLocation.latitude, userLocation.longitude], {
+        userMarkerRef.current = L.marker([browserLocation.latitude, browserLocation.longitude], {
           icon: userIcon,
           zIndexOffset: 3000,
+          title: 'Ubicación del dispositivo',
         }).addTo(map);
       }
-    } else if (userMarkerRef.current) {
-      userMarkerRef.current.remove();
+      if (userAccuracyCircleRef.current) {
+        userAccuracyCircleRef.current.setLatLng([
+          browserLocation.latitude,
+          browserLocation.longitude,
+        ]);
+        userAccuracyCircleRef.current.setRadius(browserLocation.accuracy);
+      } else {
+        userAccuracyCircleRef.current = L.circle(
+          [browserLocation.latitude, browserLocation.longitude],
+          {
+            radius: browserLocation.accuracy,
+            color: '#007aff',
+            fillOpacity: 0.12,
+            weight: 1,
+            interactive: false,
+          },
+        ).addTo(map);
+      }
+      if (!hasCenteredOnDeviceRef.current) {
+        hasCenteredOnDeviceRef.current = true;
+        if (!selectedCity && !selectedUniversity && !selectedPension && !hasDraggedMapRef.current) {
+          map.flyTo([browserLocation.latitude, browserLocation.longitude], 15, { duration: 1.2 });
+        }
+      }
+    } else {
+      userMarkerRef.current?.remove();
       userMarkerRef.current = null;
+      userAccuracyCircleRef.current?.remove();
+      userAccuracyCircleRef.current = null;
     }
-  }, [userLocation]);
+  }, [browserLocation, selectedCity, selectedUniversity, selectedPension]);
 
   const renderCampuses = useCallback(() => {
     const L = leafletModuleRef.current;
@@ -1016,6 +1057,9 @@ export function MapScreen({
 
       tileLayerRef.current = tileLayer;
       mapInstanceRef.current = map;
+      map.on('dragstart', () => {
+        hasDraggedMapRef.current = true;
+      });
 
       map.on('moveend', () => {
         const center = map.getCenter();
@@ -1087,6 +1131,9 @@ export function MapScreen({
       campusLayerRef.current = null;
       markersLayerRef.current = null;
       userMarkerRef.current = null;
+      userAccuracyCircleRef.current = null;
+      hasCenteredOnDeviceRef.current = false;
+      hasDraggedMapRef.current = false;
     };
   }, []);
 
@@ -1161,13 +1208,11 @@ export function MapScreen({
     }
   }, [selectedCity, cities, selectedUniversity, fetchPensionsAroundLocation, fetchPensionsForCity]);
 
-  const handleCenterOnUser = () => {
-    if (userLocation && mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo([userLocation.latitude, userLocation.longitude], 15, {
+  const handleCenterOnUser = (location: BrowserLocation): void => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([location.latitude, location.longitude], 15, {
         duration: 1.2,
       });
-    } else {
-      onRequestLocation();
     }
   };
 
@@ -1294,16 +1339,15 @@ export function MapScreen({
           )}
         </AnimatePresence>
 
-        <button
-          type="button"
-          id="center-user-location-btn"
-          onClick={handleCenterOnUser}
-          className={`absolute right-4 ${buttonBottomClass} lg:bottom-6 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-border/80 bg-card/95 text-foreground shadow-lg backdrop-blur-md hover:bg-secondary active:scale-90 transition-all duration-300 cursor-pointer`}
-          title="Centrar en mi ubicación"
-          aria-label="Centrar en mi ubicación"
-        >
-          <Locate className="h-5 w-5 text-primary" />
-        </button>
+        <UserLocationControl
+          location={browserLocation}
+          source={locationSource}
+          status={locationStatus}
+          error={locationError}
+          onRequestLocation={onRequestLocation}
+          onLocated={handleCenterOnUser}
+          className={`absolute right-4 ${buttonBottomClass} lg:bottom-6 z-20 transition-all duration-300`}
+        />
 
         <motion.div
           id="collapsible-pension-drawer"

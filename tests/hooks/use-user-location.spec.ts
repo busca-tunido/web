@@ -1,14 +1,17 @@
-import { renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { extractServerGeoLocation } from '@/lib/server-geo';
 import type { CityInfo } from '@/lib/types';
 import {
+  LOCATION_REQUEST_OPTIONS,
   SANTIAGO_COORDINATES,
   calculateDistance,
   findClosestCity,
   sortCitiesWithCurrentFirst,
   useUserLocation,
 } from '@/lib/use-user-location';
+
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 const mockCities: CityInfo[] = [
   {
@@ -116,6 +119,8 @@ describe('useUserLocation', () => {
     expect(result.current.userLocation.longitude).toBe(-71.6127);
     expect(result.current.currentCity?.name).toBe('Valparaíso');
     expect(result.current.isDetecting).toBe(false);
+    expect(result.current.browserLocation).toBeNull();
+    expect(result.current.locationSource).toBe('ip');
   });
 
   it('defaults to Santiago coordinates if no server geo and geolocation fails', () => {
@@ -129,6 +134,8 @@ describe('useUserLocation', () => {
     const { result } = renderHook(() => useUserLocation(mockCities, null));
 
     expect(result.current.userLocation).toEqual(SANTIAGO_COORDINATES);
+    expect(result.current.browserLocation).toBeNull();
+    expect(result.current.locationSource).toBe('default');
     expect(result.current.currentCity?.name).toBe('Santiago');
     expect(result.current.isDetecting).toBe(false);
   });
@@ -140,7 +147,9 @@ describe('useUserLocation', () => {
           coords: {
             latitude: -36.82,
             longitude: -73.05,
+            accuracy: 25,
           },
+          timestamp: Date.now(),
         });
       }),
     };
@@ -161,7 +170,9 @@ describe('useUserLocation', () => {
           coords: {
             latitude: -36.82,
             longitude: -73.05,
+            accuracy: 25,
           },
+          timestamp: Date.now(),
         });
       }),
     };
@@ -180,6 +191,85 @@ describe('useUserLocation', () => {
     expect(result.current.userLocation.longitude).toBe(-73.05);
     expect(result.current.currentCity?.name).toBe('Concepción');
     expect(result.current.isDetecting).toBe(false);
+  });
+});
+
+describe('fresh browser location requests', () => {
+  type CapturedRequest = { success: PositionCallback; error?: PositionErrorCallback | null; options?: PositionOptions };
+  let requests: CapturedRequest[];
+
+  beforeEach(() => {
+    requests = [];
+    vi.stubGlobal('navigator', { geolocation: { getCurrentPosition: vi.fn((success: PositionCallback, error?: PositionErrorCallback | null, options?: PositionOptions) => { requests.push({ success, error, options }); }) } });
+  });
+
+  function deliver(index: number, latitude = -33.046, accuracy = 25): void {
+    const position = { coords: { latitude, longitude: -71.62, accuracy }, timestamp: Date.now() } as GeolocationPosition;
+    act(() => requests[index].success(position));
+  }
+
+  it('retains source, precision and timestamp and requests a fresh reading on every retry', async () => {
+    const { result } = renderHook(() => useUserLocation(mockCities));
+    expect(result.current.browserLocation).toBeNull();
+    expect(requests[0].options).toEqual(LOCATION_REQUEST_OPTIONS);
+    expect(requests[0].options?.maximumAge).toBe(0);
+    deliver(0, -33.046, 2500);
+    expect(result.current.browserLocation?.accuracy).toBe(2500);
+    expect(result.current.locationSource).toBe('browser');
+    let pending: ReturnType<typeof result.current.requestLocation> | undefined;
+    act(() => { pending = result.current.requestLocation(); });
+    expect(requests).toHaveLength(2);
+    deliver(1, -33.05, 15);
+    await expect(pending).resolves.toMatchObject({ latitude: -33.05, accuracy: 15 });
+    expect(result.current.browserLocation?.latitude).toBe(-33.05);
+  });
+
+  it.each([[1, 'denied'], [2, 'unavailable'], [3, 'timeout']] as const)('exposes error %s and removes an earlier measured location', (code, status) => {
+    const { result } = renderHook(() => useUserLocation(mockCities));
+    deliver(0);
+    act(() => { void result.current.requestLocation(); });
+    act(() => requests[1].error?.({ code } as GeolocationPositionError));
+    expect(result.current.browserLocation).toBeNull();
+    expect(result.current.locationStatus).toBe(status);
+    expect(result.current.locationError).toBeTruthy();
+    expect(result.current.isDetecting).toBe(false);
+  });
+
+  it('ignores an older request arriving after a newer request', () => {
+    const { result } = renderHook(() => useUserLocation(mockCities));
+    act(() => { void result.current.requestLocation(); });
+    deliver(1, -33.04);
+    deliver(0, -36.82);
+    expect(result.current.browserLocation?.latitude).toBe(-33.04);
+  });
+
+  it('rejects invalid coordinates and accuracy instead of marking a fallback as measured', () => {
+    const { result } = renderHook(() => useUserLocation(mockCities));
+    deliver(0, Number.NaN, Number.NaN);
+    expect(result.current.browserLocation).toBeNull();
+    expect(result.current.locationStatus).toBe('unavailable');
+  });
+
+  it('accepts a valid zero-meter reported precision', () => {
+    const { result } = renderHook(() => useUserLocation(mockCities));
+    deliver(0, -33.046, 0);
+    expect(result.current.browserLocation?.accuracy).toBe(0);
+    expect(result.current.locationStatus).toBe('ready');
+  });
+
+  it('ignores a reading delivered after unmount', () => {
+    const { result, unmount } = renderHook(() => useUserLocation(mockCities));
+    unmount();
+    deliver(0);
+    expect(result.current.browserLocation).toBeNull();
+  });
+
+  it('reports unsupported geolocation and rejects invalid server coordinates', () => {
+    vi.stubGlobal('navigator', {});
+    const { result } = renderHook(() => useUserLocation(mockCities, { city: null, latitude: 100, longitude: 200, country: 'CL' }));
+    expect(result.current.userLocation).toEqual(SANTIAGO_COORDINATES);
+    expect(result.current.browserLocation).toBeNull();
+    expect(result.current.locationStatus).toBe('unsupported');
   });
 });
 

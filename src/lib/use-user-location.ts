@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ServerGeoLocation } from './server-geo';
 import type { CityInfo } from './types';
 
@@ -8,6 +8,37 @@ export type UserCoordinates = {
   latitude: number;
   longitude: number;
 };
+
+export type BrowserLocation = UserCoordinates & {
+  accuracy: number;
+  timestamp: number;
+};
+
+export type LocationStatus =
+  | 'locating'
+  | 'ready'
+  | 'denied'
+  | 'timeout'
+  | 'unavailable'
+  | 'unsupported';
+export type LocationSource = 'browser' | 'ip' | 'default';
+
+export const LOCATION_REQUEST_OPTIONS: PositionOptions = {
+  enableHighAccuracy: true,
+  maximumAge: 0,
+  timeout: 15_000,
+};
+
+function validCoordinates(latitude: unknown, longitude: unknown): boolean {
+  return (
+    typeof latitude === 'number' &&
+    Number.isFinite(latitude) &&
+    Math.abs(latitude) <= 90 &&
+    typeof longitude === 'number' &&
+    Number.isFinite(longitude) &&
+    Math.abs(longitude) <= 180
+  );
+}
 
 export const SANTIAGO_COORDINATES: UserCoordinates = {
   latitude: -33.4489,
@@ -68,57 +99,127 @@ export function sortCitiesWithCurrentFirst(
 }
 
 export function useUserLocation(cities: CityInfo[], serverGeo?: ServerGeoLocation | null) {
+  const hasServerCoordinates = validCoordinates(serverGeo?.latitude, serverGeo?.longitude);
   const initialCoordinates = useMemo<UserCoordinates>(() => {
     if (
       typeof serverGeo?.latitude === 'number' &&
-      !Number.isNaN(serverGeo.latitude) &&
+      hasServerCoordinates &&
       typeof serverGeo?.longitude === 'number' &&
-      !Number.isNaN(serverGeo.longitude)
+      Number.isFinite(serverGeo.longitude)
     ) {
       return { latitude: serverGeo.latitude, longitude: serverGeo.longitude };
     }
     return SANTIAGO_COORDINATES;
-  }, [serverGeo]);
+  }, [serverGeo, hasServerCoordinates]);
 
-  const [userLocation, setUserLocation] = useState<UserCoordinates>(initialCoordinates);
-  const [hasGpsCoordinates, setHasGpsCoordinates] = useState<boolean>(false);
-  const [isDetecting, setIsDetecting] = useState<boolean>(true);
+  const [browserLocation, setBrowserLocation] = useState<BrowserLocation | null>(null);
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>('locating');
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+  const requestIdRef = useRef(0);
 
-  const requestLocation = useCallback(() => {
-    if (typeof window === 'undefined' || !navigator.geolocation) {
-      setIsDetecting(false);
-      return;
-    }
+  const requestLocation = useCallback((): Promise<BrowserLocation | null> => {
+    const requestId = ++requestIdRef.current;
+    const isCurrent = (): boolean => mountedRef.current && requestIdRef.current === requestId;
+    if (!mountedRef.current) return Promise.resolve(null);
+    setLocationStatus('locating');
+    setLocationError(null);
 
-    setIsDetecting(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserLocation({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-        });
-        setHasGpsCoordinates(true);
-        setIsDetecting(false);
-      },
-      () => {
-        setIsDetecting(false);
-      },
-      {
-        timeout: 5000,
-        enableHighAccuracy: true,
-        maximumAge: 300000,
-      },
-    );
+    return new Promise((resolve) => {
+      const fail = (status: LocationStatus, message: string): void => {
+        if (isCurrent()) {
+          setBrowserLocation(null);
+          setLocationStatus(status);
+          setLocationError(message);
+        }
+        resolve(null);
+      };
+      if (typeof navigator === 'undefined' || !navigator.geolocation) {
+        fail('unsupported', 'Este navegador no permite obtener tu ubicación.');
+        return;
+      }
+      try {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            if (!isCurrent()) {
+              resolve(null);
+              return;
+            }
+            const { latitude, longitude, accuracy } = position.coords;
+            if (
+              !validCoordinates(latitude, longitude) ||
+              !Number.isFinite(accuracy) ||
+              accuracy < 0 ||
+              !Number.isFinite(position.timestamp)
+            ) {
+              fail(
+                'unavailable',
+                'El dispositivo no entregó una ubicación válida. Inténtalo de nuevo.',
+              );
+              return;
+            }
+            const location: BrowserLocation = {
+              latitude,
+              longitude,
+              accuracy,
+              timestamp: position.timestamp,
+            };
+            setBrowserLocation(location);
+            setLocationStatus('ready');
+            setLocationError(null);
+            resolve(location);
+          },
+          (error) => {
+            if (error.code === 1)
+              fail(
+                'denied',
+                'Permiso de ubicación denegado. Habilítalo en el navegador y vuelve a intentar.',
+              );
+            else if (error.code === 3)
+              fail('timeout', 'No pudimos obtener tu ubicación a tiempo. Vuelve a intentar.');
+            else
+              fail(
+                'unavailable',
+                'Tu dispositivo no pudo determinar la ubicación. Vuelve a intentar.',
+              );
+          },
+          LOCATION_REQUEST_OPTIONS,
+        );
+      } catch {
+        fail(
+          'unavailable',
+          'No pudimos acceder a la ubicación del dispositivo. Vuelve a intentar.',
+        );
+      }
+    });
   }, []);
 
   useEffect(() => {
-    requestLocation();
+    mountedRef.current = true;
+    void requestLocation();
+    return () => {
+      mountedRef.current = false;
+      requestIdRef.current += 1;
+    };
   }, [requestLocation]);
+
+  const userLocation = useMemo<UserCoordinates>(
+    () =>
+      browserLocation
+        ? { latitude: browserLocation.latitude, longitude: browserLocation.longitude }
+        : initialCoordinates,
+    [browserLocation, initialCoordinates],
+  );
+  const locationSource: LocationSource = browserLocation
+    ? 'browser'
+    : hasServerCoordinates
+      ? 'ip'
+      : 'default';
 
   const currentCity = useMemo(() => {
     if (cities.length === 0) return null;
 
-    if (hasGpsCoordinates) {
+    if (browserLocation) {
       const closest = findClosestCity(cities, userLocation);
       if (closest) return closest;
     }
@@ -138,12 +239,16 @@ export function useUserLocation(cities: CityInfo[], serverGeo?: ServerGeoLocatio
     }
 
     return cities.find((c) => c.name.toLowerCase() === 'santiago') ?? cities[0] ?? null;
-  }, [cities, userLocation, serverGeo, hasGpsCoordinates]);
+  }, [cities, userLocation, serverGeo, browserLocation]);
 
   return {
     userLocation,
     currentCity,
-    isDetecting,
+    browserLocation,
+    locationSource,
+    locationStatus,
+    locationError,
+    isDetecting: locationStatus === 'locating',
     requestLocation,
   };
 }
