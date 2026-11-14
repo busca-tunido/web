@@ -79,10 +79,29 @@ describe('Fullscreen comparison with a fixed left pension', () => {
     back.mockRestore();
   });
 
-  it.each([null, { id: 'landlord', role: 'LANDLORD' as const }])('restricts comparison to students: %s', user => {
-    auth.user = user;
+  it.each(['STUDENT', 'LANDLORD', 'MODERATOR', 'ADMIN'] as const)('allows registered public-map visitors with role %s', async role => {
+    auth.user = { id: role.toLowerCase(), role };
     render(<App />);
-    expect(screen.queryByRole('button', { name: 'Comparar: Pensión A' })).toBeNull();
+    const dialog = await openPair();
+    await within(dialog).findByRole('heading', { name: 'Pensión B' });
+    expect(within(dialog).getByRole('button', { name: 'Dejar de comparar: Pensión A' }).textContent).toContain('Dejar de comparar');
+  });
+
+  it('lets an anonymous visitor compare, close B, pick another and stop comparing A without logging in', async () => {
+    auth.user = null;
+    render(<App />);
+    const dialog = await openPair();
+    await within(dialog).findByRole('heading', { name: 'Pensión B' });
+    expect(within(dialog).getByRole('button', { name: 'Dejar de comparar: Pensión A' }).textContent).toContain('Dejar de comparar');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Quitar Pensión B y volver al mapa' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('heading', { name: 'Pensión A' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir marcador Pensión C' }));
+    const next = await screen.findByRole('dialog', { name: 'Comparación de dos pensiones' });
+    await within(next).findByRole('heading', { name: 'Pensión C' });
+    fireEvent.click(within(next).getByRole('button', { name: 'Dejar de comparar: Pensión A' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('heading', { name: 'Pensión C' })).toBeTruthy();
   });
 
   it('uses the normal detail and real review preview in a fullscreen comparison', async () => {
@@ -165,6 +184,17 @@ describe('Fullscreen comparison with a fixed left pension', () => {
     expect(screen.queryByRole('link', { name: 'Consultar Disponibilidad' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Publicar una reseña' }));
     expect(screen.queryByRole('dialog', { name: 'Publicar reseña' })).toBeNull();
+  });
+
+  it('keeps guest contact and review buttons informational inside comparison', () => {
+    auth.user = null;
+    render(<PensionComparisonProvider><PensionDetailContent pension={{ ...comparisonPension, contactPhone: '+56 9 1234 5678' }} mode="comparison" /></PensionComparisonProvider>);
+    fireEvent.click(screen.getByRole('button', { name: 'Publicar una reseña' }));
+    expect(screen.getByRole('alert').textContent).toContain('Estás en modo comparación');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Consultar Disponibilidad' }));
+    expect(screen.queryByRole('link', { name: 'Consultar Disponibilidad' })).toBeNull();
+    expect(auth.toggleFavorite).not.toHaveBeenCalled();
   });
 
   it('keeps API rating aggregates consistent with comparison badges while reviews load', () => {

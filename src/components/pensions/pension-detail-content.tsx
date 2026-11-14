@@ -720,14 +720,15 @@ export function PensionDetailContent({
           <Button
             id={`btn-auth-to-review-${pension.id}`}
             variant={pension.contactWhatsapp || pension.contactPhone ? 'outline' : 'default'}
-            onClick={openAuthModal}
+            onClick={isComparing ? showComparisonNotice : openAuthModal}
             className={
               pension.contactWhatsapp || pension.contactPhone
                 ? 'w-full h-11 border-border/80 hover:bg-secondary text-foreground font-semibold text-xs rounded-xl transition cursor-pointer'
                 : 'w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer'
             }
           >
-            <PenLine className="mr-2 h-4 w-4" /> Inicia sesión para opinar o guardar
+            <PenLine className="mr-2 h-4 w-4" />{' '}
+            {isComparing ? 'Publicar una reseña' : 'Inicia sesión para opinar o guardar'}
           </Button>
         )}
       </div>
