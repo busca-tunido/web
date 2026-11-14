@@ -24,6 +24,8 @@ export const COMPARISON_ADVANTAGES: Record<ComparisonMetric, string> = {
 
 const money = (value: number, currency: string): string =>
   `${value.toLocaleString('es-CL')} ${currency}`;
+export const comparisonPrice = (pension: PensionItem): string =>
+  money(pension.baseMonthlyPrice, pension.currency);
 const included = (value: boolean): string => (value ? 'Incluido' : 'No incluido');
 const allowed = (value: boolean): string => (value ? 'Permitido' : 'No permitido');
 const amenitySlugs = (p: PensionItem): Set<string> =>
@@ -120,7 +122,7 @@ export const COMPARISON_ROWS: readonly ComparisonRow[] = [
   {
     label: 'Precio mensual desde',
     section: 'Precio y ubicación',
-    value: (p) => money(p.baseMonthlyPrice, p.currency),
+    value: comparisonPrice,
     metric: 'price',
   },
   {

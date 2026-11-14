@@ -422,6 +422,10 @@ export function MapScreen({
 }: MapScreenProps) {
   const comparison = usePensionComparison();
   const comparisonActive = Boolean(comparison?.selected.length);
+  const comparisonActiveRef = useRef(comparisonActive);
+  comparisonActiveRef.current = comparisonActive;
+  const selectedPensionRef = useRef(selectedPension);
+  selectedPensionRef.current = selectedPension;
   const [comparisonMinimized, setComparisonMinimized] = useState(false);
   const comparisonIds = comparison?.slots.map((item) => item?.id ?? '').join(':');
   useEffect(() => {
@@ -476,7 +480,20 @@ export function MapScreen({
         const h = mapContainerRef.current.clientHeight || window.innerHeight;
         setContainerHeight(h);
         containerHeightRef.current = h;
-        mapInstanceRef.current?.invalidateSize();
+        const map = mapInstanceRef.current;
+        if (map) {
+          map.stop();
+          map.invalidateSize({ animate: false });
+          const pension = selectedPensionRef.current;
+          if (
+            comparisonActiveRef.current &&
+            pension &&
+            'latitude' in pension &&
+            'longitude' in pension
+          ) {
+            map.setView([pension.latitude, pension.longitude], map.getZoom(), { animate: false });
+          }
+        }
       }
     };
     updateHeight();
@@ -542,6 +559,11 @@ export function MapScreen({
     const map = mapInstanceRef.current;
     const L = leafletModuleRef.current;
     if (!map || !L) return;
+
+    if (comparisonActiveRef.current) {
+      map.panTo([lat, lng], { animate: true });
+      return;
+    }
 
     const zoom = map.getZoom();
     const markerPoint = map.project([lat, lng], zoom);
@@ -1300,7 +1322,7 @@ export function MapScreen({
     >
       {comparisonActive && (
         <aside
-          className={`order-last shrink-0 overflow-hidden border-t border-border lg:order-first lg:border-r lg:border-t-0 lg:h-full ${comparisonMinimized ? 'h-auto' : 'h-[62%]'} ${comparison?.selected.length === 2 ? 'lg:w-[66%] 2xl:w-[62%] lg:max-w-4xl' : 'lg:w-[380px]'}`}
+          className={`order-last shrink-0 overflow-hidden border-t border-border lg:order-first lg:border-r lg:border-t-0 lg:h-full ${comparisonMinimized ? 'h-auto' : 'h-[75%]'} ${comparison?.selected.length === 2 ? 'lg:w-[66%] 2xl:w-[62%] lg:max-w-4xl' : 'lg:w-[380px]'}`}
         >
           <MapPensionComparison
             universityId={selectedUniversity?.id}

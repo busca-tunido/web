@@ -13,7 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
@@ -28,6 +28,7 @@ import {
   COMPARISON_ADVANTAGES,
   COMPARISON_ROWS,
   COMPARISON_SECTIONS,
+  comparisonPrice,
   comparisonWinner,
 } from '@/lib/pension-comparison';
 import type { PensionItem } from '@/lib/types';
@@ -87,7 +88,7 @@ function ComparisonGallery({ pension }: { pension: PensionItem }) {
   const [open, setOpen] = useState(false);
   const image = pension.images[index];
   return (
-    <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-muted">
+    <div className="relative aspect-[16/9] max-h-40 overflow-hidden rounded-xl bg-muted lg:max-h-48">
       {image ? (
         <button
           type="button"
@@ -172,7 +173,7 @@ function ComparisonHeading({
           Pensión {letter}
         </span>
         {selected && (
-          <Badge variant="secondary" className="bg-primary/10 text-primary">
+          <Badge variant="secondary" className="bg-sage/10 text-sage-foreground">
             Comparando
           </Badge>
         )}
@@ -192,6 +193,12 @@ function ComparisonHeading({
               <X />
             </Button>
           </div>
+          {pension && (
+            <p className="text-lg font-bold">
+              Desde {comparisonPrice(pension)}{' '}
+              <span className="text-xs font-normal text-muted-foreground">/ mes</span>
+            </p>
+          )}
           {pension && <ComparisonGallery key={pension.id} pension={pension} />}
           {error ? (
             <div role="alert" className="space-y-2 rounded-xl bg-muted p-3 text-sm">
@@ -259,8 +266,14 @@ export function MapPensionComparison({
   const [onlyDifferences, setOnlyDifferences] = useState(false);
   const aId = comparison?.slots[0]?.id;
   const bId = comparison?.slots[1]?.id;
+  const previousIds = useRef([aId, bId]);
   useEffect(() => {
-    setActiveSlot(bId ? 1 : aId ? 0 : 1);
+    const [previousA, previousB] = previousIds.current;
+    if (aId && aId !== previousA) setActiveSlot(0);
+    else if (bId && bId !== previousB) setActiveSlot(1);
+    else if (!aId && bId) setActiveSlot(1);
+    else if (!bId && aId) setActiveSlot(0);
+    previousIds.current = [aId, bId];
   }, [aId, bId]);
   if (!comparison?.selected.length) return null;
   const details = [first, second] as const;
@@ -302,59 +315,78 @@ export function MapPensionComparison({
             <MapPin />
             {mapOnly ? 'Ver comparación' : 'Elegir en el mapa'}
           </Button>
-          <Button variant="ghost" className="min-h-12 text-xs" onClick={comparison.clear}>
-            Limpiar comparación
+          <Button
+            variant="ghost"
+            className="min-h-12 min-w-12 text-xs"
+            aria-label="Limpiar comparación"
+            title="Limpiar comparación"
+            onClick={comparison.clear}
+          >
+            <RefreshCw />
+            <span className="hidden lg:inline">Limpiar comparación</span>
           </Button>
-          <Button variant="ghost" className="min-h-12 text-xs" onClick={comparison.clear}>
-            Volver al modo normal
+          <Button
+            variant="ghost"
+            className="min-h-12 min-w-12 text-xs"
+            aria-label="Volver al modo normal"
+            title="Volver al modo normal"
+            onClick={comparison.clear}
+          >
+            <X />
+            <span className="hidden lg:inline">Volver al modo normal</span>
           </Button>
         </div>
       </header>
+
+      <div
+        role="tablist"
+        aria-label="Pensión visible"
+        className={
+          mapOnly
+            ? 'hidden'
+            : 'grid shrink-0 grid-cols-2 gap-2 border-b border-border bg-card p-3 lg:hidden'
+        }
+      >
+        {comparison.slots.map((item, index) => (
+          <button
+            type="button"
+            role="tab"
+            id={`comparison-tab-${index}`}
+            aria-controls="comparison-tab-panel"
+            aria-selected={activeSlot === index}
+            tabIndex={activeSlot === index ? 0 : -1}
+            key={index === 0 ? 'A' : 'B'}
+            onClick={() => setActiveSlot(index as ComparisonSlot)}
+            onKeyDown={(event) => {
+              if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+                event.preventDefault();
+                const next =
+                  event.key === 'Home' ? 0 : event.key === 'End' ? 1 : activeSlot === 0 ? 1 : 0;
+                setActiveSlot(next);
+                document.getElementById(`comparison-tab-${next}`)?.focus();
+              }
+            }}
+            className="min-h-12 min-w-0 rounded-xl border border-border px-2 text-sm font-semibold aria-selected:border-primary aria-selected:bg-primary/10 aria-selected:text-primary"
+          >
+            Pensión {index === 0 ? 'A' : 'B'}
+            <span className="block truncate text-xs font-normal">
+              {item?.title ?? 'Por seleccionar'}
+            </span>
+          </button>
+        ))}
+      </div>
       <div
         className={`min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-subtle ${mapOnly ? 'hidden lg:block' : ''}`}
+        id="comparison-tab-panel"
+        role="tabpanel"
+        aria-labelledby={`comparison-tab-${activeSlot}`}
       >
-        <div
-          role="tablist"
-          aria-label="Pensión visible"
-          className="sticky top-0 z-10 grid grid-cols-2 gap-2 border-b border-border bg-card p-3 lg:hidden"
-        >
-          {comparison.slots.map((item, index) => (
-            <button
-              type="button"
-              role="tab"
-              id={`comparison-tab-${index}`}
-              aria-controls={`comparison-panel-${index}`}
-              aria-selected={activeSlot === index}
-              tabIndex={activeSlot === index ? 0 : -1}
-              key={index === 0 ? 'A' : 'B'}
-              onClick={() => setActiveSlot(index as ComparisonSlot)}
-              onKeyDown={(event) => {
-                if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-                  event.preventDefault();
-                  const next =
-                    event.key === 'Home' ? 0 : event.key === 'End' ? 1 : activeSlot === 0 ? 1 : 0;
-                  setActiveSlot(next);
-                  document.getElementById(`comparison-tab-${next}`)?.focus();
-                }
-              }}
-              className="min-h-12 min-w-0 rounded-xl border border-border px-2 text-sm font-semibold aria-selected:border-primary aria-selected:bg-primary/10 aria-selected:text-primary"
-            >
-              Pensión {index === 0 ? 'A' : 'B'}
-              <span className="block truncate text-xs font-normal">
-                {item?.title ?? 'Por seleccionar'}
-              </span>
-            </button>
-          ))}
-        </div>
         <div
           className={`grid grid-cols-1 divide-border ${comparison.selected.length === 2 ? 'lg:grid-cols-2 lg:divide-x' : ''}`}
         >
           {comparison.slots.map((item, index) => (
             <div
               key={index === 0 ? 'A' : 'B'}
-              id={`comparison-panel-${index}`}
-              role="tabpanel"
-              aria-labelledby={`comparison-tab-${index}`}
               className={`${columns(index)} ${!item ? 'lg:hidden' : ''}`}
             >
               <ComparisonHeading
@@ -366,6 +398,18 @@ export function MapPensionComparison({
               />
             </div>
           ))}
+        </div>
+        <div
+          className={`sticky top-0 z-10 hidden divide-x divide-border border-y border-border bg-card lg:grid ${comparison.selected.length === 2 ? 'lg:grid-cols-2' : ''}`}
+        >
+          {comparison.slots.map(
+            (item, index) =>
+              item && (
+                <p key={item.id} className="min-w-0 truncate px-4 py-3 text-xs font-semibold">
+                  Pensión {index === 0 ? 'A' : 'B'} · {item.title}
+                </p>
+              ),
+          )}
         </div>
         <div className="border-y border-border bg-muted/40 px-4 py-2 text-xs text-muted-foreground">
           <p>
@@ -417,7 +461,7 @@ export function MapPensionComparison({
                     {details.map((detail, index) => (
                       <div
                         key={index === 0 ? 'A' : 'B'}
-                        className={`${columns(index)} ${!comparison.slots[index] ? 'lg:hidden' : ''} p-4 ${detail.data && winner === detail.data.id ? 'bg-primary/5' : ''}`}
+                        className={`${columns(index)} ${!comparison.slots[index] ? 'lg:hidden' : ''} p-4 ${detail.data && winner === detail.data.id ? 'bg-sage/8' : ''}`}
                       >
                         <p className="mb-1 text-xs font-semibold text-muted-foreground">
                           {row.label === 'Universidad más cercana' && universityId
@@ -436,7 +480,7 @@ export function MapPensionComparison({
                         {row.metric && detail.data && winner === detail.data.id && (
                           <Badge
                             variant="secondary"
-                            className="mt-2 max-w-full gap-1 whitespace-normal bg-primary/10 text-primary"
+                            className="mt-2 max-w-full gap-1 whitespace-normal bg-sage/10 text-sage-foreground"
                           >
                             <Check className="size-3 shrink-0" />
                             {COMPARISON_ADVANTAGES[row.metric]}

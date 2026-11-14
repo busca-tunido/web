@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MapPensionComparison } from '@/components/pensions/map-pension-comparison';
 import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
 import { PensionComparisonProvider, usePensionComparison } from '@/contexts/pension-comparison-context';
+import { NavigationProvider, useNavigation } from '@/contexts/navigation-context';
 import { createError, createSuccess } from '@/lib/api-response';
 import type { UserRole } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
@@ -31,6 +32,13 @@ function MapHarness({ visible = true }: { visible?: boolean }) {
 function App({ visible = true }: { visible?: boolean }) {
   return <PensionComparisonProvider><MapHarness visible={visible} /></PensionComparisonProvider>;
 }
+function DetailNavigation() {
+  const navigation = useNavigation();
+  return <><button type="button" onClick={() => navigation.openPensionDetail(comparisonPension)}>Abrir ficha</button>
+    {navigation.isPensionDetailOpen && <PensionCompareButton pension={comparisonPension} variant="detail" />}
+    <output data-testid="navigation">{navigation.activeTab}/{navigation.isPensionDetailOpen ? 'abierta' : 'cerrada'}/{navigation.selectedPension?.id}</output>
+  </>;
+}
 function selectA() { fireEvent.click(screen.getByRole('button', { name: 'Comparar: Pensión A' })); }
 function selectB() { fireEvent.click(screen.getByRole('button', { name: 'Abrir marcador Pensión B' })); }
 
@@ -44,6 +52,15 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('Integrated map comparison', () => {
+  it('moves the open detail to the map atomically without a history-back race', () => {
+    const back = vi.spyOn(window.history, 'back');
+    render(<PensionComparisonProvider><NavigationProvider initialTab="explore" initialNavigationState={{ tab: 'explore' }}><DetailNavigation /></NavigationProvider></PensionComparisonProvider>);
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir ficha' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Comparar: Pensión A' }));
+    expect(screen.getByTestId('navigation').textContent).toBe('map/cerrada/pension-a');
+    expect(back).not.toHaveBeenCalled();
+    back.mockRestore();
+  });
   it.each([null, { id: 'landlord', role: 'LANDLORD' as const }])('restricts comparison to students: %s', user => {
     auth.user = user;
     render(<App />);
@@ -77,6 +94,7 @@ describe('Integrated map comparison', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Reemplazar A' }));
     fireEvent.click(screen.getByRole('button', { name: 'Abrir marcador Pensión A' }));
     await screen.findByRole('heading', { name: 'Pensión A' });
+    expect(screen.getAllByRole('tab')[0].getAttribute('aria-selected')).toBe('true');
     fireEvent.click(screen.getByRole('button', { name: 'Abrir marcador Pensión C' }));
     await screen.findByRole('heading', { name: 'Pensión C' });
     expect(screen.queryByRole('heading', { name: 'Pensión B' })).toBeNull();
