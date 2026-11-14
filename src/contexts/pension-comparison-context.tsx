@@ -56,7 +56,7 @@ type ComparisonContext = ComparisonState & {
 
 const PensionComparisonContext = createContext<ComparisonContext | null>(null);
 
-function StudentComparisonSession({ children }: { children: React.ReactNode }) {
+function PensionComparisonSession({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(comparisonReducer, EMPTY_COMPARISON);
   const [mapVisible, setMapVisible] = useState(false);
   const toggle = useCallback(
@@ -98,8 +98,10 @@ function StudentComparisonSession({ children }: { children: React.ReactNode }) {
 
 export function PensionComparisonProvider({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
-  if (isLoading || user?.role !== 'STUDENT') return children;
-  return <StudentComparisonSession key={user.id}>{children}</StudentComparisonSession>;
+  if (isLoading) return children;
+  return (
+    <PensionComparisonSession key={user?.id ?? 'visitor'}>{children}</PensionComparisonSession>
+  );
 }
 
 export function usePensionComparison(): ComparisonContext | null {
