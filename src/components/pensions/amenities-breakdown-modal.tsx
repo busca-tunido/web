@@ -7,7 +7,6 @@ import {
   BookOpen,
   Check,
   CheckCircle2,
-  ChevronLeft,
   Coffee,
   Disc,
   Droplets,
@@ -282,19 +281,10 @@ export function AmenitiesBreakdownModal({
       >
         <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
 
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border/60">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full hover:bg-muted text-muted-foreground transition cursor-pointer"
-            aria-label="Volver"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
+        <div className="flex items-center justify-center px-4 py-2.5 border-b border-border/60">
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Detalle de Comodidades
           </span>
-          <div className="w-11" />
         </div>
 
         <div className="overflow-y-auto flex-1 px-4 py-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] space-y-6">

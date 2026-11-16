@@ -1,6 +1,5 @@
 'use client';
 
-import { ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 import { ReviewCard } from '@/components/reviews/review-card';
 import {
@@ -43,22 +42,14 @@ export function UserReviewModal({ isOpen, onClose, stay }: UserReviewModalProps)
         id="user-review-drawer"
         className="max-h-[92dvh] flex flex-col bg-background border-border select-none max-w-lg md:max-w-2xl mx-auto md:rounded-3xl"
       >
+        <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
+
         <div className="flex items-center justify-between px-5 py-3 border-b border-border/70 shrink-0">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 text-foreground transition cursor-pointer"
-              aria-label="Volver"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <div>
-              <h3 className="text-base font-bold text-foreground">Tu reseña publicada</h3>
-              <p className="text-[11px] text-muted-foreground truncate max-w-sm">
-                {stay.pensionTitle} • {stay.pensionCity}
-              </p>
-            </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">Tu reseña publicada</h3>
+            <p className="text-[11px] text-muted-foreground truncate max-w-sm">
+              {stay.pensionTitle} • {stay.pensionCity}
+            </p>
           </div>
         </div>
 

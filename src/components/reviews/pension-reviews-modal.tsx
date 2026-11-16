@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, ChevronLeft, Star } from 'lucide-react';
+import { Camera, Star } from 'lucide-react';
 import { Suspense, useMemo, useState } from 'react';
 import { EmailCheckStep } from '@/components/auth/email-check-step';
 import {
@@ -138,20 +138,12 @@ export function PensionReviewsModal({
     <>
       <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DrawerContent className="max-h-[92dvh] max-w-lg md:max-w-3xl mx-auto flex flex-col bg-background border-border select-none md:rounded-3xl">
+          <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
+
           <div className="flex items-center justify-between px-5 py-3 border-b border-border/70 shrink-0">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 text-foreground transition cursor-pointer"
-                aria-label="Volver"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <div>
-                <h3 className="text-base font-bold text-foreground">Reseñas de la pensión</h3>
-                <p className="text-xs text-muted-foreground truncate max-w-sm">{pension.title}</p>
-              </div>
+            <div>
+              <h3 className="text-base font-bold text-foreground">Reseñas de la pensión</h3>
+              <p className="text-xs text-muted-foreground truncate max-w-sm">{pension.title}</p>
             </div>
           </div>
 

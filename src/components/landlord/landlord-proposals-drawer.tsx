@@ -263,14 +263,6 @@ export function LandlordProposalsDrawer({
                   </Badge>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex min-h-[48px] min-w-[48px] items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition cursor-pointer"
-                aria-label="Cerrar sugerencias"
-              >
-                <X className="h-5 w-5" />
-              </button>
             </div>
             <DrawerDescription className="text-xs text-muted-foreground mt-0.5">
               Revisa y aprueba mejoras propuestas por estudiantes que conocen tu alojamiento

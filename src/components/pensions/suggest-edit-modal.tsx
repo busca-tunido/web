@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  AlertCircle,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  ChevronLeft,
-  Loader2,
-  Plus,
-  Send,
-} from 'lucide-react';
+import { AlertCircle, Check, CheckCircle2, ChevronDown, Loader2, Plus, Send } from 'lucide-react';
 import { useEffect, useReducer } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -114,19 +105,10 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
       >
         <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
 
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border/60">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted text-muted-foreground transition cursor-pointer"
-            aria-label="Volver"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
+        <div className="flex items-center justify-center px-4 py-2.5 border-b border-border/60">
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Sugerir Corrección
           </span>
-          <div className="w-8" />
         </div>
 
         <div className="overflow-y-auto flex-1 px-4 py-4 space-y-6">
