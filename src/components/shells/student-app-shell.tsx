@@ -206,7 +206,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
         className={`w-full flex-1 flex flex-col ${
           activeTab === 'map'
             ? 'h-full overflow-hidden pb-[68px] md:pb-0'
-            : `mx-auto max-w-lg md:max-w-7xl md:px-6 lg:px-8 ${comparison?.selected.length ? 'pb-80 md:pb-40' : 'pb-20 md:pb-12'}`
+            : 'mx-auto max-w-lg md:max-w-7xl md:px-6 lg:px-8 pb-20 md:pb-12'
         }`}
       >
         {activeTab !== 'account' && (
@@ -278,14 +278,8 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
                   locationSource={locationSource}
                   locationError={locationError}
                   onRequestLocation={requestLocation}
-                  onSelectPension={(pension) => {
-                    selectPension(pension);
-                    if (comparison?.selected.length) comparison.select(pension);
-                  }}
-                  onOpenPensionDetail={(pension) => {
-                    if (comparison?.selected.length) comparison.select(pension);
-                    else openPensionDetail(pension);
-                  }}
+                  onSelectPension={selectPension}
+                  onOpenPensionDetail={openPensionDetail}
                   filters={effectiveFilters}
                 />
               )}
@@ -312,7 +306,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
 
       <PensionDetailModal
         pension={selectedPension}
-        isOpen={isPensionDetailOpen && !(activeTab === 'map' && comparison?.selected.length)}
+        isOpen={isPensionDetailOpen && !comparison?.isDrawerOpen}
         onClose={closePensionDetail}
       />
 

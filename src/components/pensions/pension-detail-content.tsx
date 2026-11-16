@@ -45,6 +45,7 @@ export type PensionDetailContentProps = {
   onBack?: () => void;
   showBackButton?: boolean;
   mode?: 'detail' | 'comparison';
+  hideCompareButton?: boolean;
 };
 
 const slideVariants = {
@@ -68,6 +69,7 @@ export function PensionDetailContent({
   onBack,
   showBackButton = false,
   mode = 'detail',
+  hideCompareButton = false,
 }: PensionDetailContentProps) {
   const isComparing = mode === 'comparison';
   const [comparisonNotice, setComparisonNotice] = useState<string | null>(null);
@@ -229,7 +231,9 @@ export function PensionDetailContent({
         )}
 
         <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
-          <PensionCompareButton pension={pension} variant={isComparing ? 'comparison' : 'detail'} />
+          {!isComparing && !hideCompareButton && (
+            <PensionCompareButton pension={pension} variant="detail" />
+          )}
           <button
             type="button"
             onClick={(e) => onFavoriteClick(pension.id, e)}

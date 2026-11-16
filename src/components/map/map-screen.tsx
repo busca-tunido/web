@@ -11,10 +11,8 @@ import {
 import Image from 'next/image';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { UserLocationControl } from '@/components/map/user-location-control';
-import { MapPensionComparison } from '@/components/pensions/map-pension-comparison';
 import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
 import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
-import { usePensionComparison } from '@/contexts/pension-comparison-context';
 import { env } from '@/env';
 import { useFavoriteAction } from '@/hooks/use-favorite-action';
 import { useMapViewportPensions } from '@/hooks/use-map-viewport-pensions';
@@ -410,22 +408,6 @@ export function MapScreen({
   onOpenPensionDetail,
   filters,
 }: MapScreenProps) {
-  const comparison = usePensionComparison();
-  const comparisonActive = Boolean(comparison?.selected.length);
-  const comparisonActiveRef = useRef(comparisonActive);
-  comparisonActiveRef.current = comparisonActive;
-  const selectedPensionRef = useRef(selectedPension);
-  selectedPensionRef.current = selectedPension;
-  const [comparisonMinimized, setComparisonMinimized] = useState(false);
-  const comparisonIds = comparison?.slots.map((item) => item?.id ?? '').join(':');
-  useEffect(() => {
-    if (comparisonIds?.split(':').every(Boolean)) setComparisonMinimized(false);
-  }, [comparisonIds]);
-  const setMapVisible = comparison?.setMapVisible;
-  useEffect(() => {
-    setMapVisible?.(true);
-    return () => setMapVisible?.(false);
-  }, [setMapVisible]);
   const onSelectPensionRef = useRef(onSelectPension);
   onSelectPensionRef.current = onSelectPension;
   const { isFavorite, onFavoriteClick } = useFavoriteAction();
@@ -474,15 +456,6 @@ export function MapScreen({
         if (map) {
           map.stop();
           map.invalidateSize({ animate: false });
-          const pension = selectedPensionRef.current;
-          if (
-            comparisonActiveRef.current &&
-            pension &&
-            'latitude' in pension &&
-            'longitude' in pension
-          ) {
-            map.setView([pension.latitude, pension.longitude], map.getZoom(), { animate: false });
-          }
         }
       }
     };
@@ -549,11 +522,6 @@ export function MapScreen({
     const map = mapInstanceRef.current;
     const L = leafletModuleRef.current;
     if (!map || !L) return;
-
-    if (comparisonActiveRef.current) {
-      map.panTo([lat, lng], { animate: true });
-      return;
-    }
 
     const zoom = map.getZoom();
     const markerPoint = map.project([lat, lng], zoom);
@@ -1310,22 +1278,9 @@ export function MapScreen({
       id="map-screen-container"
       className="relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-background lg:flex-row"
     >
-      {comparisonActive && (
-        <aside
-          className={`order-last shrink-0 overflow-hidden border-t border-border lg:order-first lg:border-r lg:border-t-0 lg:h-full lg:w-[380px] ${comparisonMinimized ? 'h-auto' : 'h-[75%]'}`}
-        >
-          <MapPensionComparison
-            universityId={selectedUniversity?.id}
-            universityName={selectedUniversity?.name}
-            mapOnly={comparisonMinimized}
-            onToggleMap={() => setComparisonMinimized((value) => !value)}
-            onChooseAnother={() => setComparisonMinimized(true)}
-          />
-        </aside>
-      )}
       <aside
         id="desktop-map-sidebar"
-        className={`${comparisonActive ? 'hidden' : 'hidden lg:flex'} w-[440px] xl:w-[480px] 2xl:w-[520px] shrink-0 h-full flex-col border-r border-border/70 bg-card/95 backdrop-blur-xl z-20 overflow-hidden`}
+        className="hidden lg:flex w-[440px] xl:w-[480px] 2xl:w-[520px] shrink-0 h-full flex-col border-r border-border/70 bg-card/95 backdrop-blur-xl z-20 overflow-hidden"
       >
         <div className="p-4 border-b border-border/60 flex items-center justify-between">
           <div>
@@ -1345,7 +1300,7 @@ export function MapScreen({
 
         <div
           ref={desktopListRef}
-          className={`flex-1 overflow-y-auto scrollbar-sage p-4 flex flex-col gap-5 ${comparison?.selected.length ? 'pb-40' : ''}`}
+          className="flex-1 overflow-y-auto scrollbar-sage p-4 flex flex-col gap-5"
         >
           <Suspense fallback={<MapDrawerSkeleton />}>
             <MapDrawerPensionList
@@ -1391,99 +1346,97 @@ export function MapScreen({
           error={locationError}
           onRequestLocation={onRequestLocation}
           onLocated={handleCenterOnUser}
-          className={`absolute right-4 ${comparisonActive ? 'bottom-4' : buttonBottomClass} lg:bottom-6 z-20 transition-all duration-300`}
+          className={`absolute right-4 ${buttonBottomClass} lg:bottom-6 z-20 transition-all duration-300`}
         />
 
-        {!comparisonActive && (
-          <motion.div
-            id="collapsible-pension-drawer"
-            drag="y"
-            dragListener={false}
-            dragControls={dragControls}
-            dragConstraints={{ top: maximizedY, bottom: minimizedY }}
-            dragElastic={0.06}
-            style={{ y: drawerY }}
-            animate={{ y: targetY }}
-            transition={{ type: 'spring', damping: 30, stiffness: 280 }}
-            onDragEnd={handleDragEnd}
-            className="absolute inset-x-0 top-0 bottom-0 z-30 flex flex-col rounded-t-3xl border-t border-border/70 bg-card/95 backdrop-blur-2xl shadow-2xl overflow-hidden lg:hidden"
+        <motion.div
+          id="collapsible-pension-drawer"
+          drag="y"
+          dragListener={false}
+          dragControls={dragControls}
+          dragConstraints={{ top: maximizedY, bottom: minimizedY }}
+          dragElastic={0.06}
+          style={{ y: drawerY }}
+          animate={{ y: targetY }}
+          transition={{ type: 'spring', damping: 30, stiffness: 280 }}
+          onDragEnd={handleDragEnd}
+          className="absolute inset-x-0 top-0 bottom-0 z-30 flex flex-col rounded-t-3xl border-t border-border/70 bg-card/95 backdrop-blur-2xl shadow-2xl overflow-hidden lg:hidden"
+        >
+          <div
+            onPointerDown={(e) => dragControls.start(e)}
+            className="w-full flex flex-col items-center justify-center pt-2.5 pb-2 select-none shrink-0 cursor-grab active:cursor-grabbing touch-none"
           >
-            <div
-              onPointerDown={(e) => dragControls.start(e)}
-              className="w-full flex flex-col items-center justify-center pt-2.5 pb-2 select-none shrink-0 cursor-grab active:cursor-grabbing touch-none"
+            <button
+              type="button"
+              onClick={handleToggleDrawer}
+              className="w-full flex justify-center py-1 cursor-pointer"
+              aria-label="Alternar panel"
             >
+              <div className="h-1.5 w-12 rounded-full bg-muted-foreground/40 hover:bg-muted-foreground/60 transition-colors" />
+            </button>
+            <div className="flex w-full items-center justify-between px-5 pt-0.5">
               <button
                 type="button"
                 onClick={handleToggleDrawer}
-                className="w-full flex justify-center py-1 cursor-pointer"
-                aria-label="Alternar panel"
+                className="text-sm font-bold text-foreground tracking-tight hover:text-primary transition cursor-pointer text-left"
               >
-                <div className="h-1.5 w-12 rounded-full bg-muted-foreground/40 hover:bg-muted-foreground/60 transition-colors" />
+                {displayedPensions.length} Pensiones disponibles
               </button>
-              <div className="flex w-full items-center justify-between px-5 pt-0.5">
-                <button
-                  type="button"
-                  onClick={handleToggleDrawer}
-                  className="text-sm font-bold text-foreground tracking-tight hover:text-primary transition cursor-pointer text-left"
-                >
-                  {displayedPensions.length} Pensiones disponibles
-                </button>
-                <div className="flex items-center gap-2 text-xs text-primary font-semibold">
-                  {drawerState === 'minimized' ? (
-                    <button
-                      type="button"
-                      onClick={() => setDrawerState('half')}
-                      className="flex items-center gap-1 hover:underline cursor-pointer"
-                    >
-                      Ver lista <ChevronUp className="h-4 w-4" />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setDrawerState('minimized')}
-                      className="flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
-                    >
-                      Minimizar <ChevronDown className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
+              <div className="flex items-center gap-2 text-xs text-primary font-semibold">
+                {drawerState === 'minimized' ? (
+                  <button
+                    type="button"
+                    onClick={() => setDrawerState('half')}
+                    className="flex items-center gap-1 hover:underline cursor-pointer"
+                  >
+                    Ver lista <ChevronUp className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setDrawerState('minimized')}
+                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    Minimizar <ChevronDown className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
+          </div>
 
-            <div
-              ref={cardListRef}
-              className={`relative flex-1 overflow-y-auto scrollbar-subtle px-5 pt-2 flex flex-col gap-6 ${comparison?.selected.length ? 'pb-80' : 'pb-24'}`}
-            >
-              <Suspense fallback={<MapDrawerSkeleton />}>
-                <MapDrawerPensionList
-                  displayedPensions={displayedPensions}
-                  isAreaLoading={isAreaLoading}
-                  isFavorite={isFavorite}
-                  onToggleFavorite={onFavoriteClick}
-                  onSelectPension={onSelectPension}
-                  onOpenPensionDetail={onOpenPensionDetail}
-                  setActivePinId={setActivePinId}
-                />
-              </Suspense>
+          <div
+            ref={cardListRef}
+            className="relative flex-1 overflow-y-auto scrollbar-subtle px-5 pt-2 pb-24 flex flex-col gap-6"
+          >
+            <Suspense fallback={<MapDrawerSkeleton />}>
+              <MapDrawerPensionList
+                displayedPensions={displayedPensions}
+                isAreaLoading={isAreaLoading}
+                isFavorite={isFavorite}
+                onToggleFavorite={onFavoriteClick}
+                onSelectPension={onSelectPension}
+                onOpenPensionDetail={onOpenPensionDetail}
+                setActivePinId={setActivePinId}
+              />
+            </Suspense>
+          </div>
+
+          {drawerState === 'maximized' && (
+            <div className="absolute bottom-[5.25rem] left-1/2 -translate-x-1/2 z-40">
+              <button
+                type="button"
+                onClick={() => setDrawerState('minimized')}
+                className="flex items-center gap-2 rounded-full bg-foreground text-background px-5 py-2.5 text-xs font-bold shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                aria-label="Volver al mapa"
+              >
+                <span>Mapa</span>
+                <span role="img" aria-label="mapa">
+                  🗺️
+                </span>
+              </button>
             </div>
-
-            {drawerState === 'maximized' && (
-              <div className="absolute bottom-[5.25rem] left-1/2 -translate-x-1/2 z-40">
-                <button
-                  type="button"
-                  onClick={() => setDrawerState('minimized')}
-                  className="flex items-center gap-2 rounded-full bg-foreground text-background px-5 py-2.5 text-xs font-bold shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                  aria-label="Volver al mapa"
-                >
-                  <span>Mapa</span>
-                  <span role="img" aria-label="mapa">
-                    🗺️
-                  </span>
-                </button>
-              </div>
-            )}
-          </motion.div>
-        )}
+          )}
+        </motion.div>
       </div>
     </div>
   );
@@ -1584,15 +1537,19 @@ function MapDrawerPensionList({
               </div>
             </button>
 
-            <button
-              type="button"
-              onClick={(e) => onToggleFavorite(pension.id, e)}
-              className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md hover:text-primary transition active:scale-90 shadow-sm border border-border/40 cursor-pointer"
-              aria-label="Guardar en favoritos"
-            >
-              <Heart className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : 'stroke-[2]'}`} />
-            </button>
-            <PensionCompareButton pension={pension} />
+            <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+              <PensionCompareButton pension={pension} variant="icon" size="sm" />
+              <button
+                type="button"
+                onClick={(e) => onToggleFavorite(pension.id, e)}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-background/60 text-foreground backdrop-blur-md hover:text-primary transition active:scale-90 shadow-sm border border-border/40 cursor-pointer"
+                aria-label="Guardar en favoritos"
+              >
+                <Heart
+                  className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : 'stroke-[2]'}`}
+                />
+              </button>
+            </div>
           </div>
         );
       })}

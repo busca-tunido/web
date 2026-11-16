@@ -50,6 +50,9 @@ describe('Comparison rules', () => {
     expect(comparisonReducer(pending, { type: 'select', pension: b })).toBe(pending);
     const removed = comparisonReducer(pair, { type: 'remove', slot: 0 });
     expect(removed.slots).toEqual([null, b]);
+    const swapped = comparisonReducer(pair, { type: 'swap' });
+    expect(swapped.slots).toEqual([b, a]);
+    expect(comparisonReducer(removed, { type: 'swap' })).toBe(removed);
     expect(comparisonReducer(removed, { type: 'clear' })).toEqual(EMPTY_COMPARISON);
   });
 });

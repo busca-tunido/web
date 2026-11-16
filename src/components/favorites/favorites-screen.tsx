@@ -230,18 +230,20 @@ function FavoritesGrid({
               </div>
             </button>
 
-            <PensionCompareButton pension={pension} />
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.8 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-              onClick={() => toggleFavorite(pension.id)}
-              className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer"
-              aria-label="Quitar de favoritos"
-              title="Quitar de favoritos"
-            >
-              <Heart className="h-5 w-5 fill-primary text-primary" />
-            </motion.button>
+            <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+              <PensionCompareButton pension={pension} variant="icon" size="sm" />
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.8 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                onClick={() => toggleFavorite(pension.id)}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer"
+                aria-label="Quitar de favoritos"
+                title="Quitar de favoritos"
+              >
+                <Heart className="h-5 w-5 fill-primary text-primary" />
+              </motion.button>
+            </div>
           </motion.div>
         ))}
       </AnimatePresence>

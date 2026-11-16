@@ -146,26 +146,30 @@ function PensionCardComponent({
         </button>
       </div>
 
-      <PensionCompareButton pension={pension} />
-      <motion.button
-        type="button"
-        whileTap={{ scale: 0.75 }}
-        whileHover={{ scale: 1.08 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleFavorite(pension.id);
-        }}
-        className="absolute top-2.5 right-2.5 z-10 flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer origin-center"
-        aria-label="Guardar en favoritos"
-      >
-        <motion.div
-          animate={isFavorite ? { scale: [1, 1.25, 1] } : { scale: 1 }}
-          transition={{ duration: 0.25 }}
+      <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
+        <PensionCompareButton pension={pension} variant="icon" size="lg" />
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.75 }}
+          whileHover={{ scale: 1.08 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite(pension.id);
+          }}
+          className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer origin-center"
+          aria-label="Guardar en favoritos"
         >
-          <Heart className={`h-5 w-5 ${isFavorite ? 'fill-primary text-primary' : 'stroke-[2]'}`} />
-        </motion.div>
-      </motion.button>
+          <motion.div
+            animate={isFavorite ? { scale: [1, 1.25, 1] } : { scale: 1 }}
+            transition={{ duration: 0.25 }}
+          >
+            <Heart
+              className={`h-5 w-5 ${isFavorite ? 'fill-primary text-primary' : 'stroke-[2]'}`}
+            />
+          </motion.div>
+        </motion.button>
+      </div>
     </motion.article>
   );
 }

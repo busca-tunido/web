@@ -1,10 +1,10 @@
 'use client';
 
-import { ArrowLeftRight, Check, Loader2, MapPin, RefreshCw, X } from 'lucide-react';
+import { ArrowLeftRight, Check, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from '@/components/ui/drawer';
 import {
   type ComparisonSelection,
   type ComparisonSlot,
@@ -49,7 +49,7 @@ function useComparisonDetail(id: string | undefined) {
             attempt,
             id,
             data: null,
-            error: 'Esta publicación ya no está disponible. Reemplázala por otra.',
+            error: 'Esta publicación ya no está disponible.',
           });
         } else {
           setResult({ attempt, id, data: response.data, error: null });
@@ -77,6 +77,7 @@ function ComparisonPension({
   error,
   retry,
   advantages,
+  onRemove,
 }: {
   slot: ComparisonSlot;
   selected: ComparisonSelection;
@@ -84,28 +85,37 @@ function ComparisonPension({
   error: string | null;
   retry: () => void;
   advantages: readonly ComparisonMetric[];
+  onRemove: (slot: ComparisonSlot) => void;
 }) {
   return (
     <>
-      <div className="shrink-0 border-b border-border bg-card px-4 py-3 lg:min-h-24">
-        <p
-          id={`comparison-label-${slot}`}
-          className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-        >
-          Pensión {slot === 0 ? 'A' : 'B'}
-          {slot === 0 && (
-            <Badge variant="secondary" className="bg-sage/10 text-sage-foreground">
-              Fija
-            </Badge>
-          )}
-        </p>
+      <div className="shrink-0 border-b border-border bg-card px-4 py-3 lg:min-h-20 lg:px-6">
+        <div className="flex items-center justify-between gap-2">
+          <p
+            id={`comparison-label-${slot}`}
+            className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground"
+          >
+            <span>Pensión {slot === 0 ? 'A' : 'B'}</span>
+          </p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemove(slot)}
+            aria-label={`Dejar de comparar: ${selected.title}`}
+            className="h-8 gap-1.5 rounded-full px-2.5 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+          >
+            <Trash2 className="size-3.5" />
+            <span>Dejar de comparar</span>
+          </Button>
+        </div>
         {advantages.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-2 flex flex-wrap gap-1.5">
             {advantages.map((metric) => (
               <Badge
                 key={metric}
                 variant="secondary"
-                className="gap-1 bg-sage/10 text-sage-foreground"
+                className="gap-1 bg-sage/15 text-sage-foreground"
               >
                 <Check className="size-3" />
                 {COMPARISON_ADVANTAGES[metric]}
@@ -114,7 +124,7 @@ function ComparisonPension({
           </div>
         )}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 scrollbar-subtle lg:p-6">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 scrollbar-subtle pb-[calc(2rem+env(safe-area-inset-bottom))] lg:p-6">
         {pension ? (
           <PensionDetailContent key={pension.id} pension={pension} mode="comparison" />
         ) : (
@@ -131,7 +141,7 @@ function ComparisonPension({
             ) : (
               <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="size-4 animate-spin" />
-                Actualizando pensión…
+                Cargando pensión…
               </p>
             )}
           </div>
@@ -141,27 +151,18 @@ function ComparisonPension({
   );
 }
 
-export function MapPensionComparison({
-  universityId,
-  universityName,
-  mapOnly,
-  onToggleMap,
-  onChooseAnother,
-}: {
-  universityId?: string;
-  universityName?: string;
-  mapOnly: boolean;
-  onToggleMap: () => void;
-  onChooseAnother: () => void;
-}) {
+export function MapPensionComparison({ universityId }: { universityId?: string } = {}) {
   const comparison = usePensionComparison();
-  const first = useComparisonDetail(comparison?.slots[0]?.id);
-  const second = useComparisonDetail(comparison?.slots[1]?.id);
+  const aSlot = comparison?.slots[0] ?? null;
+  const bSlot = comparison?.slots[1] ?? null;
+  const first = useComparisonDetail(aSlot?.id);
+  const second = useComparisonDetail(bSlot?.id);
   const [activeSlot, setActiveSlot] = useState<ComparisonSlot>(0);
   const isDesktop = useMediaQuery('(min-width: 1024px)');
-  const aId = comparison?.slots[0]?.id;
-  const bId = comparison?.slots[1]?.id;
+  const aId = aSlot?.id;
+  const bId = bSlot?.id;
   const previousIds = useRef([aId, bId]);
+
   useEffect(() => {
     const [previousA, previousB] = previousIds.current;
     if (aId && aId !== previousA) setActiveSlot(0);
@@ -170,154 +171,209 @@ export function MapPensionComparison({
     else if (!bId && aId) setActiveSlot(0);
     previousIds.current = [aId, bId];
   }, [aId, bId]);
+
   if (!comparison?.selected.length) return null;
-  const fullscreen = Boolean(aId && bId);
+
+  const isPair = Boolean(aId && bId);
   const details = [first, second] as const;
   const pensions = details.map((item) => item.data);
-  const chooseAnother = () => {
-    comparison.remove(1);
-    onChooseAnother();
-  };
   const metrics = Object.keys(COMPARISON_ADVANTAGES) as ComparisonMetric[];
-  const content = (
-    <section
-      aria-label="Comparación de pensiones en el mapa"
-      className="flex h-full min-h-0 flex-col bg-card"
-    >
-      <header className="shrink-0 space-y-2 border-b border-border px-4 py-3 lg:px-6">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <h2 className="flex items-center gap-2 font-bold">
-              <ArrowLeftRight className="size-5 shrink-0 text-primary" />
-              Comparación
-            </h2>
-            <p role="status" className="mt-1 text-xs text-muted-foreground">
-              {comparison.selected.length} de 2 seleccionadas
-            </p>
-          </div>
-          {fullscreen && (
-            <Button
-              variant="ghost"
-              className="min-h-12 min-w-12 shrink-0 gap-2"
-              aria-label="Quitar Pensión B y volver al mapa"
-              title="Quitar Pensión B y elegir otra"
-              onClick={chooseAnother}
-            >
-              <span className="hidden text-xs sm:inline">Elegir otra pensión</span>
-              <X />
-            </Button>
-          )}
-        </div>
-        {fullscreen ? (
-          <p className="text-xs text-muted-foreground">
-            La pensión A permanece fija hasta que pulses «Dejar de comparar». La X quita solo la
-            pensión B.
-          </p>
-        ) : (
-          <p className="text-xs text-muted-foreground">
-            {aId
-              ? 'Selecciona otra pensión para comparar'
-              : 'Selecciona la pensión que quieres fijar a la izquierda.'}
-          </p>
-        )}
-        {fullscreen && (
-          <p className="text-xs text-muted-foreground">
-            {universityName
-              ? `Distancias a ${universityName}.`
-              : 'Distancias a la universidad más cercana de cada pensión.'}{' '}
-            Las ventajas usan precios, calificaciones y servicios publicados.
-          </p>
-        )}
-        {!fullscreen && (
-          <Button variant="outline" className="min-h-12 w-full lg:hidden" onClick={onToggleMap}>
-            <MapPin />
-            {mapOnly ? 'Ver pensión fija' : 'Elegir en el mapa'}
-          </Button>
-        )}
-      </header>
-      {fullscreen && (
-        <div
-          role="tablist"
-          aria-label="Pensión visible"
-          className="grid shrink-0 grid-cols-2 gap-2 border-b border-border bg-card p-3 lg:hidden"
-        >
-          {comparison.slots.map((item, index) => (
-            <button
-              type="button"
-              role="tab"
-              id={`comparison-tab-${index}`}
-              aria-controls={`comparison-pane-${index}`}
-              aria-selected={activeSlot === index}
-              tabIndex={activeSlot === index ? 0 : -1}
-              key={index === 0 ? 'A' : 'B'}
-              onClick={() => setActiveSlot(index as ComparisonSlot)}
-              onKeyDown={(event) => {
-                if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-                  event.preventDefault();
-                  const next =
-                    event.key === 'Home' ? 0 : event.key === 'End' ? 1 : activeSlot === 0 ? 1 : 0;
-                  setActiveSlot(next);
-                  document.getElementById(`comparison-tab-${next}`)?.focus();
-                }
-              }}
-              className="min-h-12 min-w-0 rounded-xl border border-border px-2 text-sm font-semibold aria-selected:border-primary aria-selected:bg-primary/10 aria-selected:text-primary"
-            >
-              Pensión {index === 0 ? 'A' : 'B'}
-              <span className="block truncate text-xs font-normal">{item?.title}</span>
-            </button>
-          ))}
-        </div>
-      )}
-      <div
-        className={`min-h-0 flex-1 ${fullscreen ? 'grid grid-cols-1 lg:grid-cols-2 lg:divide-x lg:divide-border' : mapOnly ? 'hidden lg:flex' : 'flex'}`}
-      >
-        {comparison.slots.map(
-          (selected, index) =>
-            selected && (
-              <section
-                key={index === 0 ? 'A' : 'B'}
-                id={`comparison-pane-${index}`}
-                role={fullscreen && !isDesktop ? 'tabpanel' : 'region'}
-                aria-labelledby={
-                  fullscreen && !isDesktop ? `comparison-tab-${index}` : `comparison-label-${index}`
-                }
-                className={`min-h-0 min-w-0 flex-1 flex-col ${!fullscreen || activeSlot === index ? 'flex' : 'hidden lg:flex'}`}
-              >
-                <ComparisonPension
-                  slot={index as ComparisonSlot}
-                  selected={selected}
-                  pension={details[index].data}
-                  error={details[index].error}
-                  retry={details[index].retry}
-                  advantages={metrics.filter(
-                    (metric) => comparisonWinner(metric, pensions, universityId) === selected.id,
-                  )}
-                />
-              </section>
-            ),
-        )}
-      </div>
-    </section>
-  );
 
-  return fullscreen ? (
-    <Dialog
-      open
-      disablePointerDismissal
+  const singleEntry: {
+    slot: ComparisonSlot;
+    item: ComparisonSelection;
+    detail: typeof first;
+  } | null = !isPair
+    ? aSlot
+      ? { slot: 0, item: aSlot, detail: first }
+      : bSlot
+        ? { slot: 1, item: bSlot, detail: second }
+        : null
+    : null;
+
+  return (
+    <Drawer
+      open={comparison.isDrawerOpen}
       onOpenChange={(open) => {
-        if (!open) chooseAnother();
+        if (!open) comparison.closeDrawer();
       }}
     >
-      <DialogContent fullScreen showClose={false}>
-        <DialogTitle className="sr-only">Comparación de dos pensiones</DialogTitle>
-        <DialogDescription className="sr-only">
-          La pensión A es fija. Cierra la pensión B para volver al mapa y elegir otra. Puedes
-          consultar reseñas; para publicar una reseña o contactar debes salir de comparación.
-        </DialogDescription>
-        {content}
-      </DialogContent>
-    </Dialog>
-  ) : (
-    content
+      <DrawerContent
+        id="comparison-drawer"
+        className={
+          isPair
+            ? 'h-[90dvh] [--drawer-content-max-height:92dvh] max-h-[92vh] w-full max-w-lg md:max-w-6xl mx-auto bg-card border-border text-foreground overflow-hidden flex flex-col md:rounded-3xl'
+            : 'max-h-[92vh] w-full max-w-lg md:max-w-4xl mx-auto bg-card border-border text-foreground overflow-hidden flex flex-col md:rounded-3xl'
+        }
+      >
+        <DrawerTitle className="sr-only">
+          {isPair ? 'Comparación de dos pensiones' : 'Pensión seleccionada para comparar'}
+        </DrawerTitle>
+        <DrawerDescription className="sr-only">
+          {isPair
+            ? 'Compara ambas pensiones lado a lado o minimiza el panel deslizándolo hacia abajo.'
+            : 'Visualiza los detalles de la pensión guardada o quítala de la comparación.'}
+        </DrawerDescription>
+
+        <button
+          type="button"
+          onClick={comparison.closeDrawer}
+          aria-label="Minimizar comparación"
+          className="mx-auto mt-2.5 mb-1 flex w-28 justify-center py-1.5 cursor-pointer group shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-primary"
+        >
+          <span className="h-1.5 w-12 rounded-full bg-muted-foreground/30 group-hover:bg-muted-foreground/55 transition-colors" />
+        </button>
+
+        {singleEntry ? (
+          <>
+            <header className="shrink-0 flex items-center justify-between gap-3 border-b border-border/70 px-4 py-2.5 md:px-8">
+              <div className="flex items-center gap-2 min-w-0">
+                <ArrowLeftRight className="size-4 text-primary shrink-0" />
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
+                  Pensión en comparación
+                </span>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => comparison.remove(singleEntry.slot)}
+                aria-label={`Dejar de comparar: ${singleEntry.item.title}`}
+                className="h-8 gap-1.5 rounded-full px-2.5 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive cursor-pointer shrink-0"
+              >
+                <Trash2 className="size-3.5" />
+                <span>Dejar de comparar</span>
+              </Button>
+            </header>
+
+            <div className="overflow-y-auto scrollbar-subtle flex-1 px-4 md:px-8 pt-3 pb-[calc(2rem+env(safe-area-inset-bottom))] md:pb-6">
+              {singleEntry.detail.data ? (
+                <PensionDetailContent
+                  key={singleEntry.detail.data.id}
+                  pension={singleEntry.detail.data}
+                  mode="detail"
+                  hideCompareButton
+                  onBack={comparison.closeDrawer}
+                />
+              ) : (
+                <div className="space-y-3 py-8">
+                  <h3 className="text-lg font-bold">{singleEntry.item.title}</h3>
+                  {singleEntry.detail.error ? (
+                    <div role="alert" className="space-y-3 rounded-xl bg-muted p-4">
+                      <p className="text-sm">{singleEntry.detail.error}</p>
+                      <Button
+                        variant="outline"
+                        className="min-h-12"
+                        onClick={singleEntry.detail.retry}
+                      >
+                        <RefreshCw />
+                        Reintentar
+                      </Button>
+                    </div>
+                  ) : (
+                    <p
+                      role="status"
+                      className="flex items-center gap-2 text-sm text-muted-foreground"
+                    >
+                      <Loader2 className="size-4 animate-spin" />
+                      Cargando pensión…
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <header className="shrink-0 flex items-center justify-between gap-3 border-b border-border/70 px-4 py-2.5 lg:px-6">
+              <div className="flex items-center gap-2 min-w-0">
+                <ArrowLeftRight className="size-4 text-primary shrink-0" />
+                <h2 className="text-sm font-bold tracking-tight">Comparación</h2>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={comparison.swap}
+                aria-label="Intercambiar Pensión A y Pensión B"
+                className="h-8 gap-1.5 rounded-full px-3 text-xs font-semibold cursor-pointer shrink-0"
+              >
+                <ArrowLeftRight className="size-3.5" />
+                <span className="hidden sm:inline">Intercambiar A ↔ B</span>
+                <span className="sm:hidden">A ↔ B</span>
+              </Button>
+            </header>
+
+            <div
+              role="tablist"
+              aria-label="Pensión visible"
+              className="grid shrink-0 grid-cols-2 gap-2 border-b border-border bg-card p-3 lg:hidden"
+            >
+              {comparison.slots.map((item, index) => (
+                <button
+                  type="button"
+                  role="tab"
+                  id={`comparison-tab-${index}`}
+                  aria-controls={`comparison-pane-${index}`}
+                  aria-selected={activeSlot === index}
+                  tabIndex={activeSlot === index ? 0 : -1}
+                  key={index === 0 ? 'A' : 'B'}
+                  onClick={() => setActiveSlot(index as ComparisonSlot)}
+                  onKeyDown={(event) => {
+                    if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+                      event.preventDefault();
+                      const next =
+                        event.key === 'Home'
+                          ? 0
+                          : event.key === 'End'
+                            ? 1
+                            : activeSlot === 0
+                              ? 1
+                              : 0;
+                      setActiveSlot(next);
+                      document.getElementById(`comparison-tab-${next}`)?.focus();
+                    }
+                  }}
+                  className="min-h-12 min-w-0 rounded-xl border border-border px-2 text-sm font-semibold transition-colors aria-selected:border-primary aria-selected:bg-primary/10 aria-selected:text-primary cursor-pointer"
+                >
+                  Pensión {index === 0 ? 'A' : 'B'}
+                  <span className="block truncate text-xs font-normal">{item?.title}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="min-h-0 flex-1 grid grid-cols-1 lg:grid-cols-2 lg:divide-x lg:divide-border">
+              {comparison.slots.map(
+                (selected, index) =>
+                  selected && (
+                    <section
+                      key={index === 0 ? 'A' : 'B'}
+                      id={`comparison-pane-${index}`}
+                      role={!isDesktop ? 'tabpanel' : 'region'}
+                      aria-labelledby={
+                        !isDesktop ? `comparison-tab-${index}` : `comparison-label-${index}`
+                      }
+                      className={`min-h-0 min-w-0 flex-1 flex-col ${activeSlot === index ? 'flex' : 'hidden lg:flex'}`}
+                    >
+                      <ComparisonPension
+                        slot={index as ComparisonSlot}
+                        selected={selected}
+                        pension={details[index].data}
+                        error={details[index].error}
+                        retry={details[index].retry}
+                        advantages={metrics.filter(
+                          (metric) =>
+                            comparisonWinner(metric, pensions, universityId) === selected.id,
+                        )}
+                        onRemove={comparison.remove}
+                      />
+                    </section>
+                  ),
+              )}
+            </div>
+          </>
+        )}
+      </DrawerContent>
+    </Drawer>
   );
 }
