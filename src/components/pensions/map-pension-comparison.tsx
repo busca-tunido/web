@@ -77,7 +77,7 @@ function ComparisonPension({
   error,
   retry,
   advantages,
-  onRemove,
+  onReplace,
 }: {
   slot: ComparisonSlot;
   selected: ComparisonSelection;
@@ -85,32 +85,13 @@ function ComparisonPension({
   error: string | null;
   retry: () => void;
   advantages: readonly ComparisonMetric[];
-  onRemove: (slot: ComparisonSlot) => void;
+  onReplace: (slot: ComparisonSlot) => void;
 }) {
   return (
     <>
-      <div className="shrink-0 border-b border-border bg-card px-4 py-3 lg:min-h-20 lg:px-6">
-        <div className="flex items-center justify-between gap-2">
-          <p
-            id={`comparison-label-${slot}`}
-            className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-          >
-            <span>Pensión {slot === 0 ? 'A' : 'B'}</span>
-          </p>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onRemove(slot)}
-            aria-label={`Dejar de comparar: ${selected.title}`}
-            className="h-8 gap-1.5 rounded-full px-2.5 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive cursor-pointer"
-          >
-            <Trash2 className="size-3.5" />
-            <span>Dejar de comparar</span>
-          </Button>
-        </div>
-        {advantages.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
+      <div className="shrink-0 border-b border-border bg-card px-4 py-2.5 lg:min-h-14 lg:px-6">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex min-h-8 flex-1 flex-wrap items-center gap-1.5">
             {advantages.map((metric) => (
               <Badge
                 key={metric}
@@ -122,7 +103,18 @@ function ComparisonPension({
               </Badge>
             ))}
           </div>
-        )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onReplace(slot)}
+            aria-label={`Cambiar pensión: ${selected.title}`}
+            className="h-8 shrink-0 gap-1.5 rounded-full px-2.5 text-xs font-semibold cursor-pointer"
+          >
+            <RefreshCw className="size-3.5" />
+            <span>Cambiar</span>
+          </Button>
+        </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 scrollbar-subtle pb-[calc(2rem+env(safe-area-inset-bottom))] lg:p-6">
         {pension ? (
@@ -133,9 +125,14 @@ function ComparisonPension({
             {error ? (
               <div role="alert" className="space-y-3 rounded-xl bg-muted p-4">
                 <p className="text-sm">{error}</p>
-                <Button variant="outline" className="min-h-12" onClick={retry}>
+                <Button
+                  variant="outline"
+                  className="min-h-12"
+                  aria-label={`Reintentar carga de ${selected.title}`}
+                  onClick={retry}
+                >
                   <RefreshCw />
-                  Reintentar Pensión {slot === 0 ? 'A' : 'B'}
+                  Reintentar
                 </Button>
               </div>
             ) : (
@@ -292,54 +289,60 @@ export function MapPensionComparison({ universityId }: { universityId?: string }
               </div>
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                onClick={comparison.swap}
-                aria-label="Intercambiar Pensión A y Pensión B"
-                className="h-8 gap-1.5 rounded-full px-3 text-xs font-semibold cursor-pointer shrink-0"
+                onClick={comparison.clear}
+                aria-label="Dejar de comparar"
+                className="h-8 gap-1.5 rounded-full px-2.5 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive cursor-pointer shrink-0"
               >
-                <ArrowLeftRight className="size-3.5" />
-                <span className="hidden sm:inline">Intercambiar A ↔ B</span>
-                <span className="sm:hidden">A ↔ B</span>
+                <Trash2 className="size-3.5" />
+                <span>Dejar de comparar</span>
               </Button>
             </header>
 
             <div
               role="tablist"
-              aria-label="Pensión visible"
+              aria-label="Alojamientos comparados"
               className="grid shrink-0 grid-cols-2 gap-2 border-b border-border bg-card p-3 lg:hidden"
             >
-              {comparison.slots.map((item, index) => (
-                <button
-                  type="button"
-                  role="tab"
-                  id={`comparison-tab-${index}`}
-                  aria-controls={`comparison-pane-${index}`}
-                  aria-selected={activeSlot === index}
-                  tabIndex={activeSlot === index ? 0 : -1}
-                  key={index === 0 ? 'A' : 'B'}
-                  onClick={() => setActiveSlot(index as ComparisonSlot)}
-                  onKeyDown={(event) => {
-                    if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-                      event.preventDefault();
-                      const next =
-                        event.key === 'Home'
-                          ? 0
-                          : event.key === 'End'
-                            ? 1
-                            : activeSlot === 0
+              {comparison.slots.map((item, index) => {
+                const detail = details[index].data;
+                return (
+                  <button
+                    type="button"
+                    role="tab"
+                    id={`comparison-tab-${index}`}
+                    aria-controls={`comparison-pane-${index}`}
+                    aria-selected={activeSlot === index}
+                    tabIndex={activeSlot === index ? 0 : -1}
+                    key={item?.id ?? index}
+                    onClick={() => setActiveSlot(index as ComparisonSlot)}
+                    onKeyDown={(event) => {
+                      if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+                        event.preventDefault();
+                        const next =
+                          event.key === 'Home'
+                            ? 0
+                            : event.key === 'End'
                               ? 1
-                              : 0;
-                      setActiveSlot(next);
-                      document.getElementById(`comparison-tab-${next}`)?.focus();
-                    }
-                  }}
-                  className="min-h-12 min-w-0 rounded-xl border border-border px-2 text-sm font-semibold transition-colors aria-selected:border-primary aria-selected:bg-primary/10 aria-selected:text-primary cursor-pointer"
-                >
-                  Pensión {index === 0 ? 'A' : 'B'}
-                  <span className="block truncate text-xs font-normal">{item?.title}</span>
-                </button>
-              ))}
+                              : activeSlot === 0
+                                ? 1
+                                : 0;
+                        setActiveSlot(next);
+                        document.getElementById(`comparison-tab-${next}`)?.focus();
+                      }
+                    }}
+                    className="min-h-12 min-w-0 rounded-xl border border-border px-2.5 py-1.5 text-left transition-colors aria-selected:border-primary aria-selected:bg-primary/10 aria-selected:text-primary cursor-pointer"
+                  >
+                    <span className="block truncate text-xs font-semibold">{item?.title}</span>
+                    <span className="block truncate text-[11px] font-normal text-muted-foreground tabular-nums">
+                      {detail
+                        ? `$${detail.baseMonthlyPrice.toLocaleString('es-CL')}/mes`
+                        : 'Cargando…'}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             <div className="min-h-0 flex-1 grid grid-cols-1 lg:grid-cols-2 lg:divide-x lg:divide-border">
@@ -347,12 +350,11 @@ export function MapPensionComparison({ universityId }: { universityId?: string }
                 (selected, index) =>
                   selected && (
                     <section
-                      key={index === 0 ? 'A' : 'B'}
+                      key={selected.id}
                       id={`comparison-pane-${index}`}
                       role={!isDesktop ? 'tabpanel' : 'region'}
-                      aria-labelledby={
-                        !isDesktop ? `comparison-tab-${index}` : `comparison-label-${index}`
-                      }
+                      aria-label={!isDesktop ? undefined : selected.title}
+                      aria-labelledby={!isDesktop ? `comparison-tab-${index}` : undefined}
                       className={`min-h-0 min-w-0 flex-1 flex-col ${activeSlot === index ? 'flex' : 'hidden lg:flex'}`}
                     >
                       <ComparisonPension
@@ -365,7 +367,10 @@ export function MapPensionComparison({ universityId }: { universityId?: string }
                           (metric) =>
                             comparisonWinner(metric, pensions, universityId) === selected.id,
                         )}
-                        onRemove={comparison.remove}
+                        onReplace={(targetSlot) => {
+                          comparison.remove(targetSlot);
+                          comparison.closeDrawer();
+                        }}
                       />
                     </section>
                   ),
