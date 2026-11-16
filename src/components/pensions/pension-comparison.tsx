@@ -117,8 +117,21 @@ export function PensionComparison() {
               >
                 <ArrowLeftRight aria-hidden="true" className="h-4 w-4 text-primary shrink-0" />
                 <span>Comparar</span>
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground tabular-nums">
-                  {count}
+                <span className="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-background/40 text-[11px] font-bold tabular-nums ring-1 ring-inset ring-primary/80">
+                  <span
+                    aria-hidden="true"
+                    style={{ width: count >= 2 ? '100%' : '50%' }}
+                    className="absolute inset-y-0 left-0 bg-primary transition-[width] duration-300 ease-out"
+                  />
+                  <span
+                    className={`relative z-10 transition-colors ${
+                      count >= 2
+                        ? 'text-primary-foreground'
+                        : 'text-foreground dark:[text-shadow:0_1px_2px_rgb(0_0_0/0.45)]'
+                    }`}
+                  >
+                    {count}
+                  </span>
                 </span>
               </button>
               <button

@@ -173,6 +173,9 @@ describe('Comparison floating pill and drawer flow', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Minimizar comparación' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     const pillWithTwo = screen.getByRole('button', { name: 'Abrir comparación (2)' });
+    expect(
+      pillWithTwo.querySelector<HTMLElement>('[aria-hidden="true"].bg-primary')?.style.width,
+    ).toBe('100%');
     fireEvent.click(pillWithTwo);
     const reopened = await screen.findByRole('dialog', { name: 'Comparación de dos pensiones' });
     expect(within(reopened).getByRole('heading', { name: 'Pensión A' })).toBeTruthy();
@@ -184,7 +187,10 @@ describe('Comparison floating pill and drawer flow', () => {
 
     fireEvent.click(within(singleDialog).getByRole('button', { name: 'Minimizar comparación' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(screen.getByRole('button', { name: 'Abrir comparación (1)' })).toBeTruthy();
+    const pillWithOne = screen.getByRole('button', { name: 'Abrir comparación (1)' });
+    expect(
+      pillWithOne.querySelector<HTMLElement>('[aria-hidden="true"].bg-primary')?.style.width,
+    ).toBe('50%');
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar comparación' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
