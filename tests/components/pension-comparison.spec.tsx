@@ -151,7 +151,7 @@ describe('Comparison floating pill and drawer flow', () => {
     },
   );
 
-  it('allows anonymous visitors to open pair drawer, swap A and B, minimize keeping both, and cancel via floating pill X', async () => {
+  it('allows anonymous visitors to open pair drawer, replace a slot, minimize keeping selection, and cancel via floating pill X', async () => {
     auth.user = null;
     render(<App />);
     const dialog = await openPair();
@@ -160,37 +160,40 @@ describe('Comparison floating pill and drawer flow', () => {
     expect(within(dialog).getAllByText(comparisonReview.comment, { exact: false })).toHaveLength(2);
     expect(within(dialog).getByText('Más económica')).toBeTruthy();
     expect(screen.queryByText('2 de 2 seleccionadas')).toBeNull();
-    expect(
-      screen.queryByText(/La pensión A permanece fija hasta que pulses/i),
-    ).toBeNull();
+    expect(screen.queryByText(/La pensión A permanece fija hasta que pulses/i)).toBeNull();
     expect(screen.queryByText(/Las ventajas usan precios/i)).toBeNull();
-    expect(within(dialog).queryByRole('button', { name: /Elegir otra pensión|Quitar Pensión B/i })).toBeNull();
-
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Intercambiar Pensión A y Pensión B' }));
-    expect(within(dialog).getByRole('tab', { name: /Pensión A.*Pensión B/i })).toBeTruthy();
-    expect(within(dialog).getByRole('tab', { name: /Pensión B.*Pensión A/i })).toBeTruthy();
+    expect(
+      within(dialog).queryByRole('button', { name: /Intercambiar Pensión A y Pensión B/i }),
+    ).toBeNull();
+    expect(within(dialog).getByRole('button', { name: 'Dejar de comparar' })).toBeTruthy();
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Minimizar comparación' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     const pillWithTwo = screen.getByRole('button', { name: 'Abrir comparación (2)' });
     expect(
-      pillWithTwo.querySelector<HTMLElement>('[aria-hidden="true"].bg-primary')?.style.width,
-    ).toBe('100%');
+      pillWithTwo.querySelectorAll('circle')[1]?.getAttribute('stroke-dashoffset'),
+    ).toBe('0');
     fireEvent.click(pillWithTwo);
     const reopened = await screen.findByRole('dialog', { name: 'Comparación de dos pensiones' });
     expect(within(reopened).getByRole('heading', { name: 'Pensión A' })).toBeTruthy();
     expect(within(reopened).getByRole('heading', { name: 'Pensión B' })).toBeTruthy();
 
-    fireEvent.click(within(reopened).getByRole('button', { name: 'Dejar de comparar: Pensión B' }));
-    const singleDialog = await screen.findByRole('dialog', { name: 'Pensión seleccionada para comparar' });
+    fireEvent.click(within(reopened).getByRole('button', { name: 'Cambiar pensión: Pensión B' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    const pillWithOne = screen.getByRole('button', { name: 'Abrir comparación (1)' });
+    const halfOffset = Number(
+      pillWithOne.querySelectorAll('circle')[1]?.getAttribute('stroke-dashoffset'),
+    );
+    expect(halfOffset).toBeGreaterThan(0);
+
+    fireEvent.click(pillWithOne);
+    const singleDialog = await screen.findByRole('dialog', {
+      name: 'Pensión seleccionada para comparar',
+    });
     expect(within(singleDialog).getByRole('heading', { name: 'Pensión A' })).toBeTruthy();
 
     fireEvent.click(within(singleDialog).getByRole('button', { name: 'Minimizar comparación' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    const pillWithOne = screen.getByRole('button', { name: 'Abrir comparación (1)' });
-    expect(
-      pillWithOne.querySelector<HTMLElement>('[aria-hidden="true"].bg-primary')?.style.width,
-    ).toBe('50%');
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar comparación' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());

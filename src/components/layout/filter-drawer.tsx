@@ -130,6 +130,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onApply }: FilterDrawer
       <ResponsiveModalContent
         id="filter-drawer-content"
         showClose={false}
+        showDragHandle={false}
         className="max-w-lg md:max-w-2xl mx-auto bg-card border-border text-foreground md:rounded-3xl max-h-[85vh] flex flex-col p-0 overflow-hidden"
       >
         <div className="sticky top-0 z-20 bg-card border-b border-border px-4 py-3 flex flex-col gap-2">

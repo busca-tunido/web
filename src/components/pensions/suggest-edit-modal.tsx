@@ -5,12 +5,12 @@ import { useEffect, useReducer } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import { useSuggestEdit } from '@/hooks/use-suggest-edit';
 import { clampNumber } from '@/lib/format-utils';
 import type { PensionItem } from '@/lib/types';
@@ -98,30 +98,22 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent
+    <ResponsiveModal open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <ResponsiveModalContent
         id="suggest-edit-drawer"
-        className="max-h-[92vh] max-w-lg md:max-w-2xl mx-auto md:rounded-3xl bg-card border-border text-foreground flex flex-col overflow-hidden"
+        showClose={false}
+        className="max-w-lg md:max-w-2xl md:max-h-[82vh] mx-auto md:rounded-3xl bg-card border-border text-foreground flex flex-col overflow-hidden"
       >
-        <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
+        <ResponsiveModalHeader className="px-5 py-4 border-b border-border/60 shrink-0 text-left">
+          <ResponsiveModalTitle className="text-lg font-bold text-foreground">
+            Sugerir corrección
+          </ResponsiveModalTitle>
+          <ResponsiveModalDescription className="text-xs text-muted-foreground mt-0.5 truncate">
+            {pension.title}
+          </ResponsiveModalDescription>
+        </ResponsiveModalHeader>
 
-        <div className="flex items-center justify-center px-4 py-2.5 border-b border-border/60">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Sugerir Corrección
-          </span>
-        </div>
-
-        <div className="overflow-y-auto flex-1 px-4 py-4 space-y-6">
-          <DrawerHeader className="p-0 text-left">
-            <DrawerTitle className="text-lg font-bold text-foreground">
-              Ayúdanos a mantener la información al día
-            </DrawerTitle>
-            <DrawerDescription className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              Si vives aquí o conoces esta pensión, cuéntanos qué cambió o qué datos faltan para que
-              otros estudiantes tengan información confiable.
-            </DrawerDescription>
-          </DrawerHeader>
-
+        <div className="overflow-y-auto scrollbar-subtle flex-1 min-h-0 px-5 py-4 pb-6 space-y-6">
           {successBanner && (
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center gap-3 text-emerald-600 animate-in fade-in">
               <CheckCircle2 className="h-5 w-5 shrink-0" />
@@ -564,7 +556,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
           </section>
         </div>
 
-        <div className="border-t border-border/80 bg-card p-4">
+        <div className="border-t border-border/60 bg-card/95 backdrop-blur-md p-4 md:px-5 shrink-0">
           <Button
             id="btn-submit-proposal"
             onClick={handleSubmit}
@@ -582,7 +574,7 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
             )}
           </Button>
         </div>
-      </DrawerContent>
-    </Drawer>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }

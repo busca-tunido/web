@@ -2,14 +2,14 @@
 
 import { useState } from 'react';
 import { ReviewCard } from '@/components/reviews/review-card';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import type { PensionReview, StayHistoryItem } from '@/lib/types';
 
 type UserReviewModalProps = {
@@ -29,87 +29,45 @@ export function UserReviewModal({ isOpen, onClose, stay }: UserReviewModalProps)
 
   const review: PensionReview = stay.review;
 
-  const hasSubRatings = Boolean(
-    review.cleanlinessRating ||
-      review.landlordRating ||
-      review.quietnessRating ||
-      review.wifiRating,
-  );
+  const subRatings = [
+    { label: 'Limpieza', value: review.cleanlinessRating },
+    { label: 'Anfitrión', value: review.landlordRating },
+    { label: 'Silencio / Estudio', value: review.quietnessRating },
+    { label: 'Wi-Fi', value: review.wifiRating },
+  ].filter((item): item is { label: string; value: number } => Boolean(item.value));
 
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent
+    <ResponsiveModal open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <ResponsiveModalContent
         id="user-review-drawer"
-        className="max-h-[92dvh] flex flex-col bg-background border-border select-none max-w-lg md:max-w-2xl mx-auto md:rounded-3xl"
+        showClose={false}
+        className="max-w-lg md:max-w-2xl md:max-h-[82vh] mx-auto flex flex-col bg-card border-border select-none md:rounded-3xl"
       >
-        <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
+        <ResponsiveModalHeader className="px-5 py-4 border-b border-border/60 shrink-0 text-left">
+          <ResponsiveModalTitle className="text-lg font-bold text-foreground">
+            Tu reseña publicada
+          </ResponsiveModalTitle>
+          <ResponsiveModalDescription className="text-xs text-muted-foreground mt-0.5 truncate">
+            {stay.pensionTitle} • {stay.pensionCity}
+          </ResponsiveModalDescription>
+        </ResponsiveModalHeader>
 
-        <div className="flex items-center justify-between px-5 py-3 border-b border-border/70 shrink-0">
-          <div>
-            <h3 className="text-base font-bold text-foreground">Tu reseña publicada</h3>
-            <p className="text-[11px] text-muted-foreground truncate max-w-sm">
-              {stay.pensionTitle} • {stay.pensionCity}
-            </p>
-          </div>
-        </div>
-
-        <DrawerHeader className="sr-only">
-          <DrawerTitle>Tu reseña de {stay.pensionTitle}</DrawerTitle>
-          <DrawerDescription>Detalle de la reseña que publicaste como estudiante</DrawerDescription>
-        </DrawerHeader>
-
-        <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-4">
-          {hasSubRatings && (
-            <div className="grid grid-cols-2 gap-2.5">
-              {review.cleanlinessRating && (
-                <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-foreground">Limpieza</span>
-                    <span className="text-xs font-bold text-primary">
-                      {review.cleanlinessRating}.0
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">Áreas comunes y baño</p>
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-subtle px-5 py-5 pb-6 flex flex-col gap-4">
+          {subRatings.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {subRatings.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center justify-between gap-2 rounded-xl border border-border/70 bg-muted/35 px-3 py-2.5"
+                >
+                  <span className="text-xs font-medium text-muted-foreground truncate">
+                    {item.label}
+                  </span>
+                  <span className="text-xs font-bold text-primary tabular-nums shrink-0">
+                    {item.value}.0
+                  </span>
                 </div>
-              )}
-
-              {review.landlordRating && (
-                <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-foreground">Anfitrión</span>
-                    <span className="text-xs font-bold text-primary">
-                      {review.landlordRating}.0
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">Trato y comunicación</p>
-                </div>
-              )}
-
-              {review.quietnessRating && (
-                <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-foreground">
-                      Silencio / Estudio
-                    </span>
-                    <span className="text-xs font-bold text-primary">
-                      {review.quietnessRating}.0
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">Ambiente de descanso</p>
-                </div>
-              )}
-
-              {review.wifiRating && (
-                <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-foreground">
-                      Conectividad Wi-Fi
-                    </span>
-                    <span className="text-xs font-bold text-primary">{review.wifiRating}.0</span>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">Velocidad y estabilidad</p>
-                </div>
-              )}
+              ))}
             </div>
           )}
 
@@ -135,7 +93,7 @@ export function UserReviewModal({ isOpen, onClose, stay }: UserReviewModalProps)
             title={viewerState.title}
           />
         )}
-      </DrawerContent>
-    </Drawer>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }

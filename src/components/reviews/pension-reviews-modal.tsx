@@ -3,14 +3,14 @@
 import { Camera, Star } from 'lucide-react';
 import { Suspense, useMemo, useState } from 'react';
 import { EmailCheckStep } from '@/components/auth/email-check-step';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import { ReviewsSkeleton } from '@/components/ui/skeletons/reviews-skeleton';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { useAuth } from '@/lib/auth-context';
@@ -136,68 +136,96 @@ export function PensionReviewsModal({
 
   return (
     <>
-      <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent className="max-h-[92dvh] max-w-lg md:max-w-3xl mx-auto flex flex-col bg-background border-border select-none md:rounded-3xl">
-          <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
-
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border/70 shrink-0">
-            <div>
-              <h3 className="text-base font-bold text-foreground">Reseñas de la pensión</h3>
-              <p className="text-xs text-muted-foreground truncate max-w-sm">{pension.title}</p>
-            </div>
-          </div>
-
-          <DrawerHeader className="sr-only">
-            <DrawerTitle>Reseñas de {pension.title}</DrawerTitle>
-            <DrawerDescription>Comentarios y calificaciones de estudiantes</DrawerDescription>
-          </DrawerHeader>
-
-          <div className="flex-1 overflow-y-auto scrollbar-subtle px-5 py-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] flex flex-col gap-6">
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 p-5 text-center">
-              <div className="flex items-center gap-3">
-                <span className="text-4xl font-black tracking-tight text-foreground tabular-nums">
-                  {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
+      <ResponsiveModal open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <ResponsiveModalContent
+          showClose={false}
+          className="max-w-lg md:max-w-3xl md:max-h-[84vh] mx-auto flex flex-col bg-card border-border select-none md:rounded-3xl"
+        >
+          <ResponsiveModalHeader className="px-5 py-4 border-b border-border/60 shrink-0 text-left">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <ResponsiveModalTitle className="text-lg font-bold text-foreground">
+                  Reseñas de la pensión
+                </ResponsiveModalTitle>
+                <ResponsiveModalDescription className="text-xs text-muted-foreground mt-0.5 truncate">
+                  {pension.title}
+                </ResponsiveModalDescription>
+              </div>
+              {reviews.length > 0 && (
+                <span className="shrink-0 rounded-full border border-border/70 bg-muted/40 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground tabular-nums">
+                  {reviews.length} {reviews.length === 1 ? 'reseña' : 'reseñas'}
                 </span>
-                <div className="flex flex-col items-start">
-                  <div className="flex items-center gap-0.5 text-warning">
-                    {[1, 2, 3, 4, 5].map((starVal) => (
-                      <Star
-                        key={`star-${starVal}`}
-                        className={`h-4 w-4 ${
-                          pension.ratingAverage >= starVal
-                            ? 'fill-warning text-warning'
-                            : 'text-muted-foreground/30'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-xs font-semibold text-muted-foreground mt-0.5 tabular-nums">
-                    {reviews.length > 0
-                      ? `${reviews.length} ${reviews.length === 1 ? 'reseña verificada' : 'reseñas verificadas'}`
-                      : 'Sin reseñas registradas'}
-                  </span>
-                </div>
-              </div>
+              )}
             </div>
+          </ResponsiveModalHeader>
 
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-subtle px-5 py-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-6 flex flex-col gap-5">
             {reviews.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border px-8 pt-10 pb-14 -mt-2 text-center text-muted-foreground flex flex-col items-center justify-center">
-                <Star className="h-8 w-8 text-muted-foreground/30 mb-2 -translate-y-0.5" />
-                <p className="text-sm font-semibold text-foreground">
-                  Esta pensión aún no tiene reseñas
-                </p>
-                <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                  Las calificaciones y comentarios de estudiantes aparecerán aquí cuando califiquen
-                  su estadía.
-                </p>
-              </div>
+              <>
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 p-5 text-center">
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl font-black tracking-tight text-foreground tabular-nums">
+                      {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
+                    </span>
+                    <div className="flex flex-col items-start">
+                      <div className="flex items-center gap-0.5 text-warning">
+                        {[1, 2, 3, 4, 5].map((starVal) => (
+                          <Star
+                            key={`star-${starVal}`}
+                            className={`h-4 w-4 ${
+                              pension.ratingAverage >= starVal
+                                ? 'fill-warning text-warning'
+                                : 'text-muted-foreground/30'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-xs font-semibold text-muted-foreground mt-0.5 tabular-nums">
+                        Sin reseñas registradas
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-dashed border-border px-8 pt-10 pb-14 text-center text-muted-foreground flex flex-col items-center justify-center">
+                  <Star className="h-8 w-8 text-muted-foreground/30 mb-2 -translate-y-0.5" />
+                  <p className="text-sm font-semibold text-foreground">
+                    Esta pensión aún no tiene reseñas
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                    Las calificaciones y comentarios de estudiantes aparecerán aquí cuando
+                    califiquen su estadía.
+                  </p>
+                </div>
+              </>
             ) : (
               <>
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2.5">
-                    Desglose de calificaciones
-                  </h4>
-                  <div className="flex flex-col gap-1.5">
+                <div className="rounded-2xl border border-border/70 bg-muted/35 p-4 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-4 sm:gap-6 items-center">
+                  <div className="flex items-center gap-3 sm:pr-5 sm:border-r sm:border-border/60">
+                    <span className="text-4xl font-black tracking-tight text-foreground tabular-nums">
+                      {pension.ratingAverage > 0 ? pension.ratingAverage.toFixed(1) : 'Nuevo'}
+                    </span>
+                    <div className="flex flex-col items-start">
+                      <div className="flex items-center gap-0.5 text-warning">
+                        {[1, 2, 3, 4, 5].map((starVal) => (
+                          <Star
+                            key={`star-${starVal}`}
+                            className={`h-4 w-4 ${
+                              pension.ratingAverage >= starVal
+                                ? 'fill-warning text-warning'
+                                : 'text-muted-foreground/30'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-xs font-semibold text-muted-foreground mt-0.5 tabular-nums">
+                        {reviews.length}{' '}
+                        {reviews.length === 1 ? 'reseña verificada' : 'reseñas verificadas'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 min-w-0">
                     {[5, 4, 3, 2, 1].map((stars) => {
                       const count = starCounts[stars as keyof typeof starCounts] || 0;
                       const total = Math.max(reviews.length, 1);
@@ -205,11 +233,11 @@ export function PensionReviewsModal({
 
                       return (
                         <div key={`breakdown-${stars}`} className="flex items-center gap-2 text-xs">
-                          <span className="w-5 text-right font-semibold text-muted-foreground tabular-nums">
+                          <span className="w-4 text-right font-semibold text-muted-foreground tabular-nums">
                             {stars}
                           </span>
                           <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
-                          <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
+                          <div className="relative flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
                             <div
                               className="h-full bg-primary rounded-full transition-all duration-500"
                               style={{ width: `${percent}%` }}
@@ -224,113 +252,49 @@ export function PensionReviewsModal({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-foreground">Limpieza</span>
-                      <span className="text-xs font-bold text-primary tabular-nums">
-                        {categoryAverages.cleanliness}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { label: 'Limpieza', value: categoryAverages.cleanliness },
+                    { label: 'Anfitrión', value: categoryAverages.landlord },
+                    { label: 'Silencio / Estudio', value: categoryAverages.quietness },
+                    { label: 'Wi-Fi', value: categoryAverages.wifi },
+                  ].map((aspect) => (
+                    <div
+                      key={aspect.label}
+                      className="flex items-center justify-between gap-2 rounded-xl border border-border/70 bg-muted/35 px-3 py-2.5"
+                    >
+                      <span className="text-xs font-medium text-muted-foreground truncate">
+                        {aspect.label}
+                      </span>
+                      <span className="text-xs font-bold text-primary tabular-nums shrink-0">
+                        {aspect.value}
                       </span>
                     </div>
-                    <p className="text-[10px] text-muted-foreground">Áreas comunes y sanitarios</p>
-                  </div>
-
-                  <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-foreground">Anfitrión</span>
-                      <span className="text-xs font-bold text-primary tabular-nums">
-                        {categoryAverages.landlord}
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">Atención y resolución</p>
-                  </div>
-
-                  <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-foreground">
-                        Silencio / Estudio
-                      </span>
-                      <span className="text-xs font-bold text-primary tabular-nums">
-                        {categoryAverages.quietness}
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">Ambiente para concentrarse</p>
-                  </div>
-
-                  <div className="flex flex-col gap-1 rounded-xl border border-border/80 bg-card p-3 shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-foreground">
-                        Conectividad Wi-Fi
-                      </span>
-                      <span className="text-xs font-bold text-primary tabular-nums">
-                        {categoryAverages.wifi}
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">Estabilidad y velocidad</p>
-                  </div>
+                  ))}
                 </div>
 
                 <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar -mx-1 px-1 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setActiveFilter('ALL')}
-                    className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                      activeFilter === 'ALL'
-                        ? 'bg-foreground text-background'
-                        : 'border border-border bg-card text-foreground hover:bg-secondary'
-                    }`}
-                  >
-                    Todas ({reviews.length})
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveFilter('WITH_PHOTOS')}
-                    className={`shrink-0 flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                      activeFilter === 'WITH_PHOTOS'
-                        ? 'bg-foreground text-background'
-                        : 'border border-border bg-card text-foreground hover:bg-secondary'
-                    }`}
-                  >
-                    <Camera className="h-3.5 w-3.5" />
-                    <span>Con fotos</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveFilter('5_STARS')}
-                    className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                      activeFilter === '5_STARS'
-                        ? 'bg-foreground text-background'
-                        : 'border border-border bg-card text-foreground hover:bg-secondary'
-                    }`}
-                  >
-                    5 Estrellas
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveFilter('LOW_RATING')}
-                    className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                      activeFilter === 'LOW_RATING'
-                        ? 'bg-foreground text-background'
-                        : 'border border-border bg-card text-foreground hover:bg-secondary'
-                    }`}
-                  >
-                    Bajas calificaciones
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveFilter('LONG_STAY')}
-                    className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                      activeFilter === 'LONG_STAY'
-                        ? 'bg-foreground text-background'
-                        : 'border border-border bg-card text-foreground hover:bg-secondary'
-                    }`}
-                  >
-                    Larga Estadía (&gt;1 año)
-                  </button>
+                  {[
+                    { id: 'ALL' as const, label: `Todas (${reviews.length})` },
+                    { id: 'WITH_PHOTOS' as const, label: 'Con fotos', withCamera: true },
+                    { id: '5_STARS' as const, label: '5 Estrellas' },
+                    { id: 'LOW_RATING' as const, label: 'Bajas calificaciones' },
+                    { id: 'LONG_STAY' as const, label: 'Larga Estadía (>1 año)' },
+                  ].map((pill) => (
+                    <button
+                      key={pill.id}
+                      type="button"
+                      onClick={() => setActiveFilter(pill.id)}
+                      className={`shrink-0 flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                        activeFilter === pill.id
+                          ? 'bg-foreground text-background'
+                          : 'border border-border bg-muted/30 text-foreground hover:bg-secondary'
+                      }`}
+                    >
+                      {pill.withCamera && <Camera className="h-3.5 w-3.5" />}
+                      <span>{pill.label}</span>
+                    </button>
+                  ))}
                 </div>
 
                 <Suspense fallback={<ReviewsSkeleton />}>
@@ -360,24 +324,27 @@ export function PensionReviewsModal({
               title={viewerState.title}
             />
           )}
-        </DrawerContent>
-      </Drawer>
+        </ResponsiveModalContent>
+      </ResponsiveModal>
 
       {isAuthModalOpen && (
-        <Drawer open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
-          <DrawerContent className="max-w-md mx-auto p-6 bg-card border-border md:rounded-3xl">
-            <DrawerHeader className="px-0 pb-4 text-left">
-              <DrawerTitle className="text-lg font-bold text-foreground">
+        <ResponsiveModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
+          <ResponsiveModalContent
+            showClose={false}
+            className="max-w-md mx-auto p-6 bg-card border-border md:rounded-3xl"
+          >
+            <ResponsiveModalHeader className="px-0 pb-4 border-b-0 text-left">
+              <ResponsiveModalTitle className="text-lg font-bold text-foreground">
                 Inicia sesión para votar
-              </DrawerTitle>
-              <DrawerDescription className="text-xs text-muted-foreground">
+              </ResponsiveModalTitle>
+              <ResponsiveModalDescription className="text-xs text-muted-foreground">
                 Para indicar si una reseña te ha resultado útil, ingresa con tu cuenta universitaria
                 de BuscaTuNido.
-              </DrawerDescription>
-            </DrawerHeader>
+              </ResponsiveModalDescription>
+            </ResponsiveModalHeader>
             <EmailCheckStep onSuccess={() => setIsAuthModalOpen(false)} />
-          </DrawerContent>
-        </Drawer>
+          </ResponsiveModalContent>
+        </ResponsiveModal>
       )}
     </>
   );

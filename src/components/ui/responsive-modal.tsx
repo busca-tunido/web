@@ -43,8 +43,16 @@ export type ResponsiveModalProps = {
 };
 
 export function ResponsiveModal({ open, onOpenChange, children }: ResponsiveModalProps) {
-  const isDesktop = useMediaQuery('(min-width: 768px)');
+  const mediaDesktop = useMediaQuery('(min-width: 768px)');
+  const [lockedDesktop, setLockedDesktop] = React.useState<boolean | null>(null);
 
+  if (open && lockedDesktop === null) {
+    setLockedDesktop(mediaDesktop);
+  } else if (!open && lockedDesktop !== null) {
+    setLockedDesktop(null);
+  }
+
+  const isDesktop = open ? (lockedDesktop ?? mediaDesktop) : mediaDesktop;
   const contextValue = React.useMemo(() => ({ isDesktop }), [isDesktop]);
 
   if (isDesktop) {
@@ -80,12 +88,14 @@ export type ResponsiveModalContentProps = React.HTMLAttributes<HTMLDivElement> &
   children: React.ReactNode;
   className?: string;
   showClose?: boolean;
+  showDragHandle?: boolean;
 };
 
 export function ResponsiveModalContent({
   children,
   className,
   showClose = true,
+  showDragHandle = true,
   ...props
 }: ResponsiveModalContentProps) {
   const { isDesktop } = useResponsiveModal();
@@ -95,7 +105,7 @@ export function ResponsiveModalContent({
       <DialogContent
         showClose={showClose}
         className={cn(
-          'sm:max-w-xl md:max-w-2xl max-h-[85vh] p-0 flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl',
+          'sm:max-w-xl md:max-w-2xl max-h-[85vh] p-0 flex flex-col overflow-hidden rounded-3xl border border-border bg-card text-foreground shadow-2xl min-h-0',
           className,
         )}
         {...props}
@@ -107,9 +117,15 @@ export function ResponsiveModalContent({
 
   return (
     <DrawerContent
-      className={cn('max-h-[92dvh] flex flex-col bg-card border-border', className)}
+      className={cn(
+        'max-h-[92dvh] flex flex-col bg-card border-border text-foreground overflow-hidden min-h-0',
+        className,
+      )}
       {...props}
     >
+      {showDragHandle && (
+        <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/30" />
+      )}
       {children}
     </DrawerContent>
   );

@@ -26,12 +26,12 @@ import {
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import { isApiSuccess } from '@/lib/api-response';
 import type { PensionAmenityCatalogItemDto, PensionItem } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
@@ -273,41 +273,37 @@ export function AmenitiesBreakdownModal({
   const totalActive = activeBasicCount + activeAmenitiesCount;
   const totalItems = BASIC_UTILITIES.length + catalog.length;
 
+  const sortedBasicUtilities = [...BASIC_UTILITIES].sort(
+    (a, b) => Number(Boolean(pension[b.key])) - Number(Boolean(pension[a.key])),
+  );
+
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent
+    <ResponsiveModal open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <ResponsiveModalContent
         id="amenities-breakdown-drawer"
-        className="max-h-[92vh] max-w-lg md:max-w-2xl mx-auto md:rounded-3xl bg-card border-border text-foreground flex flex-col overflow-hidden"
+        showClose={false}
+        className="max-w-lg md:max-w-2xl md:max-h-[82vh] mx-auto md:rounded-3xl bg-card border-border text-foreground flex flex-col overflow-hidden"
       >
-        <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
-
-        <div className="flex items-center justify-center px-4 py-2.5 border-b border-border/60">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Detalle de Comodidades
-          </span>
-        </div>
-
-        <div className="overflow-y-auto flex-1 px-4 py-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] space-y-6">
-          <DrawerHeader className="p-0 text-left">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <DrawerTitle className="text-lg font-bold text-foreground">
-                  Servicios y Comodidades
-                </DrawerTitle>
-                <DrawerDescription className="text-xs text-muted-foreground mt-0.5">
-                  Revisa qué servicios están incluidos y cuáles no en{' '}
-                  <span className="font-semibold text-foreground">{pension.title}</span>.
-                </DrawerDescription>
-              </div>
-              <Badge
-                variant="outline"
-                className="text-xs font-semibold shrink-0 self-start sm:self-auto"
-              >
-                {totalActive} de {totalItems} incluidos
-              </Badge>
+        <ResponsiveModalHeader className="px-5 py-4 border-b border-border/60 shrink-0 text-left">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <ResponsiveModalTitle className="text-lg font-bold text-foreground">
+                Servicios y Comodidades
+              </ResponsiveModalTitle>
+              <ResponsiveModalDescription className="text-xs text-muted-foreground mt-0.5 truncate">
+                {pension.title}
+              </ResponsiveModalDescription>
             </div>
-          </DrawerHeader>
+            <Badge
+              variant="outline"
+              className="text-xs font-semibold shrink-0 border-primary/30 bg-primary/10 text-primary"
+            >
+              {totalActive} de {totalItems} incluidos
+            </Badge>
+          </div>
+        </ResponsiveModalHeader>
 
+        <div className="overflow-y-auto scrollbar-subtle flex-1 min-h-0 px-5 py-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:pb-6 space-y-6">
           <section className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -322,46 +318,14 @@ export function AmenitiesBreakdownModal({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {BASIC_UTILITIES.map((utility) => {
-                const active = Boolean(pension[utility.key]);
-                const Icon = utility.icon;
-
-                if (active) {
-                  return (
-                    <div
-                      key={utility.key}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 p-3 shadow-2xs"
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <span className="text-xs font-semibold text-foreground truncate">
-                          {utility.name}
-                        </span>
-                      </div>
-                      <Check className="h-4 w-4 text-primary shrink-0 ml-1" />
-                    </div>
-                  );
-                }
-
-                return (
-                  <div
-                    key={utility.key}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-border/60 bg-muted/20 p-3 select-none"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <span className="text-xs font-medium text-muted-foreground truncate">
-                        {utility.name}
-                      </span>
-                    </div>
-                    <X className="h-4 w-4 text-muted-foreground/80 shrink-0 ml-1" />
-                  </div>
-                );
-              })}
+              {sortedBasicUtilities.map((utility) => (
+                <AmenityStatusRow
+                  key={utility.key}
+                  icon={utility.icon}
+                  label={utility.name}
+                  active={Boolean(pension[utility.key])}
+                />
+              ))}
             </div>
           </section>
 
@@ -371,6 +335,9 @@ export function AmenitiesBreakdownModal({
 
             const CategoryIcon = cat.icon;
             const activeCountInCat = items.filter((a) => isAmenityActive(a.slug)).length;
+            const sortedItems = [...items].sort(
+              (a, b) => Number(isAmenityActive(b.slug)) - Number(isAmenityActive(a.slug)),
+            );
 
             return (
               <section key={cat.key} className="space-y-3">
@@ -387,52 +354,54 @@ export function AmenitiesBreakdownModal({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {items.map((am) => {
-                    const active = isAmenityActive(am.slug);
-                    const Icon = (am.iconKey && AMENITY_ICON_MAP[am.iconKey]) || CheckCircle2;
-
-                    if (active) {
-                      return (
-                        <div
-                          key={am.slug}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 p-3 shadow-2xs"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                              <Icon className="h-4 w-4" />
-                            </div>
-                            <span className="text-xs font-semibold text-foreground truncate">
-                              {am.name}
-                            </span>
-                          </div>
-                          <Check className="h-4 w-4 text-primary shrink-0 ml-1" />
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div
-                        key={am.slug}
-                        className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-border/60 bg-muted/20 p-3 select-none"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                            <Icon className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                          <span className="text-xs font-medium text-muted-foreground truncate">
-                            {am.name}
-                          </span>
-                        </div>
-                        <X className="h-4 w-4 text-muted-foreground/80 shrink-0 ml-1" />
-                      </div>
-                    );
-                  })}
+                  {sortedItems.map((am) => (
+                    <AmenityStatusRow
+                      key={am.slug}
+                      icon={(am.iconKey && AMENITY_ICON_MAP[am.iconKey]) || CheckCircle2}
+                      label={am.name}
+                      active={isAmenityActive(am.slug)}
+                    />
+                  ))}
                 </div>
               </section>
             );
           })}
         </div>
-      </DrawerContent>
-    </Drawer>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
+  );
+}
+
+type AmenityStatusRowProps = {
+  icon: typeof Zap;
+  label: string;
+  active: boolean;
+};
+
+function AmenityStatusRow({ icon: Icon, label, active }: AmenityStatusRowProps) {
+  if (active) {
+    return (
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 px-3 py-2.5 shadow-2xs">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <Icon className="h-4 w-4" />
+          </div>
+          <span className="text-xs font-semibold text-foreground truncate">{label}</span>
+        </div>
+        <Check className="h-4 w-4 text-primary shrink-0 ml-1" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 opacity-55 select-none">
+      <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted/40 text-muted-foreground">
+          <Icon className="h-4 w-4" />
+        </div>
+        <span className="text-xs font-medium text-muted-foreground truncate">{label}</span>
+      </div>
+      <X className="h-4 w-4 text-muted-foreground/70 shrink-0 ml-1" />
+    </div>
   );
 }

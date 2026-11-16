@@ -4,7 +4,12 @@ import { ArrowLeftRight, Check, Loader2, RefreshCw, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from '@/components/ui/drawer';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import {
   type ComparisonSelection,
   type ComparisonSlot,
@@ -189,34 +194,36 @@ export function MapPensionComparison({ universityId }: { universityId?: string }
     : null;
 
   return (
-    <Drawer
+    <ResponsiveModal
       open={comparison.isDrawerOpen}
       onOpenChange={(open) => {
         if (!open) comparison.closeDrawer();
       }}
     >
-      <DrawerContent
+      <ResponsiveModalContent
         id="comparison-drawer"
+        showClose={false}
+        showDragHandle={false}
         className={
           isPair
-            ? 'h-[90dvh] [--drawer-content-max-height:92dvh] max-h-[92vh] w-full max-w-lg md:max-w-6xl mx-auto bg-card border-border text-foreground overflow-hidden flex flex-col md:rounded-3xl'
-            : 'max-h-[92vh] w-full max-w-lg md:max-w-4xl mx-auto bg-card border-border text-foreground overflow-hidden flex flex-col md:rounded-3xl'
+            ? 'h-[90dvh] [--drawer-content-max-height:92dvh] max-h-[92vh] md:h-[88vh] md:max-h-[88vh] w-full max-w-lg md:max-w-6xl mx-auto bg-card border-border text-foreground overflow-hidden flex flex-col md:rounded-3xl'
+            : 'max-h-[92vh] md:max-h-[88vh] w-full max-w-lg md:max-w-4xl mx-auto bg-card border-border text-foreground overflow-hidden flex flex-col md:rounded-3xl'
         }
       >
-        <DrawerTitle className="sr-only">
+        <ResponsiveModalTitle className="sr-only">
           {isPair ? 'Comparación de dos pensiones' : 'Pensión seleccionada para comparar'}
-        </DrawerTitle>
-        <DrawerDescription className="sr-only">
+        </ResponsiveModalTitle>
+        <ResponsiveModalDescription className="sr-only">
           {isPair
             ? 'Compara ambas pensiones lado a lado o minimiza el panel deslizándolo hacia abajo.'
             : 'Visualiza los detalles de la pensión guardada o quítala de la comparación.'}
-        </DrawerDescription>
+        </ResponsiveModalDescription>
 
         <button
           type="button"
           onClick={comparison.closeDrawer}
           aria-label="Minimizar comparación"
-          className="mx-auto mt-2.5 mb-1 flex w-28 justify-center py-1.5 cursor-pointer group shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-primary"
+          className="mx-auto mt-2.5 mb-1 flex md:hidden w-28 justify-center py-1.5 cursor-pointer group shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-primary"
         >
           <span className="h-1.5 w-12 rounded-full bg-muted-foreground/30 group-hover:bg-muted-foreground/55 transition-colors" />
         </button>
@@ -378,7 +385,7 @@ export function MapPensionComparison({ universityId }: { universityId?: string }
             </div>
           </>
         )}
-      </DrawerContent>
-    </Drawer>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }

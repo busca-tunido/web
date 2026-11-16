@@ -113,12 +113,12 @@ describe('AmenitiesBreakdownModal', () => {
     expect(screen.queryByText(/iluminación LED natural/i)).toBeNull();
   });
 
-  it('calls onClose when clicking back button', () => {
+  it('does not render redundant close button and closes via Escape key dismiss', () => {
     const onCloseMock = vi.fn();
     render(<AmenitiesBreakdownModal isOpen={true} onClose={onCloseMock} pension={mockPension} />);
 
-    const backButton = screen.getByRole('button', { name: /volver/i });
-    fireEvent.click(backButton);
+    expect(screen.queryByRole('button', { name: /volver/i })).toBeNull();
+    fireEvent.keyDown(document, { key: 'Escape' });
 
     expect(onCloseMock).toHaveBeenCalledTimes(1);
   });
