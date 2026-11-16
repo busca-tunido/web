@@ -614,7 +614,7 @@ export function PensionDetailContent({
         isLoading={isLoadingDetail}
       />
 
-      <div className="mt-4 mb-2 p-3 rounded-xl bg-muted/30 border border-border/80 flex items-center justify-between">
+      <div className="mt-4 mb-2 p-3 rounded-xl bg-muted/30 border border-border/80 flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs text-muted-foreground">
           ¿Conoces este lugar o viste algo incorrecto?
         </span>
@@ -628,7 +628,7 @@ export function PensionDetailContent({
             }
             setIsSuggestEditOpen(true);
           }}
-          className="text-xs font-semibold text-primary hover:underline transition cursor-pointer"
+          className="text-xs font-semibold text-primary hover:underline transition cursor-pointer shrink-0"
         >
           Sugerir una corrección
         </button>
@@ -648,30 +648,30 @@ export function PensionDetailContent({
             type="button"
             title="No disponible en modo comparación"
             onClick={showComparisonNotice}
-            className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
+            className="w-full min-h-12 h-auto py-2.5 px-3 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm text-center leading-tight rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
           >
             {pension.contactWhatsapp ? (
-              <MessageSquare className="h-4 w-4" />
+              <MessageSquare className="h-4 w-4 shrink-0" />
             ) : (
-              <Phone className="h-4 w-4" />
+              <Phone className="h-4 w-4 shrink-0" />
             )}{' '}
-            Consultar Disponibilidad
+            <span>Consultar Disponibilidad</span>
           </button>
         ) : pension.contactWhatsapp ? (
           <a
             href={`https://wa.me/${pension.contactWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola, me interesa la pensión "${pension.title}" que encontré en BuscaTuNido.`)}`}
             target="_blank"
             rel="noreferrer"
-            className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
+            className="w-full min-h-12 h-auto py-2.5 px-3 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm text-center leading-tight rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
           >
-            <MessageSquare className="h-4 w-4" /> Consultar Disponibilidad
+            <MessageSquare className="h-4 w-4 shrink-0" /> <span>Consultar Disponibilidad</span>
           </a>
         ) : pension.contactPhone ? (
           <a
             href={`tel:${pension.contactPhone.replace(/\s+/g, '')}`}
-            className="w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
+            className="w-full min-h-12 h-auto py-2.5 px-3 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm text-center leading-tight rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
           >
-            <Phone className="h-4 w-4" /> Consultar Disponibilidad
+            <Phone className="h-4 w-4 shrink-0" /> <span>Consultar Disponibilidad</span>
           </a>
         ) : null}
 
@@ -681,10 +681,10 @@ export function PensionDetailContent({
               id={`btn-view-user-review-${pension.id}`}
               variant="outline"
               onClick={() => setIsReviewsModalOpen(true)}
-              className="w-full h-11 border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs rounded-xl transition cursor-pointer"
+              className="w-full min-h-11 h-auto py-2.5 px-3 whitespace-normal text-center leading-tight border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs rounded-xl transition cursor-pointer"
             >
-              <Check className="mr-2 h-4 w-4 text-primary" /> Ya calificaste esta pensión (Ver
-              opiniones)
+              <Check className="h-4 w-4 shrink-0 text-primary" />
+              <span>Ya calificaste esta pensión (Ver opiniones)</span>
             </Button>
           ) : (
             <Button
@@ -697,11 +697,11 @@ export function PensionDetailContent({
               }}
               className={
                 pension.contactWhatsapp || pension.contactPhone
-                  ? 'w-full h-11 border-border/80 hover:bg-secondary text-foreground font-semibold text-xs rounded-xl transition cursor-pointer'
-                  : 'w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer'
+                  ? 'w-full min-h-11 h-auto py-2.5 px-3 whitespace-normal text-center leading-tight border-border/80 hover:bg-secondary text-foreground font-semibold text-xs rounded-xl transition cursor-pointer'
+                  : 'w-full min-h-12 h-auto py-2.5 px-3 whitespace-normal text-center leading-tight bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer'
               }
             >
-              <PenLine className="mr-2 h-4 w-4" /> Publicar una reseña
+              <PenLine className="h-4 w-4 shrink-0" /> <span>Publicar una reseña</span>
             </Button>
           )
         ) : (
@@ -711,12 +711,14 @@ export function PensionDetailContent({
             onClick={isComparing ? showComparisonNotice : openAuthModal}
             className={
               pension.contactWhatsapp || pension.contactPhone
-                ? 'w-full h-11 border-border/80 hover:bg-secondary text-foreground font-semibold text-xs rounded-xl transition cursor-pointer'
-                : 'w-full h-12 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer'
+                ? 'w-full min-h-11 h-auto py-2.5 px-3 whitespace-normal text-center leading-tight border-border/80 hover:bg-secondary text-foreground font-semibold text-xs rounded-xl transition cursor-pointer'
+                : 'w-full min-h-12 h-auto py-2.5 px-3 whitespace-normal text-center leading-tight bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer'
             }
           >
-            <PenLine className="mr-2 h-4 w-4" />{' '}
-            {isComparing ? 'Publicar una reseña' : 'Inicia sesión para opinar o guardar'}
+            <PenLine className="h-4 w-4 shrink-0" />{' '}
+            <span>
+              {isComparing ? 'Publicar una reseña' : 'Inicia sesión para opinar o guardar'}
+            </span>
           </Button>
         )}
       </div>

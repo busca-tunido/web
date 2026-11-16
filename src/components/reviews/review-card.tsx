@@ -77,8 +77,8 @@ export function ReviewCard({
     <div
       className={`rounded-2xl border border-border/80 bg-card p-4 shadow-xs flex flex-col gap-3 ${className}`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-start justify-between gap-2.5 min-w-0">
+        <div className="flex items-start gap-2.5 min-w-0 flex-1">
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted border border-border">
             {review.user?.avatarUrl ? (
               <Image
@@ -96,28 +96,30 @@ export function ReviewCard({
             )}
           </div>
 
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h5 className="text-xs font-bold text-foreground">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <h5 className="text-xs font-bold text-foreground break-words">
                 {review.user?.firstName || 'Usuario'} {review.user?.lastName || ''}
               </h5>
               {review.isResidentVerified && (
                 <Badge
                   variant="outline"
-                  className="gap-1 border-sage/30 bg-sage/10 text-sage-foreground text-xs py-0 px-1.5 font-semibold"
+                  className="gap-1 border-sage/30 bg-sage/10 text-sage-foreground text-[11px] py-0 px-1.5 font-semibold shrink-0"
                 >
-                  <ShieldCheck className="h-3 w-3" />
+                  <ShieldCheck className="h-3 w-3 shrink-0" />
                   <span>Estudiante verificado</span>
                 </Badge>
               )}
             </div>
 
-            <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-              <span>{formatStayDuration(review.stayDurationCategory || review.stayDuration)}</span>
+            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-0.5 text-xs text-muted-foreground min-w-0">
+              <span className="break-words">
+                {formatStayDuration(review.stayDurationCategory || review.stayDuration)}
+              </span>
               {review.user?.university?.name && (
                 <>
-                  <span>•</span>
-                  <span className="font-medium text-foreground/80">
+                  <span aria-hidden="true">•</span>
+                  <span className="font-medium text-foreground/80 break-words">
                     {review.user.university.shortName || review.user.university.name}
                   </span>
                 </>
@@ -126,18 +128,18 @@ export function ReviewCard({
           </div>
         </div>
 
-        <div className="flex flex-col items-end">
+        <div className="flex flex-col items-end shrink-0">
           <div className="flex items-center gap-0.5 text-warning">
             {[1, 2, 3, 4, 5].map((starVal) => (
               <Star
                 key={`star-${review.id}-${starVal}`}
-                className={`h-3 w-3 ${
+                className={`h-3 w-3 shrink-0 ${
                   starVal <= rating ? 'fill-warning text-warning' : 'text-muted-foreground/30'
                 }`}
               />
             ))}
           </div>
-          <span className="text-xs text-muted-foreground mt-0.5 tabular-nums">
+          <span className="text-[11px] text-muted-foreground mt-0.5 tabular-nums whitespace-nowrap">
             {formatDate(review.createdAt)}
           </span>
         </div>
@@ -186,7 +188,7 @@ export function ReviewCard({
         </div>
       )}
 
-      <div className="flex items-center justify-between pt-2 border-t border-border/60">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/60">
         {showHelpfulButton ? (
           <motion.button
             type="button"
@@ -195,25 +197,27 @@ export function ReviewCard({
             onClick={() => onToggleHelpful?.(review.id)}
             aria-pressed={isLiked}
             aria-label={`Marcar como útil (${calculatedLikes} votos)`}
-            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shrink-0 ${
               isLiked
                 ? 'bg-primary/10 text-primary'
                 : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
             }`}
           >
-            <ThumbsUp className={`h-3 w-3 ${isLiked ? 'fill-primary' : ''}`} />
+            <ThumbsUp className={`h-3 w-3 shrink-0 ${isLiked ? 'fill-primary' : ''}`} />
             <span>
               Útil (<span className="tabular-nums">{calculatedLikes}</span>)
             </span>
           </motion.button>
         ) : (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <ThumbsUp className="h-3 w-3" />
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap shrink-0">
+            <ThumbsUp className="h-3 w-3 shrink-0" />
             <span>{calculatedLikes} votos útiles</span>
           </div>
         )}
 
-        <span className="text-xs text-muted-foreground">Reseña verificada por moderación</span>
+        <span className="text-[11px] text-muted-foreground leading-tight">
+          Reseña verificada por moderación
+        </span>
       </div>
 
       {internalViewerIndex !== null && (
