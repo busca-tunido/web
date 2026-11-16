@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeftRight, Check, Loader2, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowLeftRight, Check, RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import {
   ResponsiveModalDescription,
   ResponsiveModalTitle,
 } from '@/components/ui/responsive-modal';
+import { PensionDetailSkeleton } from '@/components/ui/skeletons/pension-detail-skeleton';
 import {
   type ComparisonSelection,
   type ComparisonSlot,
@@ -124,29 +125,24 @@ function ComparisonPension({
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 scrollbar-subtle pb-[calc(2rem+env(safe-area-inset-bottom))] lg:p-6">
         {pension ? (
           <PensionDetailContent key={pension.id} pension={pension} mode="comparison" />
-        ) : (
+        ) : error ? (
           <div className="space-y-3 py-6">
             <h3 className="font-bold">{selected.title}</h3>
-            {error ? (
-              <div role="alert" className="space-y-3 rounded-xl bg-muted p-4">
-                <p className="text-sm">{error}</p>
-                <Button
-                  variant="outline"
-                  className="min-h-12"
-                  aria-label={`Reintentar carga de ${selected.title}`}
-                  onClick={retry}
-                >
-                  <RefreshCw />
-                  Reintentar
-                </Button>
-              </div>
-            ) : (
-              <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" />
-                Cargando pensión…
-              </p>
-            )}
+            <div role="alert" className="space-y-3 rounded-xl bg-muted p-4">
+              <p className="text-sm">{error}</p>
+              <Button
+                variant="outline"
+                className="min-h-12"
+                aria-label={`Reintentar carga de ${selected.title}`}
+                onClick={retry}
+              >
+                <RefreshCw />
+                Reintentar
+              </Button>
+            </div>
           </div>
+        ) : (
+          <PensionDetailSkeleton title={selected.title} />
         )}
       </div>
     </>
@@ -259,31 +255,23 @@ export function MapPensionComparison({ universityId }: { universityId?: string }
                   hideCompareButton
                   onBack={comparison.closeDrawer}
                 />
-              ) : (
+              ) : singleEntry.detail.error ? (
                 <div className="space-y-3 py-8">
                   <h3 className="text-lg font-bold">{singleEntry.item.title}</h3>
-                  {singleEntry.detail.error ? (
-                    <div role="alert" className="space-y-3 rounded-xl bg-muted p-4">
-                      <p className="text-sm">{singleEntry.detail.error}</p>
-                      <Button
-                        variant="outline"
-                        className="min-h-12"
-                        onClick={singleEntry.detail.retry}
-                      >
-                        <RefreshCw />
-                        Reintentar
-                      </Button>
-                    </div>
-                  ) : (
-                    <p
-                      role="status"
-                      className="flex items-center gap-2 text-sm text-muted-foreground"
+                  <div role="alert" className="space-y-3 rounded-xl bg-muted p-4">
+                    <p className="text-sm">{singleEntry.detail.error}</p>
+                    <Button
+                      variant="outline"
+                      className="min-h-12"
+                      onClick={singleEntry.detail.retry}
                     >
-                      <Loader2 className="size-4 animate-spin" />
-                      Cargando pensión…
-                    </p>
-                  )}
+                      <RefreshCw />
+                      Reintentar
+                    </Button>
+                  </div>
                 </div>
+              ) : (
+                <PensionDetailSkeleton title={singleEntry.item.title} />
               )}
             </div>
           </>
