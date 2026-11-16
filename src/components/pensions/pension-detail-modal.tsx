@@ -82,7 +82,6 @@ export function PensionDetailModal({
             pension={activePension}
             isLoadingDetail={isLoadingDetail}
             onBack={onClose}
-            showBackButton
           />
         </div>
       </DrawerContent>

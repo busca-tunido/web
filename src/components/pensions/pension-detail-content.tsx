@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  ArrowLeft,
   BookOpen,
   Building2,
   Check,
@@ -43,7 +42,6 @@ export type PensionDetailContentProps = {
   pension: PensionDetailViewItem;
   isLoadingDetail?: boolean;
   onBack?: () => void;
-  showBackButton?: boolean;
   mode?: 'detail' | 'comparison';
   hideCompareButton?: boolean;
 };
@@ -66,8 +64,7 @@ const slideVariants = {
 export function PensionDetailContent({
   pension: initialPension,
   isLoadingDetail = false,
-  onBack,
-  showBackButton = false,
+  onBack: _onBack,
   mode = 'detail',
   hideCompareButton = false,
 }: PensionDetailContentProps) {
@@ -218,17 +215,6 @@ export function PensionDetailContent({
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none z-10" />
-
-        {showBackButton && onBack && (
-          <button
-            type="button"
-            onClick={onBack}
-            className="absolute top-3 left-3 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 active:scale-90 transition shadow-sm cursor-pointer"
-            aria-label="Volver atrás"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-        )}
 
         <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
           {!isComparing && !hideCompareButton && (
