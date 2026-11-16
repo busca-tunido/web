@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Calendar, History, Maximize2, MessageSquare, Star } from 'lucide-react';
+import { Building2, Calendar, History, MessageSquare, Star } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { HistoryGuestIncentive } from '@/components/history/history-guest-incentive';
@@ -131,22 +131,6 @@ function HistoryList({
           >
             <div className="relative h-36 w-full overflow-hidden bg-muted flex items-center justify-center">
               {hasImg ? (
-                <Image
-                  src={stay.imageUrl as string}
-                  alt={stay.pensionTitle}
-                  fill
-                  unoptimized
-                  sizes="(max-width: 640px) 100vw, 480px"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-muted/40 text-muted-foreground">
-                  <Building2 className="h-10 w-10 text-muted-foreground/40" />
-                </div>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
-
-              {hasImg && (
                 <button
                   type="button"
                   onClick={() =>
@@ -156,14 +140,26 @@ function HistoryList({
                       subtitle: `${stay.roomTitle} • ${stay.pensionCity}`,
                     })
                   }
-                  className="absolute top-2.5 right-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md opacity-90 hover:opacity-100 transition-opacity hover:bg-black/80 active:scale-95 cursor-pointer shadow-sm"
+                  className="group relative h-full w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label={`Ver foto de ${stay.pensionTitle} a pantalla completa`}
                 >
-                  <Maximize2 className="h-4 w-4" />
+                  <Image
+                    src={stay.imageUrl as string}
+                    alt={stay.pensionTitle}
+                    fill
+                    unoptimized
+                    sizes="(max-width: 640px) 100vw, 480px"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
                 </button>
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-muted/40 text-muted-foreground">
+                  <Building2 className="h-10 w-10 text-muted-foreground/40" />
+                </div>
               )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
 
-              <div className="absolute bottom-2.5 left-2.5">
+              <div className="absolute bottom-2.5 left-2.5 pointer-events-none">
                 <Badge className="bg-background/80 text-foreground border border-border text-xs backdrop-blur-md">
                   {stay.pensionCity}
                 </Badge>

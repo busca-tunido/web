@@ -11,7 +11,6 @@ import {
   Clock,
   Heart,
   MapPin,
-  Maximize2,
   MessageSquare,
   PenLine,
   Phone,
@@ -187,8 +186,17 @@ export function PensionDetailContent({
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.25}
               onDragEnd={handleDragEnd}
+              role="button"
+              tabIndex={0}
+              aria-label={`Ampliar foto ${activePhotoIdx + 1} de ${pension.title}`}
               onClick={() => setIsViewerOpen(true)}
-              className="absolute inset-0 h-full w-full cursor-pointer active:cursor-grabbing"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsViewerOpen(true);
+                }
+              }}
+              className="absolute inset-0 h-full w-full cursor-pointer active:cursor-grabbing focus-visible:outline-2 focus-visible:outline-primary"
             >
               <Image
                 src={displayPhotos[activePhotoIdx]}
@@ -222,16 +230,6 @@ export function PensionDetailContent({
 
         <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
           <PensionCompareButton pension={pension} variant={isComparing ? 'comparison' : 'detail'} />
-          {displayPhotos.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setIsViewerOpen(true)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-white hover:bg-black/80 active:scale-90 transition shadow-sm cursor-pointer"
-              aria-label="Ver fotos a pantalla completa"
-            >
-              <Maximize2 className="h-4 w-4" />
-            </button>
-          )}
           <button
             type="button"
             onClick={(e) => onFavoriteClick(pension.id, e)}

@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  Building2,
-  ChevronDown,
-  ChevronUp,
-  Heart,
-  Loader2,
-  Maximize2,
-  ShieldCheck,
-  Star,
-} from 'lucide-react';
+import { Building2, ChevronDown, ChevronUp, Heart, Loader2, ShieldCheck, Star } from 'lucide-react';
 import {
   AnimatePresence,
   motion,
@@ -22,7 +13,6 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import { UserLocationControl } from '@/components/map/user-location-control';
 import { MapPensionComparison } from '@/components/pensions/map-pension-comparison';
 import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
-import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
 import { usePensionComparison } from '@/contexts/pension-comparison-context';
 import { env } from '@/env';
@@ -1518,8 +1508,6 @@ function MapDrawerPensionList({
   onOpenPensionDetail,
   setActivePinId,
 }: MapDrawerPensionListProps) {
-  const [viewerPension, setViewerPension] = useState<PensionItem | null>(null);
-
   if (isAreaLoading && displayedPensions.length === 0) {
     return <MapDrawerSkeleton />;
   }
@@ -1558,20 +1546,6 @@ function MapDrawerPensionList({
                   <Building2 className="h-10 w-10 text-muted-foreground/30" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-
-                {pension.images && pension.images.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setViewerPension(pension);
-                    }}
-                    className="absolute top-2.5 left-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md hover:bg-black/80 transition active:scale-95 shadow-sm cursor-pointer"
-                    aria-label={`Ver fotos de ${pension.title} a pantalla completa`}
-                  >
-                    <Maximize2 className="h-4 w-4" />
-                  </button>
-                )}
 
                 {(pension.verificationStatus === 'OFFICIALLY_VERIFIED' ||
                   pension.verificationStatus === 'COMMUNITY_VERIFIED') && (
@@ -1622,16 +1596,6 @@ function MapDrawerPensionList({
           </div>
         );
       })}
-
-      {viewerPension && (
-        <FullScreenImageViewer
-          isOpen={Boolean(viewerPension)}
-          onClose={() => setViewerPension(null)}
-          images={viewerPension.images?.map((img) => img.url) ?? []}
-          title={viewerPension.title}
-          subtitle={`${viewerPension.neighborhood}, ${viewerPension.city}`}
-        />
-      )}
     </>
   );
 }
