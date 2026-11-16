@@ -7,6 +7,9 @@ import { createPortal } from 'react-dom';
 import { MapPensionComparison } from '@/components/pensions/map-pension-comparison';
 import { type FlyPulse, usePensionComparison } from '@/contexts/pension-comparison-context';
 
+const RING_RADIUS = 10.5;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+
 function FlyingComparisonBadge({
   pulse,
   targetElement,
@@ -117,21 +120,39 @@ export function PensionComparison() {
               >
                 <ArrowLeftRight aria-hidden="true" className="h-4 w-4 text-primary shrink-0" />
                 <span>Comparar</span>
-                <span className="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-background/40 text-[11px] font-bold tabular-nums ring-1 ring-inset ring-primary/80">
-                  <span
+                <span
+                  className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold tabular-nums transition-colors duration-300 ${
+                    count >= 2 ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground'
+                  }`}
+                >
+                  <svg
                     aria-hidden="true"
-                    style={{ width: count >= 2 ? '100%' : '50%' }}
-                    className="absolute inset-y-0 left-0 bg-primary transition-[width] duration-300 ease-out"
-                  />
-                  <span
-                    className={`relative z-10 transition-colors ${
-                      count >= 2
-                        ? 'text-primary-foreground'
-                        : 'text-foreground dark:[text-shadow:0_1px_2px_rgb(0_0_0/0.45)]'
-                    }`}
+                    viewBox="0 0 24 24"
+                    className="pointer-events-none absolute inset-0 h-full w-full -rotate-90"
                   >
-                    {count}
-                  </span>
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r={RING_RADIUS}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      className="text-primary/20"
+                    />
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r={RING_RADIUS}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeDasharray={RING_CIRCUMFERENCE}
+                      strokeDashoffset={count >= 2 ? 0 : RING_CIRCUMFERENCE * 0.5}
+                      className="text-primary transition-[stroke-dashoffset] duration-300 ease-out"
+                    />
+                  </svg>
+                  <span className="relative z-10">{count}</span>
                 </span>
               </button>
               <button
