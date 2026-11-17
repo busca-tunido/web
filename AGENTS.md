@@ -1,33 +1,23 @@
 # Context & Architectural Guidelines for AI Coding Assistants
 
-This document provides essential architectural context, domain patterns, and development guidelines for AI coding assistants contributing to **BuscaTuNido Web**.
+This document provides general project context, domain rules, and development workflows for AI coding assistants contributing to **BuscaTuNido Web**.
 
 ---
 
 ## 1. Project Overview & Architecture
 
-BuscaTuNido Web is a mobile-first web application built with [Next.js](https://nextjs.org/) (App Router), [Tailwind CSS](https://tailwindcss.com/), and [shadcn/ui](https://ui.shadcn.com/).
+BuscaTuNido Web is a mobile-first web application built with [Next.js](https://nextjs.org/) (App Router), [Tailwind CSS](https://tailwindcss.com/), and [shadcn/ui](https://ui.shadcn.com/), consuming backend contracts generated from OpenAPI.
 
-### Core Components Structure (Provisional Baseline):
+### High-Level Structure:
 
-> [!NOTE]
-> Specific folder, component, and page hierarchies listed below are initial architectural baselines and will be iteratively finalized as application specifications evolve.
-
-- `src/app/layout.tsx`: Root shell, viewport configuration, typography, and global providers.
-- `src/app/page.tsx`: Landing page with hero search and nearby university selector.
-- `src/app/pensions/`: Directory and search:
-  - `page.tsx`: Search results with list and map toggling.
-  - `[id]/page.tsx`: Pension detail view (photo gallery, services, rules, and review feed).
-- `src/app/compare/page.tsx`: Side-by-side comparison (swipeable card deck on mobile, multi-column grid on desktop).
-- `src/app/publish/page.tsx`: Multi-step collaborative pension submission wizard.
-- `src/components/ui/`: Accessible UI primitives (Button, Drawer, Dialog, Card, Badge, Input, Tabs).
-- `src/components/common/`: Shared navigation layout (`Header`, `MobileBottomBar`, `Footer`).
-- `src/components/pensions/`: Domain components (`PensionCard`, `PensionFilterDrawer`, `AmenityBadge`).
-- `src/hooks/`: Custom state and device hooks (`useMediaQuery`, `useGeolocation`, `useFavorites`).
-- `src/lib/`: API client, query string builders, and formatting utilities.
-- `src/types/`: Strict TypeScript domain types and API contract models.
-- `tasks/[task-name].md`: Active task specification being executed.
-- `tasks/completed/[index]_[task-name].md`: Historical record of finished task specifications with chronological index.
+- `src/app/`: App Router pages, layouts, and public SEO routes.
+- `src/components/`: Reusable UI primitives, role-aware application shells, navigation/layout bars, and domain components.
+- `src/services/`: Typed API client services consuming the OpenAPI contract.
+- `src/contexts/` & `src/reducers/`: Shared React contexts and state machines for UI flows.
+- `src/hooks/`: Custom data-fetching, caching, and UI/viewport hooks.
+- `src/lib/`: API client wrapper, OpenAPI generated schema/types (`openapi.json`, `api-schema.d.ts`, `types.ts`), shared providers, validation schemas, and utilities.
+- `src/types/`: UI-specific TypeScript types.
+- `tests/`: Vitest suites and dedicated test fixtures.
 
 ---
 
@@ -35,193 +25,61 @@ BuscaTuNido Web is a mobile-first web application built with [Next.js](https://n
 
 1. **No Code Comments**:
    - Comments inside code are strictly prohibited unless explicitly requested by the user. Code must be self-explanatory through naming and structure.
-1. **Mobile-First Responsive Design**:
+2. **Mobile-First Responsive Design**:
    - Always style for small screens first (unprefixed Tailwind utilities). Use `sm:`, `md:`, `lg:` solely for layout adaptations on larger viewports.
    - Interactive elements must maintain a minimum touch target size of 48px by 48px.
-   - Complex filter panels and modal actions must use bottom drawers (`Drawer` component) on mobile viewports.
-1. **No Direct Config File Edits for Dependencies**:
+   - Complex filter panels and modal actions must use bottom drawers on mobile viewports.
+3. **No Direct Config File Edits for Dependencies**:
    - Never edit `package.json` manually to add packages. Use terminal CLI commands (`pnpm add <pkg>`, `pnpm add -D <pkg>`, `pnpm dlx shadcn@latest add <component>`).
-1. **Strict Typing (Types over Interfaces)**:
+4. **Strict Typing (Types over Interfaces)**:
    - Use TypeScript `type` aliases exclusively; `interface` declarations are strictly forbidden.
-   - Forbid `any` (prefer `unknown` or generics). Explicitly type props, API responses, and custom handlers; rely on types for simple state.
-1. **Public Comparison & Authenticated Account Actions**:
-   - Pension browsing and comparison must work for anonymous visitors and registered users. Do not gate the public comparison provider on authentication or role.
-   - Keep existing authentication and role requirements for private account actions, favorites, publishing reviews, and landlord management.
-   - Comparison mode permits reading details and reviews, but contact and review-publication controls must show the comparison notice without executing those actions.
-   - Anonymous comparison uses public API data and local comparison state; never invent a guest user, token, or authenticated session.
-1. **Conventional Commits (Concise, Single-Line Only)**:
-   - All git commit messages must strictly follow the Conventional Commits specification (e.g., `feat`, `fix`, `chore`, `refactor`, `test`, `docs`).
+   - Forbid `any` (prefer `unknown` or generics). Explicitly type props, API responses, and custom handlers.
+5. **Public Exploration & Comparison vs. Authenticated Account Actions**:
+   - Read-only exploration (browsing listings, map exploration, viewing details/reviews, and pension comparison) must work for anonymous visitors and registered users without gating on authentication or role.
+   - Maintain authentication and role requirements for private account actions, favorites, stay history, publishing reviews, submitting proposals, and landlord management.
+   - Anonymous exploration and comparison use public API data and local state; never invent a guest user, token, or synthetic authenticated session.
+6. **Conventional Commits (Concise, Single-Line Only)**:
+   - All git commit messages must strictly follow the Conventional Commits specification (`feat`, `fix`, `chore`, `refactor`, `test`, `docs`).
    - Commit messages must be concise, single-line only, and omit any extended body description.
-1. **Feature Branching & Integration to Main**:
-   - Every significant change, new feature, or non-trivial bug fix must be grouped and developed within a dedicated branch (e.g., `feat/<name>`, `fix/<name>`).
-   - Upon completion, testing, and verification, integrate (merge) the branch cleanly into `main` and delete the feature branch. Direct uncoordinated work on `main` is prohibited for major tasks.
-1. **Strict Prohibition of Hardcoded Values & Real Data Integration**:
-   - Hardcoded values, dummy/mock items, synthetic card fallbacks, and hardcoded external storage URLs are strictly prohibited across components, hooks, and services unless explicitly requested by the user.
-   - If initial or sample data is needed for local development, testing, or demonstrations, it must be seeded in the backend database via the corresponding seed file (`api/prisma/seed.ts`, `seed-utils.ts`) or structured in dedicated test fixture files (`tests/**`).
+7. **Feature Branching & Integration to Main**:
+   - Every significant change, new feature, or non-trivial bug fix must be developed within a dedicated branch (e.g., `feat/<name>`, `fix/<name>`), verified, and merged cleanly into `main`. Direct uncoordinated work on `main` is prohibited for major tasks.
+8. **Strict Prohibition of Hardcoded Values & Real Data Integration**:
+   - Hardcoded values, dummy/mock items, synthetic card fallbacks, and hardcoded external storage URLs are strictly prohibited across components, hooks, services, and reducers unless explicitly requested by the user.
+   - Sample or testing data must live in backend seeds (`api/scripts/seeds/`) or dedicated test fixture files (`tests/fixtures/`).
    - UI views must always consume real backend API responses, handle loading and error states gracefully, and render clean empty states when no data is returned.
-1. **100% OpenAPI-Generated Types & Backend-First Feature Flow**:
+9. **100% OpenAPI-Generated Types & Backend-First Feature Flow**:
    - The frontend must exclusively consume types generated from OpenAPI (`src/lib/types.ts` derived from `src/lib/api-schema.d.ts`).
    - Inventing, duplicating, or reimplementing backend domain types or DTO contracts in frontend code is strictly prohibited.
-   - Synthetic fallbacks, fallback properties, mock records, or hardcoded dummy structures are strictly prohibited across components, hooks, and services.
-   - Backend-First Requirement: If a new UI feature or view requires data, fields, or operations that do not yet exist, it is strictly forbidden to invent frontend types or mock data. The capability must first be implemented and exposed in the backend API, synchronized into OpenAPI and client types via `just openapi`, and only then integrated into the frontend.
+   - Backend-First Requirement: If a new UI feature requires data, fields, or operations that do not yet exist, implement and expose them in the backend API first, synchronize OpenAPI types via `just openapi` (or `pnpm run api:generate`), and only then integrate them in the frontend.
 
 ---
 
 ## 3. Execution Workflow
 
 ```bash
-# PHASE 1: CONTRACT SYNC (Conditional: Incoming Backend Changes)
-# When: ONLY if the feature depends on new backend endpoints, fields or DTOs.
-# Why: Guarantees 'src/lib/api-schema.d.ts' contains the latest types before writing UI.
-just openapi
+# PHASE 1: CONTRACT SYNC (Only if backend endpoints or DTOs changed)
+# Run from monorepo root: just openapi (or pnpm run api:generate inside web/)
 
 # PHASE 2: IMPLEMENT (Mobile-First UI & State)
-# When: Build pages, components, drawers and hooks using strict domain types.
-# Rule: Do NOT run 'next build' or background watch tasks.
+# Do NOT run 'next build' or background watch tasks mid-implementation.
 
-# PHASE 3: SANITIZE & FORMAT (Biome Autofix ~2s - Fail-Fast #1)
-# When: Immediately after completing code changes.
-# Why: Formats Tailwind classes, sorts imports and fixes safe lints in-place (~2s).
-#      Produces the final file content on disk before running the compiler.
+# PHASE 3: SANITIZE & FORMAT (Biome Autofix)
 pnpm run check
 
-# PHASE 4: TYPECHECK (Incremental Static Check ~8-10s - Fail-Fast #2)
-# When: Immediately after Biome finishes writing files.
-# Why: Validates Next.js types and OpenAPI contract alignment ONCE on clean code.
+# PHASE 4: TYPECHECK (Static Verification)
 pnpm exec tsc --noEmit
 
-# PHASE 5: TEST (Vitest Component & Hook Suite ~15-20s - Fail-Fast #3)
-# When: Once types and contracts are 100% verified.
-# Why: The slowest command in the stack (~20s). Only runs when code is guaranteed sound.
+# PHASE 5: TEST (Vitest Component, Hook & Service Suite)
 pnpm exec vitest run
 
 # PHASE 6: COMMIT (Targeted Conventional Staging)
-# When: All validations passed without errors.
 git add <target-files>
 git commit -m "feat(ui): descriptive single-line message"
 ```
 
----
-
-## 4. Task-Driven Lifecycle (`tasks/[task-name].md` Workflow)
-
-Every frontend UI enhancement, page, or bug fix must strictly adhere to the following workflow:
-
 > [!IMPORTANT]
 > **Always Use Global `pnpm run <script>` (Do Not Target Individual Files)**:
-> Due to Biome's extreme execution speed (processing the entire project in tens of milliseconds), agents must always execute the predefined global scripts (`pnpm run check`, `pnpm run review`, `pnpm run format`, `pnpm run lint`) targeting the whole repository (`.`) rather than targeting individual files. Running against specific files provides no measurable performance advantage and risks leaving formatting or lint inconsistencies across the project.
-
-### Execution Cycle:
-
-1. **Task Breakdown by Purpose & Topology**:
-   - Read the user request(s) and decompose them into structured `tasks/[task-name].md` files (omitting any index prefix while active in `tasks/`).
-   - Act as a **Directed Acyclic Graph (DAG) compiler**, assigning each task an explicit `Execution Profile` (Wave, Mode, Role, Dependencies, Collision Risk).
-2. **Review & Clarification Gate**:
-   - Once all task specifications are generated, notify the user to review the DAG and execution waves in `tasks/`.
-   - Ask clarifying questions if any requirement or boundary is ambiguous, and STOP so the user can review and approve the plan.
-3. **Parallel Decomposition & Dependency Rules for the Planner Agent**:
-   When breaking down user requirements into task specifications, the planner agent must evaluate concurrency using the **Disjoint File Sets Rule**:
-   - **Orthogonality Check (Collision Matrix)**:
-     - Compare `Target Files` between all proposed tasks.
-     - **Parallelizable (Disjoint)**: If $Files(Task\_A) \cap Files(Task\_B) = \emptyset$, both tasks must be assigned to the same `Wave` with `Execution Mode: PARALLEL`.
-     - **Sequential (Intersection)**: If two tasks modify the same domain file or internal logic, the dependent task must be assigned to `Wave N+1` with `Execution Mode: SEQUENTIAL` and list its prerequisite in `depends_on`.
-   - **Handling Critical Shared Hubs (`src/app/layout.tsx`, global providers, root routing, lockfiles)**:
-     - Global entry points and root layout files are high-risk collision points.
-     - **Contract-First / Wave 0 Rule**: If tasks require new shared API clients, global types, or base design system primitives, the planner must define a **Preparatory Task (Wave 0)** to establish contracts before dispatching parallel UI tasks.
-     - Workers must NOT edit shared global root files directly during parallel waves. Shared integrations are deferred to the `Integrator Agent` in the Wave Sync Gate.
-   - **Wave Structure (DAG Execution)**:
-     - Organize work into chronological waves:
-       - `Wave 0 (Setup / Contracts)`: Shared TypeScript domain contracts, base UI primitives, API client signatures (Sequential).
-       - `Wave 1 (Workers)`: Page implementations, isolated components, custom hooks in parallel branches/worktrees (Isolated).
-       - `Wave 1 - Sync Gate`: Merge, resolve shared hubs (`src/app/layout.tsx`, navigation bars), run full repository checks (Sequential).
-
-> [!IMPORTANT]
-> **Task Naming & Lifecycle Convention (Strict Rule)**:
-> - **Active tasks MUST NOT use numeric prefixes**: When defining or working on tasks in `tasks/`, name them descriptively using kebab-case without any numbers (e.g., `tasks/some-feature.md`). Numbering tasks in advance is forbidden because execution order and wave completion can vary.
-> - **Sequential numbering is strictly reserved for `tasks/completed/`**: A three-digit sequential index (`001-`, `002-`, etc.) is assigned **only** when a task is fully implemented, verified, merged, and moved into `tasks/completed/` to preserve an immutable, chronological archive.
-
-**Lifecycle Example**:
-
-1. While the task is active / in progress:
-```text
-tasks/
-├── completed/
-│   ├── 001-some-old-task.md
-│   └── 002-implement-x-feature.md
-└── some-task.md                    # Active task (no numeric prefix)
-```
-
-2. Once `some-task.md` is fully implemented and verified:
-```text
-tasks/
-├── completed/
-│   ├── 001-some-old-task.md
-│   ├── 002-implement-x-feature.md
-│   └── 003-some-task.md             # Archived with next sequential index
-```
-
-4. **Agent Role Assignment: Worker Agent vs. Integrator Agent**:
-
-| Rol de Agente                      | Ámbito de Trabajo                                                      | Reglas de Asignación                                                                                                                                                                                                          |
-| ---------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Worker Agent (N instancias)**    | Ramas/Worktrees independientes (`worktree-task-A`, `worktree-task-B`). | Se le asigna **1 sola tarea paralela**. Solo puede editar sus `Exclusive Target Files`. Sigue la política token-efficient: no ejecuta builds ni linter locales. Al terminar, realiza su commit convencional y se detiene.   |
-| **Integrator Agent (1 instancia)** | Rama base de integración (`main` o `staging`).                         | Se asigna a tareas con etiqueta `Assigned Role: Integrator Agent`. No programa lógica de negocio nueva. Realiza merges/rebases, modifica archivos compartidos (`Shared / Integration Points`) y valida la compilación global. |
-
-5. **Wave Sync Gate (`task-sync-wave-N.md`)**:
-   For every batch, the planner agent must automatically include a closing integration task named `task-sync-wave-N.md`. This task:
-   - Unlocks strictly when all checklists for tasks in `Wave N` are marked completed (`- [x]`).
-   - Is formally assigned to the **Integrator Agent**.
-   - Follows the integration checklist:
-     1. Merge or rebase worker branches/worktrees into the base branch.
-     2. Update shared integration hubs (e.g., register routes in shared navigation, integrate providers in `layout.tsx`).
-     3. Run global repository verification (`pnpm run check && pnpm run review`, `pnpm exec tsc --noEmit`, and `pnpm exec vitest run`).
-     4. Resolve any interoperability or type conflicts as the sole authorized agent.
-     5. Teardown temporary worktrees (`git worktree remove`).
-
-6. **Archive as Documentation**:
-   - Upon user approval and successful Wave integration, move/rename completed `tasks/[task-name].md` into `tasks/completed/[index]_[task-name].md` (e.g., `tasks/completed/001_setup-nextjs-app.md`), assigning its chronological three-digit index only upon completion to preserve an immutable audit trail.
-
-### Standard `[task-name].md` Template:
-
-```markdown
-# Task: [Descriptive Title]
-
-## Execution Profile
-
-- **Wave / Batch**: Wave 1 | Wave 2 | Wave 3
-- **Execution Mode**: `PARALLEL` | `SEQUENTIAL`
-- **Assigned Role**: `Worker Agent` | `Integrator Agent`
-- **Dependencies (`depends_on`)**: None | `[task-name-a.md, task-name-b.md]`
-- **Collision Risk**: `LOW (Isolated files)` | `HIGH (Shared core files)`
-
-## Target Files
-
-- **Exclusive**:
-  - `src/components/pensions/custom-card.tsx`
-  - `src/hooks/use-custom-filter.ts`
-- **Shared / Integration Points**:
-  - `src/app/layout.tsx` (Requiere Merge Gate)
-  - `src/components/common/header.tsx`
-
-## Objective
-
-[1-2 sentences describing frontend goal and viewport focus]
-
-## Technical Specifications
-
-[Key technical details, component interfaces, state requirements]
-
-## Checklist
-
-- [ ] [Step 1]
-- [ ] [Step 2]
-
-## Verification
-
-- Code Quality (Biome): `pnpm run check && pnpm run review`
-- Typecheck: `pnpm exec tsc --noEmit`
-- Tests: `pnpm exec vitest run`
-```
+> Always execute the predefined global Biome scripts (`pnpm run check`, `pnpm run review`, `pnpm run format`, `pnpm run lint`) targeting the whole repository (`.`) rather than individual files to avoid formatting or lint inconsistencies.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
