@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isApiSuccess } from '@/lib/api-response';
-import { matchesSearchFilters } from '@/lib/filter-matcher';
-import { filterPensionsByRatingTier } from '@/lib/rating-tier';
+import { markServerFilteredPensions, matchesSearchFilters } from '@/lib/filter-matcher';
 import type { PensionItem, SearchFilters } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 
@@ -40,6 +39,9 @@ export function useMapViewportPensions(options: {
   const mapPensionsRef = useRef<PensionItem[]>(mapPensions);
   mapPensionsRef.current = mapPensions;
 
+  const filtersRef = useRef<SearchFilters | undefined>(filters);
+  filtersRef.current = filters;
+
   const moveEndTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const activeRequestIdRef = useRef<number>(0);
   const isMountedRef = useRef<boolean>(true);
@@ -75,25 +77,39 @@ export function useMapViewportPensions(options: {
     setMapPensions((prev) => prev.filter((p) => matchesSearchFilters(p, filters)));
   }, [filters]);
 
-  const updatePensionList = useCallback(
-    (mappedItems: PensionItem[]) => {
+  const applyServerPensionList = useCallback(
+    (items: readonly PensionItem[], activeFilters?: SearchFilters) => {
+      const mapped = [...items];
+      markServerFilteredPensions(mapped, activeFilters);
+
       const currentActiveId = activePinIdRef.current;
       const activePension = currentActiveId
         ? mapPensionsRef.current.find((p) => p.id === currentActiveId)
         : null;
 
-      let updatedList = mappedItems.filter((p) => matchesSearchFilters(p, filters));
       if (
         activePension &&
-        matchesSearchFilters(activePension, filters) &&
-        !updatedList.some((p) => p.id === activePension.id)
+        matchesSearchFilters(activePension, activeFilters) &&
+        !mapped.some((p) => p.id === activePension.id)
       ) {
-        updatedList = [activePension, ...updatedList];
+        setMapPensions([activePension, ...mapped]);
+      } else {
+        setMapPensions(mapped);
       }
-      setMapPensions(updatedList);
     },
-    [filters],
+    [],
   );
+
+  const filterQuery = filters?.query || undefined;
+  const filterCity = filters?.city;
+  const filterUni = filters?.universityId;
+  const filterMinPrice = filters?.minPriceClp;
+  const filterMaxPrice = filters?.maxPriceClp;
+  const filterGender = filters?.genderPreference === 'ALL' ? undefined : filters?.genderPreference;
+  const filterRoomType = filters?.roomType;
+  const filterHasPrivateBath = filters?.hasPrivateBathroom;
+  const filterIncludesMeals = filters?.includesMeals;
+  const filterRatingTier = filters?.ratingTier;
 
   const fetchViewportPensions = useCallback(
     async (bounds: MapBoundsLike): Promise<void> => {
@@ -114,26 +130,22 @@ export function useMapViewportPensions(options: {
           maxLat: bounds.getNorth(),
           minLng: bounds.getWest(),
           maxLng: bounds.getEast(),
-          city: filters?.city,
-          universityId: filters?.universityId,
-          search: filters?.query || undefined,
-          minPrice: filters?.minPriceClp,
-          maxPrice: filters?.maxPriceClp,
-          genderPreference:
-            filters?.genderPreference === 'ALL' ? undefined : filters?.genderPreference,
-          roomType: filters?.roomType,
-          hasPrivateBathroom: filters?.hasPrivateBathroom,
-          includesMeals: filters?.includesMeals,
+          city: filterCity,
+          universityId: filterUni,
+          search: filterQuery,
+          minPrice: filterMinPrice,
+          maxPrice: filterMaxPrice,
+          genderPreference: filterGender,
+          roomType: filterRoomType,
+          hasPrivateBathroom: filterHasPrivateBath,
+          includesMeals: filterIncludesMeals,
+          ratingTier: filterRatingTier,
+          view: 'map',
           limit: 50,
         });
 
         if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
-          const rawItems = [...res.data.items];
-          const filteredByRating = filters?.ratingTier
-            ? filterPensionsByRatingTier(rawItems, filters.ratingTier)
-            : rawItems;
-          const mappedItems = filteredByRating.filter((p) => matchesSearchFilters(p, filters));
-          updatePensionList(mappedItems);
+          applyServerPensionList(res.data.items, filtersRef.current);
         }
       } catch {
       } finally {
@@ -143,18 +155,17 @@ export function useMapViewportPensions(options: {
       }
     },
     [
-      updatePensionList,
-      filters?.query,
-      filters?.city,
-      filters?.universityId,
-      filters?.minPriceClp,
-      filters?.maxPriceClp,
-      filters?.genderPreference,
-      filters?.ratingTier,
-      filters?.roomType,
-      filters?.hasPrivateBathroom,
-      filters?.includesMeals,
-      filters,
+      applyServerPensionList,
+      filterCity,
+      filterGender,
+      filterHasPrivateBath,
+      filterIncludesMeals,
+      filterMaxPrice,
+      filterMinPrice,
+      filterQuery,
+      filterRatingTier,
+      filterRoomType,
+      filterUni,
     ],
   );
 
@@ -172,26 +183,22 @@ export function useMapViewportPensions(options: {
           latitude: lat,
           longitude: lng,
           radiusKm,
-          city: filters?.city,
-          universityId: filters?.universityId,
-          search: filters?.query || undefined,
-          minPrice: filters?.minPriceClp,
-          maxPrice: filters?.maxPriceClp,
-          genderPreference:
-            filters?.genderPreference === 'ALL' ? undefined : filters?.genderPreference,
-          roomType: filters?.roomType,
-          hasPrivateBathroom: filters?.hasPrivateBathroom,
-          includesMeals: filters?.includesMeals,
+          city: filterCity,
+          universityId: filterUni,
+          search: filterQuery,
+          minPrice: filterMinPrice,
+          maxPrice: filterMaxPrice,
+          genderPreference: filterGender,
+          roomType: filterRoomType,
+          hasPrivateBathroom: filterHasPrivateBath,
+          includesMeals: filterIncludesMeals,
+          ratingTier: filterRatingTier,
+          view: 'map',
           limit: 50,
         });
 
         if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
-          const rawItems = [...res.data.items];
-          const filteredByRating = filters?.ratingTier
-            ? filterPensionsByRatingTier(rawItems, filters.ratingTier)
-            : rawItems;
-          const mappedItems = filteredByRating.filter((p) => matchesSearchFilters(p, filters));
-          updatePensionList(mappedItems);
+          applyServerPensionList(res.data.items, filtersRef.current);
         }
       } catch {
       } finally {
@@ -201,18 +208,17 @@ export function useMapViewportPensions(options: {
       }
     },
     [
-      updatePensionList,
-      filters?.query,
-      filters?.city,
-      filters?.universityId,
-      filters?.minPriceClp,
-      filters?.maxPriceClp,
-      filters?.genderPreference,
-      filters?.ratingTier,
-      filters?.roomType,
-      filters?.hasPrivateBathroom,
-      filters?.includesMeals,
-      filters,
+      applyServerPensionList,
+      filterCity,
+      filterGender,
+      filterHasPrivateBath,
+      filterIncludesMeals,
+      filterMaxPrice,
+      filterMinPrice,
+      filterQuery,
+      filterRatingTier,
+      filterRoomType,
+      filterUni,
     ],
   );
 
@@ -228,25 +234,24 @@ export function useMapViewportPensions(options: {
       try {
         const res = await pensionsService.fetchPaginatedPensions({
           city: cityName,
-          universityId: filters?.universityId,
-          search: filters?.query || undefined,
-          minPrice: filters?.minPriceClp,
-          maxPrice: filters?.maxPriceClp,
-          genderPreference:
-            filters?.genderPreference === 'ALL' ? undefined : filters?.genderPreference,
-          roomType: filters?.roomType,
-          hasPrivateBathroom: filters?.hasPrivateBathroom,
-          includesMeals: filters?.includesMeals,
+          universityId: filterUni,
+          search: filterQuery,
+          minPrice: filterMinPrice,
+          maxPrice: filterMaxPrice,
+          genderPreference: filterGender,
+          roomType: filterRoomType,
+          hasPrivateBathroom: filterHasPrivateBath,
+          includesMeals: filterIncludesMeals,
+          ratingTier: filterRatingTier,
+          view: 'map',
           limit: 50,
         });
 
         if (requestId === activeRequestIdRef.current && isMountedRef.current && isApiSuccess(res)) {
-          const rawItems = [...res.data.items];
-          const filteredByRating = filters?.ratingTier
-            ? filterPensionsByRatingTier(rawItems, filters.ratingTier)
-            : rawItems;
-          const mappedItems = filteredByRating.filter((p) => matchesSearchFilters(p, filters));
-          updatePensionList(mappedItems);
+          applyServerPensionList(res.data.items, {
+            ...(filtersRef.current ?? { query: '' }),
+            city: cityName,
+          });
         }
       } catch {
       } finally {
@@ -256,17 +261,16 @@ export function useMapViewportPensions(options: {
       }
     },
     [
-      updatePensionList,
-      filters?.query,
-      filters?.universityId,
-      filters?.minPriceClp,
-      filters?.maxPriceClp,
-      filters?.genderPreference,
-      filters?.ratingTier,
-      filters?.roomType,
-      filters?.hasPrivateBathroom,
-      filters?.includesMeals,
-      filters,
+      applyServerPensionList,
+      filterGender,
+      filterHasPrivateBath,
+      filterIncludesMeals,
+      filterMaxPrice,
+      filterMinPrice,
+      filterQuery,
+      filterRatingTier,
+      filterRoomType,
+      filterUni,
     ],
   );
 

@@ -27,6 +27,7 @@ import {
   ResponsiveModalTitle,
 } from '@/components/ui/responsive-modal';
 import { ProposalsListSkeleton } from '@/components/ui/skeletons/landlord-pension-skeleton';
+import { useOptionalLandlord } from '@/contexts/landlord-context';
 import { isApiSuccess } from '@/lib/api-response';
 import type { PensionDetailDto, ProposalDto } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
@@ -171,8 +172,11 @@ export function LandlordProposalsDrawer({
   pensionId,
   onProposalReviewed,
 }: LandlordProposalsDrawerProps) {
+  const landlordContext = useOptionalLandlord();
+  const cachedPension = landlordContext?.pensions.find((p) => p.id === pensionId) ?? null;
+
   const [proposals, setProposals] = useState<ProposalDto[]>([]);
-  const [pension, setPension] = useState<PensionDetailDto | null>(null);
+  const [pension, setPension] = useState<PensionDetailDto | null>(cachedPension);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -186,14 +190,25 @@ export function LandlordProposalsDrawer({
     setFetchError(null);
     setActionError(null);
 
+    if (cachedPension) {
+      setPension(cachedPension);
+      const proposalsRes = await proposalsService.fetchPensionProposals(pensionId, 'PENDING');
+      if (isApiSuccess(proposalsRes)) {
+        setProposals(proposalsRes.data);
+      } else {
+        setFetchError(proposalsRes.message ?? 'Error al cargar las sugerencias de la pensión.');
+      }
+      setIsLoading(false);
+      return;
+    }
+
     const [proposalsRes, pensionRes] = await Promise.all([
-      proposalsService.fetchPensionProposals(pensionId),
+      proposalsService.fetchPensionProposals(pensionId, 'PENDING'),
       pensionsService.fetchPensionDetail(pensionId),
     ]);
 
     if (isApiSuccess(proposalsRes)) {
-      const pendingItems = proposalsRes.data.filter((p) => !p.status || p.status === 'PENDING');
-      setProposals(pendingItems);
+      setProposals(proposalsRes.data);
     } else {
       setFetchError(proposalsRes.message ?? 'Error al cargar las sugerencias de la pensión.');
     }
@@ -203,7 +218,7 @@ export function LandlordProposalsDrawer({
     }
 
     setIsLoading(false);
-  }, [pensionId]);
+  }, [pensionId, cachedPension]);
 
   useEffect(() => {
     if (isOpen && pensionId) {

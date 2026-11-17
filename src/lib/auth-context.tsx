@@ -67,6 +67,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem('tunido_favs');
         }
 
+        const hasCookieSession =
+          typeof document !== 'undefined' &&
+          (document.cookie.includes('tunido_has_session=1') ||
+            document.cookie.includes('tunido_role='));
+        if (!savedToken && !hasCookieSession) {
+          return;
+        }
+
         const meRes = await authService.getCurrentUserProfile();
         if (!isMounted) return;
 
@@ -137,15 +145,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   useEffect(() => {
-    if (!token) {
+    if (!token || user?.role !== 'STUDENT') {
       setFavorites([]);
       return;
     }
     favoritesService
-      .fetchStudentFavorites()
+      .fetchFavoriteIds()
       .then((res) => {
         if (isApiSuccess(res) && Array.isArray(res.data)) {
-          const ids = res.data.map((p) => p.id);
+          const ids = res.data;
           setFavorites(ids);
           try {
             localStorage.setItem('tunido_favs', JSON.stringify(ids));
@@ -154,7 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       })
       .catch(() => {});
-  }, [token]);
+  }, [token, user?.role]);
 
   const login = async (email: string, password: string) => {
     const res = await authService.loginWithCredentials({ email, password });

@@ -44,10 +44,30 @@ export function PensionReviewsModal({
     title?: string;
   } | null>(null);
 
-  const { voteHelpful, reviews: hookReviews } = usePensionReviews(isOpen ? pension.id : null);
+  const {
+    voteHelpful,
+    reviews: hookReviews,
+    summary,
+    total: serverTotal,
+  } = usePensionReviews(isOpen ? pension.id : null);
   const activeReviews = hookReviews.length > 0 ? hookReviews : reviews;
+  const totalReviewsCount =
+    summary?.totalReviews && summary.totalReviews > 0
+      ? summary.totalReviews
+      : serverTotal > activeReviews.length
+        ? serverTotal
+        : activeReviews.length;
 
   const starCounts = useMemo(() => {
+    if (summary?.starDistribution) {
+      return {
+        5: summary.starDistribution['5'] ?? 0,
+        4: summary.starDistribution['4'] ?? 0,
+        3: summary.starDistribution['3'] ?? 0,
+        2: summary.starDistribution['2'] ?? 0,
+        1: summary.starDistribution['1'] ?? 0,
+      };
+    }
     const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     for (const r of activeReviews) {
       const score = Math.round(r.overallRating ?? r.rating ?? 5);
@@ -56,9 +76,13 @@ export function PensionReviewsModal({
       }
     }
     return counts;
-  }, [activeReviews]);
+  }, [activeReviews, summary]);
 
   const categoryAverages = useMemo(() => {
+    if (summary?.categoryAverages && summary.totalReviews > 0) {
+      return summary.categoryAverages;
+    }
+
     let cleanSum = 0;
     let landlordSum = 0;
     let quietSum = 0;
@@ -88,7 +112,7 @@ export function PensionReviewsModal({
       quietness: Number((quietSum / count).toFixed(1)),
       wifi: Number((wifiSum / count).toFixed(1)),
     };
-  }, [activeReviews]);
+  }, [activeReviews, summary]);
 
   const filteredReviews = useMemo(() => {
     return activeReviews.filter((r) => {
@@ -225,8 +249,8 @@ export function PensionReviewsModal({
                         ))}
                       </div>
                       <span className="text-xs font-semibold text-muted-foreground mt-0.5 tabular-nums">
-                        {reviews.length}{' '}
-                        {reviews.length === 1 ? 'reseña verificada' : 'reseñas verificadas'}
+                        {totalReviewsCount}{' '}
+                        {totalReviewsCount === 1 ? 'reseña verificada' : 'reseñas verificadas'}
                       </span>
                     </div>
                   </div>
@@ -234,7 +258,7 @@ export function PensionReviewsModal({
                   <div className="flex flex-col gap-1.5 min-w-0">
                     {[5, 4, 3, 2, 1].map((stars) => {
                       const count = starCounts[stars as keyof typeof starCounts] || 0;
-                      const total = Math.max(reviews.length, 1);
+                      const total = Math.max(totalReviewsCount, 1);
                       const percent = Math.round((count / total) * 100);
 
                       return (

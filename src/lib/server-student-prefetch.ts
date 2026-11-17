@@ -22,7 +22,7 @@ export async function fetchInitialPensions(
     const limit = options?.limit ?? 12;
     const cityQuery = options?.city ? `&city=${encodeURIComponent(options.city)}` : '';
     const res = await fetch(
-      `${baseUrl}/pensions?limit=${limit}&page=1&sortBy=relevance${cityQuery}`,
+      `${baseUrl}/pensions?limit=${limit}&page=1&sortBy=relevance&view=card${cityQuery}`,
       {
         next: { revalidate: 60 },
         signal: AbortSignal.timeout(4000),
@@ -99,7 +99,7 @@ export async function fetchInitialCities(baseUrl: string): Promise<CityInfo[]> {
 
 export async function fetchInitialUniversities(baseUrl: string): Promise<UniversityInfo[]> {
   try {
-    const res = await fetch(`${baseUrl}/universities`, {
+    const res = await fetch(`${baseUrl}/universities?includeCampuses=false`, {
       next: { revalidate: 300 },
       signal: AbortSignal.timeout(4000),
     });

@@ -79,8 +79,14 @@ export async function voteReviewHelpful(
   );
 }
 
-export async function fetchUserHelpfulVotes(): Promise<ApiResponse<UserHelpfulVotesResponse>> {
-  const result = await apiFetch.GET('/reviews/helpful/voted');
+export async function fetchUserHelpfulVotes(
+  pensionId?: string,
+): Promise<ApiResponse<UserHelpfulVotesResponse>> {
+  const result = await apiFetch.GET('/reviews/helpful/voted', {
+    params: {
+      ...(pensionId ? { query: { pensionId } } : {}),
+    },
+  });
   return wrapApiResponse<UserHelpfulVotesResponse>(result, 'Error al obtener votos de utilidad');
 }
 

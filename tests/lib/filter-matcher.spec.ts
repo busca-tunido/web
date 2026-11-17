@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { matchesSearchFilters } from '@/lib/filter-matcher';
-import type { PensionItem, SearchFilters } from '@/lib/types';
+import { markServerFilteredPensions, matchesSearchFilters } from '@/lib/filter-matcher';
+import type { PensionItem } from '@/lib/types';
 
 describe('matchesSearchFilters', () => {
   const basePension: PensionItem = {
@@ -152,5 +152,19 @@ describe('matchesSearchFilters', () => {
     expect(matchesSearchFilters(unreviewedPension, { query: '', ratingTier: 'low' })).toBe(true);
     expect(matchesSearchFilters(unreviewedPension, { query: '', ratingTier: 'high' })).toBe(false);
     expect(matchesSearchFilters(unreviewedPension, { query: '', ratingTier: 'medium' })).toBe(false);
+  });
+
+  it('keeps server-filtered map projections even when description or rooms are omitted', () => {
+    const mapProjection: PensionItem = {
+      ...basePension,
+      description: '',
+      rooms: [],
+      _count: { reviews: 12, rooms: 2 },
+    };
+    const activeFilters = { query: 'ambiente', roomType: 'SINGLE' as const, hasPrivateBathroom: true };
+
+    markServerFilteredPensions([mapProjection], activeFilters);
+    expect(matchesSearchFilters(mapProjection, activeFilters)).toBe(true);
+    expect(matchesSearchFilters(mapProjection, { query: '', roomType: 'SINGLE' })).toBe(true);
   });
 });

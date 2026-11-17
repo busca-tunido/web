@@ -94,6 +94,7 @@ export function LandlordReviewsScreen({
   const {
     reviews,
     rawItems,
+    summary,
     ratingStats,
     isLoading: isLoadingReviews,
     error: reviewsError,
@@ -162,6 +163,19 @@ export function LandlordReviewsScreen({
       }
     }
 
+    if (summary?.categoryAverages && summary.totalReviews > 0) {
+      return {
+        cleanliness: summary.categoryAverages.cleanliness,
+        cleanlinessCount: summary.totalReviews,
+        landlord: summary.categoryAverages.landlord,
+        landlordCount: summary.totalReviews,
+        quietness: summary.categoryAverages.quietness,
+        quietnessCount: summary.totalReviews,
+        wifi: summary.categoryAverages.wifi,
+        wifiCount: summary.totalReviews,
+      };
+    }
+
     return {
       cleanliness: cleanCount > 0 ? Number((cleanSum / cleanCount).toFixed(1)) : 0,
       cleanlinessCount: cleanCount,
@@ -172,9 +186,18 @@ export function LandlordReviewsScreen({
       wifi: wifiCount > 0 ? Number((wifiSum / wifiCount).toFixed(1)) : 0,
       wifiCount,
     };
-  }, [rawItems]);
+  }, [rawItems, summary]);
 
   const starCounts = useMemo(() => {
+    if (summary?.starDistribution && summary.totalReviews > 0) {
+      return {
+        5: summary.starDistribution['5'] ?? 0,
+        4: summary.starDistribution['4'] ?? 0,
+        3: summary.starDistribution['3'] ?? 0,
+        2: summary.starDistribution['2'] ?? 0,
+        1: summary.starDistribution['1'] ?? 0,
+      };
+    }
     const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     for (const r of reviews) {
       const score = Math.round(r.overallRating ?? r.rating ?? 5);
@@ -183,7 +206,7 @@ export function LandlordReviewsScreen({
       }
     }
     return counts;
-  }, [reviews]);
+  }, [reviews, summary]);
 
   const filteredReviews = useMemo(() => {
     return reviews.filter((r) => {

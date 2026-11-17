@@ -161,27 +161,33 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
     }
   }, []);
 
-  const [pendingProposalsCount, setPendingProposalsCount] = useState<number>(0);
+  const [proposalCountOverrides, setProposalCountOverrides] = useState<Record<string, number>>({});
+
+  const pendingProposalsCount = useMemo(() => {
+    if (!selectedPension?.id) return 0;
+    if (selectedPension.id in proposalCountOverrides) {
+      return proposalCountOverrides[selectedPension.id];
+    }
+    return selectedPension.pendingProposalsCount ?? selectedPension._count?.proposals ?? 0;
+  }, [selectedPension, proposalCountOverrides]);
 
   const refetchProposals = useCallback(async () => {
     if (!selectedPension?.id) {
-      setPendingProposalsCount(0);
       return;
     }
     try {
-      const res = await proposalsService.fetchPensionProposals(selectedPension.id);
+      const res = await proposalsService.fetchPensionProposals(selectedPension.id, 'PENDING');
       if (isApiSuccess(res)) {
-        const pending = (res.data ?? []).filter((p) => p.status === 'PENDING').length;
-        setPendingProposalsCount(pending);
+        const pending = (res.data ?? []).length;
+        setProposalCountOverrides((prev) => ({
+          ...prev,
+          [selectedPension.id]: pending,
+        }));
       }
     } catch {
       // ignore
     }
   }, [selectedPension?.id]);
-
-  useEffect(() => {
-    refetchProposals();
-  }, [refetchProposals]);
 
   const updateDefaultContact = useCallback((partial: Partial<LandlordDefaultContact>) => {
     setDefaultContactState((prev) => ({

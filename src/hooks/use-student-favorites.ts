@@ -2,10 +2,16 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { isApiSuccess } from '@/lib/api-response';
+import { cacheStore } from '@/lib/cache-store';
 import type { FavoritePensionSummaryDto } from '@/lib/types';
 import { favoritesService } from '@/services/favorites.service';
 
+const FAVORITES_CACHE_KEY = 'student:favorites:list';
+const FAVORITES_TTL_MS = 30_000;
+
 export function useStudentFavorites(initialFavorites?: string[]) {
+  const cachedFavs = cacheStore.get<FavoritePensionSummaryDto[]>(FAVORITES_CACHE_KEY);
+
   const [favorites, setFavorites] = useState<string[]>(() => {
     if (initialFavorites && initialFavorites.length > 0) return initialFavorites;
     if (typeof window !== 'undefined') {
@@ -19,8 +25,10 @@ export function useStudentFavorites(initialFavorites?: string[]) {
     }
     return [];
   });
-  const [favoritePensions, setFavoritePensions] = useState<FavoritePensionSummaryDto[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [favoritePensions, setFavoritePensions] = useState<FavoritePensionSummaryDto[]>(
+    () => cachedFavs?.data ?? [],
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(() => !cachedFavs);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -29,13 +37,25 @@ export function useStudentFavorites(initialFavorites?: string[]) {
     }
   }, [initialFavorites, favorites.length]);
 
-  const loadFavorites = useCallback(async () => {
-    setIsLoading(true);
+  const loadFavorites = useCallback(async (force = false) => {
+    const cached = cacheStore.get<FavoritePensionSummaryDto[]>(FAVORITES_CACHE_KEY);
+    if (!force && cached && !cacheStore.isStale(FAVORITES_CACHE_KEY, FAVORITES_TTL_MS)) {
+      setFavoritePensions(cached.data);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!cached) {
+      setIsLoading(true);
+    }
     setErrorMessage(null);
     try {
-      const res = await favoritesService.fetchStudentFavorites();
+      const res = await cacheStore.dedupePromise(FAVORITES_CACHE_KEY, () =>
+        favoritesService.fetchStudentFavorites(),
+      );
       if (isApiSuccess(res)) {
         const list = Array.isArray(res.data) ? res.data : [];
+        cacheStore.set(FAVORITES_CACHE_KEY, list);
         setFavoritePensions(list);
         const ids = list.map((p) => p.id);
         setFavorites(ids);
@@ -69,7 +89,11 @@ export function useStudentFavorites(initialFavorites?: string[]) {
         wasFav ? prev.filter((id) => id !== pensionId) : [...prev, pensionId],
       );
       if (wasFav) {
-        setFavoritePensions((prev) => prev.filter((p) => p.id !== pensionId));
+        const nextList = previousPensions.filter((p) => p.id !== pensionId);
+        setFavoritePensions(nextList);
+        cacheStore.set(FAVORITES_CACHE_KEY, nextList);
+      } else {
+        cacheStore.invalidate(FAVORITES_CACHE_KEY);
       }
 
       setErrorMessage(null);
@@ -79,6 +103,7 @@ export function useStudentFavorites(initialFavorites?: string[]) {
         if (!isApiSuccess(res)) {
           setFavorites(previousFavorites);
           setFavoritePensions(previousPensions);
+          cacheStore.invalidate(FAVORITES_CACHE_KEY);
           setErrorMessage('No se pudo actualizar tu lista de favoritos. Reintentando...');
           return wasFav;
         }

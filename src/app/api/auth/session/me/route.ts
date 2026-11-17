@@ -28,6 +28,7 @@ export async function GET(): Promise<NextResponse> {
       if (apiRes.status === 401) {
         cookieStore.set('tunido_token', '', { path: '/', maxAge: 0 });
         cookieStore.set('tunido_role', '', { path: '/', maxAge: 0 });
+        cookieStore.set('tunido_has_session', '', { path: '/', maxAge: 0 });
       }
       return NextResponse.json(rawData, { status: apiRes.status });
     }

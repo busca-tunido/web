@@ -2,6 +2,7 @@ import { ChevronRight, Home } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
 import { PublicNavHeader } from '@/components/common/public-nav-header';
 import { PensionDetailContent } from '@/components/pensions/pension-detail-content';
 import { isApiSuccess } from '@/lib/api-response';
@@ -12,7 +13,7 @@ type PensionPageProps = {
   params: Promise<{ id: string }>;
 };
 
-async function getPensionData(id: string): Promise<PensionItem | null> {
+const getPensionData = cache(async (id: string): Promise<PensionItem | null> => {
   try {
     const res = await pensionsService.fetchPensionById(id);
     if (!isApiSuccess(res) || !res.data) {
@@ -22,7 +23,7 @@ async function getPensionData(id: string): Promise<PensionItem | null> {
   } catch {
     return null;
   }
-}
+});
 
 export async function generateMetadata(props: PensionPageProps): Promise<Metadata> {
   const { id } = await props.params;

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type ApiResponse, isApiSuccess } from '@/lib/api-response';
-import { filterPensionsByRatingTier } from '@/lib/rating-tier';
 import type {
   CityInfo,
   NearbyCityCount,
@@ -31,6 +30,10 @@ export type UseStudentPensionsFeedOptions = {
   limit?: number;
   initialBounds?: MapBounds | null;
   autoLoad?: boolean;
+  initialCities?: CityInfo[];
+  initialUniversities?: UniversityInfo[];
+  initialPensions?: PensionItem[];
+  initialTotal?: number;
 };
 
 export type UseStudentPensionsFeedReturn = {
@@ -67,19 +70,47 @@ export function useStudentPensionsFeed(
     limit = 12,
     initialBounds = null,
     autoLoad = true,
+    initialCities,
+    initialUniversities,
+    initialPensions,
+    initialTotal,
   } = options;
 
-  const [cities, setCities] = useState<CityInfo[]>([]);
-  const [universities, setUniversities] = useState<UniversityInfo[]>([]);
-  const [isLoadingMetadata, setIsLoadingMetadata] = useState<boolean>(true);
+  const hasHydratedMetadata = Boolean(
+    initialCities &&
+      initialCities.length > 0 &&
+      initialUniversities &&
+      initialUniversities.length > 0,
+  );
+  const hasHydratedPensions = Boolean(initialPensions && initialPensions.length > 0);
+
+  const [cities, setCities] = useState<CityInfo[]>(() => {
+    if (!initialCities || initialCities.length === 0) return [];
+    if (currentCity) {
+      const target =
+        initialCities.find(
+          (c) => c.name.toLowerCase() === currentCity.toLowerCase() || c.id === currentCity,
+        ) ?? null;
+      return sortCitiesWithCurrentFirst(initialCities, target);
+    }
+    return initialCities;
+  });
+  const [universities, setUniversities] = useState<UniversityInfo[]>(
+    () => initialUniversities ?? [],
+  );
+  const [isLoadingMetadata, setIsLoadingMetadata] = useState<boolean>(() => !hasHydratedMetadata);
   const [metadataError, setMetadataError] = useState<string | null>(null);
   const [universitiesError, setUniversitiesError] = useState<boolean>(false);
 
-  const [pensions, setPensions] = useState<PensionItem[]>([]);
+  const [pensions, setPensions] = useState<PensionItem[]>(() => initialPensions ?? []);
   const [page, setPage] = useState<number>(1);
-  const [hasMore, setHasMore] = useState<boolean>(false);
-  const [total, setTotal] = useState<number>(0);
-  const [isLoadingPensions, setIsLoadingPensions] = useState<boolean>(true);
+  const [hasMore, setHasMore] = useState<boolean>(() => {
+    if (!hasHydratedPensions) return false;
+    const totalCount = initialTotal ?? initialPensions?.length ?? 0;
+    return (initialPensions?.length ?? 0) < totalCount;
+  });
+  const [total, setTotal] = useState<number>(() => initialTotal ?? initialPensions?.length ?? 0);
+  const [isLoadingPensions, setIsLoadingPensions] = useState<boolean>(() => !hasHydratedPensions);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [nearbyCityCounts, setNearbyCityCounts] = useState<NearbyCityCount[]>([]);
@@ -87,6 +118,8 @@ export function useStudentPensionsFeed(
 
   const activeRequestIdRef = useRef<number>(0);
   const isMountedRef = useRef<boolean>(true);
+  const skipInitialMetadataRef = useRef<boolean>(hasHydratedMetadata);
+  const skipInitialPensionsRef = useRef<boolean>(hasHydratedPensions);
 
   const loadMetadata = useCallback(async (): Promise<void> => {
     setIsLoadingMetadata(true);
@@ -147,6 +180,10 @@ export function useStudentPensionsFeed(
   }, [currentCity]);
 
   useEffect(() => {
+    if (skipInitialMetadataRef.current) {
+      skipInitialMetadataRef.current = false;
+      return;
+    }
     loadMetadata();
   }, [loadMetadata]);
 
@@ -214,6 +251,7 @@ export function useStudentPensionsFeed(
             maxPrice: filterMaxPrice,
             genderPreference: filterGender === 'ALL' ? undefined : filterGender,
             roomType: filterRoomType,
+            ratingTier: filterRatingTier,
             sortBy: effectiveSortBy,
             page: pageIndex,
             limit,
@@ -224,6 +262,7 @@ export function useStudentPensionsFeed(
             latitude: userLat,
             longitude: userLng,
             radiusKm,
+            view: 'card',
           });
         }
 
@@ -232,10 +271,7 @@ export function useStudentPensionsFeed(
         }
 
         if (isApiSuccess(res)) {
-          const rawItems: PensionItem[] = [...res.data.items];
-          const mappedItems = filterRatingTier
-            ? filterPensionsByRatingTier(rawItems, filterRatingTier)
-            : rawItems;
+          const mappedItems: PensionItem[] = [...res.data.items];
 
           if (isLoadMore) {
             setPensions((prev) => {
@@ -247,7 +283,7 @@ export function useStudentPensionsFeed(
             setPensions(mappedItems);
           }
 
-          setTotal(filterRatingTier ? mappedItems.length : (res.data.total ?? mappedItems.length));
+          setTotal(res.data.total ?? mappedItems.length);
           setHasMore(res.data.hasMore ?? false);
           setPage(pageIndex);
           if (res.data.nearbyCityCounts) {
@@ -296,10 +332,43 @@ export function useStudentPensionsFeed(
   );
 
   useEffect(() => {
-    if (autoLoad) {
-      fetchPensionsData(1, false);
+    if (!autoLoad) return;
+
+    const isDefaultUnfilteredQuery =
+      !filterCity &&
+      !filterUni &&
+      !filterQuery &&
+      filterMinPrice === undefined &&
+      filterMaxPrice === undefined &&
+      !filterGender &&
+      !filterRoomType &&
+      !filterRatingTier &&
+      !bounds &&
+      userLat === undefined &&
+      userLng === undefined;
+
+    if (skipInitialPensionsRef.current && isDefaultUnfilteredQuery) {
+      skipInitialPensionsRef.current = false;
+      return;
     }
-  }, [autoLoad, fetchPensionsData]);
+
+    skipInitialPensionsRef.current = false;
+    fetchPensionsData(1, false);
+  }, [
+    autoLoad,
+    bounds,
+    fetchPensionsData,
+    filterCity,
+    filterGender,
+    filterMaxPrice,
+    filterMinPrice,
+    filterQuery,
+    filterRatingTier,
+    filterRoomType,
+    filterUni,
+    userLat,
+    userLng,
+  ]);
 
   const loadMore = useCallback(async (): Promise<void> => {
     if (isLoadingPensions || isLoadingMore || !hasMore) {

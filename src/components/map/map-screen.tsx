@@ -500,11 +500,15 @@ export function MapScreen({
   const hasDraggedMapRef = useRef(false);
   const leafletModuleRef = useRef<typeof import('leaflet') | null>(null);
 
+  const activeCampusCity = selectedCity || filters?.city || undefined;
+
   useEffect(() => {
     let isCancelled = false;
     async function loadCampuses() {
       try {
-        const res = await fetchCampusAreas();
+        const res = await fetchCampusAreas(
+          activeCampusCity ? { city: activeCampusCity } : undefined,
+        );
         if (!isCancelled && isApiSuccess(res) && Array.isArray(res.data)) {
           setCampusAreas(res.data);
         }
@@ -516,7 +520,7 @@ export function MapScreen({
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [activeCampusCity]);
 
   const panToPension = useCallback((lat: number, lng: number) => {
     const map = mapInstanceRef.current;

@@ -1,6 +1,6 @@
 import { apiFetch, wrapApiResponse } from '@/lib/api-fetch';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
-import type { paths } from '@/lib/api-schema';
+import type { components, paths } from '@/lib/api-schema';
 import type { CreateProposalDto, ProposalDto, ReviewProposalDto } from '@/lib/types';
 
 export type ModerationProposalsQuery = NonNullable<
@@ -22,22 +22,16 @@ export async function submitPensionProposal(
 
 export async function fetchPensionProposals(
   pensionId: string,
+  status?: components['schemas']['ProposalStatus'],
 ): Promise<ApiResponse<ProposalDto[]>> {
   const result = await apiFetch.GET('/pensions/{id}/proposals', {
     params: {
       path: { id: pensionId },
+      ...(status ? { query: { status } } : {}),
     },
   });
   return wrapApiResponse<ProposalDto[]>(result, 'Error al obtener propuestas de la pensión');
 }
-
-export type ModerationProposalsResponse = {
-  items: ProposalDto[];
-  total?: number;
-  page?: number;
-  limit?: number;
-  hasMore?: boolean;
-};
 
 export async function fetchAllModerationProposals(
   query?: ModerationProposalsQuery,
@@ -47,14 +41,14 @@ export async function fetchAllModerationProposals(
       query,
     },
   });
-  const res = wrapApiResponse<ModerationProposalsResponse>(
+  const res = wrapApiResponse<components['schemas']['PaginatedProposalsResponseDto']>(
     result,
     'Error al obtener propuestas para moderación',
   );
   if (!isApiSuccess(res)) {
     return res;
   }
-  const items = Array.isArray(res.data) ? res.data : (res.data.items ?? []);
+  const items = Array.isArray(res.data.items) ? [...res.data.items] : [];
   return createSuccess(items, res.statusCode);
 }
 

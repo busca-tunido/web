@@ -3,9 +3,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 import { isApiSuccess } from '@/lib/api-response';
+import type { components } from '@/lib/api-schema';
 import { useAuth } from '@/lib/auth-context';
+import { cacheStore } from '@/lib/cache-store';
 import type { PensionReview, ReviewItemDto } from '@/lib/types';
-import { reviewsService } from '@/services/reviews.service';
+import { type PaginationQuery, reviewsService } from '@/services/reviews.service';
+
+export type ReviewSummary = components['schemas']['ReviewSummaryDto'];
+
+type CachedReviewsPayload = {
+  items: ReviewItemDto[];
+  total: number;
+  hasMore: boolean;
+  summary?: ReviewSummary;
+};
+
+const REVIEWS_CACHE_TTL_MS = 30_000;
 
 export const createReviewSchema = z
   .object({
@@ -59,64 +72,94 @@ function useOptionalAuthUser() {
 export function usePensionReviews(
   pensionId: string | null,
   fallbackRating?: { average?: number; count?: number },
+  query?: PaginationQuery,
 ) {
   const user = useOptionalAuthUser();
-  const [rawItems, setRawItems] = useState<ReviewItemDto[]>([]);
+  const queryKeyPart = query ? JSON.stringify(query) : 'default';
+  const cacheKey = pensionId ? `reviews:${pensionId}:${user?.id ?? 'anon'}:${queryKeyPart}` : null;
+  const cachedInitial = cacheKey ? cacheStore.get<CachedReviewsPayload>(cacheKey) : undefined;
+
+  const [rawItems, setRawItems] = useState<ReviewItemDto[]>(() => cachedInitial?.data.items ?? []);
+  const [total, setTotal] = useState<number>(() => cachedInitial?.data.total ?? 0);
+  const [hasMore, setHasMore] = useState<boolean>(() => cachedInitial?.data.hasMore ?? false);
+  const [summary, setSummary] = useState<ReviewSummary | undefined>(
+    () => cachedInitial?.data.summary,
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userVotes, setUserVotes] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    let isMounted = true;
     if (!user) {
       setUserVotes({});
-      return;
     }
-
-    async function loadUserVotes() {
-      try {
-        const res = await reviewsService.fetchUserHelpfulVotes();
-        if (isMounted && isApiSuccess(res)) {
-          const voteMap: Record<string, boolean> = {};
-          for (const id of res.data.reviewIds) {
-            voteMap[id] = true;
-          }
-          setUserVotes(voteMap);
-        }
-      } catch {
-        // ignore
-      }
-    }
-
-    loadUserVotes();
-    return () => {
-      isMounted = false;
-    };
   }, [user]);
 
-  const loadReviews = useCallback(async () => {
-    if (!pensionId) {
-      setRawItems([]);
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await reviewsService.fetchPensionReviews(pensionId);
-      if (isApiSuccess(res)) {
-        setRawItems([...res.data.items]);
-      } else {
-        setError(res.message);
+  const applyPayload = useCallback((payload: CachedReviewsPayload) => {
+    setRawItems(payload.items);
+    setTotal(payload.total);
+    setHasMore(payload.hasMore);
+    setSummary(payload.summary);
+
+    const voteMap: Record<string, boolean> = {};
+    for (const item of payload.items) {
+      if (item.userVoted) {
+        voteMap[item.id] = true;
       }
-    } catch {
-      setError('Error al cargar reseñas');
-    } finally {
-      setIsLoading(false);
     }
-  }, [pensionId]);
+    setUserVotes(voteMap);
+  }, []);
+
+  const loadReviews = useCallback(
+    async (force = false) => {
+      if (!pensionId) {
+        setRawItems([]);
+        setSummary(undefined);
+        setTotal(0);
+        setHasMore(false);
+        return;
+      }
+
+      const parsedQuery =
+        queryKeyPart !== 'default' ? (JSON.parse(queryKeyPart) as PaginationQuery) : undefined;
+      const key = `reviews:${pensionId}:${user?.id ?? 'anon'}:${queryKeyPart}`;
+      const cached = cacheStore.get<CachedReviewsPayload>(key);
+      if (!force && cached && !cacheStore.isStale(key, REVIEWS_CACHE_TTL_MS)) {
+        applyPayload(cached.data);
+        return;
+      }
+
+      if (!cached) {
+        setIsLoading(true);
+      }
+      setError(null);
+      try {
+        const res = await cacheStore.dedupePromise(key, () =>
+          reviewsService.fetchPensionReviews(pensionId, parsedQuery),
+        );
+        if (isApiSuccess(res)) {
+          const payload: CachedReviewsPayload = {
+            items: [...res.data.items],
+            total: res.data.total ?? res.data.items.length,
+            hasMore: Boolean(res.data.hasMore ?? res.data.pagination?.hasMore),
+            summary: res.data.summary,
+          };
+          cacheStore.set(key, payload);
+          applyPayload(payload);
+        } else {
+          setError(res.message);
+        }
+      } catch {
+        setError('Error al cargar reseñas');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [pensionId, user?.id, queryKeyPart, applyPayload],
+  );
 
   useEffect(() => {
-    loadReviews();
+    loadReviews(false);
   }, [loadReviews]);
 
   const reviews: PensionReview[] = useMemo(() => {
@@ -132,7 +175,7 @@ export function usePensionReviews(
             ? rawOverall
             : 0;
 
-      const isVoted = Boolean(userVotes[r.id]);
+      const isVoted = r.id in userVotes ? Boolean(userVotes[r.id]) : Boolean(r.userVoted);
 
       return {
         ...r,
@@ -172,6 +215,13 @@ export function usePensionReviews(
   }, [rawItems, userVotes]);
 
   const ratingStats = useMemo(() => {
+    if (summary && summary.totalReviews > 0) {
+      return {
+        average: summary.averageRating > 0 ? summary.averageRating : (fallbackRating?.average ?? 0),
+        count: summary.totalReviews,
+      };
+    }
+
     if (rawItems.length === 0) {
       return {
         average: fallbackRating?.average ?? 0,
@@ -191,9 +241,10 @@ export function usePensionReviews(
     const calculatedAvg = Math.round((sum / rawItems.length) * 10) / 10;
     return {
       average: calculatedAvg > 0 ? calculatedAvg : (fallbackRating?.average ?? 0),
-      count: rawItems.length > 0 ? rawItems.length : (fallbackRating?.count ?? 0),
+      count:
+        total > 0 ? total : rawItems.length > 0 ? rawItems.length : (fallbackRating?.count ?? 0),
     };
-  }, [rawItems, fallbackRating]);
+  }, [summary, rawItems, fallbackRating, total]);
 
   const publishReview = useCallback(
     async (
@@ -234,7 +285,9 @@ export function usePensionReviews(
         });
 
         if (isApiSuccess(res)) {
+          cacheStore.invalidate(new RegExp(`^reviews:${pensionId}:`));
           setRawItems((prev) => [res.data, ...prev]);
+          setTotal((prev) => prev + 1);
           return { success: true, review: res.data };
         }
 
@@ -249,7 +302,8 @@ export function usePensionReviews(
   const voteReviewHelpful = useCallback(
     async (reviewId: string): Promise<boolean> => {
       const currentItem = rawItems.find((r) => r.id === reviewId);
-      const previousVoted = Boolean(userVotes[reviewId]);
+      const previousVoted =
+        reviewId in userVotes ? Boolean(userVotes[reviewId]) : Boolean(currentItem?.userVoted);
       const nextVoted = !previousVoted;
       const previousCount = currentItem?.helpfulCount ?? 0;
       const optimisticCount = Math.max(0, previousCount + (nextVoted ? 1 : -1));
@@ -261,6 +315,7 @@ export function usePensionReviews(
             ? {
                 ...r,
                 helpfulCount: optimisticCount,
+                userVoted: nextVoted,
               }
             : r,
         ),
@@ -276,6 +331,7 @@ export function usePensionReviews(
                 ? {
                     ...r,
                     helpfulCount: previousCount,
+                    userVoted: previousVoted,
                   }
                 : r,
             ),
@@ -292,10 +348,14 @@ export function usePensionReviews(
               ? {
                   ...r,
                   helpfulCount: serverCount,
+                  userVoted: serverVoted,
                 }
               : r,
           ),
         );
+        if (pensionId) {
+          cacheStore.invalidate(new RegExp(`^reviews:${pensionId}:`));
+        }
         return true;
       } catch {
         setUserVotes((prev) => ({ ...prev, [reviewId]: previousVoted }));
@@ -305,6 +365,7 @@ export function usePensionReviews(
               ? {
                   ...r,
                   helpfulCount: previousCount,
+                  userVoted: previousVoted,
                 }
               : r,
           ),
@@ -312,12 +373,17 @@ export function usePensionReviews(
         return false;
       }
     },
-    [userVotes, rawItems],
+    [userVotes, rawItems, pensionId],
   );
+
+  const refetch = useCallback(() => loadReviews(true), [loadReviews]);
 
   return {
     reviews,
     rawItems,
+    summary,
+    total,
+    hasMore,
     ratingStats,
     isLoading,
     error,
@@ -325,7 +391,7 @@ export function usePensionReviews(
     publishReview,
     voteHelpful: voteReviewHelpful,
     voteReviewHelpful,
-    refetch: loadReviews,
-    refreshReviews: loadReviews,
+    refetch,
+    refreshReviews: refetch,
   };
 }
