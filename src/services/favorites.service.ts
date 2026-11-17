@@ -1,6 +1,22 @@
 import { apiFetch, wrapApiResponse } from '@/lib/api-fetch';
 import { type ApiResponse, createSuccess, isApiSuccess } from '@/lib/api-response';
+import type { components } from '@/lib/api-schema';
 import type { FavoriteItemDto, FavoritePensionSummaryDto } from '@/lib/types';
+
+export async function fetchFavoriteIds(): Promise<ApiResponse<string[]>> {
+  const result = await apiFetch.GET('/favorites/ids');
+  const res = wrapApiResponse<components['schemas']['FavoriteIdsResponseDto']>(
+    result,
+    'Error al obtener IDs de favoritos',
+  );
+  if (isApiSuccess(res)) {
+    return createSuccess(
+      Array.isArray(res.data.pensionIds) ? [...res.data.pensionIds] : [],
+      res.statusCode,
+    );
+  }
+  return res;
+}
 
 export async function fetchStudentFavorites(): Promise<ApiResponse<FavoritePensionSummaryDto[]>> {
   const result = await apiFetch.GET('/favorites');
@@ -61,6 +77,7 @@ export async function toggleFavorite(
 }
 
 export const favoritesService = {
+  fetchFavoriteIds,
   fetchStudentFavorites,
   addFavorite,
   removeFavorite,

@@ -44,8 +44,17 @@ export function LandlordRoomsScreen({
   const effectivePension = propSelectedPension ?? landlordContext.selectedPension;
   const effectivePensionId = propPensionId ?? effectivePension?.id ?? '';
 
-  const [rooms, setRooms] = useState<RoomItem[]>([]);
-  const [isLoadingRooms, setIsLoadingRooms] = useState<boolean>(true);
+  const initialContextRooms = useMemo(() => {
+    if (!effectivePension?.rooms) return null;
+    return effectivePension.rooms.map((r) => ({
+      ...r,
+      pensionId: effectivePension.id,
+      images: r.images ?? [],
+    })) as RoomItem[];
+  }, [effectivePension?.id, effectivePension?.rooms]);
+
+  const [rooms, setRooms] = useState<RoomItem[]>(() => initialContextRooms ?? []);
+  const [isLoadingRooms, setIsLoadingRooms] = useState<boolean>(() => !initialContextRooms);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
@@ -77,8 +86,13 @@ export function LandlordRoomsScreen({
   }, [effectivePensionId]);
 
   useEffect(() => {
+    if (initialContextRooms) {
+      setRooms(initialContextRooms);
+      setIsLoadingRooms(false);
+      return;
+    }
     loadRooms();
-  }, [loadRooms]);
+  }, [initialContextRooms, loadRooms]);
 
   const handleOpenCreateDrawer = () => {
     setEditingRoom(null);

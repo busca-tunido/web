@@ -102,6 +102,7 @@ export async function fetchNearbyPensions(
     longitude,
     radiusKm,
     sortBy: 'distance',
+    view: 'card',
   });
 }
 

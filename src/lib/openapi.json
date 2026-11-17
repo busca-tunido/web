@@ -378,6 +378,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "includeCampuses",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -1065,6 +1073,34 @@
             "schema": {
               "$ref": "#/components/schemas/PensionSortBy"
             }
+          },
+          {
+            "name": "view",
+            "required": false,
+            "in": "query",
+            "description": "Payload projection mode (full, card, or map)",
+            "schema": {
+              "$ref": "#/components/schemas/PensionViewMode"
+            }
+          },
+          {
+            "name": "ratingTier",
+            "required": false,
+            "in": "query",
+            "description": "Filter by community rating tier (high, medium, low, unreviewed)",
+            "schema": {
+              "$ref": "#/components/schemas/PensionRatingTierFilter"
+            }
+          },
+          {
+            "name": "onlyAvailable",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions that have at least one available active room",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -1429,6 +1465,34 @@
             "schema": {
               "$ref": "#/components/schemas/PensionSortBy"
             }
+          },
+          {
+            "name": "view",
+            "required": false,
+            "in": "query",
+            "description": "Payload projection mode (full, card, or map)",
+            "schema": {
+              "$ref": "#/components/schemas/PensionViewMode"
+            }
+          },
+          {
+            "name": "ratingTier",
+            "required": false,
+            "in": "query",
+            "description": "Filter by community rating tier (high, medium, low, unreviewed)",
+            "schema": {
+              "$ref": "#/components/schemas/PensionRatingTierFilter"
+            }
+          },
+          {
+            "name": "onlyAvailable",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions that have at least one available active room",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -1563,6 +1627,7 @@
     },
     "/pensions/cities": {
       "get": {
+        "deprecated": true,
         "operationId": "PensionsController_getCities",
         "parameters": [],
         "responses": {
@@ -2516,6 +2581,49 @@
             }
           },
           {
+            "name": "minRating",
+            "required": false,
+            "in": "query",
+            "description": "Filter by minimum overall rating",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "example": 4,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxRating",
+            "required": false,
+            "in": "query",
+            "description": "Filter by maximum overall rating",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "example": 3,
+              "type": "number"
+            }
+          },
+          {
+            "name": "hasPhotos",
+            "required": false,
+            "in": "query",
+            "description": "Only include reviews that have at least one image",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "stayDurationCategory",
+            "required": false,
+            "in": "query",
+            "description": "Filter by stay duration category",
+            "schema": {
+              "$ref": "#/components/schemas/StayDurationCategory"
+            }
+          },
+          {
             "name": "sortBy",
             "required": false,
             "in": "query",
@@ -2963,7 +3071,16 @@
     "/reviews/helpful/voted": {
       "get": {
         "operationId": "ReviewsController_findUserHelpfulVotes",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "pensionId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of review IDs voted helpful",
@@ -3396,6 +3513,69 @@
         "tags": ["Reports"]
       }
     },
+    "/favorites/ids": {
+      "get": {
+        "operationId": "FavoritesController_findIds",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of favorite pension IDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "example": "2026-11-02T01:00:00.000Z"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FavoriteIdsResponseDto"
+                    }
+                  },
+                  "required": ["success", "statusCode", "timestamp", "data"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado / credenciales ausentes o incorrectas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno del servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List favorite pension IDs for the current user",
+        "tags": ["Favorites"]
+      }
+    },
     "/favorites": {
       "get": {
         "operationId": "FavoritesController_findAll",
@@ -3749,6 +3929,34 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ProposalStatus"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
           }
         ],
         "responses": {
@@ -3785,6 +3993,26 @@
           },
           "401": {
             "description": "No autorizado / credenciales ausentes o incorrectas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acceso prohibido / permisos insuficientes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelopeDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso no encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -3830,6 +4058,8 @@
             "required": false,
             "in": "query",
             "schema": {
+              "default": 1,
+              "example": 1,
               "type": "number"
             }
           },
@@ -3838,6 +4068,8 @@
             "required": false,
             "in": "query",
             "schema": {
+              "default": 20,
+              "example": 20,
               "type": "number"
             }
           }
@@ -5179,6 +5411,13 @@
           "isActive": {
             "type": "boolean",
             "example": true
+          },
+          "images": {
+            "example": ["https://example.com/room.webp"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": ["id", "title", "type", "monthlyPrice", "hasPrivateBathroom", "isAvailable"]
@@ -5193,6 +5432,10 @@
           "reviews": {
             "type": "number",
             "example": 12
+          },
+          "proposals": {
+            "type": "number",
+            "example": 2
           }
         },
         "required": ["rooms", "reviews"]
@@ -5392,6 +5635,14 @@
           },
           "_count": {
             "$ref": "#/components/schemas/PensionCountDto"
+          },
+          "availableRoomsCount": {
+            "type": "number",
+            "example": 3
+          },
+          "pendingProposalsCount": {
+            "type": "number",
+            "example": 1
           }
         },
         "required": [
@@ -5514,6 +5765,14 @@
       "PensionSortBy": {
         "type": "string",
         "enum": ["relevance", "distance", "rating", "price_asc", "price_desc"]
+      },
+      "PensionViewMode": {
+        "type": "string",
+        "enum": ["full", "card", "map"]
+      },
+      "PensionRatingTierFilter": {
+        "type": "string",
+        "enum": ["high", "medium", "low", "unreviewed"]
       },
       "PriceHistogramBinDto": {
         "type": "object",
@@ -6426,6 +6685,10 @@
             "type": "number",
             "example": 4
           },
+          "userVoted": {
+            "type": "boolean",
+            "example": false
+          },
           "images": {
             "example": ["https://example.com/review1.jpg"],
             "type": "array",
@@ -6477,6 +6740,84 @@
           "createdAt"
         ]
       },
+      "ReviewStarDistributionDto": {
+        "type": "object",
+        "properties": {
+          "1": {
+            "type": "number",
+            "example": 0
+          },
+          "2": {
+            "type": "number",
+            "example": 1
+          },
+          "3": {
+            "type": "number",
+            "example": 2
+          },
+          "4": {
+            "type": "number",
+            "example": 5
+          },
+          "5": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": ["5", "4", "3", "2", "1"]
+      },
+      "ReviewCategoryAveragesDto": {
+        "type": "object",
+        "properties": {
+          "cleanliness": {
+            "type": "number",
+            "example": 4.7
+          },
+          "landlord": {
+            "type": "number",
+            "example": 4.6
+          },
+          "quietness": {
+            "type": "number",
+            "example": 4.5
+          },
+          "wifi": {
+            "type": "number",
+            "example": 4.4
+          }
+        },
+        "required": ["cleanliness", "landlord", "quietness", "wifi"]
+      },
+      "ReviewSummaryDto": {
+        "type": "object",
+        "properties": {
+          "totalReviews": {
+            "type": "number",
+            "example": 18
+          },
+          "averageRating": {
+            "type": "number",
+            "example": 4.6
+          },
+          "withPhotosCount": {
+            "type": "number",
+            "example": 4
+          },
+          "starDistribution": {
+            "$ref": "#/components/schemas/ReviewStarDistributionDto"
+          },
+          "categoryAverages": {
+            "$ref": "#/components/schemas/ReviewCategoryAveragesDto"
+          }
+        },
+        "required": [
+          "totalReviews",
+          "averageRating",
+          "withPhotosCount",
+          "starDistribution",
+          "categoryAverages"
+        ]
+      },
       "PaginatedReviewsResponseDto": {
         "type": "object",
         "properties": {
@@ -6508,6 +6849,9 @@
           "hasMore": {
             "type": "boolean",
             "example": true
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ReviewSummaryDto"
           }
         },
         "required": ["items", "pagination", "total", "page", "limit", "totalPages"]
@@ -6925,6 +7269,19 @@
             "example": "Se contactó al arrendador y se corrigió el precio publicado."
           }
         }
+      },
+      "FavoriteIdsResponseDto": {
+        "type": "object",
+        "properties": {
+          "pensionIds": {
+            "example": ["6659f8c123456789abcdef01"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["pensionIds"]
       },
       "FavoritePensionSummaryDto": {
         "type": "object",

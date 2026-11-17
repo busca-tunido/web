@@ -219,7 +219,10 @@ export interface paths {
       readonly path?: never;
       readonly cookie?: never;
     };
-    /** List all cities with absolute pension counts and coordinates */
+    /**
+     * List all cities with absolute pension counts and coordinates
+     * @deprecated
+     */
     readonly get: operations['PensionsController_getCities'];
     readonly put?: never;
     readonly post?: never;
@@ -455,6 +458,23 @@ export interface paths {
     readonly head?: never;
     /** Update report resolution status (Admin or Moderator only) */
     readonly patch: operations['ReportsController_update'];
+    readonly trace?: never;
+  };
+  readonly '/favorites/ids': {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    /** List favorite pension IDs for the current user */
+    readonly get: operations['FavoritesController_findIds'];
+    readonly put?: never;
+    readonly post?: never;
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
     readonly trace?: never;
   };
   readonly '/favorites': {
@@ -942,12 +962,20 @@ export interface components {
       readonly isAvailable: boolean;
       /** @example true */
       readonly isActive?: boolean;
+      /**
+       * @example [
+       *       "https://example.com/room.webp"
+       *     ]
+       */
+      readonly images?: readonly string[];
     };
     readonly PensionCountDto: {
       /** @example 5 */
       readonly rooms: number;
       /** @example 12 */
       readonly reviews: number;
+      /** @example 2 */
+      readonly proposals?: number;
     };
     readonly PensionItemResponseDto: {
       /** @example 6659f8c123456789abcdef01 */
@@ -1033,6 +1061,10 @@ export interface components {
       readonly amenitySlugs?: readonly string[];
       readonly rooms: readonly components['schemas']['PensionRoomSummaryDto'][];
       readonly _count: components['schemas']['PensionCountDto'];
+      /** @example 3 */
+      readonly availableRoomsCount?: number;
+      /** @example 1 */
+      readonly pendingProposalsCount?: number;
     };
     readonly PaginationMetaDto: {
       /** @example 1 */
@@ -1071,6 +1103,10 @@ export interface components {
     };
     /** @enum {string} */
     readonly PensionSortBy: 'relevance' | 'distance' | 'rating' | 'price_asc' | 'price_desc';
+    /** @enum {string} */
+    readonly PensionViewMode: 'full' | 'card' | 'map';
+    /** @enum {string} */
+    readonly PensionRatingTierFilter: 'high' | 'medium' | 'low' | 'unreviewed';
     readonly PriceHistogramBinDto: {
       /** @example 150000 */
       readonly min: number;
@@ -1538,6 +1574,8 @@ export interface components {
       readonly isAnonymous: boolean;
       /** @example 4 */
       readonly helpfulCount: number;
+      /** @example false */
+      readonly userVoted?: boolean;
       /**
        * @example [
        *       "https://example.com/review1.jpg"
@@ -1554,6 +1592,38 @@ export interface components {
        */
       readonly createdAt: string;
     };
+    readonly ReviewStarDistributionDto: {
+      /** @example 0 */
+      readonly 1: number;
+      /** @example 1 */
+      readonly 2: number;
+      /** @example 2 */
+      readonly 3: number;
+      /** @example 5 */
+      readonly 4: number;
+      /** @example 10 */
+      readonly 5: number;
+    };
+    readonly ReviewCategoryAveragesDto: {
+      /** @example 4.7 */
+      readonly cleanliness: number;
+      /** @example 4.6 */
+      readonly landlord: number;
+      /** @example 4.5 */
+      readonly quietness: number;
+      /** @example 4.4 */
+      readonly wifi: number;
+    };
+    readonly ReviewSummaryDto: {
+      /** @example 18 */
+      readonly totalReviews: number;
+      /** @example 4.6 */
+      readonly averageRating: number;
+      /** @example 4 */
+      readonly withPhotosCount: number;
+      readonly starDistribution: components['schemas']['ReviewStarDistributionDto'];
+      readonly categoryAverages: components['schemas']['ReviewCategoryAveragesDto'];
+    };
     readonly PaginatedReviewsResponseDto: {
       readonly items: readonly components['schemas']['ReviewResponseDto'][];
       readonly pagination: components['schemas']['PaginationMetaDto'];
@@ -1567,6 +1637,7 @@ export interface components {
       readonly totalPages: number;
       /** @example true */
       readonly hasMore?: boolean;
+      readonly summary?: components['schemas']['ReviewSummaryDto'];
     };
     /** @enum {string} */
     readonly ReviewSortBy: 'newest' | 'oldest' | 'rating_desc' | 'rating_asc';
@@ -1738,6 +1809,14 @@ export interface components {
       readonly status?: components['schemas']['ReportStatus'];
       /** @example Se contactó al arrendador y se corrigió el precio publicado. */
       readonly resolutionNotes?: string;
+    };
+    readonly FavoriteIdsResponseDto: {
+      /**
+       * @example [
+       *       "6659f8c123456789abcdef01"
+       *     ]
+       */
+      readonly pensionIds: readonly string[];
     };
     readonly FavoritePensionSummaryDto: {
       /** @example 6659f8c123456789abcdef01 */
@@ -2204,6 +2283,7 @@ export interface operations {
     readonly parameters: {
       readonly query?: {
         readonly city?: string;
+        readonly includeCampuses?: boolean;
       };
       readonly header?: never;
       readonly path?: never;
@@ -2574,6 +2654,12 @@ export interface operations {
         /** @description Maximum longitude boundary (East) */
         readonly maxLng?: number;
         readonly sortBy?: components['schemas']['PensionSortBy'];
+        /** @description Payload projection mode (full, card, or map) */
+        readonly view?: components['schemas']['PensionViewMode'];
+        /** @description Filter by community rating tier (high, medium, low, unreviewed) */
+        readonly ratingTier?: components['schemas']['PensionRatingTierFilter'];
+        /** @description Filter pensions that have at least one available active room */
+        readonly onlyAvailable?: boolean;
       };
       readonly header?: never;
       readonly path?: never;
@@ -2718,6 +2804,12 @@ export interface operations {
         /** @description Maximum longitude boundary (East) */
         readonly maxLng?: number;
         readonly sortBy?: components['schemas']['PensionSortBy'];
+        /** @description Payload projection mode (full, card, or map) */
+        readonly view?: components['schemas']['PensionViewMode'];
+        /** @description Filter by community rating tier (high, medium, low, unreviewed) */
+        readonly ratingTier?: components['schemas']['PensionRatingTierFilter'];
+        /** @description Filter pensions that have at least one available active room */
+        readonly onlyAvailable?: boolean;
       };
       readonly header?: never;
       readonly path?: never;
@@ -3476,6 +3568,14 @@ export interface operations {
         readonly limit?: number;
         /** @description Filter by exact overall rating */
         readonly rating?: number;
+        /** @description Filter by minimum overall rating */
+        readonly minRating?: number;
+        /** @description Filter by maximum overall rating */
+        readonly maxRating?: number;
+        /** @description Only include reviews that have at least one image */
+        readonly hasPhotos?: boolean;
+        /** @description Filter by stay duration category */
+        readonly stayDurationCategory?: components['schemas']['StayDurationCategory'];
         /** @description Sort order for reviews */
         readonly sortBy?: components['schemas']['ReviewSortBy'];
       };
@@ -3800,7 +3900,9 @@ export interface operations {
   };
   readonly ReviewsController_findUserHelpfulVotes: {
     readonly parameters: {
-      readonly query?: never;
+      readonly query?: {
+        readonly pensionId?: string;
+      };
       readonly header?: never;
       readonly path?: never;
       readonly cookie?: never;
@@ -4107,6 +4209,52 @@ export interface operations {
       };
     };
   };
+  readonly FavoritesController_findIds: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly requestBody?: never;
+    readonly responses: {
+      /** @description List of favorite pension IDs */
+      readonly 200: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': {
+            /** @example true */
+            readonly success: boolean;
+            /** @example 200 */
+            readonly statusCode: number;
+            /** @example 2026-11-02T01:00:00.000Z */
+            readonly timestamp: string;
+            readonly data: components['schemas']['FavoriteIdsResponseDto'];
+          };
+        };
+      };
+      /** @description No autorizado / credenciales ausentes o incorrectas */
+      readonly 401: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': components['schemas']['ErrorEnvelopeDto'];
+        };
+      };
+      /** @description Error interno del servidor */
+      readonly 500: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': components['schemas']['ErrorEnvelopeDto'];
+        };
+      };
+    };
+  };
   readonly FavoritesController_findAll: {
     readonly parameters: {
       readonly query?: never;
@@ -4280,7 +4428,11 @@ export interface operations {
   };
   readonly ProposalsController_findByPension: {
     readonly parameters: {
-      readonly query?: never;
+      readonly query?: {
+        readonly status?: components['schemas']['ProposalStatus'];
+        readonly page?: number;
+        readonly limit?: number;
+      };
       readonly header?: never;
       readonly path: {
         /** @description ID de la pensión */
@@ -4309,6 +4461,24 @@ export interface operations {
       };
       /** @description No autorizado / credenciales ausentes o incorrectas */
       readonly 401: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': components['schemas']['ErrorEnvelopeDto'];
+        };
+      };
+      /** @description Acceso prohibido / permisos insuficientes */
+      readonly 403: {
+        headers: {
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': components['schemas']['ErrorEnvelopeDto'];
+        };
+      };
+      /** @description Recurso no encontrado */
+      readonly 404: {
         headers: {
           readonly [name: string]: unknown;
         };

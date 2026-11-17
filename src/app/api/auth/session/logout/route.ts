@@ -6,6 +6,7 @@ export async function POST(): Promise<NextResponse> {
     const cookieStore = await cookies();
     cookieStore.delete('tunido_token');
     cookieStore.delete('tunido_role');
+    cookieStore.delete('tunido_has_session');
   } catch {}
 
   const response = NextResponse.json({
@@ -16,12 +17,18 @@ export async function POST(): Promise<NextResponse> {
 
   response.cookies.delete('tunido_token');
   response.cookies.delete('tunido_role');
+  response.cookies.delete('tunido_has_session');
   response.cookies.set('tunido_token', '', {
     path: '/',
     maxAge: 0,
     expires: new Date(0),
   });
   response.cookies.set('tunido_role', '', {
+    path: '/',
+    maxAge: 0,
+    expires: new Date(0),
+  });
+  response.cookies.set('tunido_has_session', '', {
     path: '/',
     maxAge: 0,
     expires: new Date(0),

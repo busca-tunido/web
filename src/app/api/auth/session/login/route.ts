@@ -70,6 +70,16 @@ export async function POST(request: Request): Promise<NextResponse> {
       });
     }
 
+    if (token) {
+      cookieStore.set('tunido_has_session', '1', {
+        httpOnly: false,
+        secure: env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 30,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       statusCode: 200,

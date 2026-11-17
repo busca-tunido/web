@@ -31,7 +31,10 @@ export async function fetchUniversities(
 ): Promise<ApiResponse<UniversityDto[]>> {
   const result = await apiFetch.GET('/universities', {
     params: {
-      query: params,
+      query: {
+        ...params,
+        includeCampuses: params?.includeCampuses ?? false,
+      },
     },
   });
   const res = wrapApiResponse<UniversityDto[]>(result, 'Error al obtener universidades');

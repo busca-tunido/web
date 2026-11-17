@@ -1,11 +1,42 @@
 import { classifyPensionRating } from './rating-tier';
 import type { PensionItem, SearchFilters } from './types';
 
+const serverFilteredSignatures = new WeakMap<object, string>();
+
+export function buildSearchFilterSignature(filters?: SearchFilters | null): string {
+  if (!filters) return 'none';
+  return JSON.stringify({
+    query: filters.query ?? '',
+    city: filters.city ?? '',
+    universityId: filters.universityId ?? '',
+    minPriceClp: filters.minPriceClp ?? null,
+    maxPriceClp: filters.maxPriceClp ?? null,
+    genderPreference: filters.genderPreference ?? '',
+    roomType: filters.roomType ?? '',
+    hasPrivateBathroom: Boolean(filters.hasPrivateBathroom),
+    includesMeals: Boolean(filters.includesMeals),
+    ratingTier: filters.ratingTier ?? '',
+  });
+}
+
+export function markServerFilteredPensions(
+  pensions: readonly PensionItem[],
+  filters?: SearchFilters | null,
+): void {
+  const sig = buildSearchFilterSignature(filters);
+  for (const p of pensions) {
+    serverFilteredSignatures.set(p, sig);
+  }
+}
+
 export function matchesSearchFilters(
   pension: PensionItem,
   filters?: SearchFilters | null,
 ): boolean {
   if (!filters) return true;
+  if (serverFilteredSignatures.get(pension) === buildSearchFilterSignature(filters)) {
+    return true;
+  }
 
   if (filters.query && filters.query.trim().length > 0) {
     const q = filters.query.trim().toLowerCase();
@@ -61,22 +92,30 @@ export function matchesSearchFilters(
   }
 
   if (filters.roomType) {
-    const hasMatchingRoom =
-      pension.rooms && pension.rooms.length > 0
-        ? pension.rooms.some((r) => r.type === filters.roomType)
-        : false;
-    if (!hasMatchingRoom) {
-      return false;
+    const roomsOmittedInSummary =
+      (!pension.rooms || pension.rooms.length === 0) && (pension._count?.rooms ?? 0) > 0;
+    if (!roomsOmittedInSummary) {
+      const hasMatchingRoom =
+        pension.rooms && pension.rooms.length > 0
+          ? pension.rooms.some((r) => r.type === filters.roomType)
+          : false;
+      if (!hasMatchingRoom) {
+        return false;
+      }
     }
   }
 
   if (filters.hasPrivateBathroom) {
-    const hasBath =
-      pension.rooms && pension.rooms.length > 0
-        ? pension.rooms.some((r) => r.hasPrivateBathroom)
-        : false;
-    if (!hasBath) {
-      return false;
+    const roomsOmittedInSummary =
+      (!pension.rooms || pension.rooms.length === 0) && (pension._count?.rooms ?? 0) > 0;
+    if (!roomsOmittedInSummary) {
+      const hasBath =
+        pension.rooms && pension.rooms.length > 0
+          ? pension.rooms.some((r) => r.hasPrivateBathroom)
+          : false;
+      if (!hasBath) {
+        return false;
+      }
     }
   }
 

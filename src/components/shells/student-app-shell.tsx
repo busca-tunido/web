@@ -134,6 +134,10 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
     currentCity: currentCity?.name ?? null,
     sortBy: 'relevance',
     radiusKm: 30,
+    initialCities: initialData?.cities,
+    initialUniversities: initialData?.universities,
+    initialPensions: initialData?.pensions,
+    initialTotal: initialData?.totalPensions,
   });
 
   useEffect(() => {
