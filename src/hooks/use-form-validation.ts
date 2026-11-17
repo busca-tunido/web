@@ -7,6 +7,8 @@ export type UseFormValidationOptions<T extends Record<string, unknown>> = {
   schema: z.ZodType<T>;
   initialValues: T;
   debounceMs?: number;
+  focusFirstInvalid?: boolean;
+  formRef?: React.RefObject<HTMLElement | null>;
   onSubmit?: (values: T) => void | Promise<void>;
 };
 
@@ -36,6 +38,8 @@ export function useFormValidation<T extends Record<string, unknown>>({
   schema,
   initialValues,
   debounceMs = 300,
+  focusFirstInvalid = true,
+  formRef,
   onSubmit,
 }: UseFormValidationOptions<T>): UseFormValidationReturn<T> {
   const [values, setValues] = useState<T>(initialValues);
@@ -43,6 +47,8 @@ export function useFormValidation<T extends Record<string, unknown>>({
   const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const initialValuesRef = useRef<T>(initialValues);
+  initialValuesRef.current = initialValues;
   const valuesRef = useRef<T>(values);
   const touchedRef = useRef<Partial<Record<keyof T, boolean>>>(touched);
   const debounceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -212,11 +218,27 @@ export function useFormValidation<T extends Record<string, unknown>>({
       }
     }
     setErrors(nextErrors);
+
+    if (focusFirstInvalid && typeof document !== 'undefined') {
+      const schedule =
+        typeof requestAnimationFrame === 'function'
+          ? requestAnimationFrame
+          : (cb: () => void) => setTimeout(cb, 0);
+      schedule(() => {
+        const container = formRef?.current ?? document;
+        const firstInvalid = container.querySelector<HTMLElement>('[aria-invalid="true"]');
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+          firstInvalid.focus?.({ preventScroll: true });
+        }
+      });
+    }
+
     return {
       isValid: false,
       errors: nextErrors,
     };
-  }, [schema]);
+  }, [schema, focusFirstInvalid, formRef]);
 
   const handleSubmit = useCallback(
     async (event?: React.FormEvent): Promise<boolean> => {
@@ -240,22 +262,19 @@ export function useFormValidation<T extends Record<string, unknown>>({
     [validateForm, onSubmit],
   );
 
-  const resetForm = useCallback(
-    (newValues?: Partial<T>) => {
-      for (const timer of Object.values(debounceTimers.current)) {
-        clearTimeout(timer);
-      }
-      debounceTimers.current = {};
-      const resetVals = { ...initialValues, ...newValues };
-      setValues(resetVals);
-      valuesRef.current = resetVals;
-      setErrors({});
-      setTouched({});
-      touchedRef.current = {};
-      setIsSubmitting(false);
-    },
-    [initialValues],
-  );
+  const resetForm = useCallback((newValues?: Partial<T>) => {
+    for (const timer of Object.values(debounceTimers.current)) {
+      clearTimeout(timer);
+    }
+    debounceTimers.current = {};
+    const resetVals = { ...initialValuesRef.current, ...newValues };
+    setValues(resetVals);
+    valuesRef.current = resetVals;
+    setErrors({});
+    setTouched({});
+    touchedRef.current = {};
+    setIsSubmitting(false);
+  }, []);
 
   const isValid = useMemo(() => Object.keys(errors).length === 0, [errors]);
 

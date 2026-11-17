@@ -1,19 +1,19 @@
 'use client';
 
 import { AlertCircle, Eye, EyeOff, GraduationCap, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
 import { FormField } from '@/components/ui/form-field';
+import {
+  ResponsiveModal,
+  ResponsiveModalClose,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalFooter,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import { useFormValidation } from '@/hooks/use-form-validation';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
@@ -42,6 +42,7 @@ export function StudentRegisterModal({
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmittingManual, setIsSubmittingManual] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const {
     values,
@@ -54,6 +55,7 @@ export function StudentRegisterModal({
     resetForm,
   } = useFormValidation<StudentRegisterInput>({
     schema: studentRegisterSchema,
+    formRef,
     initialValues: {
       email: prefilledEmail,
       password: '',
@@ -85,10 +87,6 @@ export function StudentRegisterModal({
 
     const validation = validateForm();
     if (!validation.isValid || !validation.data) {
-      const firstError = Object.values(validation.errors)[0];
-      if (firstError) {
-        setServerError(firstError);
-      }
       return;
     }
 
@@ -136,31 +134,33 @@ export function StudentRegisterModal({
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent
+    <ResponsiveModal open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <ResponsiveModalContent
+        showClose={false}
         overlayClassName="z-[120]"
         viewportClassName="z-[120]"
-        className="max-h-[92dvh] max-w-lg md:max-w-xl mx-auto md:rounded-3xl flex flex-col bg-background text-foreground z-[120]"
+        className="max-h-[92dvh] max-w-lg md:max-w-xl md:max-h-[88vh] mx-auto md:rounded-3xl flex flex-col bg-card text-foreground z-[120]"
       >
-        <DrawerHeader className="text-left px-5 pt-4 pb-2 border-b border-border">
+        <ResponsiveModalHeader className="text-left px-5 pt-4 pb-3 border-b border-border/60 shrink-0">
           <div className="flex items-center gap-2 mb-1">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/20 text-primary">
               <GraduationCap className="h-4 w-4" />
             </div>
-            <DrawerTitle className="text-lg font-bold text-foreground">
+            <ResponsiveModalTitle className="text-lg font-bold text-foreground">
               Registro de Estudiante
-            </DrawerTitle>
+            </ResponsiveModalTitle>
           </div>
-          <DrawerDescription className="text-xs text-muted-foreground">
+          <ResponsiveModalDescription className="text-xs text-muted-foreground">
             Crea tu cuenta universitaria en BuscaTuNido para validar arriendos y publicar reseñas.
-          </DrawerDescription>
-        </DrawerHeader>
+          </ResponsiveModalDescription>
+        </ResponsiveModalHeader>
 
         <form
+          ref={formRef}
           id="student-register-modal-form"
           onSubmit={handleFormSubmit}
           noValidate
-          className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4 text-left"
+          className="flex-1 min-h-0 overflow-y-auto scrollbar-subtle px-5 py-4 flex flex-col gap-4 text-left"
         >
           {serverError && (
             <div
@@ -249,7 +249,7 @@ export function StudentRegisterModal({
                   onChange={(e) => handleChange('password', e.target.value)}
                   onBlur={() => handleBlur('password')}
                   placeholder="••••••••"
-                  className="min-h-12 w-full rounded-xl border border-border bg-background pl-4 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                  className="min-h-12 w-full rounded-xl border border-border bg-background pl-4 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 aria-invalid:border-destructive aria-invalid:focus:ring-destructive/20 transition"
                 />
                 <button
                   type="button"
@@ -343,7 +343,7 @@ export function StudentRegisterModal({
             )}
           </div>
 
-          <DrawerFooter className="px-0 pt-3 pb-2 flex flex-col gap-2">
+          <ResponsiveModalFooter className="px-0 pt-3 pb-2 border-t-0 bg-transparent flex flex-col gap-2">
             <Button
               id="btn-complete-register"
               type="submit"
@@ -359,7 +359,7 @@ export function StudentRegisterModal({
                 'Completar Registro'
               )}
             </Button>
-            <DrawerClose
+            <ResponsiveModalClose
               render={
                 <Button
                   type="button"
@@ -371,9 +371,9 @@ export function StudentRegisterModal({
                 </Button>
               }
             />
-          </DrawerFooter>
+          </ResponsiveModalFooter>
         </form>
-      </DrawerContent>
-    </Drawer>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }

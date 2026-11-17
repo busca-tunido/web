@@ -16,9 +16,10 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
-import { type ChangeEvent, useEffect, useReducer, useState } from 'react';
+import { type ChangeEvent, useEffect, useReducer, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import {
   ResponsiveModal,
@@ -27,12 +28,17 @@ import {
   ResponsiveModalHeader,
   ResponsiveModalTitle,
 } from '@/components/ui/responsive-modal';
-import { createReviewSchema, usePensionReviews } from '@/hooks/use-pension-reviews';
+import { useFormValidation } from '@/hooks/use-form-validation';
+import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
 import { translateApiError } from '@/lib/error-translator';
 import { prepareImageForUpload, validateImageFile } from '@/lib/image-utils';
 import type { PensionItem, PensionReview, StayDurationCategory } from '@/lib/types';
+import {
+  type PublishReviewFormInput,
+  publishReviewFormSchema,
+} from '@/lib/validations/reviews.schema';
 import {
   initialPublishReviewState,
   publishReviewReducer,
@@ -73,14 +79,36 @@ export function PublishReviewModal({
   const { publishReview } = usePensionReviews(isOpen ? pension.id : null);
   const [state, dispatch] = useReducer(publishReviewReducer, initialPublishReviewState);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const formContainerRef = useRef<HTMLDivElement>(null);
   const successBanner = state.successBanner;
   const errorMessage = state.errorMessage;
+
+  const {
+    errors: reviewErrors,
+    handleChange: handleReviewFieldChange,
+    handleBlur: handleReviewFieldBlur,
+    validateForm: validateReviewForm,
+    resetForm: resetReviewValidation,
+  } = useFormValidation<PublishReviewFormInput>({
+    schema: publishReviewFormSchema,
+    initialValues: {
+      overallRating: initialPublishReviewState.overallRating,
+      stayDuration: initialPublishReviewState.stayDuration,
+      comment: initialPublishReviewState.comment,
+    },
+    formRef: formContainerRef,
+  });
 
   useEffect(() => {
     if (!isOpen) {
       dispatch({ type: 'RESET' });
+      resetReviewValidation({
+        overallRating: initialPublishReviewState.overallRating,
+        stayDuration: initialPublishReviewState.stayDuration,
+        comment: initialPublishReviewState.comment,
+      });
     }
-  }, [isOpen]);
+  }, [isOpen, resetReviewValidation]);
 
   if (!isOpen) return null;
 
@@ -133,19 +161,8 @@ export function PublishReviewModal({
   };
 
   const handleSubmit = async () => {
-    const validation = createReviewSchema.safeParse({
-      rating: state.overallRating,
-      comment: state.comment.trim(),
-      cleanlinessRating: state.cleanlinessRating ?? undefined,
-      landlordRating: state.landlordRating ?? undefined,
-      locationRating: state.quietnessRating ?? undefined,
-      stayDuration: state.stayDuration,
-      images: state.selectedFiles.map((f) => f.previewUrl),
-    });
-
-    if (!validation.success) {
-      const firstError = validation.error.issues[0]?.message || 'Verifica los campos ingresados.';
-      dispatch({ type: 'SET_ERROR', error: firstError });
+    const validation = validateReviewForm();
+    if (!validation.isValid) {
       return;
     }
 
@@ -265,7 +282,6 @@ export function PublishReviewModal({
     }
   };
 
-  const isMinLength = state.comment.trim().length >= 15;
   const currentRatingValue = state.hoverRating || state.overallRating;
 
   return (
@@ -284,7 +300,10 @@ export function PublishReviewModal({
           </ResponsiveModalDescription>
         </ResponsiveModalHeader>
 
-        <div className="overflow-y-auto scrollbar-subtle flex-1 min-h-0 px-5 md:px-6 py-4 pb-6 space-y-5">
+        <div
+          ref={formContainerRef}
+          className="overflow-y-auto scrollbar-subtle flex-1 min-h-0 px-5 md:px-6 py-4 pb-6 space-y-5"
+        >
           <AnimatePresence>
             {successBanner && (
               <motion.div
@@ -317,35 +336,50 @@ export function PublishReviewModal({
             )}
           </AnimatePresence>
 
-          <section className="rounded-2xl border border-border/70 bg-muted/25 p-3.5 text-center">
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
-              Calificación General Obligatoria
-            </h4>
-            <div className="flex items-center justify-center gap-1.5 mb-1.5">
-              {[1, 2, 3, 4, 5].map((starVal) => (
-                <button
-                  key={`star-${starVal}`}
-                  type="button"
-                  onClick={() => dispatch({ type: 'SET_OVERALL_RATING', rating: starVal })}
-                  onMouseEnter={() => dispatch({ type: 'SET_HOVER_RATING', rating: starVal })}
-                  onMouseLeave={() => dispatch({ type: 'SET_HOVER_RATING', rating: 0 })}
-                  className="p-1 transition-transform active:scale-90 hover:scale-110 cursor-pointer"
-                  aria-label={`${starVal} estrellas`}
-                >
-                  <Star
-                    className={`h-7 w-7 ${
-                      starVal <= currentRatingValue
-                        ? 'fill-amber-500 text-amber-500'
-                        : 'fill-muted text-muted-foreground/40'
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
-            <p className="text-xs font-semibold text-amber-500 h-4">
-              {RATING_LABELS[currentRatingValue] || 'Selecciona tu calificación'}
-            </p>
-          </section>
+          <FormField
+            id="review-overall-rating"
+            label="Calificación General Obligatoria"
+            labelClassName="text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+            required
+            error={reviewErrors.overallRating}
+          >
+            {(injected) => (
+              <section
+                id={injected.id}
+                aria-invalid={injected['aria-invalid']}
+                aria-describedby={injected['aria-describedby']}
+                className="rounded-2xl border border-border/70 bg-muted/25 p-3.5 text-center"
+              >
+                <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                  {[1, 2, 3, 4, 5].map((starVal) => (
+                    <button
+                      key={`star-${starVal}`}
+                      type="button"
+                      onClick={() => {
+                        dispatch({ type: 'SET_OVERALL_RATING', rating: starVal });
+                        handleReviewFieldChange('overallRating', starVal);
+                      }}
+                      onMouseEnter={() => dispatch({ type: 'SET_HOVER_RATING', rating: starVal })}
+                      onMouseLeave={() => dispatch({ type: 'SET_HOVER_RATING', rating: 0 })}
+                      className="p-1 transition-transform active:scale-90 hover:scale-110 cursor-pointer"
+                      aria-label={`${starVal} estrellas`}
+                    >
+                      <Star
+                        className={`h-7 w-7 ${
+                          starVal <= currentRatingValue
+                            ? 'fill-amber-500 text-amber-500'
+                            : 'fill-muted text-muted-foreground/40'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs font-semibold text-amber-500 h-4">
+                  {RATING_LABELS[currentRatingValue] || 'Selecciona tu calificación'}
+                </p>
+              </section>
+            )}
+          </FormField>
 
           <section className="rounded-2xl border border-border bg-card p-3.5">
             <button
@@ -530,51 +564,72 @@ export function PublishReviewModal({
             )}
           </section>
 
-          <section>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
-              ¿Cuánto tiempo viviste aquí?
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {STAY_DURATIONS.map((dur) => (
-                <button
-                  key={dur.id}
-                  type="button"
-                  onClick={() => dispatch({ type: 'SET_DURATION', duration: dur.id })}
-                  className={`px-3 py-1.5 rounded-xl text-xs border transition cursor-pointer ${
-                    state.stayDuration === dur.id
-                      ? 'border-primary/45 bg-primary/15 text-primary font-semibold'
-                      : 'border-border bg-muted/20 font-medium text-muted-foreground hover:bg-muted/50'
-                  }`}
-                >
-                  {dur.label}
-                </button>
-              ))}
-            </div>
-          </section>
+          <FormField
+            id="review-stay-duration"
+            label="¿Cuánto tiempo viviste aquí?"
+            labelClassName="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+            required
+            error={reviewErrors.stayDuration}
+          >
+            {(injected) => (
+              <div
+                id={injected.id}
+                aria-invalid={injected['aria-invalid']}
+                aria-describedby={injected['aria-describedby']}
+                className="flex flex-wrap gap-2"
+              >
+                {STAY_DURATIONS.map((dur) => (
+                  <button
+                    key={dur.id}
+                    type="button"
+                    onClick={() => {
+                      dispatch({ type: 'SET_DURATION', duration: dur.id });
+                      handleReviewFieldChange('stayDuration', dur.id);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs border transition cursor-pointer ${
+                      state.stayDuration === dur.id
+                        ? 'border-primary/45 bg-primary/15 text-primary font-semibold'
+                        : 'border-border bg-muted/20 font-medium text-muted-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    {dur.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </FormField>
 
-          <section>
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Tu opinión detallada
-              </h4>
+          <FormField
+            id="review-comment-textarea"
+            label="Tu opinión detallada"
+            labelClassName="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+            required
+            hint="Mínimo 15 caracteres recomendados para describir tu experiencia"
+            labelAction={
               <span
-                className={`text-[11px] ${
-                  state.comment.length < 15 ? 'text-amber-500' : 'text-muted-foreground'
+                className={`text-[11px] font-medium ${
+                  state.comment.trim().length < 15 ? 'text-amber-500' : 'text-muted-foreground'
                 }`}
               >
-                {state.comment.length} / 1000 (mín. 15 caracteres)
+                {state.comment.length} / 1000
               </span>
-            </div>
+            }
+            error={reviewErrors.comment}
+          >
             <textarea
               id="review-comment-textarea"
               value={state.comment}
               maxLength={1000}
-              onChange={(e) => dispatch({ type: 'SET_COMMENT', comment: e.target.value })}
+              onChange={(e) => {
+                dispatch({ type: 'SET_COMMENT', comment: e.target.value });
+                handleReviewFieldChange('comment', e.target.value);
+              }}
+              onBlur={() => handleReviewFieldBlur('comment')}
               placeholder="Ej. Viví aquí durante mi primer año de universidad. Las piezas son amplias, la cocina siempre limpia y el ambiente es silencioso para estudiar. El internet funciona muy bien en épocas de certámenes..."
               rows={4}
               className="w-full rounded-xl border border-border bg-card p-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-hidden focus:ring-2 focus:ring-primary/40 leading-relaxed resize-none"
             />
-          </section>
+          </FormField>
 
           <section>
             <div className="flex items-center justify-between mb-2">
@@ -637,8 +692,9 @@ export function PublishReviewModal({
         <div className="border-t border-border/60 bg-card/95 backdrop-blur-md p-4 md:px-6 shrink-0">
           <Button
             id="btn-submit-review"
+            type="button"
             onClick={handleSubmit}
-            disabled={!isMinLength || state.isSubmitting}
+            disabled={state.isSubmitting}
             className="w-full h-12 bg-primary hover:opacity-90 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition disabled:opacity-50"
           >
             {state.isSubmitting ? (

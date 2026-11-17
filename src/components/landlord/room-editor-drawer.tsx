@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { RoomItem, RoomType } from '@/components/landlord/room-item-card';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import {
   ResponsiveModal,
@@ -28,12 +29,14 @@ import {
   ResponsiveModalTitle,
 } from '@/components/ui/responsive-modal';
 import { useFormDraft } from '@/hooks/use-form-draft';
+import { useFormValidation } from '@/hooks/use-form-validation';
 import { isApiSuccess } from '@/lib/api-response';
 import { isSubstantiveRoomDraft } from '@/lib/draft-validators';
 import { translateApiError } from '@/lib/error-translator';
 import { clampNumber } from '@/lib/format-utils';
 import type { CreateRoomDto, UpdateRoomDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { type RoomEditorFormInput, roomEditorFormSchema } from '@/lib/validations/pensions.schema';
 import { createPensionRoom, updateRoom } from '@/services/rooms.service';
 import { uploadsService } from '@/services/uploads.service';
 
@@ -126,6 +129,26 @@ export function RoomEditorDrawer({
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const formElementRef = useRef<HTMLFormElement>(null);
+
+  const {
+    errors: fieldErrors,
+    touched: fieldTouched,
+    handleChange: handleValidationChange,
+    handleBlur: handleValidationBlur,
+    validateForm,
+    resetForm: resetValidation,
+  } = useFormValidation<RoomEditorFormInput>({
+    schema: roomEditorFormSchema,
+    formRef: formElementRef,
+    initialValues: {
+      title: '',
+      roomNumber: '',
+      description: '',
+      monthlyPrice: '',
+      deposit: '',
+    },
+  });
 
   const allDrawerImages = [...form.images, ...newImagePreviews];
 
@@ -139,10 +162,18 @@ export function RoomEditorDrawer({
   const handleRestoreDraft = () => {
     const draft = restoreDraft();
     if (draft) {
-      setForm({
+      const nextRoom: RoomFormState = {
         ...INITIAL_ROOM_STATE,
         ...draft,
         images: Array.isArray(draft.images) ? draft.images : [],
+      };
+      setForm(nextRoom);
+      resetValidation({
+        title: nextRoom.title,
+        roomNumber: nextRoom.roomNumber,
+        description: nextRoom.description,
+        monthlyPrice: nextRoom.monthlyPrice,
+        deposit: nextRoom.deposit,
       });
       toast.success('Borrador restaurado');
     }
@@ -152,6 +183,7 @@ export function RoomEditorDrawer({
     const digits = val.replace(/\D/g, '');
     if (!digits) {
       setForm((prev) => ({ ...prev, monthlyPrice: '' }));
+      handleValidationChange('monthlyPrice', '');
       return;
     }
     const num = Number.parseInt(digits, 10);
@@ -159,13 +191,16 @@ export function RoomEditorDrawer({
     if (clamped.wasClamped && num > 1200000) {
       toast.info('El precio mensual máximo para una habitación es $1.200.000 CLP.');
     }
-    setForm((prev) => ({ ...prev, monthlyPrice: clamped.value.toString() }));
+    const nextPrice = clamped.value.toString();
+    setForm((prev) => ({ ...prev, monthlyPrice: nextPrice }));
+    handleValidationChange('monthlyPrice', nextPrice);
   };
 
   const handleDepositChange = (val: string) => {
     const digits = val.replace(/\D/g, '');
     if (!digits) {
       setForm((prev) => ({ ...prev, deposit: '' }));
+      handleValidationChange('deposit', '');
       return;
     }
     const num = Number.parseInt(digits, 10);
@@ -173,7 +208,9 @@ export function RoomEditorDrawer({
     if (clamped.wasClamped && num > 1200000) {
       toast.info('La garantía máxima sugerida para una habitación es $1.200.000 CLP.');
     }
-    setForm((prev) => ({ ...prev, deposit: clamped.value.toString() }));
+    const nextDeposit = clamped.value.toString();
+    setForm((prev) => ({ ...prev, deposit: nextDeposit }));
+    handleValidationChange('deposit', nextDeposit);
   };
 
   useEffect(() => {
@@ -181,8 +218,7 @@ export function RoomEditorDrawer({
       if (roomToEdit) {
         const resolvedType: RoomType = roomToEdit.type ?? 'SINGLE';
         const existingImages = roomToEdit.images ? [...roomToEdit.images] : [];
-
-        setForm({
+        const nextValues: RoomFormState = {
           title: roomToEdit.title || roomToEdit.name || '',
           roomNumber: roomToEdit.roomNumber || '',
           description: roomToEdit.description || '',
@@ -199,6 +235,15 @@ export function RoomEditorDrawer({
           totalBeds: roomToEdit.totalBeds ?? 1,
           isAvailable: roomToEdit.isAvailable ?? true,
           images: existingImages,
+        };
+
+        setForm(nextValues);
+        resetValidation({
+          title: nextValues.title,
+          roomNumber: nextValues.roomNumber,
+          description: nextValues.description,
+          monthlyPrice: nextValues.monthlyPrice,
+          deposit: nextValues.deposit,
         });
       } else {
         setForm({
@@ -213,12 +258,19 @@ export function RoomEditorDrawer({
           isAvailable: true,
           images: [],
         });
+        resetValidation({
+          title: '',
+          roomNumber: '',
+          description: '',
+          monthlyPrice: '',
+          deposit: '',
+        });
       }
       setNewImageFiles([]);
       setNewImagePreviews([]);
       setErrorMessage(null);
     }
-  }, [isOpen, roomToEdit]);
+  }, [isOpen, roomToEdit, resetValidation]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -262,33 +314,18 @@ export function RoomEditorDrawer({
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    setErrorMessage(null);
 
-    const trimmedTitle = form.title.trim();
-    const trimmedRoomNumber = form.roomNumber.trim();
-    const parsedPrice = Number(form.monthlyPrice);
-
-    if (trimmedTitle.length < 3) {
-      setErrorMessage('El nombre de la habitación debe tener al menos 3 caracteres.');
+    const validation = validateForm();
+    if (!validation.isValid || !validation.data) {
       return;
     }
 
-    if (trimmedTitle.length > 80) {
-      setErrorMessage('El nombre de la habitación no puede superar los 80 caracteres.');
-      return;
-    }
-
-    if (trimmedRoomNumber.length > 20) {
-      setErrorMessage('El número o identificador no puede superar los 20 caracteres.');
-      return;
-    }
-
-    if (Number.isNaN(parsedPrice) || parsedPrice <= 0) {
-      setErrorMessage('Ingresa un valor mensual de arriendo válido en CLP.');
-      return;
-    }
+    const trimmedTitle = validation.data.title;
+    const trimmedRoomNumber = validation.data.roomNumber ?? '';
+    const parsedPrice = Number(validation.data.monthlyPrice);
 
     setIsSubmitting(true);
-    setErrorMessage(null);
 
     try {
       let uploadedUrls: string[] = [];
@@ -407,6 +444,7 @@ export function RoomEditorDrawer({
         </ResponsiveModalHeader>
 
         <form
+          ref={formElementRef}
           onSubmit={handleSubmit}
           noValidate
           className="flex-1 flex flex-col min-h-0 overflow-hidden"
@@ -443,54 +481,50 @@ export function RoomEditorDrawer({
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="room-name-input"
-                  className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  Nombre de la Habitación <span className="text-destructive">*</span>
-                </label>
-                <span className="text-[10px] text-muted-foreground tabular-nums">
-                  {form.title.length}/80
-                </span>
-              </div>
+            <FormField
+              id="room-name-input"
+              label="Nombre de la Habitación"
+              required
+              hint={`${form.title.length}/80 caracteres (mín. 3)`}
+              error={fieldTouched.title ? fieldErrors.title : undefined}
+            >
               <input
                 id="room-name-input"
                 type="text"
                 maxLength={80}
                 placeholder="Ej: Habitación Individual Luminosa"
                 value={form.title}
-                onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-                className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setForm((prev) => ({ ...prev, title: val }));
+                  handleValidationChange('title', val);
+                }}
+                onBlur={() => handleValidationBlur('title')}
+                className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
               />
-            </div>
+            </FormField>
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="room-number-input"
-                  className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  N° o Código Corto{' '}
-                  <span className="text-[10px] lowercase font-normal ml-1.5 text-muted-foreground/70">
-                    (opcional)
-                  </span>
-                </label>
-                <span className="text-[10px] text-muted-foreground tabular-nums">
-                  {form.roomNumber.length}/20
-                </span>
-              </div>
+            <FormField
+              id="room-number-input"
+              label="N° o Código Corto"
+              hint={`${form.roomNumber.length}/20 caracteres`}
+              error={fieldTouched.roomNumber ? fieldErrors.roomNumber : undefined}
+            >
               <input
                 id="room-number-input"
                 type="text"
                 maxLength={20}
                 placeholder="Ej: 101, 2B, Hab 1"
                 value={form.roomNumber}
-                onChange={(e) => setForm((prev) => ({ ...prev, roomNumber: e.target.value }))}
-                className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setForm((prev) => ({ ...prev, roomNumber: val }));
+                  handleValidationChange('roomNumber', val);
+                }}
+                onBlur={() => handleValidationBlur('roomNumber')}
+                className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
               />
-            </div>
+            </FormField>
 
             <div className="space-y-2">
               <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -525,61 +559,71 @@ export function RoomEditorDrawer({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="room-price-input"
-                  className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  Precio mensual (CLP) <span className="text-destructive">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
-                    <DollarSign className="h-4 w-4" />
+              <FormField
+                id="room-price-input"
+                label="Precio mensual (CLP)"
+                required
+                hint={formattedClpPreview ?? undefined}
+                error={fieldTouched.monthlyPrice ? fieldErrors.monthlyPrice : undefined}
+              >
+                {(injected) => (
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+                      <DollarSign className="h-4 w-4" />
+                    </div>
+                    <input
+                      id={injected.id}
+                      aria-invalid={injected['aria-invalid']}
+                      aria-describedby={injected['aria-describedby']}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="260.000"
+                      value={
+                        form.monthlyPrice ? Number(form.monthlyPrice).toLocaleString('es-CL') : ''
+                      }
+                      onChange={(e) => handleMonthlyPriceChange(e.target.value)}
+                      onBlur={() => handleValidationBlur('monthlyPrice')}
+                      className={cn(
+                        'w-full min-h-12 pl-9 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition',
+                        injected['aria-invalid'] &&
+                          'border-destructive focus:border-destructive focus:ring-destructive/20',
+                      )}
+                    />
                   </div>
-                  <input
-                    id="room-price-input"
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    placeholder="260.000"
-                    value={
-                      form.monthlyPrice ? Number(form.monthlyPrice).toLocaleString('es-CL') : ''
-                    }
-                    onChange={(e) => handleMonthlyPriceChange(e.target.value)}
-                    className="w-full min-h-12 pl-9 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-                  />
-                </div>
-                {formattedClpPreview && (
-                  <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 pl-1">
-                    {formattedClpPreview}
-                  </p>
                 )}
-              </div>
+              </FormField>
 
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="room-deposit-input"
-                  className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                >
-                  Garantía (CLP){' '}
-                  <span className="text-[10px] lowercase font-normal">(opcional)</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
-                    <DollarSign className="h-4 w-4" />
+              <FormField
+                id="room-deposit-input"
+                label="Garantía (CLP)"
+                error={fieldTouched.deposit ? fieldErrors.deposit : undefined}
+              >
+                {(injected) => (
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+                      <DollarSign className="h-4 w-4" />
+                    </div>
+                    <input
+                      id={injected.id}
+                      aria-invalid={injected['aria-invalid']}
+                      aria-describedby={injected['aria-describedby']}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="150.000"
+                      value={form.deposit ? Number(form.deposit).toLocaleString('es-CL') : ''}
+                      onChange={(e) => handleDepositChange(e.target.value)}
+                      onBlur={() => handleValidationBlur('deposit')}
+                      className={cn(
+                        'w-full min-h-12 pl-9 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition',
+                        injected['aria-invalid'] &&
+                          'border-destructive focus:border-destructive focus:ring-destructive/20',
+                      )}
+                    />
                   </div>
-                  <input
-                    id="room-deposit-input"
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    placeholder="150.000"
-                    value={form.deposit ? Number(form.deposit).toLocaleString('es-CL') : ''}
-                    onChange={(e) => handleDepositChange(e.target.value)}
-                    className="w-full min-h-12 pl-9 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-                  />
-                </div>
-              </div>
+                )}
+              </FormField>
             </div>
 
             <div className="rounded-2xl border border-border bg-secondary/30 p-3.5 flex items-center justify-between gap-3">
@@ -762,24 +806,27 @@ export function RoomEditorDrawer({
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label
-                htmlFor="room-desc-textarea"
-                className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
-              >
-                Descripción y Equipamiento{' '}
-                <span className="text-[10px] lowercase font-normal">(opcional)</span>
-              </label>
+            <FormField
+              id="room-desc-textarea"
+              label="Descripción y Equipamiento"
+              hint={`${form.description.length}/800 caracteres`}
+              error={fieldTouched.description ? fieldErrors.description : undefined}
+            >
               <textarea
                 id="room-desc-textarea"
                 rows={3}
                 maxLength={800}
                 placeholder="Ej: Incluye clóset amplio, escritorio de estudio ergonómico y ventana con luz natural..."
                 value={form.description}
-                onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                className="w-full rounded-xl border border-border bg-background p-3 text-xs text-foreground placeholder:text-muted-foreground/80 focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none leading-relaxed"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setForm((prev) => ({ ...prev, description: val }));
+                  handleValidationChange('description', val);
+                }}
+                onBlur={() => handleValidationBlur('description')}
+                className="w-full rounded-xl border border-border bg-background p-3 text-xs text-foreground placeholder:text-muted-foreground/80 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition resize-none leading-relaxed"
               />
-            </div>
+            </FormField>
           </div>
 
           <div className="border-t border-border/60 bg-card/95 backdrop-blur-md px-5 pt-3 pb-[max(env(safe-area-inset-bottom),1rem)] flex items-center gap-2.5 shrink-0">
@@ -795,7 +842,7 @@ export function RoomEditorDrawer({
 
             <Button
               type="submit"
-              disabled={isSubmitting || !form.title.trim() || !form.monthlyPrice}
+              disabled={isSubmitting}
               className="flex-2 min-h-12 bg-primary hover:opacity-90 text-primary-foreground font-bold text-xs rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer disabled:opacity-50 gap-2"
             >
               {isSubmitting ? (

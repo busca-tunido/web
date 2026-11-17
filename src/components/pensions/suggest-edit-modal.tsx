@@ -1,9 +1,10 @@
 'use client';
 
 import { AlertCircle, Check, CheckCircle2, ChevronDown, Loader2, Plus, Send } from 'lucide-react';
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import {
   ResponsiveModal,
   ResponsiveModalContent,
@@ -11,9 +12,14 @@ import {
   ResponsiveModalHeader,
   ResponsiveModalTitle,
 } from '@/components/ui/responsive-modal';
+import { useFormValidation } from '@/hooks/use-form-validation';
 import { useSuggestEdit } from '@/hooks/use-suggest-edit';
 import { clampNumber } from '@/lib/format-utils';
 import type { PensionItem } from '@/lib/types';
+import {
+  type SuggestEditFormInput,
+  suggestEditFormSchema,
+} from '@/lib/validations/pensions.schema';
 import {
   calculateProposedDiff,
   createInitialSuggestEditState,
@@ -45,13 +51,32 @@ const AMENITY_CATALOG: AmenityCatalogItem[] = [
 
 export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalProps) {
   const [state, dispatch] = useReducer(suggestEditReducer, pension, createInitialSuggestEditState);
-  const { isSubmitting, errorMessage, successBanner, submitProposal } = useSuggestEdit(pension.id);
+  const { isSubmitting, errorMessage, successBanner, submitProposal, resetState } = useSuggestEdit(
+    pension.id,
+  );
+  const formContainerRef = useRef<HTMLDivElement>(null);
+
+  const {
+    errors: suggestErrors,
+    handleChange: handleSuggestFieldChange,
+    handleBlur: handleSuggestFieldBlur,
+    validateForm: validateSuggestForm,
+    resetForm: resetSuggestValidation,
+  } = useFormValidation<SuggestEditFormInput>({
+    schema: suggestEditFormSchema,
+    initialValues: {
+      submissionNotes: '',
+    },
+    formRef: formContainerRef,
+  });
 
   useEffect(() => {
     if (isOpen) {
       dispatch({ type: 'RESET_TO_PENSION', pension });
+      resetState();
+      resetSuggestValidation({ submissionNotes: '' });
     }
-  }, [isOpen, pension]);
+  }, [isOpen, pension, resetState, resetSuggestValidation]);
 
   if (!isOpen) return null;
 
@@ -88,6 +113,11 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
   };
 
   const handleSubmit = async () => {
+    const validation = validateSuggestForm();
+    if (!validation.isValid) {
+      return;
+    }
+
     const proposedChanges = calculateProposedDiff(pension, state);
     const ok = await submitProposal(state.submissionNotes, proposedChanges);
     if (ok) {
@@ -113,7 +143,10 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
           </ResponsiveModalDescription>
         </ResponsiveModalHeader>
 
-        <div className="overflow-y-auto scrollbar-subtle flex-1 min-h-0 px-5 py-4 pb-6 space-y-6">
+        <div
+          ref={formContainerRef}
+          className="overflow-y-auto scrollbar-subtle flex-1 min-h-0 px-5 py-4 pb-6 space-y-6"
+        >
           {successBanner && (
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center gap-3 text-emerald-600 animate-in fade-in">
               <CheckCircle2 className="h-5 w-5 shrink-0" />
@@ -532,35 +565,50 @@ export function SuggestEditModal({ isOpen, onClose, pension }: SuggestEditModalP
             </div>
           </details>
 
-          <section>
-            <label
-              htmlFor="suggest-submission-notes"
-              className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5"
-            >
-              ¿Por qué propones este cambio? (Para los moderadores)
-            </label>
+          <FormField
+            id="suggest-submission-notes"
+            label="¿Por qué propones este cambio? (Para los moderadores)"
+            labelClassName="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+            required
+            hint="Mínimo 5 caracteres para explicar tu sugerencia"
+            labelAction={
+              <span
+                className={`text-[11px] font-medium ${
+                  state.submissionNotes.trim().length < 5
+                    ? 'text-amber-500'
+                    : 'text-muted-foreground'
+                }`}
+              >
+                {state.submissionNotes.length} / 500
+              </span>
+            }
+            error={suggestErrors.submissionNotes}
+          >
             <textarea
               id="suggest-submission-notes"
               value={state.submissionNotes}
               maxLength={500}
-              onChange={(e) =>
+              onChange={(e) => {
                 dispatch({
                   type: 'SET_SUBMISSION_NOTES',
                   notes: e.target.value,
-                })
-              }
+                });
+                handleSuggestFieldChange('submissionNotes', e.target.value);
+              }}
+              onBlur={() => handleSuggestFieldBlur('submissionNotes')}
               placeholder="Ej. Viví aquí el último semestre: ahora cuentan con lavandería en el primer piso y el valor del arriendo subió a $250.000 con luz incluida..."
               rows={3}
               className="w-full rounded-xl border border-border bg-card p-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-hidden focus:ring-2 focus:ring-primary/40 leading-relaxed resize-none"
             />
-          </section>
+          </FormField>
         </div>
 
         <div className="border-t border-border/60 bg-card/95 backdrop-blur-md p-4 md:px-5 shrink-0">
           <Button
             id="btn-submit-proposal"
+            type="button"
             onClick={handleSubmit}
-            disabled={state.submissionNotes.trim().length < 5 || isSubmitting}
+            disabled={isSubmitting}
             className="w-full h-12 bg-primary hover:opacity-90 text-primary-foreground font-bold text-sm rounded-xl shadow-md active:scale-[0.98] transition disabled:opacity-50"
           >
             {isSubmitting ? (

@@ -87,6 +87,8 @@ export function ResponsiveModalTrigger({
 export type ResponsiveModalContentProps = React.HTMLAttributes<HTMLDivElement> & {
   children: React.ReactNode;
   className?: string;
+  overlayClassName?: string;
+  viewportClassName?: string;
   showClose?: boolean;
   showDragHandle?: boolean;
 };
@@ -94,6 +96,8 @@ export type ResponsiveModalContentProps = React.HTMLAttributes<HTMLDivElement> &
 export function ResponsiveModalContent({
   children,
   className,
+  overlayClassName,
+  viewportClassName,
   showClose = true,
   showDragHandle = true,
   ...props
@@ -104,6 +108,8 @@ export function ResponsiveModalContent({
     return (
       <DialogContent
         showClose={showClose}
+        overlayClassName={overlayClassName}
+        viewportClassName={viewportClassName}
         className={cn(
           'sm:max-w-xl md:max-w-2xl max-h-[85vh] p-0 flex flex-col overflow-hidden rounded-3xl border border-border bg-card text-foreground shadow-2xl min-h-0',
           className,
@@ -117,6 +123,8 @@ export function ResponsiveModalContent({
 
   return (
     <DrawerContent
+      overlayClassName={overlayClassName}
+      viewportClassName={viewportClassName}
       className={cn(
         'max-h-[92dvh] flex flex-col bg-card border-border text-foreground overflow-hidden min-h-0',
         className,

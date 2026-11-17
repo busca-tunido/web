@@ -19,12 +19,13 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { RoomOccupancyBar } from '@/components/landlord/room-occupancy-bar';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { FormField } from '@/components/ui/form-field';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import {
   ResponsiveModal,
@@ -35,9 +36,14 @@ import {
   ResponsiveModalTitle,
 } from '@/components/ui/responsive-modal';
 import { useLandlord } from '@/contexts/landlord-context';
+import { useFormValidation } from '@/hooks/use-form-validation';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
 import type { PensionItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import {
+  type ContactSettingsInput,
+  contactSettingsSchema,
+} from '@/lib/validations/pensions.schema';
 
 export type LandlordPensionsScreenProps = {
   className?: string;
@@ -62,29 +68,44 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
     title: string;
     subtitle?: string;
   } | null>(null);
-  const [defaultContactName, setDefaultContactName] = useState(defaultContact.name);
-  const [defaultContactPhone, setDefaultContactPhone] = useState(defaultContact.phone);
   const [contactSaveFeedback, setContactSaveFeedback] = useState(false);
   const [pensionToToggle, setPensionToToggle] = useState<{
     pension: PensionItem;
     targetActive: boolean;
   } | null>(null);
   const [isTogglingActive, setIsTogglingActive] = useState<boolean>(false);
+  const defaultContactFormRef = useRef<HTMLFormElement>(null);
+
+  const {
+    values: defaultContactValues,
+    errors: defaultContactErrors,
+    handleChange: handleDefaultContactChange,
+    handleBlur: handleDefaultContactBlur,
+    handleSubmit: handleDefaultContactSubmit,
+    resetForm: resetDefaultContactForm,
+  } = useFormValidation<ContactSettingsInput>({
+    schema: contactSettingsSchema,
+    initialValues: {
+      contactName: defaultContact.name,
+      contactPhone: defaultContact.phone,
+    },
+    formRef: defaultContactFormRef,
+    onSubmit: async (validData) => {
+      updateDefaultContact({
+        name: validData.contactName.trim(),
+        phone: validData.contactPhone.trim(),
+      });
+      setContactSaveFeedback(true);
+      setTimeout(() => setContactSaveFeedback(false), 3000);
+    },
+  });
 
   useEffect(() => {
-    setDefaultContactName(defaultContact.name);
-    setDefaultContactPhone(defaultContact.phone);
-  }, [defaultContact]);
-
-  const handleSaveDefaultContact = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateDefaultContact({
-      name: defaultContactName.trim(),
-      phone: defaultContactPhone.trim(),
+    resetDefaultContactForm({
+      contactName: defaultContact.name,
+      contactPhone: defaultContact.phone,
     });
-    setContactSaveFeedback(true);
-    setTimeout(() => setContactSaveFeedback(false), 3000);
-  };
+  }, [defaultContact.name, defaultContact.phone, resetDefaultContactForm]);
 
   const stats = useMemo(() => {
     const totalPensions = pensions.length;
@@ -476,8 +497,8 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                   Datos de Contacto Predeterminados
                 </h2>
                 <span className="text-[11px] text-muted-foreground">
-                  {defaultContactName
-                    ? `${defaultContactName} (${defaultContactPhone || 'Sin teléfono'})`
+                  {defaultContactValues.contactName
+                    ? `${defaultContactValues.contactName} (${defaultContactValues.contactPhone || 'Sin teléfono'})`
                     : 'Configura tus datos de contacto por defecto'}
                 </span>
               </div>
@@ -505,48 +526,55 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
 
           <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-0 border-t border-border/40">
             <form
-              onSubmit={handleSaveDefaultContact}
+              ref={defaultContactFormRef}
+              onSubmit={handleDefaultContactSubmit}
               noValidate
-              className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end pt-3"
+              className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start pt-3"
             >
-              <div className="sm:col-span-5">
-                <label
-                  htmlFor="default-contact-name-input"
-                  className="block text-[11px] font-medium text-foreground mb-1"
-                >
-                  Nombre del Anfitrión General
-                </label>
+              <FormField
+                id="default-contact-name-input"
+                label="Nombre del Anfitrión General"
+                required
+                error={defaultContactErrors.contactName}
+                className="sm:col-span-5"
+              >
                 <input
                   id="default-contact-name-input"
                   type="text"
                   maxLength={70}
-                  value={defaultContactName}
-                  onChange={(e) => setDefaultContactName(filterAlphabeticName(e.target.value))}
+                  value={defaultContactValues.contactName}
+                  onChange={(e) =>
+                    handleDefaultContactChange('contactName', filterAlphabeticName(e.target.value))
+                  }
+                  onBlur={() => handleDefaultContactBlur('contactName')}
                   placeholder="Ej: Propietario Demo"
                   className="min-h-[40px] w-full rounded-lg border border-border/70 bg-background px-3 text-xs font-medium text-foreground focus:border-foreground/40 focus:outline-none transition-colors"
                 />
-              </div>
+              </FormField>
 
-              <div className="sm:col-span-4">
-                <label
-                  htmlFor="default-contact-phone-input"
-                  className="block text-[11px] font-medium text-foreground mb-1"
-                >
-                  WhatsApp de Contacto (Chile)
-                </label>
+              <FormField
+                id="default-contact-phone-input"
+                label="WhatsApp de Contacto (Chile)"
+                required
+                error={defaultContactErrors.contactPhone}
+                className="sm:col-span-4"
+              >
                 <input
                   id="default-contact-phone-input"
                   type="tel"
                   inputMode="tel"
                   maxLength={16}
-                  value={defaultContactPhone}
-                  onChange={(e) => setDefaultContactPhone(formatChileanPhone(e.target.value))}
+                  value={defaultContactValues.contactPhone}
+                  onChange={(e) =>
+                    handleDefaultContactChange('contactPhone', formatChileanPhone(e.target.value))
+                  }
+                  onBlur={() => handleDefaultContactBlur('contactPhone')}
                   placeholder="+56 9 8765 4321"
                   className="min-h-[40px] w-full rounded-lg border border-border/70 bg-background px-3 text-xs font-medium text-foreground focus:border-foreground/40 focus:outline-none transition-colors"
                 />
-              </div>
+              </FormField>
 
-              <div className="sm:col-span-3">
+              <div className="sm:col-span-3 sm:pt-5.5">
                 <Button
                   type="submit"
                   className="min-h-[40px] w-full rounded-lg bg-foreground text-background font-semibold text-xs hover:opacity-90 transition cursor-pointer shadow-none"

@@ -27,6 +27,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { PensionLocationPickerMap } from '@/components/landlord/pension-location-picker-map';
 import { Button } from '@/components/ui/button';
+import { FormField } from '@/components/ui/form-field';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import {
   ResponsiveModal,
@@ -35,6 +36,7 @@ import {
   ResponsiveModalTitle,
 } from '@/components/ui/responsive-modal';
 import { useFormDraft } from '@/hooks/use-form-draft';
+import { useFormValidation } from '@/hooks/use-form-validation';
 import { isApiSuccess } from '@/lib/api-response';
 import { isSubstantivePensionDraft } from '@/lib/draft-validators';
 import { translateApiError } from '@/lib/error-translator';
@@ -42,6 +44,10 @@ import { clampNumber } from '@/lib/format-utils';
 import type { CityInfo, CreatePensionDto, PensionDetailDto } from '@/lib/types';
 import { SANTIAGO_COORDINATES, useUserLocation } from '@/lib/use-user-location';
 import { cn } from '@/lib/utils';
+import {
+  type PensionEditorFormInput,
+  pensionEditorFormSchema,
+} from '@/lib/validations/pensions.schema';
 import {
   fetchCities,
   findClosestCity,
@@ -213,6 +219,28 @@ export function PensionEditorDrawer({
   const [isForwardGeocoding, setIsForwardGeocoding] = useState<boolean>(false);
   const [cities, setCities] = useState<CityInfo[]>([]);
   const [citySearchQuery, setCitySearchQuery] = useState<string>('');
+  const formElementRef = useRef<HTMLFormElement>(null);
+
+  const {
+    errors: fieldErrors,
+    touched: fieldTouched,
+    handleChange: handleValidationChange,
+    handleBlur: handleValidationBlur,
+    validateForm,
+    resetForm: resetValidation,
+  } = useFormValidation<PensionEditorFormInput>({
+    schema: pensionEditorFormSchema,
+    formRef: formElementRef,
+    initialValues: {
+      title: '',
+      description: '',
+      address: '',
+      city: '',
+      neighborhood: '',
+      baseMonthlyPrice: '',
+      deposit: '',
+    },
+  });
 
   const allDrawerImages = useMemo(
     () => [...form.images, ...newImagePreviews],
@@ -295,15 +323,17 @@ export function PensionEditorDrawer({
           (prev.latitude === SANTIAGO_COORDINATES.latitude &&
             prev.longitude === SANTIAGO_COORDINATES.longitude);
         if (!isDefault) return prev;
+        const detectedCity = prev.city || currentCity?.name || 'Santiago';
+        handleValidationChange('city', detectedCity);
         return {
           ...prev,
           latitude: userLocation.latitude,
           longitude: userLocation.longitude,
-          city: prev.city || currentCity?.name || 'Santiago',
+          city: detectedCity,
         };
       });
     }
-  }, [isOpen, userLocation, currentCity]);
+  }, [isOpen, userLocation, currentCity, handleValidationChange]);
 
   const { isBannerVisible, restoreDraft, clearDraft } = useFormDraft<PensionFormState>({
     storageKey: 'landlord-new-pension',
@@ -324,14 +354,24 @@ export function PensionEditorDrawer({
     setNewImageFiles([]);
     setNewImagePreviews([]);
     hasUserSelectedLocationRef.current = false;
+    const defaultCity = currentCity?.name || '';
     setForm({
       ...INITIAL_FORM_STATE,
       latitude: userLocation.latitude || SANTIAGO_COORDINATES.latitude,
       longitude: userLocation.longitude || SANTIAGO_COORDINATES.longitude,
-      city: currentCity?.name || '',
+      city: defaultCity,
+    });
+    resetValidation({
+      title: '',
+      description: '',
+      address: '',
+      city: defaultCity,
+      neighborhood: '',
+      baseMonthlyPrice: '',
+      deposit: '',
     });
     setErrorMessage(null);
-  }, [userLocation, currentCity]);
+  }, [userLocation, currentCity, resetValidation]);
 
   const handleCancel = () => {
     clearDraft();
@@ -367,6 +407,15 @@ export function PensionEditorDrawer({
       };
       hasUserSelectedLocationRef.current = true;
       setForm(sanitizedDraft);
+      resetValidation({
+        title: sanitizedDraft.title,
+        description: sanitizedDraft.description,
+        address: sanitizedDraft.address,
+        city: sanitizedDraft.city,
+        neighborhood: sanitizedDraft.neighborhood,
+        baseMonthlyPrice: sanitizedDraft.baseMonthlyPrice,
+        deposit: sanitizedDraft.deposit,
+      });
       toast.success('Borrador restaurado');
     }
   };
@@ -375,6 +424,7 @@ export function PensionEditorDrawer({
     const digits = value.replace(/\D/g, '');
     if (!digits) {
       setForm((prev) => ({ ...prev, baseMonthlyPrice: '' }));
+      handleValidationChange('baseMonthlyPrice', '');
       return;
     }
     const num = Number.parseInt(digits, 10);
@@ -382,13 +432,16 @@ export function PensionEditorDrawer({
     if (clamped.wasClamped && num > 2000000) {
       toast.info('El precio base mensual máximo permitido es $2.000.000 CLP.');
     }
-    setForm((prev) => ({ ...prev, baseMonthlyPrice: clamped.value.toString() }));
+    const nextPrice = clamped.value.toString();
+    setForm((prev) => ({ ...prev, baseMonthlyPrice: nextPrice }));
+    handleValidationChange('baseMonthlyPrice', nextPrice);
   };
 
   const handleDepositChange = (value: string) => {
     const digits = value.replace(/\D/g, '');
     if (!digits) {
       setForm((prev) => ({ ...prev, deposit: '' }));
+      handleValidationChange('deposit', '');
       return;
     }
     const num = Number.parseInt(digits, 10);
@@ -396,11 +449,15 @@ export function PensionEditorDrawer({
     if (clamped.wasClamped && num > 1500000) {
       toast.info('El mes de garantía máximo permitido es $1.500.000 CLP.');
     }
-    setForm((prev) => ({ ...prev, deposit: clamped.value.toString() }));
+    const nextDeposit = clamped.value.toString();
+    setForm((prev) => ({ ...prev, deposit: nextDeposit }));
+    handleValidationChange('deposit', nextDeposit);
   };
 
   const handleCityChange = async (cityName: string) => {
     hasUserSelectedLocationRef.current = true;
+    handleValidationChange('city', cityName);
+    handleValidationBlur('city');
     const foundCity = cities.find((c) => c.name.toLowerCase() === cityName.toLowerCase());
     const hasValidCoords =
       foundCity &&
@@ -485,14 +542,21 @@ export function PensionEditorDrawer({
                 ).name
               : result.city;
 
-          setForm((prev) => ({
-            ...prev,
-            latitude: lat,
-            longitude: lng,
-            city: resolvedCity,
-            neighborhood: result.neighborhood || prev.neighborhood,
-            address: result.address || prev.address,
-          }));
+          setForm((prev) => {
+            const nextNeighborhood = result.neighborhood || prev.neighborhood;
+            const nextAddress = result.address || prev.address;
+            handleValidationChange('city', resolvedCity);
+            handleValidationChange('neighborhood', nextNeighborhood);
+            handleValidationChange('address', nextAddress);
+            return {
+              ...prev,
+              latitude: lat,
+              longitude: lng,
+              city: resolvedCity,
+              neighborhood: nextNeighborhood,
+              address: nextAddress,
+            };
+          });
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -500,7 +564,7 @@ export function PensionEditorDrawer({
         }
       }
     },
-    [cities],
+    [cities, handleValidationChange],
   );
 
   useEffect(() => {
@@ -582,46 +646,21 @@ export function PensionEditorDrawer({
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    setErrorMessage(null);
 
-    const trimmedTitle = form.title.trim();
-    const trimmedDescription = form.description.trim();
-    const trimmedAddress = form.address.trim();
-    const trimmedCity = form.city.trim();
-    const trimmedNeighborhood = form.neighborhood.trim();
-    const parsedPrice = Number(form.baseMonthlyPrice);
-
-    if (trimmedTitle.length < 3) {
-      setErrorMessage('El título de la pensión debe tener al menos 3 caracteres.');
+    const validation = validateForm();
+    if (!validation.isValid || !validation.data) {
       return;
     }
 
-    if (trimmedDescription.length < 10) {
-      setErrorMessage('La descripción debe tener al menos 10 caracteres.');
-      return;
-    }
-
-    if (trimmedAddress.length < 3) {
-      setErrorMessage('Ingresa una dirección válida para la pensión.');
-      return;
-    }
-
-    if (trimmedCity.length < 2) {
-      setErrorMessage('Selecciona o ingresa la ciudad donde se ubica.');
-      return;
-    }
-
-    if (trimmedNeighborhood.length < 2) {
-      setErrorMessage('Ingresa la comuna o barrio (ej. San Joaquín, Centro).');
-      return;
-    }
-
-    if (Number.isNaN(parsedPrice) || parsedPrice <= 0) {
-      setErrorMessage('Ingresa un valor mensual de arriendo base válido en pesos chilenos.');
-      return;
-    }
+    const trimmedTitle = validation.data.title;
+    const trimmedDescription = validation.data.description;
+    const trimmedAddress = validation.data.address;
+    const trimmedCity = validation.data.city;
+    const trimmedNeighborhood = validation.data.neighborhood;
+    const parsedPrice = Number(validation.data.baseMonthlyPrice);
 
     setIsSubmitting(true);
-    setErrorMessage(null);
 
     try {
       let uploadedUrls: string[] = [];
@@ -741,6 +780,7 @@ export function PensionEditorDrawer({
         </ResponsiveModalHeader>
 
         <form
+          ref={formElementRef}
           onSubmit={handleSubmit}
           noValidate
           className="flex-1 flex flex-col min-h-0 overflow-hidden"
@@ -781,46 +821,53 @@ export function PensionEditorDrawer({
                 <span>1. Información General</span>
               </div>
 
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="pension-title-input"
-                  className="block text-xs font-semibold text-foreground"
-                >
-                  Título de la Publicación <span className="text-destructive">*</span>
-                </label>
+              <FormField
+                id="pension-title-input"
+                label="Título de la Publicación"
+                required
+                error={fieldTouched.title ? fieldErrors.title : undefined}
+              >
                 <input
                   id="pension-title-input"
                   type="text"
                   maxLength={100}
                   placeholder="Ej: Residencia Universitaria Los Leones"
                   value={form.title}
-                  onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-                  className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setForm((prev) => ({ ...prev, title: val }));
+                    handleValidationChange('title', val);
+                  }}
+                  onBlur={() => handleValidationBlur('title')}
+                  className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="pension-description-input"
-                  className="block text-xs font-semibold text-foreground"
-                >
-                  Descripción General <span className="text-destructive">*</span>
-                </label>
+              <FormField
+                id="pension-description-input"
+                label="Descripción General"
+                required
+                hint="Mínimo 10 caracteres"
+                error={fieldTouched.description ? fieldErrors.description : undefined}
+              >
                 <textarea
                   id="pension-description-input"
                   rows={3}
                   maxLength={1500}
                   placeholder="Describe el ambiente, cercanía a campus universitarios, servicios cercanos y comodidades para estudiantes..."
                   value={form.description}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const val = e.target.value;
                     setForm((prev) => ({
                       ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none"
+                      description: val,
+                    }));
+                    handleValidationChange('description', val);
+                  }}
+                  onBlur={() => handleValidationBlur('description')}
+                  className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition resize-none"
                 />
-              </div>
+              </FormField>
             </div>
 
             <div className="space-y-3">
@@ -936,111 +983,126 @@ export function PensionEditorDrawer({
                 <span>3. Ubicación y Ciudad</span>
               </div>
 
-              <div className="space-y-2">
-                <label
-                  htmlFor="city-combobox-input"
-                  className="block text-xs font-semibold text-foreground"
-                >
-                  Ciudad <span className="text-destructive">*</span>
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <input
-                    id="city-combobox-input"
-                    type="text"
-                    role="combobox"
-                    aria-autocomplete="list"
-                    aria-expanded={true}
-                    aria-controls="city-combobox-options"
-                    value={citySearchQuery}
-                    onChange={(e) => setCitySearchQuery(e.target.value)}
-                    placeholder="Buscar o filtrar ciudad..."
-                    className="h-9 w-full rounded-lg border border-border bg-background pl-8.5 pr-8 text-xs text-foreground placeholder:text-muted-foreground/80 focus:border-primary focus:outline-none transition-colors"
-                  />
-                  {citySearchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setCitySearchQuery('')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
-                      aria-label="Limpiar búsqueda de ciudad"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-
-                <div
-                  id="city-combobox-options"
-                  role="listbox"
-                  className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1"
-                >
-                  {filteredCities.map((c) => {
-                    const isSelected = form.city.toLowerCase() === c.name.toLowerCase();
-                    return (
-                      <button
-                        key={c.id || c.name}
-                        type="button"
-                        onClick={() => handleCityChange(c.name)}
+              <FormField
+                id="city-combobox-input"
+                label="Ciudad"
+                required
+                error={fieldTouched.city ? fieldErrors.city : undefined}
+              >
+                {(injected) => (
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                      <input
+                        id={injected.id}
+                        aria-invalid={injected['aria-invalid']}
+                        aria-describedby={injected['aria-describedby']}
+                        type="text"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-expanded={true}
+                        aria-controls="city-combobox-options"
+                        value={citySearchQuery}
+                        onChange={(e) => setCitySearchQuery(e.target.value)}
+                        onBlur={() => handleValidationBlur('city')}
+                        placeholder="Buscar o filtrar ciudad..."
                         className={cn(
-                          'px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer',
-                          isSelected
-                            ? 'bg-primary text-primary-foreground font-bold shadow-xs'
-                            : 'bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/50',
+                          'h-9 w-full rounded-lg border border-border bg-background pl-8.5 pr-8 text-xs text-foreground placeholder:text-muted-foreground/80 focus:border-primary focus:outline-none transition-colors',
+                          injected['aria-invalid'] && 'border-destructive focus:border-destructive',
                         )}
-                      >
-                        {c.name}
-                      </button>
-                    );
-                  })}
-                  {filteredCities.length === 0 && (
-                    <span className="text-xs text-muted-foreground py-1">
-                      No se encontraron ciudades que coincidan.
-                    </span>
-                  )}
-                </div>
-              </div>
+                      />
+                      {citySearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setCitySearchQuery('')}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                          aria-label="Limpiar búsqueda de ciudad"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div
+                      id="city-combobox-options"
+                      role="listbox"
+                      className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1"
+                    >
+                      {filteredCities.map((c) => {
+                        const isSelected = form.city.toLowerCase() === c.name.toLowerCase();
+                        return (
+                          <button
+                            key={c.id || c.name}
+                            type="button"
+                            onClick={() => handleCityChange(c.name)}
+                            className={cn(
+                              'px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer',
+                              isSelected
+                                ? 'bg-primary text-primary-foreground font-bold shadow-xs'
+                                : 'bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/50',
+                            )}
+                          >
+                            {c.name}
+                          </button>
+                        );
+                      })}
+                      {filteredCities.length === 0 && (
+                        <span className="text-xs text-muted-foreground py-1">
+                          No se encontraron ciudades que coincidan.
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </FormField>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="pension-neighborhood-input"
-                    className="block text-xs font-semibold text-foreground"
-                  >
-                    Comuna o Barrio <span className="text-destructive">*</span>
-                  </label>
+                <FormField
+                  id="pension-neighborhood-input"
+                  label="Comuna o Barrio"
+                  required
+                  error={fieldTouched.neighborhood ? fieldErrors.neighborhood : undefined}
+                >
                   <input
                     id="pension-neighborhood-input"
                     type="text"
                     maxLength={60}
                     placeholder="Ej: San Joaquín, Centro..."
                     value={form.neighborhood}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const val = e.target.value;
                       setForm((prev) => ({
                         ...prev,
-                        neighborhood: e.target.value,
-                      }))
-                    }
-                    className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                        neighborhood: val,
+                      }));
+                      handleValidationChange('neighborhood', val);
+                    }}
+                    onBlur={() => handleValidationBlur('neighborhood')}
+                    className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="pension-address-input"
-                    className="block text-xs font-semibold text-foreground"
-                  >
-                    Dirección Exacta <span className="text-destructive">*</span>
-                  </label>
+                <FormField
+                  id="pension-address-input"
+                  label="Dirección Exacta"
+                  required
+                  error={fieldTouched.address ? fieldErrors.address : undefined}
+                >
                   <input
                     id="pension-address-input"
                     type="text"
                     maxLength={120}
                     placeholder="Ej: Av. Vicuña Mackenna 4860"
                     value={form.address}
-                    onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))}
-                    className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setForm((prev) => ({ ...prev, address: val }));
+                      handleValidationChange('address', val);
+                    }}
+                    onBlur={() => handleValidationBlur('address')}
+                    className="w-full min-h-12 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
                   />
-                </div>
+                </FormField>
               </div>
 
               <div className="space-y-2 pt-1">
@@ -1079,63 +1141,74 @@ export function PensionEditorDrawer({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="pension-price-input"
-                    className="block text-xs font-semibold text-foreground"
-                  >
-                    Precio Base Mensual (CLP) <span className="text-destructive">*</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">
-                      $
-                    </span>
-                    <input
-                      id="pension-price-input"
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder="250.000"
-                      value={
-                        form.baseMonthlyPrice
-                          ? Number(form.baseMonthlyPrice).toLocaleString('es-CL')
-                          : ''
-                      }
-                      onChange={(e) => handlePriceChange(e.target.value)}
-                      className="w-full min-h-12 rounded-xl border border-border bg-background pl-8 pr-3.5 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-                    />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">
-                    Valor referencial de la habitación más económica.
-                  </span>
-                </div>
+                <FormField
+                  id="pension-price-input"
+                  label="Precio Base Mensual (CLP)"
+                  required
+                  hint="Valor referencial de la habitación más económica."
+                  error={fieldTouched.baseMonthlyPrice ? fieldErrors.baseMonthlyPrice : undefined}
+                >
+                  {(injected) => (
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">
+                        $
+                      </span>
+                      <input
+                        id={injected.id}
+                        aria-invalid={injected['aria-invalid']}
+                        aria-describedby={injected['aria-describedby']}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        placeholder="250.000"
+                        value={
+                          form.baseMonthlyPrice
+                            ? Number(form.baseMonthlyPrice).toLocaleString('es-CL')
+                            : ''
+                        }
+                        onChange={(e) => handlePriceChange(e.target.value)}
+                        onBlur={() => handleValidationBlur('baseMonthlyPrice')}
+                        className={cn(
+                          'w-full min-h-12 rounded-xl border border-border bg-background pl-8 pr-3.5 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition',
+                          injected['aria-invalid'] &&
+                            'border-destructive focus:border-destructive focus:ring-destructive/20',
+                        )}
+                      />
+                    </div>
+                  )}
+                </FormField>
 
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="pension-deposit-input"
-                    className="block text-xs font-semibold text-foreground"
-                  >
-                    Mes de Garantía / Depósito (CLP)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">
-                      $
-                    </span>
-                    <input
-                      id="pension-deposit-input"
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      placeholder="250.000 (opcional)"
-                      value={form.deposit ? Number(form.deposit).toLocaleString('es-CL') : ''}
-                      onChange={(e) => handleDepositChange(e.target.value)}
-                      className="w-full min-h-12 rounded-xl border border-border bg-background pl-8 pr-3.5 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-                    />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">
-                    Opcional. Deja vacío si no solicitas garantía previa.
-                  </span>
-                </div>
+                <FormField
+                  id="pension-deposit-input"
+                  label="Mes de Garantía / Depósito (CLP)"
+                  hint="Deja vacío si no solicitas garantía previa."
+                  error={fieldTouched.deposit ? fieldErrors.deposit : undefined}
+                >
+                  {(injected) => (
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">
+                        $
+                      </span>
+                      <input
+                        id={injected.id}
+                        aria-invalid={injected['aria-invalid']}
+                        aria-describedby={injected['aria-describedby']}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        placeholder="250.000 (opcional)"
+                        value={form.deposit ? Number(form.deposit).toLocaleString('es-CL') : ''}
+                        onChange={(e) => handleDepositChange(e.target.value)}
+                        onBlur={() => handleValidationBlur('deposit')}
+                        className={cn(
+                          'w-full min-h-12 rounded-xl border border-border bg-background pl-8 pr-3.5 py-2.5 text-sm font-semibold text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition',
+                          injected['aria-invalid'] &&
+                            'border-destructive focus:border-destructive focus:ring-destructive/20',
+                        )}
+                      />
+                    </div>
+                  )}
+                </FormField>
               </div>
             </div>
 

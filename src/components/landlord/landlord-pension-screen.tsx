@@ -48,6 +48,7 @@ import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FormField } from '@/components/ui/form-field';
 import {
   ResponsiveModal,
   ResponsiveModalContent,
@@ -61,6 +62,7 @@ import {
   LandlordPensionSkeleton,
 } from '@/components/ui/skeletons/landlord-pension-skeleton';
 import { useLandlord } from '@/contexts/landlord-context';
+import { useFormValidation } from '@/hooks/use-form-validation';
 import { isApiSuccess } from '@/lib/api-response';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
 import type {
@@ -71,6 +73,10 @@ import type {
   UpdatePensionDto,
 } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import {
+  type ContactSettingsInput,
+  contactSettingsSchema,
+} from '@/lib/validations/pensions.schema';
 import { pensionsService } from '@/services/pensions.service';
 
 export type LandlordPensionScreenProps = {
@@ -256,6 +262,16 @@ export function LandlordPensionScreen({
   const [activeSection, setActiveSection] = useState<'all' | 'services' | 'rules' | 'contact'>(
     'all',
   );
+  const contactCardRef = useRef<HTMLDivElement>(null);
+
+  const contactValidation = useFormValidation<ContactSettingsInput>({
+    schema: contactSettingsSchema,
+    initialValues: {
+      contactName: '',
+      contactPhone: '',
+    },
+    formRef: contactCardRef,
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -283,6 +299,8 @@ export function LandlordPensionScreen({
   }, []);
 
   const effectivePensionId = propPensionId || activePension?.id || '';
+
+  const { resetForm: resetContactValidation } = contactValidation;
 
   const syncFormFromPension = useCallback(
     (
@@ -320,6 +338,8 @@ export function LandlordPensionScreen({
             : []
       ).filter((s) => !REDUNDANT_UTILITY_SLUGS.has(s));
 
+      const displayPhone = normalizePhoneToDisplay(resolvedPhone);
+
       setForm({
         waterIncluded: Boolean(p.waterIncluded),
         electricityIncluded: Boolean(p.electricityIncluded),
@@ -336,10 +356,15 @@ export function LandlordPensionScreen({
         genderPreference: normalizedGender,
         useCustomContact: isCustomContact,
         contactName: resolvedName,
-        contactPhone: normalizePhoneToDisplay(resolvedPhone),
+        contactPhone: displayPhone,
+      });
+
+      resetContactValidation({
+        contactName: resolvedName,
+        contactPhone: displayPhone,
       });
     },
-    [defaultContact, getPensionContact],
+    [defaultContact, getPensionContact, resetContactValidation],
   );
 
   const loadPensionData = useCallback(async () => {
@@ -438,16 +463,28 @@ export function LandlordPensionScreen({
   };
 
   const handlePhoneChange = (value: string) => {
+    const formatted = formatChileanPhone(value);
     setForm((prev) => ({
       ...prev,
-      contactPhone: formatChileanPhone(value),
+      contactPhone: formatted,
     }));
+    contactValidation.handleChange('contactPhone', formatted);
   };
 
   const handleSave = async () => {
     if (!activePension?.id) {
       setSaveErrorMessage('No hay una pensión seleccionada para guardar.');
       return;
+    }
+
+    if (form.useCustomContact) {
+      if (activeSection !== 'all' && activeSection !== 'contact') {
+        setActiveSection('contact');
+      }
+      const contactValid = contactValidation.validateForm();
+      if (!contactValid.isValid) {
+        return;
+      }
     }
 
     setIsSaving(true);
@@ -983,19 +1020,23 @@ export function LandlordPensionScreen({
                   role="switch"
                   aria-checked={form.useCustomContact}
                   aria-label="Personalizar datos de contacto para esta pensión"
-                  onClick={() =>
-                    setForm((prev) => {
-                      const nextCustom = !prev.useCustomContact;
-                      return {
-                        ...prev,
-                        useCustomContact: nextCustom,
-                        contactName: nextCustom ? '' : defaultContact.name,
-                        contactPhone: nextCustom
-                          ? ''
-                          : normalizePhoneToDisplay(defaultContact.phone),
-                      };
-                    })
-                  }
+                  onClick={() => {
+                    const nextCustom = !form.useCustomContact;
+                    const nextName = nextCustom ? '' : defaultContact.name;
+                    const nextPhone = nextCustom
+                      ? ''
+                      : normalizePhoneToDisplay(defaultContact.phone);
+                    setForm((prev) => ({
+                      ...prev,
+                      useCustomContact: nextCustom,
+                      contactName: nextName,
+                      contactPhone: nextPhone,
+                    }));
+                    resetContactValidation({
+                      contactName: nextName,
+                      contactPhone: nextPhone,
+                    });
+                  }}
                   className={cn(
                     'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                     form.useCustomContact ? 'bg-foreground' : 'bg-muted-foreground/30',
@@ -1014,6 +1055,7 @@ export function LandlordPensionScreen({
 
           <CardContent className="p-4 sm:p-5 space-y-4 flex-1 flex flex-col justify-between">
             <div
+              ref={contactCardRef}
               className={cn(
                 'space-y-3.5 rounded-xl p-3.5 transition-all duration-200',
                 form.useCustomContact
@@ -1021,25 +1063,33 @@ export function LandlordPensionScreen({
                   : 'border border-border/40 bg-muted/20 opacity-80',
               )}
             >
-              <div>
-                <label
-                  htmlFor="landlord-contact-name"
-                  className="block text-xs font-medium text-foreground mb-1"
-                >
-                  Nombre del Anfitrión o Administrador
-                </label>
+              <FormField
+                id="landlord-contact-name"
+                label="Nombre del Anfitrión o Administrador"
+                required={form.useCustomContact}
+                error={form.useCustomContact ? contactValidation.errors.contactName : undefined}
+              >
                 <input
                   id="landlord-contact-name"
                   type="text"
                   maxLength={70}
                   disabled={!form.useCustomContact}
                   value={form.useCustomContact ? form.contactName : defaultContact.name}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const nextName = filterAlphabeticName(e.target.value);
                     setForm((prev) => ({
                       ...prev,
-                      contactName: filterAlphabeticName(e.target.value),
-                    }))
-                  }
+                      contactName: nextName,
+                    }));
+                    if (form.useCustomContact) {
+                      contactValidation.handleChange('contactName', nextName);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (form.useCustomContact) {
+                      contactValidation.handleBlur('contactName');
+                    }
+                  }}
                   placeholder={defaultContact.name || 'Ej: Sra. Carmen Gloria'}
                   className={cn(
                     'min-h-[42px] w-full rounded-lg border border-border/70 px-3 text-xs placeholder:text-muted-foreground focus:border-foreground/40 focus:outline-none transition-colors',
@@ -1048,43 +1098,54 @@ export function LandlordPensionScreen({
                       : 'bg-muted/30 text-muted-foreground cursor-not-allowed',
                   )}
                 />
-              </div>
+              </FormField>
 
-              <div>
-                <label
-                  htmlFor="landlord-contact-whatsapp"
-                  className="block text-xs font-medium text-foreground mb-1"
-                >
-                  WhatsApp de Contacto (Chile)
-                </label>
+              <FormField
+                id="landlord-contact-whatsapp"
+                label="WhatsApp de Contacto (Chile)"
+                required={form.useCustomContact}
+                error={form.useCustomContact ? contactValidation.errors.contactPhone : undefined}
+              >
+                {(injected) => (
+                  <div className="relative flex items-center">
+                    <div className="absolute left-3 flex items-center text-muted-foreground pointer-events-none">
+                      <Phone className="h-3.5 w-3.5" />
+                    </div>
 
-                <div className="relative flex items-center">
-                  <div className="absolute left-3 flex items-center text-muted-foreground pointer-events-none">
-                    <Phone className="h-3.5 w-3.5" />
+                    <input
+                      id={injected.id}
+                      aria-invalid={injected['aria-invalid']}
+                      aria-describedby={injected['aria-describedby']}
+                      type="tel"
+                      inputMode="tel"
+                      maxLength={16}
+                      disabled={!form.useCustomContact}
+                      value={
+                        form.useCustomContact
+                          ? form.contactPhone
+                          : normalizePhoneToDisplay(defaultContact.phone)
+                      }
+                      onChange={(e) => handlePhoneChange(e.target.value)}
+                      onBlur={() => {
+                        if (form.useCustomContact) {
+                          contactValidation.handleBlur('contactPhone');
+                        }
+                      }}
+                      placeholder={
+                        normalizePhoneToDisplay(defaultContact.phone) || '+56 9 1234 5678'
+                      }
+                      className={cn(
+                        'min-h-[42px] w-full rounded-lg border border-border/70 pl-8.5 pr-3 text-xs placeholder:text-muted-foreground focus:border-foreground/40 focus:outline-none transition-colors',
+                        form.useCustomContact
+                          ? 'bg-background text-foreground'
+                          : 'bg-muted/30 text-muted-foreground cursor-not-allowed',
+                        injected['aria-invalid'] &&
+                          'border-destructive focus:border-destructive focus:ring-destructive/20',
+                      )}
+                    />
                   </div>
-
-                  <input
-                    id="landlord-contact-whatsapp"
-                    type="tel"
-                    inputMode="tel"
-                    maxLength={16}
-                    disabled={!form.useCustomContact}
-                    value={
-                      form.useCustomContact
-                        ? form.contactPhone
-                        : normalizePhoneToDisplay(defaultContact.phone)
-                    }
-                    onChange={(e) => handlePhoneChange(e.target.value)}
-                    placeholder={normalizePhoneToDisplay(defaultContact.phone) || '+56 9 1234 5678'}
-                    className={cn(
-                      'min-h-[42px] w-full rounded-lg border border-border/70 pl-8.5 pr-3 text-xs placeholder:text-muted-foreground focus:border-foreground/40 focus:outline-none transition-colors',
-                      form.useCustomContact
-                        ? 'bg-background text-foreground'
-                        : 'bg-muted/30 text-muted-foreground cursor-not-allowed',
-                    )}
-                  />
-                </div>
-              </div>
+                )}
+              </FormField>
             </div>
           </CardContent>
         </Card>

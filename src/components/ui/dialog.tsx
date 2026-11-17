@@ -41,16 +41,27 @@ function DialogOverlay({
 
 function DialogContent({
   className,
+  overlayClassName,
+  viewportClassName,
   children,
   showClose = true,
   fullScreen = false,
   ...props
-}: DialogPrimitive.Popup.Props & { showClose?: boolean; fullScreen?: boolean }) {
+}: DialogPrimitive.Popup.Props & {
+  showClose?: boolean;
+  fullScreen?: boolean;
+  overlayClassName?: string;
+  viewportClassName?: string;
+}) {
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay className={overlayClassName} />
       <DialogPrimitive.Viewport
-        className={cn('fixed inset-0 z-50 flex items-center justify-center', !fullScreen && 'p-4')}
+        className={cn(
+          'fixed inset-0 z-50 flex items-center justify-center',
+          !fullScreen && 'p-4',
+          viewportClassName,
+        )}
       >
         <DialogPrimitive.Popup
           data-slot="dialog-content"

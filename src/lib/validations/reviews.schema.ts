@@ -65,5 +65,20 @@ export const createReviewSchema = z.object({
 
 export const updateReviewSchema = createReviewSchema.partial();
 
+export const publishReviewFormSchema = z.object({
+  overallRating: z
+    .number({ message: 'Selecciona una calificación general' })
+    .int()
+    .min(1, 'La calificación mínima es 1 estrella')
+    .max(5, 'La calificación máxima es 5 estrellas'),
+  stayDuration: stayDurationCategoryEnum,
+  comment: z
+    .string()
+    .trim()
+    .min(15, 'Tu reseña debe tener al menos 15 caracteres')
+    .max(1000, 'Tu reseña no puede exceder los 1000 caracteres'),
+});
+
 export type CreateReviewInput = z.infer<typeof createReviewSchema>;
 export type UpdateReviewInput = z.infer<typeof updateReviewSchema>;
+export type PublishReviewFormInput = z.infer<typeof publishReviewFormSchema>;

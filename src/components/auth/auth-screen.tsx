@@ -1,26 +1,32 @@
 'use client';
 
-import { ArrowRight, Home, Lock, Mail, Phone, User, X } from 'lucide-react';
+import { AlertCircle, ArrowRight, Home, Lock, Mail, Phone, User, X } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { EmailCheckStep } from '@/components/auth/email-check-step';
 import { BrandLogo } from '@/components/ui/brand-logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { FormField } from '@/components/ui/form-field';
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer';
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalFooter,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
+import { useFormValidation } from '@/hooks/use-form-validation';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
 import { translateApiError } from '@/lib/error-translator';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
+import {
+  type LandlordRegisterInput,
+  type LoginInput,
+  landlordRegisterSchema,
+  loginSchema,
+} from '@/lib/validations/auth.schema';
 import { authService } from '@/services/auth.service';
 
 export type AuthScreenProps = {
@@ -29,96 +35,93 @@ export type AuthScreenProps = {
   isModal?: boolean;
 };
 
+const DEFAULT_LANDLORD_LOGIN: LoginInput = {
+  email: 'propietario.demo@buscatunido.cl',
+  password: 'Password123!',
+};
+
+const EMPTY_LANDLORD_REGISTER: LandlordRegisterInput = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  password: '',
+};
+
 export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenProps = {}) {
   const { login, setSession } = useAuth();
   const [landlordMode, setLandlordMode] = useState<'login' | 'register'>('login');
-  const [landlordEmail, setLandlordEmail] = useState('propietario.demo@buscatunido.cl');
-  const [landlordPassword, setLandlordPassword] = useState('Password123!');
-  const [landlordRegisterFirstName, setLandlordRegisterFirstName] = useState('');
-  const [landlordRegisterLastName, setLandlordRegisterLastName] = useState('');
-  const [landlordRegisterPhone, setLandlordRegisterPhone] = useState('');
-  const [landlordLoading, setLandlordLoading] = useState(false);
   const [landlordError, setLandlordError] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const handleLandlordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLandlordError('');
+  const loginFormRef = useRef<HTMLFormElement>(null);
+  const registerFormRef = useRef<HTMLFormElement>(null);
 
-    const cleanEmail = landlordEmail.trim().toLowerCase();
-    if (!cleanEmail?.includes('@')) {
-      setLandlordError('Ingresa un correo válido');
-      return;
-    }
-
-    setLandlordLoading(true);
-    try {
-      await login(cleanEmail, landlordPassword);
-      setIsDrawerOpen(false);
-      onSuccess?.();
-      if (typeof window !== 'undefined') {
-        window.location.replace('/landlord');
-      }
-    } catch (err: unknown) {
-      setLandlordError(translateApiError(err, 'Error al autenticar. Verifica las credenciales.'));
-    } finally {
-      setLandlordLoading(false);
-    }
-  };
-
-  const handleLandlordRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLandlordError('');
-
-    if (!landlordRegisterFirstName.trim() || !landlordRegisterLastName.trim()) {
-      setLandlordError('Ingresa tu nombre y apellido');
-      return;
-    }
-
-    const cleanEmail = landlordEmail.trim().toLowerCase();
-    if (!cleanEmail?.includes('@')) {
-      setLandlordError('Ingresa un correo electrónico válido');
-      return;
-    }
-
-    if (landlordPassword.length < 8) {
-      setLandlordError('La contraseña debe tener al menos 8 caracteres');
-      return;
-    }
-
-    setLandlordLoading(true);
-    try {
-      const res = await authService.registerUser({
-        firstName: landlordRegisterFirstName.trim(),
-        lastName: landlordRegisterLastName.trim(),
-        email: cleanEmail,
-        password: landlordPassword,
-        phone: landlordRegisterPhone.trim() || undefined,
-        role: 'LANDLORD',
-      });
-
-      if (isApiSuccess(res)) {
-        if (res.data?.user) {
-          setSession?.(res.data.user, res.data.token);
-        }
-        try {
-          await login(cleanEmail, landlordPassword);
-        } catch {}
-
+  const loginValidation = useFormValidation<LoginInput>({
+    schema: loginSchema,
+    initialValues: DEFAULT_LANDLORD_LOGIN,
+    formRef: loginFormRef,
+    onSubmit: async (validData) => {
+      setLandlordError('');
+      try {
+        await login(validData.email.trim().toLowerCase(), validData.password);
         setIsDrawerOpen(false);
         onSuccess?.();
         if (typeof window !== 'undefined') {
           window.location.replace('/landlord');
         }
-        return;
+      } catch (err: unknown) {
+        setLandlordError(translateApiError(err, 'Error al autenticar. Verifica las credenciales.'));
       }
+    },
+  });
 
-      setLandlordError(translateApiError(res.message, 'No fue posible registrar la cuenta.'));
-    } catch (err: unknown) {
-      setLandlordError(translateApiError(err, 'Error al procesar el registro.'));
-    } finally {
-      setLandlordLoading(false);
-    }
+  const registerValidation = useFormValidation<LandlordRegisterInput>({
+    schema: landlordRegisterSchema,
+    initialValues: EMPTY_LANDLORD_REGISTER,
+    formRef: registerFormRef,
+    onSubmit: async (validData) => {
+      setLandlordError('');
+      const cleanEmail = validData.email.trim().toLowerCase();
+      try {
+        const res = await authService.registerUser({
+          firstName: validData.firstName.trim(),
+          lastName: validData.lastName.trim(),
+          email: cleanEmail,
+          password: validData.password,
+          phone: validData.phone?.trim() || undefined,
+          role: 'LANDLORD',
+        });
+
+        if (isApiSuccess(res)) {
+          if (res.data?.user) {
+            setSession?.(res.data.user, res.data.token);
+          }
+          try {
+            await login(cleanEmail, validData.password);
+          } catch {}
+
+          setIsDrawerOpen(false);
+          onSuccess?.();
+          if (typeof window !== 'undefined') {
+            window.location.replace('/landlord');
+          }
+          return;
+        }
+
+        setLandlordError(translateApiError(res.message, 'No fue posible registrar la cuenta.'));
+      } catch (err: unknown) {
+        setLandlordError(translateApiError(err, 'Error al procesar el registro.'));
+      }
+    },
+  });
+
+  const handleCloseModal = () => {
+    setIsDrawerOpen(false);
+    setLandlordMode('login');
+    setLandlordError('');
+    loginValidation.resetForm(DEFAULT_LANDLORD_LOGIN);
+    registerValidation.resetForm(EMPTY_LANDLORD_REGISTER);
   };
 
   return (
@@ -163,62 +166,74 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
               </span>
             </div>
 
-            <Drawer
+            <Button
+              id="btn-other-options"
+              type="button"
+              variant="outline"
+              onClick={() => setIsDrawerOpen(true)}
+              className="h-12 w-full border-border bg-background font-medium text-foreground hover:bg-secondary cursor-pointer"
+            >
+              Acceso para dueños
+            </Button>
+
+            <ResponsiveModal
               open={isDrawerOpen}
               onOpenChange={(open) => {
-                setIsDrawerOpen(open);
-                if (!open) {
-                  setLandlordMode('login');
-                  setLandlordError('');
+                if (open) {
+                  setIsDrawerOpen(true);
+                } else {
+                  handleCloseModal();
                 }
               }}
             >
-              <DrawerTrigger
-                render={
-                  <Button
-                    id="btn-other-options"
-                    variant="outline"
-                    className="h-12 w-full border-border bg-background font-medium text-foreground hover:bg-secondary"
-                  >
-                    Acceso para dueños
-                  </Button>
-                }
-              />
-              <DrawerContent
+              <ResponsiveModalContent
+                showClose={false}
                 overlayClassName="z-[120]"
                 viewportClassName="z-[120]"
-                className="z-[120] bg-card border-border text-foreground max-w-lg mx-auto max-h-[92dvh] flex flex-col"
+                className="z-[120] bg-card border-border text-foreground max-w-lg max-h-[92dvh] flex flex-col md:rounded-3xl p-0 overflow-hidden"
               >
-                <DrawerHeader>
+                <ResponsiveModalHeader className="px-6 pt-5 pb-3 border-b border-border/50 text-left">
                   <div className="flex items-center gap-2 mb-1">
                     <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/30">
                       <Home className="h-4 w-4" />
                     </div>
-                    <DrawerTitle className="text-foreground text-lg">
+                    <ResponsiveModalTitle className="text-foreground text-lg">
                       {landlordMode === 'login' ? 'Acceso para Dueños' : 'Registro de Dueño'}
-                    </DrawerTitle>
+                    </ResponsiveModalTitle>
                   </div>
-                  <DrawerDescription className="text-muted-foreground text-xs">
+                  <ResponsiveModalDescription className="text-muted-foreground text-xs">
                     {landlordMode === 'login'
                       ? 'Ingresa con tu correo y contraseña registrados como propietario de pensión.'
                       : 'Crea tu cuenta de propietario para publicar y administrar tus pensiones.'}
-                  </DrawerDescription>
-                </DrawerHeader>
+                  </ResponsiveModalDescription>
+                </ResponsiveModalHeader>
 
                 {landlordMode === 'login' ? (
                   <form
-                    onSubmit={handleLandlordSubmit}
+                    ref={loginFormRef}
+                    onSubmit={loginValidation.handleSubmit}
                     noValidate
-                    className="p-4 flex flex-col gap-4"
+                    className="p-6 flex flex-col gap-4 overflow-y-auto"
                   >
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="landlord-email"
-                        className="text-xs font-semibold text-foreground flex items-center gap-1.5"
-                      >
-                        <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                        Correo del Propietario
-                      </label>
+                    {landlordError && (
+                      <div className="flex items-center gap-2.5 rounded-xl bg-destructive/15 border border-destructive/30 px-3.5 py-2.5 text-xs text-destructive">
+                        <AlertCircle className="h-4 w-4 shrink-0" />
+                        <span>{landlordError}</span>
+                      </div>
+                    )}
+
+                    <FormField
+                      id="landlord-email"
+                      label={
+                        <span className="inline-flex items-center gap-1.5">
+                          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                          Correo del Propietario
+                        </span>
+                      }
+                      labelClassName="text-xs font-semibold text-foreground"
+                      required
+                      error={loginValidation.errors.email}
+                    >
                       <input
                         id="landlord-email"
                         type="email"
@@ -228,44 +243,52 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                         autoCorrect="off"
                         spellCheck={false}
                         maxLength={100}
-                        value={landlordEmail}
-                        onChange={(e) => setLandlordEmail(e.target.value.trim())}
+                        value={loginValidation.values.email}
+                        onChange={(e) => {
+                          setLandlordError('');
+                          loginValidation.handleChange('email', e.target.value.trim());
+                        }}
+                        onBlur={() => loginValidation.handleBlur('email')}
                         placeholder="propietario@ejemplo.com"
-                        className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                        className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />
-                    </div>
+                    </FormField>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="landlord-password"
-                        className="text-xs font-semibold text-foreground flex items-center gap-1.5"
-                      >
-                        <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                        Contraseña
-                      </label>
+                    <FormField
+                      id="landlord-password"
+                      label={
+                        <span className="inline-flex items-center gap-1.5">
+                          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                          Contraseña
+                        </span>
+                      }
+                      labelClassName="text-xs font-semibold text-foreground"
+                      required
+                      error={loginValidation.errors.password}
+                    >
                       <input
                         id="landlord-password"
                         type="password"
                         autoComplete="current-password"
                         maxLength={64}
-                        value={landlordPassword}
-                        onChange={(e) => setLandlordPassword(e.target.value)}
+                        value={loginValidation.values.password}
+                        onChange={(e) => {
+                          setLandlordError('');
+                          loginValidation.handleChange('password', e.target.value);
+                        }}
+                        onBlur={() => loginValidation.handleBlur('password')}
                         placeholder="••••••••"
-                        className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                        className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />
-                    </div>
-
-                    {landlordError && (
-                      <p className="text-xs text-destructive font-medium">{landlordError}</p>
-                    )}
+                    </FormField>
 
                     <Button
                       id="btn-landlord-submit"
                       type="submit"
-                      disabled={landlordLoading}
+                      disabled={loginValidation.isSubmitting}
                       className="mt-2 h-12 w-full bg-primary font-bold text-primary-foreground hover:opacity-90 text-sm shadow-md active:scale-[0.98] transition cursor-pointer"
                     >
-                      {landlordLoading ? 'Validando...' : 'Acceder como Dueño'}
+                      {loginValidation.isSubmitting ? 'Validando...' : 'Acceder como Dueño'}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
 
@@ -276,8 +299,8 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                           type="button"
                           onClick={() => {
                             setLandlordError('');
-                            setLandlordEmail('');
-                            setLandlordPassword('');
+                            loginValidation.resetForm(DEFAULT_LANDLORD_LOGIN);
+                            registerValidation.resetForm(EMPTY_LANDLORD_REGISTER);
                             setLandlordMode('register');
                           }}
                           className="font-semibold text-primary underline underline-offset-4 hover:opacity-80 transition cursor-pointer inline-flex items-center min-h-[44px]"
@@ -289,65 +312,94 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                   </form>
                 ) : (
                   <form
-                    onSubmit={handleLandlordRegister}
+                    ref={registerFormRef}
+                    onSubmit={registerValidation.handleSubmit}
                     noValidate
-                    className="p-4 flex flex-col gap-3.5 overflow-y-auto"
+                    className="p-6 flex flex-col gap-3.5 overflow-y-auto"
                   >
+                    {landlordError && (
+                      <div className="flex items-center gap-2.5 rounded-xl bg-destructive/15 border border-destructive/30 px-3.5 py-2.5 text-xs text-destructive">
+                        <AlertCircle className="h-4 w-4 shrink-0" />
+                        <span>{landlordError}</span>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="flex flex-col gap-1.5">
-                        <label
-                          htmlFor="landlord-register-firstname"
-                          className="text-xs font-semibold text-foreground flex items-center gap-1.5"
-                        >
-                          <User className="h-3.5 w-3.5 text-muted-foreground" />
-                          Nombre
-                        </label>
+                      <FormField
+                        id="landlord-register-firstname"
+                        label={
+                          <span className="inline-flex items-center gap-1.5">
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                            Nombre
+                          </span>
+                        }
+                        labelClassName="text-xs font-semibold text-foreground"
+                        required
+                        error={registerValidation.errors.firstName}
+                      >
                         <input
                           id="landlord-register-firstname"
                           type="text"
                           autoComplete="given-name"
                           autoCapitalize="words"
                           maxLength={50}
-                          value={landlordRegisterFirstName}
+                          value={registerValidation.values.firstName}
                           onChange={(e) =>
-                            setLandlordRegisterFirstName(filterAlphabeticName(e.target.value))
+                            registerValidation.handleChange(
+                              'firstName',
+                              filterAlphabeticName(e.target.value),
+                            )
                           }
+                          onBlur={() => registerValidation.handleBlur('firstName')}
                           placeholder="Ej. Roberto"
-                          className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                          className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                         />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label
-                          htmlFor="landlord-register-lastname"
-                          className="text-xs font-semibold text-foreground flex items-center gap-1.5"
-                        >
-                          <User className="h-3.5 w-3.5 text-muted-foreground" />
-                          Apellido
-                        </label>
+                      </FormField>
+
+                      <FormField
+                        id="landlord-register-lastname"
+                        label={
+                          <span className="inline-flex items-center gap-1.5">
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                            Apellido
+                          </span>
+                        }
+                        labelClassName="text-xs font-semibold text-foreground"
+                        required
+                        error={registerValidation.errors.lastName}
+                      >
                         <input
                           id="landlord-register-lastname"
                           type="text"
                           autoComplete="family-name"
                           autoCapitalize="words"
                           maxLength={50}
-                          value={landlordRegisterLastName}
+                          value={registerValidation.values.lastName}
                           onChange={(e) =>
-                            setLandlordRegisterLastName(filterAlphabeticName(e.target.value))
+                            registerValidation.handleChange(
+                              'lastName',
+                              filterAlphabeticName(e.target.value),
+                            )
                           }
+                          onBlur={() => registerValidation.handleBlur('lastName')}
                           placeholder="Ej. Gómez"
-                          className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                          className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                         />
-                      </div>
+                      </FormField>
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="landlord-register-email"
-                        className="text-xs font-semibold text-foreground flex items-center gap-1.5"
-                      >
-                        <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                        Correo del Propietario
-                      </label>
+                    <FormField
+                      id="landlord-register-email"
+                      label={
+                        <span className="inline-flex items-center gap-1.5">
+                          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                          Correo del Propietario
+                        </span>
+                      }
+                      labelClassName="text-xs font-semibold text-foreground"
+                      required
+                      error={registerValidation.errors.email}
+                    >
                       <input
                         id="landlord-register-email"
                         type="email"
@@ -357,67 +409,85 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                         autoCorrect="off"
                         spellCheck={false}
                         maxLength={100}
-                        value={landlordEmail}
-                        onChange={(e) => setLandlordEmail(e.target.value.trim())}
+                        value={registerValidation.values.email}
+                        onChange={(e) => {
+                          setLandlordError('');
+                          registerValidation.handleChange('email', e.target.value.trim());
+                        }}
+                        onBlur={() => registerValidation.handleBlur('email')}
                         placeholder="propietario@ejemplo.com"
-                        className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                        className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />
-                    </div>
+                    </FormField>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="landlord-register-phone"
-                        className="text-xs font-semibold text-foreground flex items-center gap-1.5"
-                      >
-                        <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                        Teléfono (opcional)
-                      </label>
+                    <FormField
+                      id="landlord-register-phone"
+                      label={
+                        <span className="inline-flex items-center gap-1.5">
+                          <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                          Teléfono
+                        </span>
+                      }
+                      labelClassName="text-xs font-semibold text-foreground"
+                      hint="Formato chileno (+56 9 1234 5678)"
+                      error={registerValidation.errors.phone}
+                    >
                       <input
                         id="landlord-register-phone"
                         type="tel"
                         inputMode="tel"
                         autoComplete="tel"
                         maxLength={16}
-                        value={landlordRegisterPhone}
+                        value={registerValidation.values.phone ?? ''}
                         onChange={(e) =>
-                          setLandlordRegisterPhone(formatChileanPhone(e.target.value))
+                          registerValidation.handleChange(
+                            'phone',
+                            formatChileanPhone(e.target.value),
+                          )
                         }
+                        onBlur={() => registerValidation.handleBlur('phone')}
                         placeholder="+56 9 1234 5678"
-                        className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                        className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />
-                    </div>
+                    </FormField>
 
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="landlord-register-password"
-                        className="text-xs font-semibold text-foreground flex items-center gap-1.5"
-                      >
-                        <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                        Contraseña
-                      </label>
+                    <FormField
+                      id="landlord-register-password"
+                      label={
+                        <span className="inline-flex items-center gap-1.5">
+                          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                          Contraseña
+                        </span>
+                      }
+                      labelClassName="text-xs font-semibold text-foreground"
+                      required
+                      hint="Mínimo 8 caracteres"
+                      error={registerValidation.errors.password}
+                    >
                       <input
                         id="landlord-register-password"
                         type="password"
                         autoComplete="new-password"
                         maxLength={64}
-                        value={landlordPassword}
-                        onChange={(e) => setLandlordPassword(e.target.value)}
+                        value={registerValidation.values.password}
+                        onChange={(e) =>
+                          registerValidation.handleChange('password', e.target.value)
+                        }
+                        onBlur={() => registerValidation.handleBlur('password')}
                         placeholder="Mínimo 8 caracteres"
-                        className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                        className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />
-                    </div>
-
-                    {landlordError && (
-                      <p className="text-xs text-destructive font-medium">{landlordError}</p>
-                    )}
+                    </FormField>
 
                     <Button
                       id="btn-landlord-register-submit"
                       type="submit"
-                      disabled={landlordLoading}
+                      disabled={registerValidation.isSubmitting}
                       className="mt-2 h-12 w-full bg-primary font-bold text-primary-foreground hover:opacity-90 text-sm shadow-md active:scale-[0.98] transition cursor-pointer"
                     >
-                      {landlordLoading ? 'Creando cuenta...' : 'Crear cuenta de Dueño'}
+                      {registerValidation.isSubmitting
+                        ? 'Creando cuenta...'
+                        : 'Crear cuenta de Dueño'}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
 
@@ -428,8 +498,8 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                           type="button"
                           onClick={() => {
                             setLandlordError('');
-                            setLandlordEmail('propietario.demo@buscatunido.cl');
-                            setLandlordPassword('Password123!');
+                            loginValidation.resetForm(DEFAULT_LANDLORD_LOGIN);
+                            registerValidation.resetForm(EMPTY_LANDLORD_REGISTER);
                             setLandlordMode('login');
                           }}
                           className="font-semibold text-primary underline underline-offset-4 hover:opacity-80 transition cursor-pointer inline-flex items-center min-h-[44px]"
@@ -441,20 +511,18 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                   </form>
                 )}
 
-                <DrawerFooter>
-                  <DrawerClose
-                    render={
-                      <Button
-                        variant="ghost"
-                        className="w-full text-muted-foreground hover:text-foreground"
-                      >
-                        Cerrar
-                      </Button>
-                    }
-                  />
-                </DrawerFooter>
-              </DrawerContent>
-            </Drawer>
+                <ResponsiveModalFooter className="px-6 py-3 border-t border-border/50">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={handleCloseModal}
+                    className="w-full text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    Cerrar
+                  </Button>
+                </ResponsiveModalFooter>
+              </ResponsiveModalContent>
+            </ResponsiveModal>
           </CardContent>
         </Card>
       </div>

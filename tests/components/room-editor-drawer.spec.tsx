@@ -62,7 +62,7 @@ describe('RoomEditorDrawer - Validations & roomNumber safety', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText('El nombre de la habitación debe tener al menos 3 caracteres.'),
+        screen.getByText('El nombre de la habitación debe tener al menos 3 caracteres'),
       ).toBeDefined();
     });
   });

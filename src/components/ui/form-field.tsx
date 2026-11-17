@@ -21,6 +21,7 @@ export type FormFieldProps = {
   hint?: string;
   className?: string;
   labelClassName?: string;
+  labelAction?: React.ReactNode;
   children: React.ReactNode | ((injected: FormFieldInjectedProps) => React.ReactNode);
 };
 
@@ -32,6 +33,7 @@ export function FormField({
   hint,
   className,
   labelClassName,
+  labelAction,
   children,
 }: FormFieldProps) {
   const generatedId = useId();
@@ -64,7 +66,7 @@ export function FormField({
       className: cn(
         existingProps.className,
         hasError &&
-          'border-destructive focus-visible:ring-destructive aria-invalid:border-destructive',
+          'border-destructive focus:border-destructive focus:ring-destructive/20 focus-visible:ring-destructive aria-invalid:border-destructive',
       ),
     });
   } else {
@@ -94,7 +96,9 @@ export function FormField({
               </span>
             )}
           </label>
-          {required ? (
+          {labelAction ? (
+            labelAction
+          ) : required ? (
             <Badge
               variant="outline"
               className="text-[10px] px-1.5 py-0 h-4 border-primary/20 text-muted-foreground"
