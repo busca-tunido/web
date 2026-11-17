@@ -22,6 +22,7 @@ type PensionReviewsModalProps = {
   onClose: () => void;
   pension: PensionItem;
   reviews: PensionReview[];
+  readOnlyHelpful?: boolean;
 };
 
 type FilterCategory = 'ALL' | 'WITH_PHOTOS' | '5_STARS' | '4_PLUS' | 'LOW_RATING' | 'LONG_STAY';
@@ -31,6 +32,7 @@ export function PensionReviewsModal({
   onClose,
   pension,
   reviews,
+  readOnlyHelpful = false,
 }: PensionReviewsModalProps) {
   const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('ALL');
@@ -114,6 +116,10 @@ export function PensionReviewsModal({
   if (!isOpen) return null;
 
   const toggleHelpful = async (reviewId: string) => {
+    if (readOnlyHelpful) {
+      return;
+    }
+
     if (!user) {
       setIsAuthModalOpen(true);
       return;
@@ -309,6 +315,7 @@ export function PensionReviewsModal({
                       });
                     }}
                     submittingVoteId={submittingVoteId}
+                    readOnlyHelpful={readOnlyHelpful}
                   />
                 </Suspense>
               </>
@@ -355,6 +362,7 @@ type ReviewFeedListProps = {
   toggleHelpful: (id: string) => void;
   onEnlargePhoto: (url: string, index?: number, allPhotos?: string[]) => void;
   submittingVoteId: string | null;
+  readOnlyHelpful?: boolean;
 };
 
 function ReviewFeedList({
@@ -362,6 +370,7 @@ function ReviewFeedList({
   toggleHelpful,
   onEnlargePhoto,
   submittingVoteId,
+  readOnlyHelpful = false,
 }: ReviewFeedListProps) {
   if (filteredReviews.length === 0) {
     return (
@@ -382,6 +391,7 @@ function ReviewFeedList({
             likesCount={review.helpfulCount ?? 0}
             onToggleHelpful={toggleHelpful}
             onEnlargePhoto={onEnlargePhoto}
+            readOnlyHelpful={readOnlyHelpful}
             isVoting={submittingVoteId === review.id}
           />
         );

@@ -9,13 +9,14 @@ import {
 } from '@/components/ui/responsive-modal';
 import { usePensionDetail } from '@/hooks/use-pension-detail';
 import type { FavoritePensionSummaryDto, PensionItem } from '@/lib/types';
-import { PensionDetailContent } from './pension-detail-content';
+import { PensionDetailContent, type PensionDetailMode } from './pension-detail-content';
 
 type PensionDetailModalProps = {
   pension?: PensionItem | FavoritePensionSummaryDto | null;
   pensionId?: string | null;
   isOpen: boolean;
   onClose: () => void;
+  mode?: PensionDetailMode;
 };
 
 export function PensionDetailModal({
@@ -23,6 +24,7 @@ export function PensionDetailModal({
   pensionId = null,
   isOpen,
   onClose,
+  mode = 'detail',
 }: PensionDetailModalProps) {
   const targetId = isOpen ? (initialPension?.id ?? pensionId ?? null) : null;
 
@@ -101,6 +103,7 @@ export function PensionDetailModal({
             pension={activePension}
             isLoadingDetail={isLoadingDetail}
             onBack={onClose}
+            mode={mode}
           />
         </div>
       </ResponsiveModalContent>

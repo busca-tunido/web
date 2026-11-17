@@ -38,11 +38,50 @@ import { PensionCompareButton } from './pension-compare-button';
 import { PensionLocationMap } from './pension-location-map';
 import { SuggestEditModal } from './suggest-edit-modal';
 
+export type PensionDetailMode = 'detail' | 'comparison' | 'preview';
+
+const DETAIL_CAPABILITIES = {
+  detail: {
+    allowCompare: true,
+    allowFavorite: true,
+    allowContact: true,
+    allowReview: true,
+    allowSuggestEdit: true,
+    allowVoteHelpful: true,
+  },
+  comparison: {
+    allowCompare: false,
+    allowFavorite: true,
+    allowContact: false,
+    allowReview: false,
+    allowSuggestEdit: true,
+    allowVoteHelpful: true,
+  },
+  preview: {
+    allowCompare: false,
+    allowFavorite: false,
+    allowContact: false,
+    allowReview: false,
+    allowSuggestEdit: false,
+    allowVoteHelpful: false,
+  },
+} as const satisfies Record<
+  PensionDetailMode,
+  {
+    allowCompare: boolean;
+    allowFavorite: boolean;
+    allowContact: boolean;
+    allowReview: boolean;
+    allowSuggestEdit: boolean;
+    allowVoteHelpful: boolean;
+  }
+>;
+
 export type PensionDetailContentProps = {
   pension: PensionDetailViewItem;
   isLoadingDetail?: boolean;
   onBack?: () => void;
-  mode?: 'detail' | 'comparison';
+  mode?: PensionDetailMode;
   hideCompareButton?: boolean;
 };
 
@@ -69,6 +108,7 @@ export function PensionDetailContent({
   hideCompareButton = false,
 }: PensionDetailContentProps) {
   const isComparing = mode === 'comparison';
+  const capabilities = DETAIL_CAPABILITIES[mode];
   const [comparisonNotice, setComparisonNotice] = useState<string | null>(null);
   const showComparisonNotice = () =>
     setComparisonNotice(
@@ -218,15 +258,33 @@ export function PensionDetailContent({
 
         <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
           {!isComparing && !hideCompareButton && (
-            <PensionCompareButton pension={pension} variant="detail" />
+            <PensionCompareButton
+              pension={pension}
+              variant="detail"
+              readOnly={!capabilities.allowCompare}
+            />
           )}
           <button
             type="button"
-            onClick={(e) => onFavoriteClick(pension.id, e)}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-white hover:text-primary active:scale-90 transition shadow-sm cursor-pointer"
+            aria-disabled={!capabilities.allowFavorite || undefined}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!capabilities.allowFavorite) {
+                e.preventDefault();
+                return;
+              }
+              onFavoriteClick(pension.id, e);
+            }}
+            className={`flex h-12 w-12 items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-white transition shadow-sm ${
+              capabilities.allowFavorite
+                ? 'hover:text-primary active:scale-90 cursor-pointer'
+                : 'cursor-default'
+            }`}
             aria-label="Guardar en favoritos"
           >
-            <Heart className={`h-5 w-5 ${isFav ? 'fill-primary text-primary' : ''}`} />
+            <Heart
+              className={`h-5 w-5 ${capabilities.allowFavorite && isFav ? 'fill-primary text-primary' : ''}`}
+            />
           </button>
         </div>
 
@@ -621,14 +679,21 @@ export function PensionDetailContent({
         <button
           type="button"
           id={`btn-suggest-edit-${pension.id}`}
-          onClick={() => {
+          aria-disabled={!capabilities.allowSuggestEdit || undefined}
+          onClick={(e) => {
+            if (!capabilities.allowSuggestEdit) {
+              e.preventDefault();
+              return;
+            }
             if (!user) {
               openAuthModal?.();
               return;
             }
             setIsSuggestEditOpen(true);
           }}
-          className="text-xs font-semibold text-primary hover:underline transition cursor-pointer shrink-0"
+          className={`text-xs font-semibold text-primary transition shrink-0 ${
+            capabilities.allowSuggestEdit ? 'hover:underline cursor-pointer' : 'cursor-default'
+          }`}
         >
           Sugerir una corrección
         </button>
@@ -643,39 +708,69 @@ export function PensionDetailContent({
             {comparisonNotice}
           </p>
         )}
-        {isComparing && (pension.contactWhatsapp || pension.contactPhone) ? (
-          <button
-            type="button"
-            title="No disponible en modo comparación"
-            onClick={showComparisonNotice}
-            className="w-full min-h-12 h-auto py-2.5 px-3 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm text-center leading-tight rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
-          >
-            {pension.contactWhatsapp ? (
-              <MessageSquare className="h-4 w-4 shrink-0" />
-            ) : (
-              <Phone className="h-4 w-4 shrink-0" />
-            )}{' '}
-            <span>Consultar Disponibilidad</span>
-          </button>
-        ) : pension.contactWhatsapp ? (
-          <a
-            href={`https://wa.me/${pension.contactWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola, me interesa la pensión "${pension.title}" que encontré en BuscaTuNido.`)}`}
-            target="_blank"
-            rel="noreferrer"
-            className="w-full min-h-12 h-auto py-2.5 px-3 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm text-center leading-tight rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
-          >
-            <MessageSquare className="h-4 w-4 shrink-0" /> <span>Consultar Disponibilidad</span>
-          </a>
-        ) : pension.contactPhone ? (
-          <a
-            href={`tel:${pension.contactPhone.replace(/\s+/g, '')}`}
-            className="w-full min-h-12 h-auto py-2.5 px-3 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm text-center leading-tight rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
-          >
-            <Phone className="h-4 w-4 shrink-0" /> <span>Consultar Disponibilidad</span>
-          </a>
-        ) : null}
+        {(pension.contactWhatsapp || pension.contactPhone) &&
+          (isComparing ? (
+            <button
+              type="button"
+              title="No disponible en modo comparación"
+              onClick={showComparisonNotice}
+              className="w-full min-h-12 h-auto py-2.5 px-3 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm text-center leading-tight rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
+            >
+              {pension.contactWhatsapp ? (
+                <MessageSquare className="h-4 w-4 shrink-0" />
+              ) : (
+                <Phone className="h-4 w-4 shrink-0" />
+              )}{' '}
+              <span>Consultar Disponibilidad</span>
+            </button>
+          ) : !capabilities.allowContact ? (
+            <button
+              type="button"
+              aria-disabled="true"
+              onClick={(e) => e.preventDefault()}
+              className="w-full min-h-12 h-auto py-2.5 px-3 bg-primary text-primary-foreground font-bold text-sm text-center leading-tight rounded-xl shadow-md flex items-center justify-center gap-2 cursor-default"
+            >
+              {pension.contactWhatsapp ? (
+                <MessageSquare className="h-4 w-4 shrink-0" />
+              ) : (
+                <Phone className="h-4 w-4 shrink-0" />
+              )}{' '}
+              <span>Consultar Disponibilidad</span>
+            </button>
+          ) : pension.contactWhatsapp ? (
+            <a
+              href={`https://wa.me/${pension.contactWhatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola, me interesa la pensión "${pension.title}" que encontré en BuscaTuNido.`)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full min-h-12 h-auto py-2.5 px-3 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm text-center leading-tight rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
+            >
+              <MessageSquare className="h-4 w-4 shrink-0" /> <span>Consultar Disponibilidad</span>
+            </a>
+          ) : (
+            <a
+              href={`tel:${pension.contactPhone?.replace(/\s+/g, '')}`}
+              className="w-full min-h-12 h-auto py-2.5 px-3 bg-primary hover:opacity-95 text-primary-foreground font-bold text-sm text-center leading-tight rounded-xl shadow-md active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2"
+            >
+              <Phone className="h-4 w-4 shrink-0" /> <span>Consultar Disponibilidad</span>
+            </a>
+          ))}
 
-        {user ? (
+        {!isComparing && !capabilities.allowReview ? (
+          <Button
+            id={`btn-publish-review-${pension.id}`}
+            type="button"
+            variant={pension.contactWhatsapp || pension.contactPhone ? 'outline' : 'default'}
+            aria-disabled="true"
+            onClick={(e) => e.preventDefault()}
+            className={
+              pension.contactWhatsapp || pension.contactPhone
+                ? 'w-full min-h-11 h-auto py-2.5 px-3 whitespace-normal text-center leading-tight border-border/80 text-foreground font-semibold text-xs rounded-xl cursor-default'
+                : 'w-full min-h-12 h-auto py-2.5 px-3 whitespace-normal text-center leading-tight bg-primary text-primary-foreground font-bold text-sm rounded-xl shadow-md cursor-default'
+            }
+          >
+            <PenLine className="h-4 w-4 shrink-0" /> <span>Publicar una reseña</span>
+          </Button>
+        ) : user ? (
           hasAlreadyReviewed ? (
             <Button
               id={`btn-view-user-review-${pension.id}`}
@@ -729,6 +824,7 @@ export function PensionDetailContent({
           onClose={() => setIsReviewsModalOpen(false)}
           pension={pension as PensionItem}
           reviews={reviews}
+          readOnlyHelpful={!capabilities.allowVoteHelpful}
         />
       )}
 
@@ -740,7 +836,7 @@ export function PensionDetailContent({
         />
       )}
 
-      {isPublishReviewOpen && !isComparing && (
+      {isPublishReviewOpen && capabilities.allowReview && (
         <PublishReviewModal
           isOpen={isPublishReviewOpen}
           onClose={() => setIsPublishReviewOpen(false)}
@@ -749,7 +845,7 @@ export function PensionDetailContent({
         />
       )}
 
-      {isSuggestEditOpen && (
+      {isSuggestEditOpen && capabilities.allowSuggestEdit && (
         <SuggestEditModal
           isOpen={isSuggestEditOpen}
           onClose={() => setIsSuggestEditOpen(false)}

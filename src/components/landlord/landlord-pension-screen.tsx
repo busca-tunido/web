@@ -1427,6 +1427,7 @@ export function LandlordPensionScreen({
           onClose={() => setIsPreviewModalOpen(false)}
           pension={previewPensionItem}
           pensionId={previewPensionItem.id}
+          mode="preview"
         />
       )}
 

@@ -44,6 +44,7 @@ export type ReviewCardProps = {
   onEnlargePhoto?: (url: string, index?: number, allPhotos?: string[]) => void;
   className?: string;
   showHelpfulButton?: boolean;
+  readOnlyHelpful?: boolean;
   isVoting?: boolean;
 };
 
@@ -55,6 +56,7 @@ export function ReviewCard({
   onEnlargePhoto,
   className = '',
   showHelpfulButton = true,
+  readOnlyHelpful = false,
   isVoting = false,
 }: ReviewCardProps) {
   const [internalViewerIndex, setInternalViewerIndex] = useState<number | null>(null);
@@ -192,18 +194,27 @@ export function ReviewCard({
         {showHelpfulButton ? (
           <motion.button
             type="button"
-            whileTap={{ scale: 0.92 }}
+            whileTap={readOnlyHelpful ? undefined : { scale: 0.92 }}
             disabled={isVoting}
-            onClick={() => onToggleHelpful?.(review.id)}
-            aria-pressed={isLiked}
+            aria-disabled={readOnlyHelpful || undefined}
+            onClick={
+              readOnlyHelpful
+                ? (event) => event.preventDefault()
+                : () => onToggleHelpful?.(review.id)
+            }
+            aria-pressed={readOnlyHelpful ? undefined : isLiked}
             aria-label={`Marcar como útil (${calculatedLikes} votos)`}
-            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shrink-0 ${
-              isLiked
-                ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shrink-0 ${
+              readOnlyHelpful
+                ? 'cursor-default text-muted-foreground'
+                : isLiked
+                  ? 'bg-primary/10 text-primary cursor-pointer'
+                  : 'text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer'
             }`}
           >
-            <ThumbsUp className={`h-3 w-3 shrink-0 ${isLiked ? 'fill-primary' : ''}`} />
+            <ThumbsUp
+              className={`h-3 w-3 shrink-0 ${isLiked && !readOnlyHelpful ? 'fill-primary' : ''}`}
+            />
             <span>
               Útil (<span className="tabular-nums">{calculatedLikes}</span>)
             </span>

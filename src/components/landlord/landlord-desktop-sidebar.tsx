@@ -478,6 +478,7 @@ export function LandlordDesktopSidebar({
           onClose={() => setIsPreviewOpen(false)}
           pension={selectedPension}
           pensionId={selectedPension.id}
+          mode="preview"
         />
       )}
     </>

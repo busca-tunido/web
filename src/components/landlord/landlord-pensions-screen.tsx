@@ -723,6 +723,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
           onClose={() => setPreviewPension(null)}
           pension={previewPension}
           pensionId={previewPension.id}
+          mode="preview"
         />
       )}
 
