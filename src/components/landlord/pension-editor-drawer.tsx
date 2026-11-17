@@ -27,8 +27,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { PensionLocationPickerMap } from '@/components/landlord/pension-location-picker-map';
 import { Button } from '@/components/ui/button';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
 import { isSubstantivePensionDraft } from '@/lib/draft-validators';
@@ -720,34 +725,27 @@ export function PensionEditorDrawer({
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DrawerContent
+    <ResponsiveModal open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <ResponsiveModalContent
         id="pension-editor-drawer"
+        showClose={false}
         className={cn(
-          'max-h-[94vh] max-w-xl md:max-w-2xl mx-auto md:rounded-3xl bg-card border-border text-foreground flex flex-col overflow-hidden',
+          'max-w-xl md:max-w-2xl md:max-h-[88vh] mx-auto md:rounded-3xl bg-card border-border text-foreground flex flex-col overflow-hidden',
           className,
         )}
       >
-        <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
-
-        <div className="flex items-center justify-center px-4 py-2.5 border-b border-border/60">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Nueva Pensión
-          </span>
-        </div>
+        <ResponsiveModalHeader className="px-5 py-4 border-b border-border/60 shrink-0 text-left">
+          <ResponsiveModalTitle className="text-lg font-bold text-foreground">
+            Registra tu Pensión Universitaria
+          </ResponsiveModalTitle>
+        </ResponsiveModalHeader>
 
         <form
           onSubmit={handleSubmit}
           noValidate
           className="flex-1 flex flex-col min-h-0 overflow-hidden"
         >
-          <div className="overflow-y-auto flex-1 px-4 py-4 space-y-6">
-            <DrawerHeader className="p-0 text-center">
-              <DrawerTitle className="text-lg sm:text-xl font-extrabold text-foreground tracking-tight text-center text-balance">
-                Registra tu Pensión Universitaria
-              </DrawerTitle>
-            </DrawerHeader>
-
+          <div className="overflow-y-auto scrollbar-subtle flex-1 min-h-0 px-5 py-4 space-y-6">
             {isBannerVisible && (
               <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs transition-all duration-200 overflow-hidden">
                 <span className="text-foreground">Tienes un borrador previo no publicado.</span>
@@ -1403,7 +1401,7 @@ export function PensionEditorDrawer({
             </div>
           </div>
 
-          <div className="px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1rem)] border-t border-border/80 bg-background/95 backdrop-blur-md flex items-center justify-end gap-3 shrink-0">
+          <div className="px-5 pt-3 pb-[max(env(safe-area-inset-bottom),1rem)] border-t border-border/60 bg-card/95 backdrop-blur-md flex flex-wrap items-center justify-end gap-3 shrink-0">
             <Button
               type="button"
               variant="outline"
@@ -1443,7 +1441,7 @@ export function PensionEditorDrawer({
             subtitle={form.city ? `${form.neighborhood}, ${form.city}` : undefined}
           />
         )}
-      </DrawerContent>
-    </Drawer>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }

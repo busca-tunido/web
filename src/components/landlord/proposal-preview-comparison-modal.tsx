@@ -1,20 +1,20 @@
 'use client';
 
-import { Check, Home, Loader2, MapPin, Maximize2, X } from 'lucide-react';
+import { Check, Home, Loader2, MapPin, X } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalFooter,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import type { PensionDetailDto, PensionItem, ProposalDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -228,11 +228,6 @@ export function ProposalPreviewComparisonModal({
                   sizes="(max-width: 640px) 100vw, 400px"
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <div className="p-2 rounded-full bg-black/60 text-white backdrop-blur-xs">
-                    <Maximize2 className="h-4 w-4" />
-                  </div>
-                </div>
               </button>
             ) : (
               <div className="flex h-full w-full items-center justify-center text-muted-foreground">
@@ -473,113 +468,104 @@ export function ProposalPreviewComparisonModal({
   const isPending = proposal.status === 'PENDING';
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 bg-background rounded-2xl">
-        <DialogHeader className="text-left space-y-1 pb-2 border-b border-border/50">
-          <div className="flex items-center justify-between gap-3">
-            <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
-              Comparativa de Vista Previa: Sugerencia #{proposal.id.slice(0, 8)}
-            </DialogTitle>
-          </div>
-          <DialogDescription className="text-xs text-muted-foreground">
-            Compara cómo se visualiza tu pensión actualmente frente a los cambios sugeridos por la
-            comunidad estudiantil.
-          </DialogDescription>
-        </DialogHeader>
+    <ResponsiveModal open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <ResponsiveModalContent
+        showClose={false}
+        className="max-w-lg md:max-w-4xl md:max-h-[88vh] mx-auto p-0 bg-card border-border text-foreground flex flex-col overflow-hidden md:rounded-3xl"
+      >
+        <ResponsiveModalHeader className="text-left px-5 py-4 border-b border-border/60 shrink-0">
+          <ResponsiveModalTitle className="text-base sm:text-lg font-bold text-foreground">
+            Comparativa de Vista Previa: Sugerencia #{proposal.id.slice(0, 8)}
+          </ResponsiveModalTitle>
+          <ResponsiveModalDescription className="text-xs text-muted-foreground mt-0.5">
+            Compara tu ficha actual con los cambios sugeridos por la comunidad estudiantil.
+          </ResponsiveModalDescription>
+        </ResponsiveModalHeader>
 
-        {proposal.submissionNotes && (
-          <div className="rounded-lg bg-secondary/50 p-3 text-xs text-foreground leading-relaxed border border-border/60">
-            <span className="font-semibold text-muted-foreground block mb-0.5 text-[11px]">
-              Comentario del estudiante postulante:
-            </span>
-            &ldquo;{proposal.submissionNotes}&rdquo;
-          </div>
-        )}
-
-        <div className="flex md:hidden flex-col gap-3">
-          <div className="flex rounded-lg bg-muted/60 p-1 border border-border/60">
-            <button
-              type="button"
-              onClick={() => setMobileActiveTab('BEFORE')}
-              className={cn(
-                'flex-1 py-1.5 text-xs font-semibold rounded-md transition text-center cursor-pointer',
-                mobileActiveTab === 'BEFORE'
-                  ? 'bg-background text-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              1. Estado Actual (Antes)
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileActiveTab('AFTER')}
-              className={cn(
-                'flex-1 py-1.5 text-xs font-semibold rounded-md transition text-center cursor-pointer',
-                mobileActiveTab === 'AFTER'
-                  ? 'bg-background text-sage-foreground shadow-xs font-bold'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              2. Con Sugerencia (Después)
-            </button>
-          </div>
-
-          <div>
-            {mobileActiveTab === 'BEFORE' && renderPensionPreviewCard(beforeData, false)}
-            {mobileActiveTab === 'AFTER' && renderPensionPreviewCard(afterData, true)}
-          </div>
-        </div>
-
-        <div className="hidden md:grid md:grid-cols-2 gap-4 items-start">
-          {renderPensionPreviewCard(beforeData, false)}
-          {renderPensionPreviewCard(afterData, true)}
-        </div>
-
-        <DialogFooter className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-border/50">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onClose}
-            className="w-full sm:w-auto text-xs font-semibold cursor-pointer"
-          >
-            Cerrar Vista Previa
-          </Button>
-
-          {isPending && onApprove && onReject && (
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isProcessing}
-                onClick={async () => {
-                  await onReject(proposal.id);
-                  onClose();
-                }}
-                className="flex-1 sm:flex-initial text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive border-border/80 cursor-pointer"
-              >
-                <X className="h-3.5 w-3.5 mr-1" />
-                <span>Rechazar Sugerencia</span>
-              </Button>
-
-              <Button
-                type="button"
-                disabled={isProcessing}
-                onClick={async () => {
-                  await onApprove(proposal.id);
-                  onClose();
-                }}
-                className="flex-1 sm:flex-initial text-xs font-semibold bg-sage hover:bg-sage/90 text-white dark:text-zinc-950 shadow-none cursor-pointer"
-              >
-                {isProcessing ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
-                ) : (
-                  <Check className="h-3.5 w-3.5 mr-1" />
-                )}
-                <span>Aprobar y Aplicar</span>
-              </Button>
+        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-subtle px-5 py-4 space-y-4">
+          {proposal.submissionNotes && (
+            <div className="rounded-xl bg-secondary/50 p-3 text-xs text-foreground leading-relaxed border border-border/60">
+              <span className="font-semibold text-muted-foreground block mb-0.5 text-[11px]">
+                Comentario del estudiante postulante:
+              </span>
+              &ldquo;{proposal.submissionNotes}&rdquo;
             </div>
           )}
-        </DialogFooter>
+
+          <div className="flex md:hidden flex-col gap-3">
+            <div className="flex rounded-lg bg-muted/60 p-1 border border-border/60">
+              <button
+                type="button"
+                onClick={() => setMobileActiveTab('BEFORE')}
+                className={cn(
+                  'flex-1 py-1.5 px-2 text-xs font-semibold rounded-md transition text-center cursor-pointer',
+                  mobileActiveTab === 'BEFORE'
+                    ? 'bg-card text-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                Antes (Actual)
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileActiveTab('AFTER')}
+                className={cn(
+                  'flex-1 py-1.5 px-2 text-xs font-semibold rounded-md transition text-center cursor-pointer',
+                  mobileActiveTab === 'AFTER'
+                    ? 'bg-card text-sage-foreground shadow-xs font-bold'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                Después (Sugerido)
+              </button>
+            </div>
+
+            <div>
+              {mobileActiveTab === 'BEFORE' && renderPensionPreviewCard(beforeData, false)}
+              {mobileActiveTab === 'AFTER' && renderPensionPreviewCard(afterData, true)}
+            </div>
+          </div>
+
+          <div className="hidden md:grid md:grid-cols-2 gap-4 items-start">
+            {renderPensionPreviewCard(beforeData, false)}
+            {renderPensionPreviewCard(afterData, true)}
+          </div>
+        </div>
+
+        {isPending && onApprove && onReject && (
+          <ResponsiveModalFooter className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 px-5 py-3.5 border-t border-border/60 bg-card/95 backdrop-blur-md shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isProcessing}
+              onClick={async () => {
+                await onReject(proposal.id);
+                onClose();
+              }}
+              className="flex-1 sm:flex-initial min-h-11 text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive border-border/80 cursor-pointer"
+            >
+              <X className="h-3.5 w-3.5 mr-1" />
+              <span>Rechazar Sugerencia</span>
+            </Button>
+
+            <Button
+              type="button"
+              disabled={isProcessing}
+              onClick={async () => {
+                await onApprove(proposal.id);
+                onClose();
+              }}
+              className="flex-1 sm:flex-initial min-h-11 text-xs font-semibold bg-sage hover:bg-sage/90 text-white dark:text-zinc-950 shadow-none cursor-pointer"
+            >
+              {isProcessing ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+              ) : (
+                <Check className="h-3.5 w-3.5 mr-1" />
+              )}
+              <span>Aprobar y Aplicar</span>
+            </Button>
+          </ResponsiveModalFooter>
+        )}
 
         {viewerData && (
           <FullScreenImageViewer
@@ -590,7 +576,7 @@ export function ProposalPreviewComparisonModal({
             subtitle={viewerData.subtitle}
           />
         )}
-      </DialogContent>
-    </Dialog>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }

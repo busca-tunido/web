@@ -3,27 +3,24 @@
 import {
   AlertCircle,
   Camera,
-  CheckCircle2,
   Droplets,
-  GraduationCap,
   HeartHandshake,
-  Loader2,
   Moon,
   RefreshCw,
   Star,
-  ThumbsUp,
   Wifi,
 } from 'lucide-react';
-import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ReviewCard } from '@/components/reviews/review-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
+import { ReviewsSkeleton } from '@/components/ui/skeletons/reviews-skeleton';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { isApiSuccess } from '@/lib/api-response';
 import type { PensionDetailDto, PensionItem } from '@/lib/types';
-import { cn, normalizeImageUrl } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { pensionsService } from '@/services/pensions.service';
 
 export type LandlordReviewsScreenProps = {
@@ -33,37 +30,6 @@ export type LandlordReviewsScreenProps = {
 };
 
 type ReviewFilterType = 'ALL' | 'WITH_PHOTOS' | '5_STARS' | '4_PLUS' | 'LOW_RATING' | 'LONG_STAY';
-
-function formatStayDuration(cat?: string | null): string {
-  switch (cat) {
-    case 'FEW_DAYS':
-      return 'Estadía de unos días';
-    case 'FEW_WEEKS':
-      return 'Estadía de varias semanas';
-    case 'ONE_SEMESTER':
-      return 'Estadía de 1 semestre académico';
-    case 'ONE_YEAR':
-      return 'Estadía de 1 año universitario';
-    case 'MORE_THAN_A_YEAR':
-      return 'Estadía de más de 1 año';
-    default:
-      return 'Estudiante residente';
-  }
-}
-
-function formatDate(isoString?: string): string {
-  if (!isoString) return 'Reciente';
-  try {
-    const d = new Date(isoString);
-    return d.toLocaleDateString('es-CL', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  } catch {
-    return 'Reciente';
-  }
-}
 
 function getSatisfactionLabel(
   score: number,
@@ -589,10 +555,7 @@ export function LandlordReviewsScreen({
         </div>
 
         {isLoadingReviews ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-xs font-medium">Cargando reseñas de estudiantes...</p>
-          </div>
+          <ReviewsSkeleton count={3} />
         ) : reviewsError ? (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-2xl border border-destructive/20 bg-destructive/5 space-y-3">
             <AlertCircle className="h-8 w-8 text-destructive" />
@@ -626,165 +589,28 @@ export function LandlordReviewsScreen({
         ) : (
           <div className="space-y-3.5">
             {filteredReviews.map((review) => {
-              const rating = review.overallRating ?? review.rating ?? 5;
-              const photos = review.images?.slice(0, 4) || [];
               const isLiked = Boolean(userVotes[review.id]);
               const calculatedLikes = Math.max(0, (review.helpfulCount ?? 0) + (isLiked ? 1 : 0));
 
               return (
-                <Card
+                <ReviewCard
                   key={review.id}
-                  className="border-border/70 bg-card shadow-none rounded-xl overflow-hidden"
-                >
-                  <CardHeader className="p-4 pb-2">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted border border-border">
-                          {review.user?.avatarUrl ? (
-                            <Image
-                              src={normalizeImageUrl(review.user.avatarUrl)}
-                              alt={review.user.firstName || 'Estudiante'}
-                              fill
-                              sizes="40px"
-                              unoptimized
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center font-bold text-sm text-muted-foreground">
-                              {review.user?.firstName ? review.user.firstName.charAt(0) : 'E'}
-                            </div>
-                          )}
-                        </div>
-
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <h4 className="text-xs font-semibold text-foreground">
-                              {review.user?.firstName || 'Estudiante'}{' '}
-                              {review.user?.lastName ? `${review.user.lastName.charAt(0)}.` : ''}
-                            </h4>
-                            {review.isVerifiedStay && (
-                              <Badge
-                                variant="outline"
-                                className="gap-1 border-sage/30 bg-sage/10 text-sage-foreground text-[10px] py-0 px-1.5 font-semibold"
-                              >
-                                <CheckCircle2 className="h-3 w-3 text-sage-foreground" />
-                                <span>Verificado</span>
-                              </Badge>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-muted-foreground">
-                            <span>
-                              {formatStayDuration(
-                                review.stayDurationCategory || review.stayDuration,
-                              )}
-                            </span>
-                            {review.user?.university?.name && (
-                              <>
-                                <span>•</span>
-                                <span className="font-medium text-foreground/80 flex items-center gap-1">
-                                  <GraduationCap className="h-3 w-3 text-muted-foreground" />
-                                  {review.user.university.shortName || review.user.university.name}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col items-end">
-                        <div className="flex items-center gap-0.5 text-amber-500">
-                          {[1, 2, 3, 4, 5].map((starVal) => (
-                            <Star
-                              key={`star-${review.id}-${starVal}`}
-                              className={cn(
-                                'h-3.5 w-3.5',
-                                starVal <= rating
-                                  ? 'fill-amber-400 text-amber-400'
-                                  : 'text-muted-foreground/30',
-                              )}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">
-                          {formatDate(review.createdAt)}
-                        </span>
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="p-4 pt-1 space-y-3">
-                    <p className="text-xs text-foreground/90 leading-relaxed text-pretty max-w-prose">
-                      "{review.comment}"
-                    </p>
-
-                    {photos.length > 0 && (
-                      <div className="flex gap-2 overflow-x-auto py-1 no-scrollbar shrink-0">
-                        {photos.map((img, photoIdx) => {
-                          const rawUrl =
-                            typeof img === 'string'
-                              ? img
-                              : (img as unknown as { url?: string })?.url || '';
-                          const photoUrl = normalizeImageUrl(rawUrl);
-                          if (!photoUrl) return null;
-
-                          return (
-                            <button
-                              key={`review-photo-${review.id}-${photoIdx}`}
-                              type="button"
-                              onClick={() => {
-                                const allUrls = review.images
-                                  .map((p) => {
-                                    const raw =
-                                      typeof p === 'string'
-                                        ? p
-                                        : (p as unknown as { url?: string })?.url || '';
-                                    return normalizeImageUrl(raw);
-                                  })
-                                  .filter(Boolean);
-                                setViewerState({
-                                  images: allUrls.length > 0 ? allUrls : [photoUrl],
-                                  initialIndex: photoIdx,
-                                  title: `Foto de reseña • ${review.user?.firstName || 'Estudiante'}`,
-                                });
-                              }}
-                              className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-border/80 bg-muted hover:opacity-90 transition cursor-pointer select-none"
-                            >
-                              <Image
-                                src={photoUrl}
-                                alt="Foto adjunta por estudiante"
-                                fill
-                                unoptimized
-                                sizes="80px"
-                                className="object-cover"
-                              />
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between pt-2.5 border-t border-border/60">
-                      <button
-                        type="button"
-                        onClick={() => voteHelpful(review.id)}
-                        className={cn(
-                          'flex min-h-[44px] items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer',
-                          isLiked
-                            ? 'bg-secondary text-foreground font-semibold'
-                            : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-                        )}
-                      >
-                        <ThumbsUp className={cn('h-3.5 w-3.5', isLiked && 'fill-foreground')} />
-                        <span>Útil ({calculatedLikes})</span>
-                      </button>
-
-                      <span className="text-[10px] text-muted-foreground">
-                        Reseña moderada y verificada
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
+                  review={{
+                    ...review,
+                    isResidentVerified: review.isResidentVerified ?? review.isVerifiedStay,
+                  }}
+                  isLiked={isLiked}
+                  likesCount={calculatedLikes}
+                  onToggleHelpful={voteHelpful}
+                  onEnlargePhoto={(url, index = 0, allPhotos) => {
+                    setViewerState({
+                      images: allPhotos && allPhotos.length > 0 ? allPhotos : [url],
+                      initialIndex: index,
+                      title: `Foto de reseña • ${review.user?.firstName || 'Estudiante'}`,
+                    });
+                  }}
+                  className="shadow-none rounded-xl border-border/70"
+                />
               );
             })}
           </div>

@@ -20,8 +20,13 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { RoomItem, RoomType } from '@/components/landlord/room-item-card';
 import { Button } from '@/components/ui/button';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import { useFormDraft } from '@/hooks/use-form-draft';
 import { isApiSuccess } from '@/lib/api-response';
 import { isSubstantiveRoomDraft } from '@/lib/draft-validators';
@@ -386,34 +391,27 @@ export function RoomEditorDrawer({
       : null;
 
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent
+    <ResponsiveModal open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <ResponsiveModalContent
         id="room-editor-drawer"
+        showClose={false}
         className={cn(
-          'max-h-[92vh] max-w-lg md:max-w-2xl mx-auto md:rounded-3xl bg-card border-border text-foreground flex flex-col overflow-hidden',
+          'max-w-lg md:max-w-2xl md:max-h-[86vh] mx-auto md:rounded-3xl bg-card border-border text-foreground flex flex-col overflow-hidden',
           className,
         )}
       >
-        <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
-
-        <div className="flex items-center justify-center px-4 py-2.5 border-b border-border/60">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            {isEditing ? 'Editar Habitación' : 'Nueva Habitación'}
-          </span>
-        </div>
+        <ResponsiveModalHeader className="px-5 py-4 border-b border-border/60 shrink-0 text-left">
+          <ResponsiveModalTitle className="text-lg font-bold text-foreground">
+            {isEditing ? 'Editar Habitación y Tarifa' : 'Registrar Nueva Habitación'}
+          </ResponsiveModalTitle>
+        </ResponsiveModalHeader>
 
         <form
           onSubmit={handleSubmit}
           noValidate
           className="flex-1 flex flex-col min-h-0 overflow-hidden"
         >
-          <div className="overflow-y-auto flex-1 px-4 py-4 space-y-5">
-            <DrawerHeader className="p-0 text-center">
-              <DrawerTitle className="text-lg font-bold text-foreground text-center text-balance">
-                {isEditing ? 'Editar Habitación y Tarifa' : 'Registrar Nueva Habitación'}
-              </DrawerTitle>
-            </DrawerHeader>
-
+          <div className="overflow-y-auto scrollbar-subtle flex-1 min-h-0 px-5 py-4 space-y-5">
             {isBannerVisible && !isEditing && (
               <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center justify-between gap-2 text-xs transition-all duration-200 overflow-hidden">
                 <span className="text-foreground">
@@ -784,7 +782,7 @@ export function RoomEditorDrawer({
             </div>
           </div>
 
-          <div className="border-t border-border/80 bg-card px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1rem)] flex items-center gap-2.5 shrink-0">
+          <div className="border-t border-border/60 bg-card/95 backdrop-blur-md px-5 pt-3 pb-[max(env(safe-area-inset-bottom),1rem)] flex items-center gap-2.5 shrink-0">
             <Button
               type="button"
               variant="outline"
@@ -824,7 +822,7 @@ export function RoomEditorDrawer({
             subtitle={form.roomNumber ? `Pieza #${form.roomNumber}` : undefined}
           />
         )}
-      </DrawerContent>
-    </Drawer>
+      </ResponsiveModalContent>
+    </ResponsiveModal>
   );
 }

@@ -39,7 +39,6 @@ import {
   Utensils,
   Video,
   Wifi,
-  X,
   Zap,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -50,13 +49,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalFooter,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
+import {
+  LandlordAmenitiesSkeleton,
+  LandlordPensionSkeleton,
+} from '@/components/ui/skeletons/landlord-pension-skeleton';
 import { useLandlord } from '@/contexts/landlord-context';
 import { isApiSuccess } from '@/lib/api-response';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
@@ -211,6 +214,18 @@ export function LandlordPensionScreen({
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!saveSuccessMessage) return;
+    const timer = setTimeout(() => setSaveSuccessMessage(null), 4500);
+    return () => clearTimeout(timer);
+  }, [saveSuccessMessage]);
+
+  useEffect(() => {
+    if (!saveErrorMessage) return;
+    const timer = setTimeout(() => setSaveErrorMessage(null), 6500);
+    return () => clearTimeout(timer);
+  }, [saveErrorMessage]);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState<boolean>(false);
   const [isProposalsDrawerOpen, setIsProposalsDrawerOpen] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -536,12 +551,7 @@ export function LandlordPensionScreen({
   };
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 p-6 text-muted-foreground">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-xs font-medium">Cargando datos de la pensión...</p>
-      </div>
-    );
+    return <LandlordPensionSkeleton />;
   }
 
   if (fetchError && !activePension) {
@@ -677,20 +687,10 @@ export function LandlordPensionScreen({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center justify-between gap-3 text-emerald-600 dark:text-emerald-400"
+            className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400 text-xs font-semibold"
           >
-            <div className="flex items-center gap-2.5 text-xs font-semibold">
-              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span>{saveSuccessMessage}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setSaveSuccessMessage(null)}
-              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-emerald-600/80 hover:text-emerald-600 cursor-pointer"
-              aria-label="Cerrar notificación de éxito"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span>{saveSuccessMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -709,14 +709,6 @@ export function LandlordPensionScreen({
               <span className="font-bold block mb-0.5">Error al guardar</span>
               {saveErrorMessage}
             </div>
-            <button
-              type="button"
-              onClick={() => setSaveErrorMessage(null)}
-              className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-destructive/80 hover:text-destructive cursor-pointer"
-              aria-label="Cerrar alerta de error"
-            >
-              <X className="h-4 w-4" />
-            </button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1311,10 +1303,7 @@ export function LandlordPensionScreen({
 
           <CardContent className="p-4 sm:p-5 flex-1 space-y-6">
             {isLoadingAmenities && amenitiesCatalog.length === 0 ? (
-              <div className="flex items-center justify-center py-8 text-xs text-muted-foreground gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Cargando catálogo de comodidades...</span>
-              </div>
+              <LandlordAmenitiesSkeleton />
             ) : (
               (Object.keys(CATEGORY_LABELS) as Array<keyof typeof CATEGORY_LABELS>).map(
                 (catKey) => {
@@ -1450,25 +1439,28 @@ export function LandlordPensionScreen({
         />
       )}
 
-      <Dialog
+      <ResponsiveModal
         open={showConfirmActiveModal}
         onOpenChange={(open) => !open && !isTogglingActive && setShowConfirmActiveModal(false)}
       >
-        <DialogContent className="max-w-md p-5 sm:p-6 bg-background rounded-2xl">
-          <DialogHeader className="text-left space-y-1.5">
-            <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
+        <ResponsiveModalContent
+          showClose={false}
+          className="max-w-lg md:max-w-md mx-auto p-6 bg-card border-border md:rounded-3xl"
+        >
+          <ResponsiveModalHeader className="text-left space-y-1.5 p-0 border-b-0">
+            <ResponsiveModalTitle className="text-base sm:text-lg font-bold text-foreground">
               {!isPensionActive
                 ? '¿Activar publicación de pensión?'
                 : '¿Pausar publicación de pensión?'}
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+            </ResponsiveModalTitle>
+            <ResponsiveModalDescription className="text-xs text-muted-foreground leading-relaxed">
               {!isPensionActive
                 ? `La pensión "${activePension?.title}" volverá a ser visible para todos los estudiantes universitarios en el mapa y búsquedas.`
                 : `La pensión "${activePension?.title}" quedará oculta temporalmente para los estudiantes. No recibirás nuevas solicitudes ni visitas mientras esté pausada.`}
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveModalDescription>
+          </ResponsiveModalHeader>
 
-          <DialogFooter className="flex flex-col sm:flex-row items-center justify-end gap-2 pt-4 border-t border-border/50">
+          <ResponsiveModalFooter className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-4 px-0 pb-0 bg-transparent border-t border-border/50">
             <Button
               type="button"
               variant="outline"
@@ -1492,28 +1484,31 @@ export function LandlordPensionScreen({
               {isTogglingActive && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
               <span>{!isPensionActive ? 'Activar Publicación' : 'Pausar Publicación'}</span>
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ResponsiveModalFooter>
+        </ResponsiveModalContent>
+      </ResponsiveModal>
 
-      <Dialog
+      <ResponsiveModal
         open={isDeleteModalOpen}
         onOpenChange={(open) => !open && !isDeleting && setIsDeleteModalOpen(false)}
       >
-        <DialogContent className="max-w-md p-5 sm:p-6 bg-background rounded-2xl">
-          <DialogHeader className="text-left space-y-1.5">
+        <ResponsiveModalContent
+          showClose={false}
+          className="max-w-lg md:max-w-md mx-auto p-6 bg-card border-border md:rounded-3xl"
+        >
+          <ResponsiveModalHeader className="text-left space-y-1.5 p-0 border-b-0">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-destructive/10 text-destructive mb-1">
               <Trash2 className="h-6 w-6" />
             </div>
-            <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
+            <ResponsiveModalTitle className="text-base sm:text-lg font-bold text-foreground">
               ¿Eliminar esta pensión?
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+            </ResponsiveModalTitle>
+            <ResponsiveModalDescription className="text-xs text-muted-foreground leading-relaxed">
               La pensión &ldquo;{activePension?.title}&rdquo; dejará de estar disponible para los
               estudiantes universitarios y se removerá de tu panel de gestión. Esta acción no se
               puede deshacer.
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveModalDescription>
+          </ResponsiveModalHeader>
 
           {deleteErrorMessage && (
             <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive font-medium">
@@ -1521,7 +1516,7 @@ export function LandlordPensionScreen({
             </div>
           )}
 
-          <DialogFooter className="flex flex-col sm:flex-row items-center justify-end gap-2 pt-4 border-t border-border/50">
+          <ResponsiveModalFooter className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-4 px-0 pb-0 bg-transparent border-t border-border/50">
             <Button
               type="button"
               variant="outline"
@@ -1540,9 +1535,9 @@ export function LandlordPensionScreen({
               {isDeleting && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
               <span>{isDeleting ? 'Eliminando...' : 'Eliminar Definitivamente'}</span>
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ResponsiveModalFooter>
+        </ResponsiveModalContent>
+      </ResponsiveModal>
     </div>
   );
 }

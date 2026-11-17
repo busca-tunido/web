@@ -5,7 +5,6 @@ import {
   BedDouble,
   Home,
   Loader2,
-  Maximize2,
   PauseCircle,
   Pencil,
   PlayCircle,
@@ -100,11 +99,6 @@ export function RoomItemCard({
                 sizes="(max-width: 640px) 96px, 112px"
                 className="object-cover transition-transform duration-300 group-hover/thumb:scale-105"
               />
-              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center">
-                <div className="h-7 w-7 rounded-full bg-black/60 text-white flex items-center justify-center shadow-xs">
-                  <Maximize2 className="h-3.5 w-3.5" />
-                </div>
-              </div>
             </button>
           ) : (
             <button

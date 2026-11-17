@@ -11,7 +11,6 @@ import {
   Home,
   Loader2,
   MapPin,
-  Maximize2,
   PauseCircle,
   Phone,
   Plus,
@@ -26,15 +25,15 @@ import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalFooter,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import { useLandlord } from '@/contexts/landlord-context';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
 import type { PensionItem } from '@/lib/types';
@@ -193,9 +192,6 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                         sizes="(max-width: 640px) 56px, 64px"
                         className="object-cover transition group-hover/cover:scale-105"
                       />
-                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Maximize2 className="h-4 w-4 text-white" />
-                      </div>
                     </button>
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-muted-foreground">
@@ -455,13 +451,15 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 350, damping: 28, delay: idx * 0.05 }}
               >
-                <Card className="border-border/70 bg-card/60 shadow-2xs h-full">
-                  <CardContent className="p-3 sm:p-3.5 flex flex-col">
-                    <span className="text-[11px] font-medium text-muted-foreground truncate">
+                <Card className="border-border/70 bg-card/60 shadow-2xs h-full min-w-0">
+                  <CardContent className="p-2.5 sm:p-3.5 flex flex-col min-w-0">
+                    <span className="text-[11px] font-medium text-muted-foreground leading-tight line-clamp-2">
                       {kpi.label}
                     </span>
                     <span className={kpi.valueClass}>{kpi.value}</span>
-                    <span className={cn('text-[10px]', kpi.subClass)}>{kpi.sub}</span>
+                    <span className={cn('text-[10px] leading-tight truncate', kpi.subClass)}>
+                      {kpi.sub}
+                    </span>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -668,25 +666,28 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
         )}
       </div>
 
-      <Dialog
+      <ResponsiveModal
         open={Boolean(pensionToToggle)}
         onOpenChange={(open) => !open && !isTogglingActive && setPensionToToggle(null)}
       >
-        <DialogContent className="max-w-md p-5 sm:p-6 bg-background rounded-2xl">
-          <DialogHeader className="text-left space-y-1.5">
-            <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
+        <ResponsiveModalContent
+          showClose={false}
+          className="max-w-lg md:max-w-md mx-auto p-6 bg-card border-border md:rounded-3xl"
+        >
+          <ResponsiveModalHeader className="text-left space-y-1.5 p-0 border-b-0">
+            <ResponsiveModalTitle className="text-base sm:text-lg font-bold text-foreground">
               {pensionToToggle?.targetActive
                 ? '¿Activar publicación de pensión?'
                 : '¿Pausar publicación de pensión?'}
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+            </ResponsiveModalTitle>
+            <ResponsiveModalDescription className="text-xs text-muted-foreground leading-relaxed">
               {pensionToToggle?.targetActive
                 ? `La pensión "${pensionToToggle.pension.title}" volverá a ser visible para todos los estudiantes universitarios en el mapa y búsquedas.`
                 : `La pensión "${pensionToToggle?.pension.title}" quedará oculta temporalmente para los estudiantes. No recibirás nuevas solicitudes ni visitas mientras esté pausada.`}
-            </DialogDescription>
-          </DialogHeader>
+            </ResponsiveModalDescription>
+          </ResponsiveModalHeader>
 
-          <DialogFooter className="flex flex-col sm:flex-row items-center justify-end gap-2 pt-4 border-t border-border/50">
+          <ResponsiveModalFooter className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-4 px-0 pb-0 bg-transparent border-t border-border/50">
             <Button
               type="button"
               variant="outline"
@@ -712,9 +713,9 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 {pensionToToggle?.targetActive ? 'Activar Publicación' : 'Pausar Publicación'}
               </span>
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </ResponsiveModalFooter>
+        </ResponsiveModalContent>
+      </ResponsiveModal>
 
       {previewPension && (
         <PensionDetailModal

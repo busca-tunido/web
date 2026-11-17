@@ -17,6 +17,7 @@ import { ProposalPreviewComparisonModal } from '@/components/landlord/proposal-p
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ProposalsListSkeleton } from '@/components/ui/skeletons/landlord-pension-skeleton';
 import { useLandlord } from '@/contexts/landlord-context';
 import { isApiSuccess } from '@/lib/api-response';
 import type { PensionDetailDto, PensionItem, ProposalDto } from '@/lib/types';
@@ -159,6 +160,18 @@ export function LandlordProposalsScreen({
     loadProposals();
   }, [loadProposals]);
 
+  useEffect(() => {
+    if (!successMessage) return;
+    const timer = setTimeout(() => setSuccessMessage(null), 4500);
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
+  useEffect(() => {
+    if (!errorMessage) return;
+    const timer = setTimeout(() => setErrorMessage(null), 6500);
+    return () => clearTimeout(timer);
+  }, [errorMessage]);
+
   const handleReview = async (proposalId: string, status: 'APPROVED' | 'REJECTED') => {
     setProcessingId(proposalId);
     setErrorMessage(null);
@@ -270,42 +283,21 @@ export function LandlordProposalsScreen({
       </div>
 
       {successMessage && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 flex items-center justify-between text-emerald-600 dark:text-emerald-400 text-xs font-semibold animate-in fade-in">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-            <span>{successMessage}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setSuccessMessage(null)}
-            className="p-1 hover:opacity-75 cursor-pointer"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-semibold animate-in fade-in">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span>{successMessage}</span>
         </div>
       )}
 
       {errorMessage && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 flex items-center justify-between text-destructive text-xs font-semibold animate-in fade-in">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 shrink-0" />
-            <span>{errorMessage}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setErrorMessage(null)}
-            className="p-1 hover:opacity-75 cursor-pointer"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 flex items-center gap-2 text-destructive text-xs font-semibold animate-in fade-in">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>{errorMessage}</span>
         </div>
       )}
 
       {isLoading ? (
-        <div className="space-y-4 animate-pulse">
-          <div className="h-32 w-full rounded-2xl bg-muted/40" />
-          <div className="h-32 w-full rounded-2xl bg-muted/40" />
-        </div>
+        <ProposalsListSkeleton count={2} />
       ) : filteredProposals.length === 0 ? (
         <Card className="border-border/60 bg-card/60 p-8 text-center rounded-2xl">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground mx-auto mb-3">
@@ -426,14 +418,14 @@ export function LandlordProposalsScreen({
                       variant="outline"
                       size="sm"
                       onClick={() => setPreviewProposal(proposal)}
-                      className="min-h-[38px] px-3.5 text-xs font-semibold text-foreground border-border/80 hover:bg-secondary cursor-pointer"
+                      className="min-h-[38px] h-auto py-1.5 px-3.5 whitespace-normal text-center leading-tight text-xs font-semibold text-foreground border-border/80 hover:bg-secondary cursor-pointer"
                     >
-                      <Eye className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                      <Eye className="h-3.5 w-3.5 mr-1.5 shrink-0 text-muted-foreground" />
                       <span>Comparar Vistas Previas</span>
                     </Button>
 
                     {isPending && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Button
                           type="button"
                           variant="outline"
@@ -442,7 +434,7 @@ export function LandlordProposalsScreen({
                           onClick={() => handleReview(proposal.id, 'REJECTED')}
                           className="min-h-[38px] px-4 text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive border-border/80 cursor-pointer"
                         >
-                          <X className="h-3.5 w-3.5 mr-1.5" />
+                          <X className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                           <span>Rechazar</span>
                         </Button>
 
@@ -454,9 +446,9 @@ export function LandlordProposalsScreen({
                           className="min-h-[38px] px-4 text-xs font-semibold bg-foreground text-background hover:opacity-90 shadow-none cursor-pointer"
                         >
                           {isProcessing ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5 shrink-0" />
                           ) : (
-                            <Check className="h-3.5 w-3.5 mr-1.5" />
+                            <Check className="h-3.5 w-3.5 mr-1.5 shrink-0" />
                           )}
                           <span>Aprobar Cambios</span>
                         </Button>

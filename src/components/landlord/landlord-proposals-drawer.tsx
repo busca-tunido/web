@@ -20,12 +20,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalDescription,
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
+import { ProposalsListSkeleton } from '@/components/ui/skeletons/landlord-pension-skeleton';
 import { isApiSuccess } from '@/lib/api-response';
 import type { PensionDetailDto, ProposalDto } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
@@ -210,6 +211,12 @@ export function LandlordProposalsDrawer({
     }
   }, [isOpen, pensionId, loadData]);
 
+  useEffect(() => {
+    if (!feedbackMessage) return;
+    const timer = setTimeout(() => setFeedbackMessage(null), 4500);
+    return () => clearTimeout(timer);
+  }, [feedbackMessage]);
+
   const handleReview = async (proposalId: string, status: 'APPROVED' | 'REJECTED') => {
     setProcessingIds((prev) => new Set(prev).add(proposalId));
     setActionError(null);
@@ -241,49 +248,38 @@ export function LandlordProposalsDrawer({
 
   return (
     <>
-      <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent
+      <ResponsiveModal open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <ResponsiveModalContent
           id="landlord-proposals-drawer"
-          className="max-h-[92vh] max-w-lg md:max-w-2xl mx-auto md:rounded-3xl bg-card border-border text-foreground flex flex-col overflow-hidden"
+          showClose={false}
+          className="max-w-lg md:max-w-2xl md:max-h-[84vh] mx-auto md:rounded-3xl bg-card border-border text-foreground flex flex-col overflow-hidden"
         >
-          <div className="mx-auto mt-2.5 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30 shrink-0" />
-
-          <DrawerHeader className="text-left px-4 pt-3 pb-3 border-b border-border/60">
+          <ResponsiveModalHeader className="text-left px-5 py-4 border-b border-border/60 shrink-0">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <DrawerTitle className="text-base font-bold text-foreground">
+              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                <ResponsiveModalTitle className="text-base sm:text-lg font-bold text-foreground">
                   Sugerencias de la Comunidad
-                </DrawerTitle>
+                </ResponsiveModalTitle>
                 {pendingCount > 0 && (
                   <Badge
                     variant="outline"
-                    className="border-primary/40 bg-primary/10 text-primary text-[11px] font-semibold"
+                    className="border-primary/40 bg-primary/10 text-primary text-[11px] font-semibold shrink-0"
                   >
                     {pendingCount} {pendingCount === 1 ? 'pendiente' : 'pendientes'}
                   </Badge>
                 )}
               </div>
             </div>
-            <DrawerDescription className="text-xs text-muted-foreground mt-0.5">
+            <ResponsiveModalDescription className="text-xs text-muted-foreground mt-0.5">
               Revisa y aprueba mejoras propuestas por estudiantes que conocen tu alojamiento
-            </DrawerDescription>
-          </DrawerHeader>
+            </ResponsiveModalDescription>
+          </ResponsiveModalHeader>
 
-          <div className="overflow-y-auto flex-1 px-4 py-4 space-y-4">
+          <div className="overflow-y-auto scrollbar-subtle flex-1 min-h-0 px-5 py-4 pb-6 space-y-4">
             {feedbackMessage && (
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 flex items-center justify-between gap-2 text-emerald-600 dark:text-emerald-400 animate-in fade-in">
-                <div className="flex items-center gap-2 text-xs font-semibold">
-                  <CheckCircle2 className="h-4 w-4 shrink-0" />
-                  <span>{feedbackMessage}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setFeedbackMessage(null)}
-                  className="text-emerald-600/70 hover:text-emerald-600 p-1"
-                  aria-label="Cerrar aviso"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 flex items-center gap-2 text-emerald-600 dark:text-emerald-400 animate-in fade-in text-xs font-semibold">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>{feedbackMessage}</span>
               </div>
             )}
 
@@ -295,10 +291,7 @@ export function LandlordProposalsDrawer({
             )}
 
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-xs font-medium">Cargando sugerencias de la comunidad...</p>
-              </div>
+              <ProposalsListSkeleton count={2} />
             ) : fetchError ? (
               <div className="flex flex-col items-center justify-center py-12 px-4 text-center space-y-3">
                 <AlertCircle className="h-8 w-8 text-destructive" />
@@ -322,14 +315,6 @@ export function LandlordProposalsDrawer({
                 <p className="text-xs text-muted-foreground mt-1 max-w-xs leading-relaxed">
                   No hay sugerencias de la comunidad pendientes de revisión para este alojamiento.
                 </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onClose}
-                  className="mt-6 min-h-[48px] px-6 text-xs font-semibold"
-                >
-                  Entendido
-                </Button>
               </div>
             ) : (
               proposals.map((proposal) => {
@@ -477,9 +462,9 @@ export function LandlordProposalsDrawer({
                         variant="outline"
                         size="sm"
                         onClick={() => setPreviewProposal(proposal)}
-                        className="w-full min-h-[40px] text-xs font-semibold text-foreground border-border/80 hover:bg-secondary cursor-pointer"
+                        className="w-full min-h-[40px] h-auto py-2 px-3 whitespace-normal text-center leading-tight text-xs font-semibold text-foreground border-border/80 hover:bg-secondary cursor-pointer"
                       >
-                        <Eye className="h-4 w-4 mr-1.5 text-muted-foreground" />
+                        <Eye className="h-4 w-4 mr-1.5 shrink-0 text-muted-foreground" />
                         <span>Comparar Vistas Previas (Antes y Después)</span>
                       </Button>
 
@@ -489,28 +474,28 @@ export function LandlordProposalsDrawer({
                           variant="outline"
                           disabled={isProcessing}
                           onClick={() => handleReview(proposal.id, 'REJECTED')}
-                          className="flex-1 min-h-[48px] border-border text-destructive hover:bg-destructive/10 hover:text-destructive text-xs font-semibold cursor-pointer"
+                          className="flex-1 min-h-[48px] h-auto py-2 px-3 whitespace-normal text-center leading-tight border-border text-destructive hover:bg-destructive/10 hover:text-destructive text-xs font-semibold cursor-pointer"
                         >
                           {isProcessing ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                            <Loader2 className="h-4 w-4 animate-spin mr-1.5 shrink-0" />
                           ) : (
-                            <X className="h-4 w-4 mr-1.5" />
+                            <X className="h-4 w-4 mr-1.5 shrink-0" />
                           )}
-                          Descartar
+                          <span>Descartar</span>
                         </Button>
                         <Button
                           type="button"
                           variant="default"
                           disabled={isProcessing}
                           onClick={() => handleReview(proposal.id, 'APPROVED')}
-                          className="flex-1 min-h-[48px] bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer"
+                          className="flex-1 min-h-[48px] h-auto py-2 px-3 whitespace-normal text-center leading-tight bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs cursor-pointer"
                         >
                           {isProcessing ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                            <Loader2 className="h-4 w-4 animate-spin mr-1.5 shrink-0" />
                           ) : (
-                            <Check className="h-4 w-4 mr-1.5" />
+                            <Check className="h-4 w-4 mr-1.5 shrink-0" />
                           )}
-                          Aprobar Sugerencia
+                          <span>Aprobar Sugerencia</span>
                         </Button>
                       </div>
                     </CardContent>
@@ -519,8 +504,8 @@ export function LandlordProposalsDrawer({
               })
             )}
           </div>
-        </DrawerContent>
-      </Drawer>
+        </ResponsiveModalContent>
+      </ResponsiveModal>
 
       {previewProposal && (
         <ProposalPreviewComparisonModal
