@@ -94,4 +94,44 @@ describe('ResponsiveModal', () => {
     expect(document.querySelector('[data-slot="drawer-content"]')).not.toBeNull();
     expect(document.querySelector('[data-slot="dialog-content"]')).toBeNull();
   });
+
+  it('renders forced opaque blur overlay for nested second modals on both desktop and mobile', () => {
+    vi.mocked(useMediaQuery).mockReturnValue(true);
+    const { unmount } = render(
+      <ResponsiveModal open={true} onOpenChange={vi.fn()}>
+        <ResponsiveModalContent showClose={false}>
+          <ResponsiveModalTitle>Parent desktop modal</ResponsiveModalTitle>
+          <ResponsiveModal open={true} onOpenChange={vi.fn()}>
+            <ResponsiveModalContent showClose={false}>
+              <ResponsiveModalTitle>Nested desktop modal</ResponsiveModalTitle>
+            </ResponsiveModalContent>
+          </ResponsiveModal>
+        </ResponsiveModalContent>
+      </ResponsiveModal>,
+    );
+
+    const dialogOverlays = document.querySelectorAll('[data-slot="dialog-overlay"]');
+    expect(dialogOverlays.length).toBe(2);
+    expect(dialogOverlays[1].className).toContain('bg-black/55');
+    expect(dialogOverlays[1].className).toContain('backdrop-blur-xs');
+    unmount();
+
+    vi.mocked(useMediaQuery).mockReturnValue(false);
+    render(
+      <ResponsiveModal open={true} onOpenChange={vi.fn()}>
+        <ResponsiveModalContent showClose={false}>
+          <ResponsiveModalTitle>Parent mobile drawer</ResponsiveModalTitle>
+          <ResponsiveModal open={true} onOpenChange={vi.fn()}>
+            <ResponsiveModalContent showClose={false}>
+              <ResponsiveModalTitle>Nested mobile drawer</ResponsiveModalTitle>
+            </ResponsiveModalContent>
+          </ResponsiveModal>
+        </ResponsiveModalContent>
+      </ResponsiveModal>,
+    );
+
+    const drawerOverlays = document.querySelectorAll('[data-slot="drawer-overlay"]');
+    expect(drawerOverlays.length).toBe(2);
+    expect(drawerOverlays[1].className).toContain('bg-black/55');
+  });
 });

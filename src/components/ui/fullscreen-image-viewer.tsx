@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { AnimatePresence, motion, type PanInfo } from 'motion/react';
 import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 export type ViewerImage = {
@@ -53,6 +53,7 @@ export function FullScreenImageViewer({
   const [mounted, setMounted] = useState<boolean>(false);
   const [currentIndex, setCurrentIndex] = useState<number>(initialIndex);
   const [direction, setDirection] = useState<number>(0);
+  const isDraggingRef = useRef<boolean>(false);
 
   const normalizedImages = useMemo(() => {
     return images
@@ -140,6 +141,9 @@ export function FullScreenImageViewer({
   }, [isOpen, onClose, paginate]);
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    setTimeout(() => {
+      isDraggingRef.current = false;
+    }, 50);
     const swipeThreshold = 50;
     const swipeVelocity = 400;
 
@@ -170,7 +174,16 @@ export function FullScreenImageViewer({
       aria-label={activeTitle || 'Visor de imágenes a pantalla completa'}
       className="fixed inset-0 z-50 flex flex-col justify-between bg-black/95 backdrop-blur-md select-none touch-none"
     >
-      <header className="relative z-30 flex items-center justify-between px-4 sm:px-6 py-4 bg-gradient-to-b from-black/80 to-transparent">
+      <button
+        type="button"
+        onClick={() => {
+          if (!isDraggingRef.current) onClose();
+        }}
+        className="fixed inset-0 z-0 cursor-default focus:outline-none"
+        aria-label="Cerrar visor al tocar el fondo"
+      />
+
+      <header className="relative z-30 flex items-center justify-between px-4 sm:px-6 py-4 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
         <div className="flex flex-col min-w-0 pr-4">
           {activeTitle && (
             <h2 className="text-sm sm:text-base font-bold text-white truncate">{activeTitle}</h2>
@@ -178,7 +191,7 @@ export function FullScreenImageViewer({
           {activeCaption && <p className="text-xs text-white/70 truncate">{activeCaption}</p>}
         </div>
 
-        <div className="flex items-center gap-3 shrink-0 ml-auto">
+        <div className="flex items-center gap-3 shrink-0 ml-auto pointer-events-auto">
           {isMultiple && (
             <span className="text-xs sm:text-sm font-semibold text-white/80 tabular-nums px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-xs">
               {currentIndex + 1} / {total}
@@ -196,12 +209,12 @@ export function FullScreenImageViewer({
         </div>
       </header>
 
-      <main className="relative flex-1 flex items-center justify-center w-full h-full overflow-hidden px-2 sm:px-8">
+      <main className="relative z-20 flex-1 flex items-center justify-center w-full h-full overflow-hidden px-2 sm:px-8 pointer-events-none">
         {isMultiple && (
           <button
             type="button"
             onClick={() => paginate(-1)}
-            className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-30 h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 active:scale-90 transition backdrop-blur-md cursor-pointer"
+            className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-30 h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 active:scale-90 transition backdrop-blur-md cursor-pointer pointer-events-auto"
             aria-label="Foto anterior"
           >
             <ChevronLeft className="h-6 w-6" />
@@ -225,21 +238,23 @@ export function FullScreenImageViewer({
               drag={isMultiple ? 'x' : 'y'}
               dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
               dragElastic={0.4}
+              onDragStart={() => {
+                isDraggingRef.current = true;
+              }}
               onDragEnd={handleDragEnd}
-              className="absolute inset-0 flex items-center justify-center p-2 sm:p-6 cursor-grab active:cursor-grabbing"
+              className="absolute inset-0 flex items-center justify-center p-2 sm:p-6 pointer-events-none"
             >
-              <div className="relative w-full h-full max-w-6xl max-h-[82vh] flex items-center justify-center">
-                <Image
-                  src={currentImage.url}
-                  alt={currentImage.alt || 'Foto ampliada'}
-                  fill
-                  unoptimized
-                  priority
-                  sizes="100vw"
-                  draggable={false}
-                  className="object-contain select-none pointer-events-none"
-                />
-              </div>
+              <Image
+                src={currentImage.url}
+                alt={currentImage.alt || 'Foto ampliada'}
+                width={1600}
+                height={1200}
+                unoptimized
+                priority
+                sizes="100vw"
+                draggable={false}
+                className="pointer-events-auto w-auto h-auto max-w-full max-h-[82vh] object-contain select-none cursor-grab active:cursor-grabbing"
+              />
             </motion.div>
           </AnimatePresence>
         </div>
@@ -248,7 +263,7 @@ export function FullScreenImageViewer({
           <button
             type="button"
             onClick={() => paginate(1)}
-            className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-30 h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 active:scale-90 transition backdrop-blur-md cursor-pointer"
+            className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-30 h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 active:scale-90 transition backdrop-blur-md cursor-pointer pointer-events-auto"
             aria-label="Siguiente foto"
           >
             <ChevronRight className="h-6 w-6" />
@@ -256,9 +271,9 @@ export function FullScreenImageViewer({
         )}
       </main>
 
-      <footer className="relative z-30 flex flex-col items-center justify-center p-4 bg-gradient-to-t from-black/85 via-black/40 to-transparent">
+      <footer className="relative z-30 flex flex-col items-center justify-center p-4 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none">
         {isMultiple && showThumbnails && total <= 24 && (
-          <div className="flex items-center gap-2 max-w-full overflow-x-auto py-1 px-2 scrollbar-none">
+          <div className="flex items-center gap-2 max-w-full overflow-x-auto py-1 px-2 scrollbar-none pointer-events-auto">
             {normalizedImages.map((img, idx) => {
               const isActive = idx === currentIndex;
               return (

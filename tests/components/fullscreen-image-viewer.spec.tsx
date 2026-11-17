@@ -106,4 +106,30 @@ describe('FullScreenImageViewer', () => {
     fireEvent.click(thumbnail3);
     expect(screen.getByText('3 / 3')).toBeDefined();
   });
+
+  it('closes when clicking dark background and restricts grab cursor strictly to the image', () => {
+    const handleClose = vi.fn();
+    render(
+      <FullScreenImageViewer
+        isOpen={true}
+        onClose={handleClose}
+        images={[sampleImages[0]]}
+        title="Backdrop Test"
+      />,
+    );
+
+    const img = screen.getByAltText('Imagen ampliada');
+    expect(img.className).toContain('cursor-grab');
+    const motionWrapper = img.parentElement;
+    expect(motionWrapper?.className).not.toContain('cursor-grab');
+
+    const backdropBtn = screen.getByLabelText('Cerrar visor al tocar el fondo');
+    expect(backdropBtn.className).toContain('cursor-default');
+
+    fireEvent.click(img);
+    expect(handleClose).not.toHaveBeenCalled();
+
+    fireEvent.click(backdropBtn);
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
 });
