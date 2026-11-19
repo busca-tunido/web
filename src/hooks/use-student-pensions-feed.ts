@@ -66,7 +66,7 @@ export function useStudentPensionsFeed(
     userLocation,
     currentCity,
     radiusKm = 30,
-    sortBy = 'relevance',
+    sortBy,
     limit = 12,
     initialBounds = null,
     autoLoad = true,
@@ -200,15 +200,22 @@ export function useStudentPensionsFeed(
   }, [currentCity]);
 
   const filterCity = filters?.city;
+  const filterNeighborhood = filters?.neighborhood;
   const filterUni = filters?.universityId;
   const filterQuery = filters?.query;
   const filterMinPrice = filters?.minPriceClp;
   const filterMaxPrice = filters?.maxPriceClp;
   const filterGender = filters?.genderPreference;
   const filterRoomType = filters?.roomType;
+  const filterHasPrivateBathroom = filters?.hasPrivateBathroom;
+  const filterIncludesMeals = filters?.includesMeals;
+  const filterAmenities = filters?.amenities;
+  const filterAmenitiesKey = filterAmenities?.join(',') ?? '';
+  const filterMinBeds = filters?.minBeds;
+  const filterOnlyAvailable = filters?.onlyAvailable;
   const filterSortBy = filters?.sortBy;
   const filterRatingTier = filters?.ratingTier;
-  const effectiveSortBy = sortBy ?? filterSortBy ?? 'relevance';
+  const effectiveSortBy = filterSortBy ?? sortBy ?? 'relevance';
 
   const userLat = userLocation?.latitude;
   const userLng = userLocation?.longitude;
@@ -229,12 +236,26 @@ export function useStudentPensionsFeed(
       setError(null);
 
       try {
+        const hasExtraFilters = Boolean(
+          filterNeighborhood ||
+            filterMinPrice !== undefined ||
+            filterMaxPrice !== undefined ||
+            (filterGender && filterGender !== 'ALL') ||
+            filterRoomType ||
+            filterHasPrivateBathroom ||
+            filterIncludesMeals ||
+            filterAmenitiesKey ||
+            filterMinBeds ||
+            filterOnlyAvailable ||
+            filterRatingTier,
+        );
         const isNearbyExploration = Boolean(
           userLat !== undefined &&
             userLng !== undefined &&
             !filterCity &&
             !filterUni &&
             !filterQuery &&
+            !hasExtraFilters &&
             !bounds &&
             effectiveSortBy === 'distance',
         );
@@ -243,14 +264,21 @@ export function useStudentPensionsFeed(
         if (isNearbyExploration && userLat !== undefined && userLng !== undefined) {
           res = await pensionsService.fetchNearbyPensions(userLat, userLng, radiusKm);
         } else {
+          const parsedAmenities = filterAmenitiesKey ? filterAmenitiesKey.split(',') : undefined;
           res = await pensionsService.fetchPaginatedPensions({
             city: filterCity,
+            neighborhood: filterNeighborhood,
             universityId: filterUni,
             search: filterQuery,
             minPrice: filterMinPrice,
             maxPrice: filterMaxPrice,
             genderPreference: filterGender === 'ALL' ? undefined : filterGender,
             roomType: filterRoomType,
+            hasPrivateBathroom: filterHasPrivateBathroom,
+            includesMeals: filterIncludesMeals,
+            amenities: parsedAmenities,
+            minBeds: filterMinBeds,
+            onlyAvailable: filterOnlyAvailable,
             ratingTier: filterRatingTier,
             sortBy: effectiveSortBy,
             page: pageIndex,
@@ -312,10 +340,16 @@ export function useStudentPensionsFeed(
     [
       bounds,
       effectiveSortBy,
+      filterAmenitiesKey,
       filterCity,
       filterGender,
+      filterHasPrivateBathroom,
+      filterIncludesMeals,
       filterMaxPrice,
+      filterMinBeds,
       filterMinPrice,
+      filterNeighborhood,
+      filterOnlyAvailable,
       filterQuery,
       filterRatingTier,
       filterRoomType,
@@ -336,13 +370,20 @@ export function useStudentPensionsFeed(
 
     const isDefaultUnfilteredQuery =
       !filterCity &&
+      !filterNeighborhood &&
       !filterUni &&
       !filterQuery &&
       filterMinPrice === undefined &&
       filterMaxPrice === undefined &&
       !filterGender &&
       !filterRoomType &&
+      !filterHasPrivateBathroom &&
+      !filterIncludesMeals &&
+      !filterAmenitiesKey &&
+      !filterMinBeds &&
+      !filterOnlyAvailable &&
       !filterRatingTier &&
+      effectiveSortBy === 'relevance' &&
       !bounds &&
       userLat === undefined &&
       userLng === undefined;
@@ -357,11 +398,18 @@ export function useStudentPensionsFeed(
   }, [
     autoLoad,
     bounds,
+    effectiveSortBy,
     fetchPensionsData,
+    filterAmenitiesKey,
     filterCity,
     filterGender,
+    filterHasPrivateBathroom,
+    filterIncludesMeals,
     filterMaxPrice,
+    filterMinBeds,
     filterMinPrice,
+    filterNeighborhood,
+    filterOnlyAvailable,
     filterQuery,
     filterRatingTier,
     filterRoomType,

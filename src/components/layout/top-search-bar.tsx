@@ -3,7 +3,7 @@
 import { Filter, MapPin, Search, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { getSortedFilterChips } from '@/lib/filter-chips';
+import { countActiveFilters, getSortedFilterChips } from '@/lib/filter-chips';
 import type { SearchFilters } from '@/lib/types';
 
 type TopSearchBarProps = {
@@ -23,18 +23,15 @@ export function TopSearchBar({
   onClearCity,
   onResetFilters,
 }: TopSearchBarProps) {
-  const activeFiltersCount = useMemo(() => {
-    return (
-      (filters.hasPrivateBathroom ? 1 : 0) +
-      (filters.includesMeals ? 1 : 0) +
-      (filters.maxPriceClp ? 1 : 0) +
-      (filters.roomType ? 1 : 0) +
-      (filters.genderPreference && filters.genderPreference !== 'ALL' ? 1 : 0) +
-      (filters.sortBy && filters.sortBy !== 'relevance' ? 1 : 0) +
-      (filters.ratingTier ? 1 : 0) +
-      (selectedCityName ? 1 : 0)
-    );
-  }, [filters, selectedCityName]);
+  const activeFiltersCount = useMemo(
+    () =>
+      countActiveFilters(filters, {
+        includeCity: true,
+        selectedCityName,
+        includeSort: true,
+      }),
+    [filters, selectedCityName],
+  );
 
   const sortedChips = useMemo(() => getSortedFilterChips(filters), [filters]);
 

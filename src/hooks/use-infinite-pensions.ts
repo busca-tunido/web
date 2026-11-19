@@ -45,11 +45,19 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
   const activeRequestIdRef = useRef<number>(0);
 
   const city = filters?.city;
+  const neighborhood = filters?.neighborhood;
   const universityId = filters?.universityId;
   const query = filters?.query;
+  const minPriceClp = filters?.minPriceClp;
   const maxPriceClp = filters?.maxPriceClp;
   const hasPrivateBathroom = filters?.hasPrivateBathroom;
   const includesMeals = filters?.includesMeals;
+  const roomType = filters?.roomType;
+  const amenitiesKey = filters?.amenities?.join(',') ?? '';
+  const minBeds = filters?.minBeds;
+  const onlyAvailable = filters?.onlyAvailable;
+  const ratingTier = filters?.ratingTier;
+  const effectiveSortBy = filters?.sortBy ?? sortBy;
   const genderPreference = filters?.genderPreference;
 
   const loadInitialPage = useCallback(async () => {
@@ -58,18 +66,26 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
     setError(null);
 
     try {
+      const parsedAmenities = amenitiesKey ? amenitiesKey.split(',') : undefined;
       const res = await fetchPaginatedPensions({
         city,
+        neighborhood,
         universityId,
         query: query ?? '',
+        minPriceClp,
         maxPriceClp,
+        roomType,
         hasPrivateBathroom,
         includesMeals,
+        amenities: parsedAmenities,
+        minBeds,
+        onlyAvailable,
+        ratingTier,
         genderPreference,
         latitude,
         longitude,
         radiusKm,
-        sortBy,
+        sortBy: effectiveSortBy,
         minLat,
         maxLat,
         minLng,
@@ -99,22 +115,29 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
       }
     }
   }, [
+    amenitiesKey,
     city,
-    universityId,
-    query,
-    maxPriceClp,
+    effectiveSortBy,
+    genderPreference,
     hasPrivateBathroom,
     includesMeals,
-    genderPreference,
     latitude,
-    longitude,
-    radiusKm,
-    sortBy,
     limit,
-    minLat,
+    longitude,
     maxLat,
-    minLng,
     maxLng,
+    maxPriceClp,
+    minBeds,
+    minLat,
+    minLng,
+    minPriceClp,
+    neighborhood,
+    onlyAvailable,
+    query,
+    radiusKm,
+    ratingTier,
+    roomType,
+    universityId,
   ]);
 
   useEffect(() => {
@@ -129,18 +152,26 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
     setError(null);
 
     try {
+      const parsedAmenities = amenitiesKey ? amenitiesKey.split(',') : undefined;
       const res = await fetchPaginatedPensions({
         city,
+        neighborhood,
         universityId,
         query: query ?? '',
+        minPriceClp,
         maxPriceClp,
+        roomType,
         hasPrivateBathroom,
         includesMeals,
+        amenities: parsedAmenities,
+        minBeds,
+        onlyAvailable,
+        ratingTier,
         genderPreference,
         latitude,
         longitude,
         radiusKm,
-        sortBy,
+        sortBy: effectiveSortBy,
         minLat,
         maxLat,
         minLng,
@@ -176,26 +207,33 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
       }
     }
   }, [
+    amenitiesKey,
     city,
-    universityId,
-    query,
-    maxPriceClp,
+    effectiveSortBy,
+    genderPreference,
+    hasMore,
     hasPrivateBathroom,
     includesMeals,
-    genderPreference,
-    latitude,
-    longitude,
-    radiusKm,
-    sortBy,
-    limit,
-    minLat,
-    maxLat,
-    minLng,
-    maxLng,
-    page,
-    hasMore,
     isLoading,
     isLoadingMore,
+    latitude,
+    limit,
+    longitude,
+    maxLat,
+    maxLng,
+    maxPriceClp,
+    minBeds,
+    minLat,
+    minLng,
+    minPriceClp,
+    neighborhood,
+    onlyAvailable,
+    page,
+    query,
+    radiusKm,
+    ratingTier,
+    roomType,
+    universityId,
   ]);
 
   const refresh = useCallback(async () => {

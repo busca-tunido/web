@@ -28,14 +28,41 @@ function toBackendQueryParams(
   if (!params) {
     return undefined;
   }
-  const { genderPreference, minPriceClp, maxPriceClp, minPrice, maxPrice, query, ...rest } = params;
-  const gp = genderPreference === 'MIXED' || genderPreference === 'ALL' ? 'ANY' : genderPreference;
+  const {
+    genderPreference,
+    minPriceClp,
+    maxPriceClp,
+    minPrice,
+    maxPrice,
+    query,
+    amenities,
+    hasPrivateBathroom,
+    includesMeals,
+    onlyAvailable,
+    neighborhood,
+    ...rest
+  } = params;
+  const gp =
+    genderPreference === 'ALL'
+      ? undefined
+      : genderPreference === 'MIXED'
+        ? 'ANY'
+        : genderPreference;
+  const searchVal = (rest.search ?? query)?.trim() || undefined;
+  const neighborhoodVal = neighborhood?.trim() || undefined;
+  const amenitiesVal = amenities && amenities.length > 0 ? [...amenities] : undefined;
+
   return {
     ...rest,
-    search: rest.search ?? query,
+    search: searchVal,
+    neighborhood: neighborhoodVal,
     genderPreference: gp,
     minPrice: minPrice ?? minPriceClp,
     maxPrice: maxPrice ?? maxPriceClp,
+    hasPrivateBathroom: hasPrivateBathroom || undefined,
+    includesMeals: includesMeals || undefined,
+    onlyAvailable: onlyAvailable || undefined,
+    amenities: amenitiesVal,
   };
 }
 

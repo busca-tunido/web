@@ -102,6 +102,7 @@ export function useMapViewportPensions(options: {
 
   const filterQuery = filters?.query || undefined;
   const filterCity = filters?.city;
+  const filterNeighborhood = filters?.neighborhood;
   const filterUni = filters?.universityId;
   const filterMinPrice = filters?.minPriceClp;
   const filterMaxPrice = filters?.maxPriceClp;
@@ -109,6 +110,10 @@ export function useMapViewportPensions(options: {
   const filterRoomType = filters?.roomType;
   const filterHasPrivateBath = filters?.hasPrivateBathroom;
   const filterIncludesMeals = filters?.includesMeals;
+  const filterAmenitiesKey = filters?.amenities?.join(',') ?? '';
+  const filterMinBeds = filters?.minBeds;
+  const filterOnlyAvailable = filters?.onlyAvailable;
+  const filterSortBy = filters?.sortBy;
   const filterRatingTier = filters?.ratingTier;
 
   const fetchViewportPensions = useCallback(
@@ -123,6 +128,7 @@ export function useMapViewportPensions(options: {
       }
 
       const requestId = ++activeRequestIdRef.current;
+      const parsedAmenities = filterAmenitiesKey ? filterAmenitiesKey.split(',') : undefined;
 
       try {
         const res = await pensionsService.fetchPaginatedPensions({
@@ -131,6 +137,7 @@ export function useMapViewportPensions(options: {
           minLng: bounds.getWest(),
           maxLng: bounds.getEast(),
           city: filterCity,
+          neighborhood: filterNeighborhood,
           universityId: filterUni,
           search: filterQuery,
           minPrice: filterMinPrice,
@@ -139,6 +146,10 @@ export function useMapViewportPensions(options: {
           roomType: filterRoomType,
           hasPrivateBathroom: filterHasPrivateBath,
           includesMeals: filterIncludesMeals,
+          amenities: parsedAmenities,
+          minBeds: filterMinBeds,
+          onlyAvailable: filterOnlyAvailable,
+          sortBy: filterSortBy,
           ratingTier: filterRatingTier,
           view: 'map',
           limit: 50,
@@ -156,15 +167,20 @@ export function useMapViewportPensions(options: {
     },
     [
       applyServerPensionList,
+      filterAmenitiesKey,
       filterCity,
       filterGender,
       filterHasPrivateBath,
       filterIncludesMeals,
       filterMaxPrice,
+      filterMinBeds,
       filterMinPrice,
+      filterNeighborhood,
+      filterOnlyAvailable,
       filterQuery,
       filterRatingTier,
       filterRoomType,
+      filterSortBy,
       filterUni,
     ],
   );
@@ -177,6 +193,7 @@ export function useMapViewportPensions(options: {
       }
       setIsAreaLoading(true);
       const requestId = ++activeRequestIdRef.current;
+      const parsedAmenities = filterAmenitiesKey ? filterAmenitiesKey.split(',') : undefined;
 
       try {
         const res = await pensionsService.fetchPaginatedPensions({
@@ -184,6 +201,7 @@ export function useMapViewportPensions(options: {
           longitude: lng,
           radiusKm,
           city: filterCity,
+          neighborhood: filterNeighborhood,
           universityId: filterUni,
           search: filterQuery,
           minPrice: filterMinPrice,
@@ -192,6 +210,10 @@ export function useMapViewportPensions(options: {
           roomType: filterRoomType,
           hasPrivateBathroom: filterHasPrivateBath,
           includesMeals: filterIncludesMeals,
+          amenities: parsedAmenities,
+          minBeds: filterMinBeds,
+          onlyAvailable: filterOnlyAvailable,
+          sortBy: filterSortBy,
           ratingTier: filterRatingTier,
           view: 'map',
           limit: 50,
@@ -209,15 +231,20 @@ export function useMapViewportPensions(options: {
     },
     [
       applyServerPensionList,
+      filterAmenitiesKey,
       filterCity,
       filterGender,
       filterHasPrivateBath,
       filterIncludesMeals,
       filterMaxPrice,
+      filterMinBeds,
       filterMinPrice,
+      filterNeighborhood,
+      filterOnlyAvailable,
       filterQuery,
       filterRatingTier,
       filterRoomType,
+      filterSortBy,
       filterUni,
     ],
   );
@@ -230,10 +257,12 @@ export function useMapViewportPensions(options: {
       }
       setIsAreaLoading(true);
       const requestId = ++activeRequestIdRef.current;
+      const parsedAmenities = filterAmenitiesKey ? filterAmenitiesKey.split(',') : undefined;
 
       try {
         const res = await pensionsService.fetchPaginatedPensions({
           city: cityName,
+          neighborhood: filterNeighborhood,
           universityId: filterUni,
           search: filterQuery,
           minPrice: filterMinPrice,
@@ -242,6 +271,10 @@ export function useMapViewportPensions(options: {
           roomType: filterRoomType,
           hasPrivateBathroom: filterHasPrivateBath,
           includesMeals: filterIncludesMeals,
+          amenities: parsedAmenities,
+          minBeds: filterMinBeds,
+          onlyAvailable: filterOnlyAvailable,
+          sortBy: filterSortBy,
           ratingTier: filterRatingTier,
           view: 'map',
           limit: 50,
@@ -262,14 +295,19 @@ export function useMapViewportPensions(options: {
     },
     [
       applyServerPensionList,
+      filterAmenitiesKey,
       filterGender,
       filterHasPrivateBath,
       filterIncludesMeals,
       filterMaxPrice,
+      filterMinBeds,
       filterMinPrice,
+      filterNeighborhood,
+      filterOnlyAvailable,
       filterQuery,
       filterRatingTier,
       filterRoomType,
+      filterSortBy,
       filterUni,
     ],
   );

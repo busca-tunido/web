@@ -132,7 +132,6 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
     filters: effectiveFilters,
     userLocation,
     currentCity: currentCity?.name ?? null,
-    sortBy: 'relevance',
     radiusKm: 30,
     initialCities: initialData?.cities,
     initialUniversities: initialData?.universities,
@@ -319,6 +318,8 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
         onClose={closeFilters}
         filters={filters}
         onApply={setFilters}
+        cities={cities}
+        userLocation={userLocation}
       />
 
       <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />

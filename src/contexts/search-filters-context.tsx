@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { countActiveFilters } from '@/lib/filter-chips';
 import type { SearchFilters } from '@/lib/types';
 
 export type SearchFiltersContextType = {
@@ -47,17 +48,10 @@ export function SearchFiltersProvider({ children, initialFilters }: SearchFilter
     setFilters((prev) => ({ ...prev, city: undefined }));
   }, []);
 
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (filters.hasPrivateBathroom) count += 1;
-    if (filters.includesMeals) count += 1;
-    if (filters.maxPriceClp) count += 1;
-    if (filters.city) count += 1;
-    if (filters.genderPreference && filters.genderPreference !== 'ALL') count += 1;
-    if (filters.roomType) count += 1;
-    if (filters.ratingTier) count += 1;
-    return count;
-  }, [filters]);
+  const activeFilterCount = useMemo(
+    () => countActiveFilters(filters, { includeCity: true }),
+    [filters],
+  );
 
   const value = useMemo<SearchFiltersContextType>(
     () => ({

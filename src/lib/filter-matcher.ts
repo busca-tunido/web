@@ -3,11 +3,20 @@ import type { PensionItem, SearchFilters } from './types';
 
 const serverFilteredSignatures = new WeakMap<object, string>();
 
+const MEAL_AMENITY_SLUGS: readonly string[] = [
+  'comida-incluida',
+  'pension-completa',
+  'media-pension',
+  'desayuno-incluido',
+  'alimentacion-incluida',
+];
+
 export function buildSearchFilterSignature(filters?: SearchFilters | null): string {
   if (!filters) return 'none';
   return JSON.stringify({
     query: filters.query ?? '',
     city: filters.city ?? '',
+    neighborhood: filters.neighborhood ?? '',
     universityId: filters.universityId ?? '',
     minPriceClp: filters.minPriceClp ?? null,
     maxPriceClp: filters.maxPriceClp ?? null,
@@ -15,6 +24,9 @@ export function buildSearchFilterSignature(filters?: SearchFilters | null): stri
     roomType: filters.roomType ?? '',
     hasPrivateBathroom: Boolean(filters.hasPrivateBathroom),
     includesMeals: Boolean(filters.includesMeals),
+    amenities: filters.amenities ?? [],
+    minBeds: filters.minBeds ?? null,
+    onlyAvailable: Boolean(filters.onlyAvailable),
     ratingTier: filters.ratingTier ?? '',
   });
 }
@@ -69,6 +81,13 @@ export function matchesSearchFilters(
     }
   }
 
+  if (filters.neighborhood && filters.neighborhood.trim().length > 0) {
+    const targetNeighborhood = filters.neighborhood.trim().toLowerCase();
+    if (!pension.neighborhood?.toLowerCase().includes(targetNeighborhood)) {
+      return false;
+    }
+  }
+
   if (filters.minPriceClp !== undefined && filters.minPriceClp > 0) {
     if (pension.baseMonthlyPrice < filters.minPriceClp) {
       return false;
@@ -119,12 +138,39 @@ export function matchesSearchFilters(
     }
   }
 
+  if (filters.onlyAvailable) {
+    const roomsOmittedInSummary =
+      (!pension.rooms || pension.rooms.length === 0) && (pension._count?.rooms ?? 0) > 0;
+    if (!roomsOmittedInSummary) {
+      const hasMatchingRoom =
+        pension.rooms && pension.rooms.length > 0
+          ? pension.rooms.some((r) => r.isAvailable !== false)
+          : false;
+      if (!hasMatchingRoom) {
+        return false;
+      }
+    }
+  }
+
   if (filters.includesMeals) {
+    const slugMatches = (slug: string) => MEAL_AMENITY_SLUGS.includes(slug);
     const includesMeals =
-      pension.amenitySlugs?.includes('comida-incluida') ||
-      pension.amenities?.some((a) => (typeof a === 'string' ? a : a.slug) === 'comida-incluida');
+      pension.amenitySlugs?.some(slugMatches) ||
+      pension.amenities?.some((a) => slugMatches(typeof a === 'string' ? a : a.slug));
     if (!includesMeals) {
       return false;
+    }
+  }
+
+  if (filters.amenities && filters.amenities.length > 0) {
+    const pensionSlugs = new Set<string>([
+      ...(pension.amenitySlugs ?? []),
+      ...(pension.amenities?.map((a) => (typeof a === 'string' ? a : a.slug)) ?? []),
+    ]);
+    for (const requiredSlug of filters.amenities) {
+      if (!pensionSlugs.has(requiredSlug)) {
+        return false;
+      }
     }
   }
 
