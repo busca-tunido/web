@@ -105,7 +105,15 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
     locationError,
     currentCity,
     requestLocation,
+    rememberPreferredCity,
   } = useUserLocation(tentativeCities, initialData?.serverGeo);
+
+  const explicitCityTarget = mapTargetCity ?? filters.city ?? selectedUniversity?.city ?? null;
+  useEffect(() => {
+    if (explicitCityTarget) {
+      rememberPreferredCity(explicitCityTarget);
+    }
+  }, [explicitCityTarget, rememberPreferredCity]);
 
   const effectiveFilters = useMemo(
     () => ({

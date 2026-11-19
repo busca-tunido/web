@@ -83,7 +83,11 @@ export function UserLocationControl({
                 {Math.ceil(location.accuracy).toLocaleString('es-CL')} m.
               </p>
             ) : (
-              <p role="status">Mapa centrado en una ubicación aproximada por red.</p>
+              <p role="status">
+                {source === 'saved'
+                  ? 'Mapa centrado en tu última ubicación guardada.'
+                  : 'Mapa centrado en una ubicación aproximada por red.'}
+              </p>
             )}
             {location && !locating && (
               <p className="mt-1 text-muted-foreground">

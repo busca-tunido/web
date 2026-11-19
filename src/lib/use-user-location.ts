@@ -21,7 +21,64 @@ export type LocationStatus =
   | 'timeout'
   | 'unavailable'
   | 'unsupported';
-export type LocationSource = 'browser' | 'ip' | 'default';
+export type LocationSource = 'browser' | 'saved' | 'ip' | 'default';
+
+export const LAST_KNOWN_LOCATION_STORAGE_KEY = 'tunido_last_location';
+export const PREFERRED_CITY_STORAGE_KEY = 'tunido_last_city';
+const SAVED_LOCATION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+type SavedLocationEntry = UserCoordinates & {
+  cityName?: string;
+  savedAt: number;
+};
+
+function parseSavedEntry(raw: string | null): SavedLocationEntry | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<SavedLocationEntry>;
+    if (
+      !validCoordinates(parsed.latitude, parsed.longitude) ||
+      typeof parsed.savedAt !== 'number' ||
+      !Number.isFinite(parsed.savedAt)
+    ) {
+      return null;
+    }
+    if (Date.now() - parsed.savedAt > SAVED_LOCATION_TTL_MS) {
+      return null;
+    }
+    return {
+      latitude: parsed.latitude as number,
+      longitude: parsed.longitude as number,
+      cityName: typeof parsed.cityName === 'string' ? parsed.cityName : undefined,
+      savedAt: parsed.savedAt,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function readSavedLocationPreference(): SavedLocationEntry | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const lastBrowser = parseSavedEntry(
+      window.localStorage.getItem(LAST_KNOWN_LOCATION_STORAGE_KEY),
+    );
+    const preferredCity = parseSavedEntry(window.localStorage.getItem(PREFERRED_CITY_STORAGE_KEY));
+    if (preferredCity && lastBrowser) {
+      return preferredCity.savedAt >= lastBrowser.savedAt ? preferredCity : lastBrowser;
+    }
+    return preferredCity ?? lastBrowser;
+  } catch {
+    return null;
+  }
+}
+
+function writeSavedEntry(key: string, entry: SavedLocationEntry): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(entry));
+  } catch {}
+}
 
 export const LOCATION_REQUEST_OPTIONS: PositionOptions = {
   enableHighAccuracy: true,
@@ -106,7 +163,7 @@ export function sortCitiesWithCurrentFirst(
 
 export function useUserLocation(cities: CityInfo[], serverGeo?: ServerGeoLocation | null) {
   const hasServerCoordinates = validCoordinates(serverGeo?.latitude, serverGeo?.longitude);
-  const initialCoordinates = useMemo<UserCoordinates>(() => {
+  const serverCityCoordinates = useMemo<UserCoordinates | null>(() => {
     if (
       typeof serverGeo?.latitude === 'number' &&
       hasServerCoordinates &&
@@ -115,14 +172,43 @@ export function useUserLocation(cities: CityInfo[], serverGeo?: ServerGeoLocatio
     ) {
       return { latitude: serverGeo.latitude, longitude: serverGeo.longitude };
     }
-    return SANTIAGO_COORDINATES;
-  }, [serverGeo, hasServerCoordinates]);
+    if (serverGeo?.city && cities.length > 0) {
+      const matched = cities.find((c) => c.name.toLowerCase() === serverGeo.city?.toLowerCase());
+      if (matched && validCoordinates(matched.latitude, matched.longitude)) {
+        return { latitude: matched.latitude, longitude: matched.longitude };
+      }
+    }
+    return null;
+  }, [serverGeo, hasServerCoordinates, cities]);
 
   const [browserLocation, setBrowserLocation] = useState<BrowserLocation | null>(null);
+  const [savedLocation, setSavedLocation] = useState<SavedLocationEntry | null>(null);
   const [locationStatus, setLocationStatus] = useState<LocationStatus>('locating');
   const [locationError, setLocationError] = useState<string | null>(null);
   const mountedRef = useRef(true);
   const requestIdRef = useRef(0);
+
+  const rememberPreferredCity = useCallback(
+    (target: string | CityInfo | null | undefined): void => {
+      if (!target) return;
+      const cityObj =
+        typeof target === 'string'
+          ? cities.find((c) => c.name.toLowerCase() === target.trim().toLowerCase())
+          : target;
+      if (!cityObj || !validCoordinates(cityObj.latitude, cityObj.longitude)) {
+        return;
+      }
+      const entry: SavedLocationEntry = {
+        latitude: cityObj.latitude,
+        longitude: cityObj.longitude,
+        cityName: cityObj.name,
+        savedAt: Date.now(),
+      };
+      writeSavedEntry(PREFERRED_CITY_STORAGE_KEY, entry);
+      setSavedLocation(entry);
+    },
+    [cities],
+  );
 
   const requestLocation = useCallback((): Promise<BrowserLocation | null> => {
     const requestId = ++requestIdRef.current;
@@ -171,6 +257,13 @@ export function useUserLocation(cities: CityInfo[], serverGeo?: ServerGeoLocatio
                 accuracy,
                 timestamp: position.timestamp,
               };
+              const savedEntry: SavedLocationEntry = {
+                latitude,
+                longitude,
+                savedAt: Date.now(),
+              };
+              writeSavedEntry(LAST_KNOWN_LOCATION_STORAGE_KEY, savedEntry);
+              setSavedLocation(savedEntry);
               setBrowserLocation(location);
               setLocationStatus('ready');
               setLocationError(null);
@@ -221,6 +314,10 @@ export function useUserLocation(cities: CityInfo[], serverGeo?: ServerGeoLocatio
 
   useEffect(() => {
     mountedRef.current = true;
+    const restored = readSavedLocationPreference();
+    if (restored) {
+      setSavedLocation(restored);
+    }
     void requestLocation();
     return () => {
       mountedRef.current = false;
@@ -228,18 +325,30 @@ export function useUserLocation(cities: CityInfo[], serverGeo?: ServerGeoLocatio
     };
   }, [requestLocation]);
 
-  const userLocation = useMemo<UserCoordinates>(
-    () =>
-      browserLocation
-        ? { latitude: browserLocation.latitude, longitude: browserLocation.longitude }
-        : initialCoordinates,
-    [browserLocation, initialCoordinates],
-  );
+  const isBrowserSettled = locationStatus !== 'locating';
+  const shouldUseVercelFallback =
+    !browserLocation && !savedLocation && isBrowserSettled && Boolean(serverCityCoordinates);
+
+  const userLocation = useMemo<UserCoordinates>(() => {
+    if (browserLocation) {
+      return { latitude: browserLocation.latitude, longitude: browserLocation.longitude };
+    }
+    if (savedLocation) {
+      return { latitude: savedLocation.latitude, longitude: savedLocation.longitude };
+    }
+    if (shouldUseVercelFallback && serverCityCoordinates) {
+      return serverCityCoordinates;
+    }
+    return SANTIAGO_COORDINATES;
+  }, [browserLocation, savedLocation, shouldUseVercelFallback, serverCityCoordinates]);
+
   const locationSource: LocationSource = browserLocation
     ? 'browser'
-    : hasServerCoordinates
-      ? 'ip'
-      : 'default';
+    : savedLocation
+      ? 'saved'
+      : shouldUseVercelFallback
+        ? 'ip'
+        : 'default';
 
   const currentCity = useMemo(() => {
     if (cities.length === 0) return null;
@@ -249,22 +358,34 @@ export function useUserLocation(cities: CityInfo[], serverGeo?: ServerGeoLocatio
       if (closest) return closest;
     }
 
-    if (serverGeo?.city) {
-      const serverCityMatch = cities.find(
-        (c) => c.name.toLowerCase() === serverGeo.city?.toLowerCase(),
-      );
-      if (serverCityMatch) {
-        return serverCityMatch;
+    if (savedLocation) {
+      if (savedLocation.cityName) {
+        const savedCityMatch = cities.find(
+          (c) => c.name.toLowerCase() === savedLocation.cityName?.toLowerCase(),
+        );
+        if (savedCityMatch) {
+          return savedCityMatch;
+        }
       }
+      const closestSaved = findClosestCity(cities, savedLocation);
+      if (closestSaved) return closestSaved;
     }
 
-    if (userLocation) {
-      const closest = findClosestCity(cities, userLocation);
-      if (closest) return closest;
+    if (shouldUseVercelFallback) {
+      if (serverGeo?.city) {
+        const serverCityMatch = cities.find(
+          (c) => c.name.toLowerCase() === serverGeo.city?.toLowerCase(),
+        );
+        if (serverCityMatch) {
+          return serverCityMatch;
+        }
+      }
+      const closestServer = findClosestCity(cities, userLocation);
+      if (closestServer) return closestServer;
     }
 
     return cities.find((c) => c.name.toLowerCase() === 'santiago') ?? cities[0] ?? null;
-  }, [cities, userLocation, serverGeo, browserLocation]);
+  }, [cities, userLocation, serverGeo, browserLocation, savedLocation, shouldUseVercelFallback]);
 
   return {
     userLocation,
@@ -275,5 +396,6 @@ export function useUserLocation(cities: CityInfo[], serverGeo?: ServerGeoLocatio
     locationError,
     isDetecting: locationStatus === 'locating',
     requestLocation,
+    rememberPreferredCity,
   };
 }

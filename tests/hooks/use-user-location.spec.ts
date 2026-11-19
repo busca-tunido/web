@@ -3,8 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { extractServerGeoLocation } from '@/lib/server-geo';
 import type { CityInfo } from '@/lib/types';
 import {
+  LAST_KNOWN_LOCATION_STORAGE_KEY,
   LOCATION_FALLBACK_OPTIONS,
   LOCATION_REQUEST_OPTIONS,
+  PREFERRED_CITY_STORAGE_KEY,
   SANTIAGO_COORDINATES,
   calculateDistance,
   findClosestCity,
@@ -12,7 +14,11 @@ import {
   useUserLocation,
 } from '@/lib/use-user-location';
 
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  window.localStorage.clear();
+});
 
 const mockCities: CityInfo[] = [
   {
@@ -192,6 +198,100 @@ describe('useUserLocation', () => {
     expect(result.current.userLocation.longitude).toBe(-73.05);
     expect(result.current.currentCity?.name).toBe('Concepción');
     expect(result.current.isDetecting).toBe(false);
+  });
+
+  it('prefers saved city or persisted browser location over Vercel serverGeo when geolocation fails', () => {
+    window.localStorage.setItem(
+      PREFERRED_CITY_STORAGE_KEY,
+      JSON.stringify({
+        cityName: 'Concepción',
+        latitude: -36.827,
+        longitude: -73.0503,
+        savedAt: Date.now(),
+      }),
+    );
+
+    const mockGeolocation = {
+      getCurrentPosition: vi.fn((_success, error) => {
+        error({ code: 1 } as GeolocationPositionError);
+      }),
+    };
+    vi.stubGlobal('navigator', { geolocation: mockGeolocation });
+
+    const serverGeo = {
+      city: 'Valparaíso',
+      latitude: -33.0472,
+      longitude: -71.6127,
+      country: 'CL',
+    };
+
+    const { result } = renderHook(() => useUserLocation(mockCities, serverGeo));
+
+    expect(result.current.locationSource).toBe('saved');
+    expect(result.current.currentCity?.name).toBe('Concepción');
+    expect(result.current.userLocation.latitude).toBe(-36.827);
+  });
+
+  it('persists successful browser reading and uses it on later failure instead of Vercel serverGeo', () => {
+    const firstGeo = {
+      getCurrentPosition: vi.fn((success) => {
+        success({
+          coords: { latitude: -36.82, longitude: -73.05, accuracy: 20 },
+          timestamp: Date.now(),
+        });
+      }),
+    };
+    vi.stubGlobal('navigator', { geolocation: firstGeo });
+
+    const firstMount = renderHook(() => useUserLocation(mockCities, null));
+    expect(firstMount.result.current.locationSource).toBe('browser');
+    expect(window.localStorage.getItem(LAST_KNOWN_LOCATION_STORAGE_KEY)).toBeTruthy();
+    firstMount.unmount();
+
+    const failingGeo = {
+      getCurrentPosition: vi.fn((_success, error) => {
+        error({ code: 1 } as GeolocationPositionError);
+      }),
+    };
+    vi.stubGlobal('navigator', { geolocation: failingGeo });
+
+    const serverGeo = {
+      city: 'Valparaíso',
+      latitude: -33.0472,
+      longitude: -71.6127,
+      country: 'CL',
+    };
+
+    const secondMount = renderHook(() => useUserLocation(mockCities, serverGeo));
+    expect(secondMount.result.current.locationSource).toBe('saved');
+    expect(secondMount.result.current.currentCity?.name).toBe('Concepción');
+  });
+
+  it('defers Vercel serverGeo until geolocation settles and fails without saved location', () => {
+    let errorCb: PositionErrorCallback | null | undefined;
+    vi.stubGlobal('navigator', {
+      geolocation: {
+        getCurrentPosition: vi.fn((_success, error) => {
+          errorCb = error;
+        }),
+      },
+    });
+
+    const serverGeo = {
+      city: 'Valparaíso',
+      latitude: -33.0472,
+      longitude: -71.6127,
+      country: 'CL',
+    };
+
+    const { result } = renderHook(() => useUserLocation(mockCities, serverGeo));
+    expect(result.current.isDetecting).toBe(true);
+    expect(result.current.locationSource).toBe('default');
+
+    act(() => errorCb?.({ code: 1 } as GeolocationPositionError));
+    expect(result.current.isDetecting).toBe(false);
+    expect(result.current.locationSource).toBe('ip');
+    expect(result.current.currentCity?.name).toBe('Valparaíso');
   });
 });
 
