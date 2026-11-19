@@ -2,6 +2,7 @@
 
 import { ArrowRight, Camera, CheckCircle2, ChevronRight, GraduationCap, Star } from 'lucide-react';
 import Image from 'next/image';
+import { formatChileDate } from '@/lib/format-utils';
 import type { PensionDetailViewItem, PensionReview } from '@/lib/types';
 import { normalizeImageUrl } from '@/lib/utils';
 
@@ -29,13 +30,7 @@ function formatStayDuration(cat?: string | null): string {
 }
 
 function formatDate(isoString?: string): string {
-  if (!isoString) return 'Reciente';
-  try {
-    const d = new Date(isoString);
-    return d.toLocaleDateString('es-CL', { month: 'short', year: 'numeric' });
-  } catch {
-    return 'Reciente';
-  }
+  return formatChileDate(isoString, { month: 'short', year: 'numeric' }, 'Reciente');
 }
 
 export function PensionReviewsPreview({

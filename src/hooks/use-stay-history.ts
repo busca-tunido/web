@@ -2,13 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { isApiSuccess } from '@/lib/api-response';
+import { formatChileDate } from '@/lib/format-utils';
 import type { StayHistoryItem } from '@/lib/types';
 import { staysService } from '@/services/stays.service';
 
 const SESSION_STAYS_COUNT_KEY = 'tunido_stays_count';
+const DEFAULT_EXPECTED_STAYS_COUNT = 3;
 
-function getInitialExpectedCount(): number {
-  if (typeof window === 'undefined') return 3;
+function readSessionStaysCount(): number | null {
+  if (typeof window === 'undefined') return null;
   try {
     const raw = sessionStorage.getItem(SESSION_STAYS_COUNT_KEY);
     if (raw !== null) {
@@ -18,7 +20,7 @@ function getInitialExpectedCount(): number {
       }
     }
   } catch {}
-  return 3;
+  return null;
 }
 
 export function formatStayDateRange(
@@ -35,34 +37,34 @@ export function formatStayDateRange(
     if (durationCategory === 'FEW_DAYS') return 'Estadía de pocos días';
     return 'Estadía registrada';
   }
-  const formatter = new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-  const start = new Date(startDateStr);
-  const end = new Date(endDateStr);
-  const startFormatted = Number.isNaN(start.getTime()) ? startDateStr : formatter.format(start);
-  const endFormatted = Number.isNaN(end.getTime()) ? endDateStr : formatter.format(end);
+  const startFormatted = formatChileDate(
+    startDateStr,
+    { year: 'numeric', month: 'short', day: 'numeric' },
+    startDateStr,
+    locale,
+  );
+  const endFormatted = formatChileDate(
+    endDateStr,
+    { year: 'numeric', month: 'short', day: 'numeric' },
+    endDateStr,
+    locale,
+  );
   return `${startFormatted} hasta ${endFormatted}`;
 }
 
 export function formatStayDate(dateStr: string, locale = 'es-CL'): string {
-  const date = new Date(dateStr);
-  if (Number.isNaN(date.getTime())) {
-    return dateStr;
-  }
-  return new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
+  return formatChileDate(
+    dateStr,
+    { year: 'numeric', month: 'long', day: 'numeric' },
+    dateStr,
+    locale,
+  );
 }
 
 export function useStayHistory() {
   const [stays, setStays] = useState<StayHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [expectedCount, setExpectedCount] = useState<number>(getInitialExpectedCount);
+  const [expectedCount, setExpectedCount] = useState<number>(DEFAULT_EXPECTED_STAYS_COUNT);
   const [error, setError] = useState<string | null>(null);
 
   const loadStays = useCallback(async () => {
@@ -90,6 +92,10 @@ export function useStayHistory() {
   }, []);
 
   useEffect(() => {
+    const storedCount = readSessionStaysCount();
+    if (storedCount !== null) {
+      setExpectedCount(storedCount);
+    }
     loadStays();
     const handleRefresh = () => {
       loadStays();

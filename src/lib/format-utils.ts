@@ -50,3 +50,29 @@ export function formatChileanPhone(raw: string): string {
 export function filterAlphabeticName(raw: string): string {
   return raw.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '');
 }
+
+export const CHILE_TIMEZONE = 'America/Santiago';
+
+export function formatChileDate(
+  isoString?: string | null,
+  options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' },
+  fallback = '',
+  locale = 'es-CL',
+): string {
+  if (!isoString) return fallback;
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) {
+    return fallback || isoString;
+  }
+  return new Intl.DateTimeFormat(locale, {
+    ...options,
+    timeZone: options.timeZone ?? CHILE_TIMEZONE,
+  }).format(date);
+}
+
+export function getCurrentChileYear(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    timeZone: CHILE_TIMEZONE,
+  }).format(new Date());
+}

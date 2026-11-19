@@ -20,6 +20,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ProposalsListSkeleton } from '@/components/ui/skeletons/landlord-pension-skeleton';
 import { useLandlord } from '@/contexts/landlord-context';
 import { isApiSuccess } from '@/lib/api-response';
+import { formatChileDate } from '@/lib/format-utils';
 import type { PensionDetailDto, PensionItem, ProposalDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { proposalsService } from '@/services/proposals.service';
@@ -103,16 +104,11 @@ function formatValue(key: string, val: unknown): string {
 }
 
 function formatDate(isoString: string): string {
-  try {
-    const d = new Date(isoString);
-    return d.toLocaleDateString('es-CL', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  } catch {
-    return isoString;
-  }
+  return formatChileDate(isoString, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
 export function LandlordProposalsScreen({

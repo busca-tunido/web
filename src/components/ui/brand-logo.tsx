@@ -40,7 +40,6 @@ export function BrandLogo({
           className="object-contain shrink-0"
           style={{ width: iconDimensions.width, height: iconDimensions.height }}
           loading="eager"
-          suppressHydrationWarning
         />
         <span
           className={cn(

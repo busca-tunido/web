@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
+import { formatChileDate } from '@/lib/format-utils';
 import type { PensionReview } from '@/lib/types';
 import { normalizeImageUrl } from '@/lib/utils';
 
@@ -27,13 +28,7 @@ export function formatStayDuration(cat?: string | null): string {
 }
 
 export function formatDate(isoString?: string): string {
-  if (!isoString) return 'Reciente';
-  try {
-    const d = new Date(isoString);
-    return d.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' });
-  } catch {
-    return 'Reciente';
-  }
+  return formatChileDate(isoString, { month: 'long', year: 'numeric' }, 'Reciente');
 }
 
 export type ReviewCardProps = {

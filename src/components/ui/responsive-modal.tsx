@@ -46,11 +46,13 @@ export function ResponsiveModal({ open, onOpenChange, children }: ResponsiveModa
   const mediaDesktop = useMediaQuery('(min-width: 768px)');
   const [lockedDesktop, setLockedDesktop] = React.useState<boolean | null>(null);
 
-  if (open && lockedDesktop === null) {
-    setLockedDesktop(mediaDesktop);
-  } else if (!open && lockedDesktop !== null) {
-    setLockedDesktop(null);
-  }
+  React.useEffect(() => {
+    if (open) {
+      setLockedDesktop((prev) => (prev === null ? mediaDesktop : prev));
+    } else {
+      setLockedDesktop(null);
+    }
+  }, [open, mediaDesktop]);
 
   const isDesktop = open ? (lockedDesktop ?? mediaDesktop) : mediaDesktop;
   const contextValue = React.useMemo(() => ({ isDesktop }), [isDesktop]);

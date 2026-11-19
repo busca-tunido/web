@@ -93,13 +93,16 @@ function extractCustomContactsFromPensions(
 export function LandlordProvider({ children, initialTab = 'pension' }: LandlordProviderProps) {
   const [pensions, setPensions] = useState<PensionItem[]>([]);
   const [selectedPension, setSelectedPension] = useState<PensionItem | null>(null);
-  const [activeTab, setActiveTabState] = useState<LandlordTab>(() => {
+  const [activeTab, setActiveTabState] = useState<LandlordTab>(initialTab);
+
+  useEffect(() => {
     if (typeof window !== 'undefined' && window.location.pathname.startsWith('/landlord')) {
       const fromPath = getLandlordTabFromPathname(window.location.pathname);
-      if (fromPath) return fromPath;
+      if (fromPath && fromPath !== initialTab) {
+        setActiveTabState(fromPath);
+      }
     }
-    return initialTab;
-  });
+  }, [initialTab]);
 
   const setActiveTab = useCallback((tab: LandlordTab) => {
     setActiveTabState(tab);

@@ -6,6 +6,7 @@ import { cache } from 'react';
 import { PublicNavHeader } from '@/components/common/public-nav-header';
 import { PensionDetailContent } from '@/components/pensions/pension-detail-content';
 import { isApiSuccess } from '@/lib/api-response';
+import { getCurrentChileYear } from '@/lib/format-utils';
 import type { PensionItem } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 
@@ -143,7 +144,7 @@ export default async function PensionPage(props: PensionPageProps) {
 
       <footer className="w-full border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
         <p>
-          &copy; {new Date().getFullYear()} BuscaTuNido. Plataforma de residencias estudiantiles en
+          &copy; {getCurrentChileYear()} BuscaTuNido. Plataforma de residencias estudiantiles en
           Chile.
         </p>
       </footer>

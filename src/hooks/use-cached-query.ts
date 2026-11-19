@@ -24,7 +24,7 @@ export function useCachedQuery<T>(
   const enabled = options?.enabled ?? true;
   const ttlMs = options?.ttlMs ?? 0;
 
-  const initialEntry = key ? cacheStore.get<T>(key) : undefined;
+  const initialEntry = typeof window !== 'undefined' && key ? cacheStore.get<T>(key) : undefined;
   const isInitialStale = initialEntry ? Date.now() - initialEntry.timestamp > ttlMs : false;
 
   const [data, setData] = useState<T | undefined>(() => initialEntry?.data);

@@ -48,7 +48,7 @@ function checkIsStoredLandlord(): boolean {
 export function RoleRouter({ initialData, initialTab, initialNavigationState }: RoleRouterProps) {
   const { isLoading } = useAuth();
   const { role } = useUserRole();
-  const [isClientLandlord, setIsClientLandlord] = useState(checkIsStoredLandlord);
+  const [isClientLandlord, setIsClientLandlord] = useState(false);
 
   useEffect(() => {
     if (checkIsStoredLandlord()) {

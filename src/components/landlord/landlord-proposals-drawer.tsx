@@ -29,6 +29,7 @@ import {
 import { ProposalsListSkeleton } from '@/components/ui/skeletons/landlord-pension-skeleton';
 import { useOptionalLandlord } from '@/contexts/landlord-context';
 import { isApiSuccess } from '@/lib/api-response';
+import { formatChileDate } from '@/lib/format-utils';
 import type { PensionDetailDto, ProposalDto } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 import { proposalsService } from '@/services/proposals.service';
@@ -153,17 +154,11 @@ function getCurrentValue(key: string, pension: PensionDetailDto | null): unknown
 }
 
 function formatDate(dateString: string): string {
-  try {
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) return dateString;
-    return new Intl.DateTimeFormat('es-CL', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    }).format(date);
-  } catch {
-    return dateString;
-  }
+  return formatChileDate(dateString, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
 export function LandlordProposalsDrawer({

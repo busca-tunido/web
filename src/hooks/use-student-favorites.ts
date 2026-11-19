@@ -10,32 +10,30 @@ const FAVORITES_CACHE_KEY = 'student:favorites:list';
 const FAVORITES_TTL_MS = 30_000;
 
 export function useStudentFavorites(initialFavorites?: string[]) {
-  const cachedFavs = cacheStore.get<FavoritePensionSummaryDto[]>(FAVORITES_CACHE_KEY);
+  const [favorites, setFavorites] = useState<string[]>(() =>
+    initialFavorites && initialFavorites.length > 0 ? initialFavorites : [],
+  );
+  const [favoritePensions, setFavoritePensions] = useState<FavoritePensionSummaryDto[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const [favorites, setFavorites] = useState<string[]>(() => {
-    if (initialFavorites && initialFavorites.length > 0) return initialFavorites;
+  useEffect(() => {
+    if (initialFavorites && initialFavorites.length > 0) {
+      setFavorites((prev) => (prev.length === 0 ? initialFavorites : prev));
+      return;
+    }
     if (typeof window !== 'undefined') {
       try {
         const raw = localStorage.getItem('tunido_favs');
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) return parsed;
+          if (Array.isArray(parsed)) {
+            setFavorites((prev) => (prev.length === 0 ? parsed : prev));
+          }
         }
       } catch {}
     }
-    return [];
-  });
-  const [favoritePensions, setFavoritePensions] = useState<FavoritePensionSummaryDto[]>(
-    () => cachedFavs?.data ?? [],
-  );
-  const [isLoading, setIsLoading] = useState<boolean>(() => !cachedFavs);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (initialFavorites && initialFavorites.length > 0 && favorites.length === 0) {
-      setFavorites(initialFavorites);
-    }
-  }, [initialFavorites, favorites.length]);
+  }, [initialFavorites]);
 
   const loadFavorites = useCallback(async (force = false) => {
     const cached = cacheStore.get<FavoritePensionSummaryDto[]>(FAVORITES_CACHE_KEY);

@@ -76,18 +76,15 @@ export function useUrlNavigationState(
         publishReviewPensionId: initialState.publishReviewPensionId ?? null,
       };
     }
-    if (typeof window === 'undefined') {
-      return {
-        tab: defaultTab,
-        city: null,
-        uni: null,
-        pensionId: null,
-        isFiltersOpen: false,
-        reviewsPensionId: null,
-        publishReviewPensionId: null,
-      };
-    }
-    return parseNavigationParams(window.location.search, defaultTab, window.location.pathname);
+    return {
+      tab: defaultTab,
+      city: null,
+      uni: null,
+      pensionId: null,
+      isFiltersOpen: false,
+      reviewsPensionId: null,
+      publishReviewPensionId: null,
+    };
   });
 
   const overlayDepthRef = useRef<number>(0);
@@ -352,6 +349,17 @@ export function useUrlNavigationState(
           : prev.publishReviewPensionId,
     }));
   }, [initialState]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || initialState) return;
+    const parsed = parseNavigationParams(
+      window.location.search,
+      defaultTab,
+      window.location.pathname,
+    );
+    stateRef.current = parsed;
+    setState(parsed);
+  }, [defaultTab, initialState]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

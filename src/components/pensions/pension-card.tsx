@@ -51,9 +51,9 @@ function PensionCardComponent({
         className="w-full flex flex-col text-left cursor-pointer focus:outline-none"
         aria-label={`Ver detalles de ${pension.title}`}
       >
-        <motion.div
+        <motion.span
           layoutId={`pension-hero-${pension.id}`}
-          className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm group-hover:shadow-md transition-shadow duration-300 flex items-center justify-center"
+          className="relative block w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm group-hover:shadow-md transition-shadow duration-300 flex items-center justify-center"
         >
           {pension.images?.[0]?.url ? (
             <Image
@@ -67,9 +67,9 @@ function PensionCardComponent({
           ) : (
             <Building2 className="h-10 w-10 text-muted-foreground/30" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+          <span className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
 
-          <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
+          <span className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
             {(pension.verificationStatus === 'OFFICIALLY_VERIFIED' ||
               pension.verificationStatus === 'COMMUNITY_VERIFIED') && (
               <span className="flex items-center gap-1 rounded-full bg-sage/90 px-2.5 py-0.5 text-xs font-semibold text-white dark:text-zinc-950 shadow-sm leading-none">
@@ -83,8 +83,8 @@ function PensionCardComponent({
                 Recomendada
               </span>
             )}
-          </div>
-        </motion.div>
+          </span>
+        </motion.span>
       </button>
 
       <div className="mt-2.5 flex flex-col gap-1 w-full">
@@ -131,7 +131,7 @@ function PensionCardComponent({
           onClick={() => onSelectPension(pension)}
           className="flex flex-col gap-1 text-left cursor-pointer focus:outline-none"
         >
-          <div className="flex items-center gap-1 text-xs text-muted-foreground line-clamp-1">
+          <span className="flex items-center gap-1 text-xs text-muted-foreground line-clamp-1">
             <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
             <span>
               {pension.neighborhood}, {pension.city}
@@ -149,14 +149,14 @@ function PensionCardComponent({
                 </>
               )}
             </span>
-          </div>
+          </span>
 
-          <div className="mt-2 pt-1 flex items-baseline gap-1">
+          <span className="mt-2 pt-1 flex items-baseline gap-1">
             <span className="text-lg font-black text-foreground tabular-nums">
               ${pension.baseMonthlyPrice.toLocaleString('es-CL')} CLP
             </span>
             <span className="text-xs font-medium text-muted-foreground">/ mes</span>
-          </div>
+          </span>
         </button>
       </div>
 
