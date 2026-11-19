@@ -35,7 +35,7 @@ export type UseAuthFlowReturn = {
   setError: (error: string | null) => void;
   setIsRegisterModalOpen: (open: boolean) => void;
   checkEmail: (emailToCheck?: string) => Promise<{ exists: boolean } | null>;
-  submitLogin: (event?: React.FormEvent) => Promise<boolean>;
+  submitLogin: (event?: React.FormEvent, passwordOverride?: string) => Promise<boolean>;
   registerStudent: (payload: StudentRegisterPayload) => Promise<boolean>;
   resetToEmailStep: () => void;
 };
@@ -132,7 +132,7 @@ export function useAuthFlow(options: UseAuthFlowOptions = {}): UseAuthFlowReturn
   );
 
   const submitLogin = useCallback(
-    async (event?: React.FormEvent): Promise<boolean> => {
+    async (event?: React.FormEvent, passwordOverride?: string): Promise<boolean> => {
       if (event) {
         event.preventDefault();
       }
@@ -140,7 +140,7 @@ export function useAuthFlow(options: UseAuthFlowOptions = {}): UseAuthFlowReturn
       setIsSubmittingLogin(true);
 
       try {
-        await login(email.trim(), password);
+        await login(email.trim(), passwordOverride ?? password);
         options.onLoginSuccess?.();
         return true;
       } catch (err: unknown) {

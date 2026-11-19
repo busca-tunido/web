@@ -124,6 +124,19 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
     registerValidation.resetForm(EMPTY_LANDLORD_REGISTER);
   };
 
+  const handleLandlordLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const emailInput = loginFormRef.current?.querySelector<HTMLInputElement>('#landlord-email');
+    const passwordInput =
+      loginFormRef.current?.querySelector<HTMLInputElement>('#landlord-password');
+    const currentEmail = (emailInput?.value ?? loginValidation.values.email).trim();
+    const currentPassword = passwordInput?.value ?? loginValidation.values.password;
+    await loginValidation.handleSubmit(e, {
+      email: currentEmail,
+      password: currentPassword,
+    });
+  };
+
   return (
     <div
       id="auth-screen-container"
@@ -211,7 +224,7 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                 {landlordMode === 'login' ? (
                   <form
                     ref={loginFormRef}
-                    onSubmit={loginValidation.handleSubmit}
+                    onSubmit={handleLandlordLoginSubmit}
                     noValidate
                     className="p-6 flex flex-col gap-4 overflow-y-auto"
                   >

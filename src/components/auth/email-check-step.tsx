@@ -47,26 +47,36 @@ export function EmailCheckStep({ className, onSuccess, initialEmail }: EmailChec
 
   const emailValidation = useFormValidation({
     schema: emailCheckSchema,
-    initialValues: { email: initialEmail ?? '' },
+    initialValues: { email },
     formRef,
   });
 
   const passwordValidation = useFormValidation({
     schema: studentPasswordSchema,
-    initialValues: { password: '' },
+    initialValues: { password },
     formRef,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 'email') {
-      const emailResult = emailValidation.validateForm();
+      const emailInput = formRef.current?.querySelector<HTMLInputElement>('#student-email');
+      const currentEmail = (emailInput?.value ?? email).trim();
+      if (currentEmail !== email) {
+        setEmail(currentEmail);
+      }
+      const emailResult = emailValidation.validateForm({ email: currentEmail });
       if (!emailResult.isValid) return;
-      await checkEmail();
+      await checkEmail(currentEmail);
     } else {
-      const passwordResult = passwordValidation.validateForm();
+      const passwordInput = formRef.current?.querySelector<HTMLInputElement>('#student-password');
+      const currentPassword = passwordInput?.value ?? password;
+      if (currentPassword !== password) {
+        setPassword(currentPassword);
+      }
+      const passwordResult = passwordValidation.validateForm({ password: currentPassword });
       if (!passwordResult.isValid) return;
-      await submitLogin(e);
+      await submitLogin(e, currentPassword);
     }
   };
 

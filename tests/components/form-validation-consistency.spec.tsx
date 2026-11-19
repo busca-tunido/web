@@ -11,11 +11,13 @@ import { PublishReviewModal } from '@/components/reviews/publish-review-modal';
 import { createSuccess } from '@/lib/api-response';
 import type { PensionItem } from '@/lib/types';
 import { SANTIAGO_COORDINATES } from '@/lib/use-user-location';
+import { authService } from '@/services/auth.service';
 import * as locationsService from '@/services/locations.service';
 import { submitPensionProposal } from '@/services/proposals.service';
 
 const mockUpdateDefaultContact = vi.fn();
 const mockPublishReview = vi.fn();
+const mockLogin = vi.fn().mockResolvedValue(undefined);
 
 const mockPensionItem: PensionItem = {
   id: '6659f8c123456789abcdef01',
@@ -76,7 +78,7 @@ vi.mock('motion/react', () => ({
 
 vi.mock('@/lib/auth-context', () => ({
   useAuth: () => ({
-    login: vi.fn().mockResolvedValue(undefined),
+    login: mockLogin,
     setSession: vi.fn(),
     user: {
       id: 'user-1',
@@ -357,5 +359,52 @@ describe('Form validation consistency across all user roles', () => {
     expect(await screen.findByText('Ingresa un correo electrónico válido')).toBeDefined();
     expect(emailInput.getAttribute('aria-invalid')).toBe('true');
     expect(document.querySelector('#student-auth-error')).toBeNull();
+  });
+
+  it('submits EmailCheckStep default demo email and password without requiring user typing', async () => {
+    vi.mocked(authService.checkEmailExists).mockResolvedValueOnce(
+      createSuccess({ exists: true, role: 'STUDENT' }),
+    );
+    const handleSuccess = vi.fn();
+
+    render(<EmailCheckStep onSuccess={handleSuccess} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Continuar/i }));
+
+    await waitFor(() => {
+      expect(authService.checkEmailExists).toHaveBeenCalledWith('estudiante.demo@uchile.cl');
+      expect(document.querySelector('#student-password')).not.toBeNull();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Acceder/i }));
+
+    await waitFor(() => {
+      expect(mockLogin).toHaveBeenCalledWith('estudiante.demo@uchile.cl', 'Password123!');
+      expect(handleSuccess).toHaveBeenCalled();
+    });
+  });
+
+  it('submits AuthScreen landlord login with default demo or autofilled values without requiring typing', async () => {
+    const handleSuccess = vi.fn();
+    render(<AuthScreen onSuccess={handleSuccess} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Acceso para dueños/i }));
+
+    const submitBtn = await screen.findByRole('button', { name: /Acceder como Dueño/i });
+    const emailInput = document.querySelector('#landlord-email') as HTMLInputElement;
+    const passwordInput = document.querySelector('#landlord-password') as HTMLInputElement;
+
+    expect(emailInput.value).toBe('propietario.demo@buscatunido.cl');
+    expect(passwordInput.value).toBe('Password123!');
+
+    emailInput.value = 'dueno.autofill@buscatunido.cl';
+    passwordInput.value = 'AutofillPass123!';
+
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockLogin).toHaveBeenCalledWith('dueno.autofill@buscatunido.cl', 'AutofillPass123!');
+      expect(handleSuccess).toHaveBeenCalled();
+    });
   });
 });

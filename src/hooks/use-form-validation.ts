@@ -29,8 +29,8 @@ export type UseFormValidationReturn<T extends Record<string, unknown>> = {
   setFieldValue: (field: keyof T, value: unknown) => void;
   setFieldError: (field: keyof T, error: string | undefined) => void;
   validateField: (field: keyof T, value?: unknown) => string | undefined;
-  validateForm: () => ValidationResult<T>;
-  handleSubmit: (event?: React.FormEvent) => Promise<boolean>;
+  validateForm: (overrideValues?: Partial<T>) => ValidationResult<T>;
+  handleSubmit: (event?: React.FormEvent, overrideValues?: Partial<T>) => Promise<boolean>;
   resetForm: (newValues?: Partial<T>) => void;
 };
 
@@ -192,60 +192,72 @@ export function useFormValidation<T extends Record<string, unknown>>({
     });
   }, []);
 
-  const validateForm = useCallback((): ValidationResult<T> => {
-    const allTouched: Partial<Record<keyof T, boolean>> = {};
-    for (const key of Object.keys(valuesRef.current) as Array<keyof T>) {
-      allTouched[key] = true;
-    }
-    setTouched(allTouched);
-    touchedRef.current = allTouched;
+  const validateForm = useCallback(
+    (overrideValues?: Partial<T>): ValidationResult<T> => {
+      const targetValues = overrideValues
+        ? { ...valuesRef.current, ...overrideValues }
+        : valuesRef.current;
 
-    const result = schema.safeParse(valuesRef.current);
-    if (result.success) {
-      setErrors({});
-      return {
-        isValid: true,
-        data: result.data,
-        errors: {},
-      };
-    }
-
-    const nextErrors: Partial<Record<keyof T, string>> = {};
-    for (const issue of result.error.issues) {
-      const fieldKey = issue.path[0] as keyof T;
-      if (fieldKey && !nextErrors[fieldKey]) {
-        nextErrors[fieldKey] = issue.message;
+      if (overrideValues) {
+        valuesRef.current = targetValues;
+        setValues(targetValues);
       }
-    }
-    setErrors(nextErrors);
 
-    if (focusFirstInvalid && typeof document !== 'undefined') {
-      const schedule =
-        typeof requestAnimationFrame === 'function'
-          ? requestAnimationFrame
-          : (cb: () => void) => setTimeout(cb, 0);
-      schedule(() => {
-        const container = formRef?.current ?? document;
-        const firstInvalid = container.querySelector<HTMLElement>('[aria-invalid="true"]');
-        if (firstInvalid) {
-          firstInvalid.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
-          firstInvalid.focus?.({ preventScroll: true });
+      const allTouched: Partial<Record<keyof T, boolean>> = {};
+      for (const key of Object.keys(targetValues) as Array<keyof T>) {
+        allTouched[key] = true;
+      }
+      setTouched(allTouched);
+      touchedRef.current = allTouched;
+
+      const result = schema.safeParse(targetValues);
+      if (result.success) {
+        setErrors({});
+        return {
+          isValid: true,
+          data: result.data,
+          errors: {},
+        };
+      }
+
+      const nextErrors: Partial<Record<keyof T, string>> = {};
+      for (const issue of result.error.issues) {
+        const fieldKey = issue.path[0] as keyof T;
+        if (fieldKey && !nextErrors[fieldKey]) {
+          nextErrors[fieldKey] = issue.message;
         }
-      });
-    }
+      }
+      setErrors(nextErrors);
 
-    return {
-      isValid: false,
-      errors: nextErrors,
-    };
-  }, [schema, focusFirstInvalid, formRef]);
+      if (focusFirstInvalid && typeof document !== 'undefined') {
+        const schedule =
+          typeof requestAnimationFrame === 'function'
+            ? requestAnimationFrame
+            : (cb: () => void) => setTimeout(cb, 0);
+        schedule(() => {
+          const container = formRef?.current ?? document;
+          const firstInvalid = container.querySelector<HTMLElement>('[aria-invalid="true"]');
+          if (firstInvalid) {
+            firstInvalid.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+            firstInvalid.focus?.({ preventScroll: true });
+          }
+        });
+      }
+
+      return {
+        isValid: false,
+        errors: nextErrors,
+      };
+    },
+    [schema, focusFirstInvalid, formRef],
+  );
 
   const handleSubmit = useCallback(
-    async (event?: React.FormEvent): Promise<boolean> => {
+    async (event?: React.FormEvent, overrideValues?: Partial<T>): Promise<boolean> => {
       if (event) {
         event.preventDefault();
       }
-      const validation = validateForm();
+      const validation = validateForm(overrideValues);
       if (!validation.isValid || !validation.data) {
         return false;
       }
