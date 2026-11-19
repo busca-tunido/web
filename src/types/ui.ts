@@ -23,6 +23,14 @@ export type SearchFilters = {
   readonly amenities?: readonly string[];
   readonly minBeds?: number;
   readonly onlyAvailable?: boolean;
+  readonly internetIncluded?: boolean;
+  readonly petsAllowed?: boolean;
+  readonly guestsAllowed?: boolean;
+  readonly smokingAllowed?: boolean;
+  readonly noCurfew?: boolean;
+  readonly waterIncluded?: boolean;
+  readonly electricityIncluded?: boolean;
+  readonly gasIncluded?: boolean;
   readonly genderPreference?: 'ANY' | 'FEMALE_ONLY' | 'MALE_ONLY' | 'MIXED' | 'ALL';
   readonly sortBy?: 'relevance' | 'distance' | 'price_asc' | 'price_desc' | 'rating';
   readonly ratingTier?: RatingTier;

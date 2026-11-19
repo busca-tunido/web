@@ -1101,6 +1101,86 @@
               "example": true,
               "type": "boolean"
             }
+          },
+          {
+            "name": "internetIncluded",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions with WiFi / Internet included",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "petsAllowed",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions that allow pets",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "guestsAllowed",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions that allow guests",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "smokingAllowed",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions that allow smoking",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "noCurfew",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions without a curfew time restriction",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "waterIncluded",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions with water utility included",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "electricityIncluded",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions with electricity utility included",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "gasIncluded",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions with gas utility included",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -1489,6 +1569,86 @@
             "required": false,
             "in": "query",
             "description": "Filter pensions that have at least one available active room",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "internetIncluded",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions with WiFi / Internet included",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "petsAllowed",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions that allow pets",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "guestsAllowed",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions that allow guests",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "smokingAllowed",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions that allow smoking",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "noCurfew",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions without a curfew time restriction",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "waterIncluded",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions with water utility included",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "electricityIncluded",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions with electricity utility included",
+            "schema": {
+              "example": true,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "gasIncluded",
+            "required": false,
+            "in": "query",
+            "description": "Filter pensions with gas utility included",
             "schema": {
               "example": true,
               "type": "boolean"
@@ -5440,6 +5600,14 @@
         },
         "required": ["rooms", "reviews"]
       },
+      "PensionRatingTierFilter": {
+        "type": "string",
+        "enum": ["high", "medium", "low", "unreviewed"]
+      },
+      "PensionReliabilityTier": {
+        "type": "string",
+        "enum": ["high", "low", "unreviewed"]
+      },
       "PensionItemResponseDto": {
         "type": "object",
         "properties": {
@@ -5640,6 +5808,32 @@
             "type": "number",
             "example": 3
           },
+          "availableRoomTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoomType"
+            }
+          },
+          "hasPrivateBathroomRoom": {
+            "type": "boolean",
+            "example": true
+          },
+          "ratingTier": {
+            "example": "high",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PensionRatingTierFilter"
+              }
+            ]
+          },
+          "reliability": {
+            "example": "high",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PensionReliabilityTier"
+              }
+            ]
+          },
           "pendingProposalsCount": {
             "type": "number",
             "example": 1
@@ -5769,10 +5963,6 @@
       "PensionViewMode": {
         "type": "string",
         "enum": ["full", "card", "map"]
-      },
-      "PensionRatingTierFilter": {
-        "type": "string",
-        "enum": ["high", "medium", "low", "unreviewed"]
       },
       "PriceHistogramBinDto": {
         "type": "object",

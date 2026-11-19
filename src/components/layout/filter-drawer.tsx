@@ -4,13 +4,20 @@ import {
   Bath,
   BedDouble,
   Check,
+  Cigarette,
+  Clock,
+  Droplets,
+  Flame,
   Home,
   MapPin,
+  PawPrint,
   Sparkles,
   User,
   Users,
   Utensils,
+  Wifi,
   X,
+  Zap,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { PriceHistogramRangeSlider } from '@/components/search/price-histogram-range-slider';
@@ -77,7 +84,7 @@ export function FilterDrawer({
   }, [isOpen, amenitiesCatalog.length]);
 
   const { data: histogramData, isLoading: isHistogramLoading } = usePriceHistogram({
-    filters: localFilters,
+    city: localFilters.city,
     userLocation,
     enabled: isOpen,
   });
@@ -125,6 +132,32 @@ export function FilterDrawer({
     [localFilters],
   );
 
+  const hasNarrowingFilters = useMemo(
+    () =>
+      Boolean(
+        localFilters.query?.trim() ||
+          localFilters.universityId ||
+          localFilters.neighborhood?.trim() ||
+          localFilters.roomType ||
+          localFilters.hasPrivateBathroom ||
+          localFilters.includesMeals ||
+          (localFilters.amenities && localFilters.amenities.length > 0) ||
+          localFilters.minBeds ||
+          localFilters.onlyAvailable ||
+          localFilters.internetIncluded ||
+          localFilters.petsAllowed ||
+          localFilters.guestsAllowed ||
+          localFilters.smokingAllowed ||
+          localFilters.noCurfew ||
+          localFilters.waterIncluded ||
+          localFilters.electricityIncluded ||
+          localFilters.gasIncluded ||
+          localFilters.genderPreference ||
+          localFilters.ratingTier,
+      ),
+    [localFilters],
+  );
+
   const handleReset = () => {
     setLocalFilters({
       query: localFilters.query,
@@ -139,6 +172,14 @@ export function FilterDrawer({
       amenities: undefined,
       minBeds: undefined,
       onlyAvailable: undefined,
+      internetIncluded: undefined,
+      petsAllowed: undefined,
+      guestsAllowed: undefined,
+      smokingAllowed: undefined,
+      noCurfew: undefined,
+      waterIncluded: undefined,
+      electricityIncluded: undefined,
+      gasIncluded: undefined,
       genderPreference: undefined,
       sortBy: undefined,
       ratingTier: undefined,
@@ -396,6 +437,37 @@ export function FilterDrawer({
                 <span>Comida incluida</span>
               </button>
 
+              {(
+                [
+                  { key: 'internetIncluded', label: 'WiFi incluido', Icon: Wifi },
+                  { key: 'waterIncluded', label: 'Agua incluida', Icon: Droplets },
+                  { key: 'electricityIncluded', label: 'Luz incluida', Icon: Zap },
+                  { key: 'gasIncluded', label: 'Gas incluido', Icon: Flame },
+                ] as const
+              ).map(({ key, label, Icon }) => {
+                const isSelected = Boolean(localFilters[key]);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() =>
+                      setLocalFilters((prev) => ({
+                        ...prev,
+                        [key]: prev[key] ? undefined : true,
+                      }))
+                    }
+                    className={`flex items-center gap-2 px-4 py-3 min-h-[48px] rounded-full border text-xs font-semibold transition active:scale-95 cursor-pointer ${
+                      isSelected
+                        ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary'
+                        : 'border-border bg-card text-foreground hover:bg-muted hover:border-muted-foreground/30'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{label}</span>
+                  </button>
+                );
+              })}
+
               {amenitiesCatalog.map((amenity) => {
                 const isSelected = Boolean(localFilters.amenities?.includes(amenity.slug));
                 return (
@@ -507,6 +579,39 @@ export function FilterDrawer({
                 );
               })}
             </div>
+
+            <div className="flex flex-wrap gap-2 pt-1">
+              {(
+                [
+                  { key: 'petsAllowed', label: 'Acepta mascotas', Icon: PawPrint },
+                  { key: 'guestsAllowed', label: 'Permite visitas', Icon: Users },
+                  { key: 'noCurfew', label: 'Sin toque de queda', Icon: Clock },
+                  { key: 'smokingAllowed', label: 'Permite fumar', Icon: Cigarette },
+                ] as const
+              ).map(({ key, label, Icon }) => {
+                const isSelected = Boolean(localFilters[key]);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() =>
+                      setLocalFilters((prev) => ({
+                        ...prev,
+                        [key]: prev[key] ? undefined : true,
+                      }))
+                    }
+                    className={`flex items-center gap-2 px-3.5 py-2.5 min-h-[44px] rounded-full border text-xs font-semibold transition active:scale-95 cursor-pointer ${
+                      isSelected
+                        ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary'
+                        : 'border-border bg-card text-foreground hover:bg-muted hover:border-muted-foreground/30'
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    <span>{label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex flex-col gap-3 pt-6 pb-2">
@@ -581,7 +686,7 @@ export function FilterDrawer({
             onClick={handleApply}
             className="flex-1 md:flex-initial md:min-w-[200px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold min-h-[48px] text-sm rounded-xl shadow-sm px-6 cursor-pointer"
           >
-            {typeof matchingCount === 'number'
+            {!hasNarrowingFilters && typeof matchingCount === 'number'
               ? `Mostrar ${matchingCount} ${matchingCount === 1 ? 'alojamiento' : 'alojamientos'}`
               : 'Mostrar alojamientos'}
           </Button>

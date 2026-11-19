@@ -27,6 +27,14 @@ export function buildSearchFilterSignature(filters?: SearchFilters | null): stri
     amenities: filters.amenities ?? [],
     minBeds: filters.minBeds ?? null,
     onlyAvailable: Boolean(filters.onlyAvailable),
+    internetIncluded: Boolean(filters.internetIncluded),
+    petsAllowed: Boolean(filters.petsAllowed),
+    guestsAllowed: Boolean(filters.guestsAllowed),
+    smokingAllowed: Boolean(filters.smokingAllowed),
+    noCurfew: Boolean(filters.noCurfew),
+    waterIncluded: Boolean(filters.waterIncluded),
+    electricityIncluded: Boolean(filters.electricityIncluded),
+    gasIncluded: Boolean(filters.gasIncluded),
     ratingTier: filters.ratingTier ?? '',
   });
 }
@@ -111,46 +119,73 @@ export function matchesSearchFilters(
   }
 
   if (filters.roomType) {
-    const roomsOmittedInSummary =
-      (!pension.rooms || pension.rooms.length === 0) && (pension._count?.rooms ?? 0) > 0;
-    if (!roomsOmittedInSummary) {
-      const hasMatchingRoom =
-        pension.rooms && pension.rooms.length > 0
-          ? pension.rooms.some((r) => r.type === filters.roomType)
-          : false;
-      if (!hasMatchingRoom) {
+    if (Array.isArray(pension.availableRoomTypes) && pension.availableRoomTypes.length > 0) {
+      if (!pension.availableRoomTypes.includes(filters.roomType)) {
         return false;
+      }
+    } else {
+      const roomsOmittedInSummary =
+        (!pension.rooms || pension.rooms.length === 0) && (pension._count?.rooms ?? 0) > 0;
+      if (!roomsOmittedInSummary) {
+        const hasMatchingRoom =
+          pension.rooms && pension.rooms.length > 0
+            ? pension.rooms.some((r) => r.type === filters.roomType)
+            : false;
+        if (!hasMatchingRoom) {
+          return false;
+        }
       }
     }
   }
 
   if (filters.hasPrivateBathroom) {
-    const roomsOmittedInSummary =
-      (!pension.rooms || pension.rooms.length === 0) && (pension._count?.rooms ?? 0) > 0;
-    if (!roomsOmittedInSummary) {
-      const hasBath =
-        pension.rooms && pension.rooms.length > 0
-          ? pension.rooms.some((r) => r.hasPrivateBathroom)
-          : false;
-      if (!hasBath) {
+    if (typeof pension.hasPrivateBathroomRoom === 'boolean') {
+      if (!pension.hasPrivateBathroomRoom) {
         return false;
+      }
+    } else {
+      const roomsOmittedInSummary =
+        (!pension.rooms || pension.rooms.length === 0) && (pension._count?.rooms ?? 0) > 0;
+      if (!roomsOmittedInSummary) {
+        const hasBath =
+          pension.rooms && pension.rooms.length > 0
+            ? pension.rooms.some((r) => r.hasPrivateBathroom)
+            : false;
+        if (!hasBath) {
+          return false;
+        }
       }
     }
   }
 
   if (filters.onlyAvailable) {
-    const roomsOmittedInSummary =
-      (!pension.rooms || pension.rooms.length === 0) && (pension._count?.rooms ?? 0) > 0;
-    if (!roomsOmittedInSummary) {
-      const hasMatchingRoom =
-        pension.rooms && pension.rooms.length > 0
-          ? pension.rooms.some((r) => r.isAvailable !== false)
-          : false;
-      if (!hasMatchingRoom) {
+    if (typeof pension.availableRoomsCount === 'number') {
+      if (pension.availableRoomsCount <= 0) {
         return false;
+      }
+    } else {
+      const roomsOmittedInSummary =
+        (!pension.rooms || pension.rooms.length === 0) && (pension._count?.rooms ?? 0) > 0;
+      if (!roomsOmittedInSummary) {
+        const hasMatchingRoom =
+          pension.rooms && pension.rooms.length > 0
+            ? pension.rooms.some((r) => r.isAvailable !== false)
+            : false;
+        if (!hasMatchingRoom) {
+          return false;
+        }
       }
     }
   }
+
+  if (filters.internetIncluded && !pension.internetIncluded) return false;
+  if (filters.petsAllowed && !pension.petsAllowed) return false;
+  if (filters.guestsAllowed && !pension.guestsAllowed) return false;
+  if (filters.smokingAllowed && !pension.smokingAllowed) return false;
+  if (filters.noCurfew && pension.curfewTime) return false;
+  if (filters.waterIncluded && !pension.waterIncluded) return false;
+  if (filters.electricityIncluded && !pension.electricityIncluded) return false;
+  if (filters.gasIncluded && !pension.gasIncluded) return false;
 
   if (filters.includesMeals) {
     const slugMatches = (slug: string) => MEAL_AMENITY_SLUGS.includes(slug);

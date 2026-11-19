@@ -213,6 +213,14 @@ export function useStudentPensionsFeed(
   const filterAmenitiesKey = filterAmenities?.join(',') ?? '';
   const filterMinBeds = filters?.minBeds;
   const filterOnlyAvailable = filters?.onlyAvailable;
+  const filterInternetIncluded = filters?.internetIncluded;
+  const filterPetsAllowed = filters?.petsAllowed;
+  const filterGuestsAllowed = filters?.guestsAllowed;
+  const filterSmokingAllowed = filters?.smokingAllowed;
+  const filterNoCurfew = filters?.noCurfew;
+  const filterWaterIncluded = filters?.waterIncluded;
+  const filterElectricityIncluded = filters?.electricityIncluded;
+  const filterGasIncluded = filters?.gasIncluded;
   const filterSortBy = filters?.sortBy;
   const filterRatingTier = filters?.ratingTier;
   const effectiveSortBy = filterSortBy ?? sortBy ?? 'relevance';
@@ -247,6 +255,14 @@ export function useStudentPensionsFeed(
             filterAmenitiesKey ||
             filterMinBeds ||
             filterOnlyAvailable ||
+            filterInternetIncluded ||
+            filterPetsAllowed ||
+            filterGuestsAllowed ||
+            filterSmokingAllowed ||
+            filterNoCurfew ||
+            filterWaterIncluded ||
+            filterElectricityIncluded ||
+            filterGasIncluded ||
             filterRatingTier,
         );
         const isNearbyExploration = Boolean(
@@ -279,6 +295,14 @@ export function useStudentPensionsFeed(
             amenities: parsedAmenities,
             minBeds: filterMinBeds,
             onlyAvailable: filterOnlyAvailable,
+            internetIncluded: filterInternetIncluded,
+            petsAllowed: filterPetsAllowed,
+            guestsAllowed: filterGuestsAllowed,
+            smokingAllowed: filterSmokingAllowed,
+            noCurfew: filterNoCurfew,
+            waterIncluded: filterWaterIncluded,
+            electricityIncluded: filterElectricityIncluded,
+            gasIncluded: filterGasIncluded,
             ratingTier: filterRatingTier,
             sortBy: effectiveSortBy,
             page: pageIndex,
@@ -342,18 +366,26 @@ export function useStudentPensionsFeed(
       effectiveSortBy,
       filterAmenitiesKey,
       filterCity,
+      filterElectricityIncluded,
+      filterGasIncluded,
       filterGender,
+      filterGuestsAllowed,
       filterHasPrivateBathroom,
       filterIncludesMeals,
+      filterInternetIncluded,
       filterMaxPrice,
       filterMinBeds,
       filterMinPrice,
       filterNeighborhood,
+      filterNoCurfew,
       filterOnlyAvailable,
+      filterPetsAllowed,
       filterQuery,
       filterRatingTier,
       filterRoomType,
+      filterSmokingAllowed,
       filterUni,
+      filterWaterIncluded,
       limit,
       maxLat,
       maxLng,
@@ -382,6 +414,14 @@ export function useStudentPensionsFeed(
       !filterAmenitiesKey &&
       !filterMinBeds &&
       !filterOnlyAvailable &&
+      !filterInternetIncluded &&
+      !filterPetsAllowed &&
+      !filterGuestsAllowed &&
+      !filterSmokingAllowed &&
+      !filterNoCurfew &&
+      !filterWaterIncluded &&
+      !filterElectricityIncluded &&
+      !filterGasIncluded &&
       !filterRatingTier &&
       effectiveSortBy === 'relevance' &&
       !bounds &&
@@ -402,18 +442,26 @@ export function useStudentPensionsFeed(
     fetchPensionsData,
     filterAmenitiesKey,
     filterCity,
+    filterElectricityIncluded,
+    filterGasIncluded,
     filterGender,
+    filterGuestsAllowed,
     filterHasPrivateBathroom,
     filterIncludesMeals,
+    filterInternetIncluded,
     filterMaxPrice,
     filterMinBeds,
     filterMinPrice,
     filterNeighborhood,
+    filterNoCurfew,
     filterOnlyAvailable,
+    filterPetsAllowed,
     filterQuery,
     filterRatingTier,
     filterRoomType,
+    filterSmokingAllowed,
     filterUni,
+    filterWaterIncluded,
     userLat,
     userLng,
   ]);

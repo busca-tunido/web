@@ -56,6 +56,14 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
   const amenitiesKey = filters?.amenities?.join(',') ?? '';
   const minBeds = filters?.minBeds;
   const onlyAvailable = filters?.onlyAvailable;
+  const internetIncluded = filters?.internetIncluded;
+  const petsAllowed = filters?.petsAllowed;
+  const guestsAllowed = filters?.guestsAllowed;
+  const smokingAllowed = filters?.smokingAllowed;
+  const noCurfew = filters?.noCurfew;
+  const waterIncluded = filters?.waterIncluded;
+  const electricityIncluded = filters?.electricityIncluded;
+  const gasIncluded = filters?.gasIncluded;
   const ratingTier = filters?.ratingTier;
   const effectiveSortBy = filters?.sortBy ?? sortBy;
   const genderPreference = filters?.genderPreference;
@@ -80,6 +88,14 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
         amenities: parsedAmenities,
         minBeds,
         onlyAvailable,
+        internetIncluded,
+        petsAllowed,
+        guestsAllowed,
+        smokingAllowed,
+        noCurfew,
+        waterIncluded,
+        electricityIncluded,
+        gasIncluded,
         ratingTier,
         genderPreference,
         latitude,
@@ -118,9 +134,13 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
     amenitiesKey,
     city,
     effectiveSortBy,
+    electricityIncluded,
+    gasIncluded,
     genderPreference,
+    guestsAllowed,
     hasPrivateBathroom,
     includesMeals,
+    internetIncluded,
     latitude,
     limit,
     longitude,
@@ -132,12 +152,16 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
     minLng,
     minPriceClp,
     neighborhood,
+    noCurfew,
     onlyAvailable,
+    petsAllowed,
     query,
     radiusKm,
     ratingTier,
     roomType,
+    smokingAllowed,
     universityId,
+    waterIncluded,
   ]);
 
   useEffect(() => {
@@ -166,6 +190,14 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
         amenities: parsedAmenities,
         minBeds,
         onlyAvailable,
+        internetIncluded,
+        petsAllowed,
+        guestsAllowed,
+        smokingAllowed,
+        noCurfew,
+        waterIncluded,
+        electricityIncluded,
+        gasIncluded,
         ratingTier,
         genderPreference,
         latitude,
@@ -210,10 +242,14 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
     amenitiesKey,
     city,
     effectiveSortBy,
+    electricityIncluded,
+    gasIncluded,
     genderPreference,
+    guestsAllowed,
     hasMore,
     hasPrivateBathroom,
     includesMeals,
+    internetIncluded,
     isLoading,
     isLoadingMore,
     latitude,
@@ -227,13 +263,17 @@ export function useInfinitePensions(options?: UseInfinitePensionsOptions) {
     minLng,
     minPriceClp,
     neighborhood,
+    noCurfew,
     onlyAvailable,
     page,
+    petsAllowed,
     query,
     radiusKm,
     ratingTier,
     roomType,
+    smokingAllowed,
     universityId,
+    waterIncluded,
   ]);
 
   const refresh = useCallback(async () => {

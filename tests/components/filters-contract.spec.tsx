@@ -1,6 +1,7 @@
 import { fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FilterDrawer } from '@/components/layout/filter-drawer';
+import { PensionCard } from '@/components/pensions/pension-card';
 import { useStudentPensionsFeed } from '@/hooks/use-student-pensions-feed';
 import { createSuccess } from '@/lib/api-response';
 import {
@@ -15,6 +16,10 @@ import { pensionsService } from '@/services/pensions.service';
 
 vi.mock('@/components/search/price-histogram-range-slider', () => ({
   PriceHistogramRangeSlider: () => <div data-testid="price-histogram-slider" />,
+}));
+
+vi.mock('@/components/pensions/pension-compare-button', () => ({
+  PensionCompareButton: () => null,
 }));
 
 const samplePension: PensionItem = {
@@ -169,7 +174,7 @@ describe('Quick filter chips & FilterDrawer OpenAPI alignment', () => {
         },
       ]),
     );
-    vi.spyOn(pensionsService, 'fetchPriceHistogram').mockResolvedValueOnce(
+    const histogramSpy = vi.spyOn(pensionsService, 'fetchPriceHistogram').mockResolvedValueOnce(
       createSuccess({
         minPrice: 110000,
         maxPrice: 400000,
@@ -184,10 +189,14 @@ describe('Quick filter chips & FilterDrawer OpenAPI alignment', () => {
       <FilterDrawer
         isOpen={true}
         onClose={vi.fn()}
-        filters={{ query: '' }}
+        filters={{ query: '', city: 'Santiago', ratingTier: 'high' }}
         onApply={handleApply}
       />,
     );
+
+    await waitFor(() => {
+      expect(histogramSpy).toHaveBeenCalledWith({ city: 'Santiago' });
+    });
 
     expect(screen.queryByRole('button', { name: /Cerca de mí/i })).toBeNull();
     expect(screen.queryByRole('button', { name: /Mejor evaluadas/i })).toBeNull();
@@ -200,8 +209,12 @@ describe('Quick filter chips & FilterDrawer OpenAPI alignment', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Mayor precio' }));
     fireEvent.click(screen.getByRole('button', { name: 'Piezas libres' }));
     fireEvent.click(screen.getByRole('button', { name: '2+ camas' }));
+    fireEvent.click(screen.getByRole('button', { name: 'WiFi incluido' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Agua incluida' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Acepta mascotas' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sin toque de queda' }));
     fireEvent.click(screen.getByRole('button', { name: 'Mixto' }));
-    fireEvent.click(screen.getByRole('button', { name: /^Favoritas/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Buenas reseñas/i }));
 
     const kitchenBtn = await screen.findByRole('button', {
       name: 'Cocina compartida full equipada',
@@ -219,15 +232,78 @@ describe('Quick filter chips & FilterDrawer OpenAPI alignment', () => {
         sortBy: 'price_desc',
         onlyAvailable: true,
         minBeds: 2,
+        internetIncluded: true,
+        waterIncluded: true,
+        petsAllowed: true,
+        noCurfew: true,
         genderPreference: 'ANY',
-        ratingTier: 'high',
+        ratingTier: 'medium',
         amenities: ['cocina-equipada'],
         neighborhood: 'República',
       }),
     );
   });
 
-  it('forwards hasPrivateBathroom, includesMeals, amenities, minBeds, onlyAvailable, neighborhood, and sortBy in useStudentPensionsFeed', async () => {
+  it('matches summary room flags when rooms array is omitted and evaluates new rule/utility filters', () => {
+    const summaryPension: PensionItem = {
+      ...samplePension,
+      rooms: [],
+      availableRoomsCount: 2,
+      availableRoomTypes: ['SHARED'],
+      hasPrivateBathroomRoom: true,
+      curfewTime: null,
+      petsAllowed: true,
+    };
+
+    expect(
+      matchesSearchFilters(summaryPension, {
+        query: '',
+        roomType: 'SHARED',
+        hasPrivateBathroom: true,
+        onlyAvailable: true,
+        internetIncluded: true,
+        petsAllowed: true,
+        noCurfew: true,
+      }),
+    ).toBe(true);
+
+    expect(
+      matchesSearchFilters(summaryPension, {
+        query: '',
+        roomType: 'SINGLE',
+      }),
+    ).toBe(false);
+
+    expect(
+      matchesSearchFilters(
+        { ...summaryPension, curfewTime: '23:00' },
+        { query: '', noCurfew: true },
+      ),
+    ).toBe(false);
+  });
+
+  it('displays review count and low-reliability indicator in PensionCard', () => {
+    render(
+      <PensionCard
+        pension={{
+          ...samplePension,
+          ratingAverage: 4.8,
+          reviewsCount: 2,
+          reliability: 'low',
+        }}
+        isFavorite={false}
+        onToggleFavorite={vi.fn()}
+        onSelectPension={vi.fn()}
+      />,
+    );
+
+    const ratingBadge = screen.getByTitle('Calificación basada en pocas reseñas');
+    expect(ratingBadge).toBeDefined();
+    expect(ratingBadge.textContent).toContain('(2)');
+    expect(ratingBadge.className).toContain('opacity-75');
+  });
+
+  it('forwards hasPrivateBathroom, includesMeals, amenities, minBeds, onlyAvailable, utilities, rules, neighborhood, and sortBy in useStudentPensionsFeed', async () => {
     vi.spyOn(locationsService, 'fetchCities').mockResolvedValueOnce(createSuccess([]));
     vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValueOnce(createSuccess([]));
     const emptyPaginated: PaginatedPensionsResponse = {
@@ -254,6 +330,14 @@ describe('Quick filter chips & FilterDrawer OpenAPI alignment', () => {
           amenities: ['cocina-equipada'],
           minBeds: 2,
           onlyAvailable: true,
+          internetIncluded: true,
+          petsAllowed: true,
+          guestsAllowed: true,
+          smokingAllowed: false,
+          noCurfew: true,
+          waterIncluded: true,
+          electricityIncluded: true,
+          gasIncluded: true,
           sortBy: 'price_asc',
           genderPreference: 'ANY',
         },
@@ -272,6 +356,13 @@ describe('Quick filter chips & FilterDrawer OpenAPI alignment', () => {
         amenities: ['cocina-equipada'],
         minBeds: 2,
         onlyAvailable: true,
+        internetIncluded: true,
+        petsAllowed: true,
+        guestsAllowed: true,
+        noCurfew: true,
+        waterIncluded: true,
+        electricityIncluded: true,
+        gasIncluded: true,
         sortBy: 'price_asc',
         genderPreference: 'ANY',
       }),

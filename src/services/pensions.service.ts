@@ -39,6 +39,14 @@ function toBackendQueryParams(
     hasPrivateBathroom,
     includesMeals,
     onlyAvailable,
+    internetIncluded,
+    petsAllowed,
+    guestsAllowed,
+    smokingAllowed,
+    noCurfew,
+    waterIncluded,
+    electricityIncluded,
+    gasIncluded,
     neighborhood,
     ...rest
   } = params;
@@ -62,6 +70,14 @@ function toBackendQueryParams(
     hasPrivateBathroom: hasPrivateBathroom || undefined,
     includesMeals: includesMeals || undefined,
     onlyAvailable: onlyAvailable || undefined,
+    internetIncluded: internetIncluded || undefined,
+    petsAllowed: petsAllowed || undefined,
+    guestsAllowed: guestsAllowed || undefined,
+    smokingAllowed: smokingAllowed || undefined,
+    noCurfew: noCurfew || undefined,
+    waterIncluded: waterIncluded || undefined,
+    electricityIncluded: electricityIncluded || undefined,
+    gasIncluded: gasIncluded || undefined,
     amenities: amenitiesVal,
   };
 }

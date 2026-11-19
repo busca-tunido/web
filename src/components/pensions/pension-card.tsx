@@ -19,7 +19,9 @@ function areEqual(prev: PensionCardProps, next: PensionCardProps): boolean {
     prev.pension.id === next.pension.id &&
     prev.isFavorite === next.isFavorite &&
     prev.pension.ratingAverage === next.pension.ratingAverage &&
-    prev.pension.baseMonthlyPrice === next.pension.baseMonthlyPrice
+    prev.pension.baseMonthlyPrice === next.pension.baseMonthlyPrice &&
+    prev.pension.reviewsCount === next.pension.reviewsCount &&
+    prev.pension.reliability === next.pension.reliability
   );
 }
 
@@ -30,6 +32,8 @@ function PensionCardComponent({
   onSelectPension,
 }: PensionCardProps) {
   const isHighRelevance = (pension.relevanceScore ?? 0) >= 75;
+  const reviewsCount = pension.reviewsCount ?? pension.ratingCount ?? 0;
+  const isLowReliability = pension.reliability === 'low' || (reviewsCount > 0 && reviewsCount < 5);
   const titleId = `pension-title-${pension.id}`;
 
   return (
@@ -97,11 +101,21 @@ function PensionCardComponent({
               {pension.title}
             </button>
           </h3>
-          <div className="flex items-center gap-1 text-sm font-semibold text-foreground shrink-0">
+          <div
+            className={`flex items-center gap-1 text-sm font-semibold text-foreground shrink-0 ${
+              isLowReliability ? 'opacity-75' : ''
+            }`}
+            title={isLowReliability ? 'Calificación basada en pocas reseñas' : undefined}
+          >
             {pension.ratingAverage > 0 ? (
               <>
                 <Star className="h-4 w-4 fill-warning text-warning" />
                 <span className="tabular-nums">{pension.ratingAverage.toFixed(1)}</span>
+                {reviewsCount > 0 && (
+                  <span className="text-[11px] font-normal text-muted-foreground tabular-nums">
+                    ({reviewsCount})
+                  </span>
+                )}
               </>
             ) : (
               <>

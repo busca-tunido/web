@@ -977,6 +977,10 @@ export interface components {
       /** @example 2 */
       readonly proposals?: number;
     };
+    /** @enum {string} */
+    readonly PensionRatingTierFilter: 'high' | 'medium' | 'low' | 'unreviewed';
+    /** @enum {string} */
+    readonly PensionReliabilityTier: 'high' | 'low' | 'unreviewed';
     readonly PensionItemResponseDto: {
       /** @example 6659f8c123456789abcdef01 */
       readonly id: string;
@@ -1063,6 +1067,13 @@ export interface components {
       readonly _count: components['schemas']['PensionCountDto'];
       /** @example 3 */
       readonly availableRoomsCount?: number;
+      readonly availableRoomTypes?: readonly components['schemas']['RoomType'][];
+      /** @example true */
+      readonly hasPrivateBathroomRoom?: boolean;
+      /** @example high */
+      readonly ratingTier?: components['schemas']['PensionRatingTierFilter'];
+      /** @example high */
+      readonly reliability?: components['schemas']['PensionReliabilityTier'];
       /** @example 1 */
       readonly pendingProposalsCount?: number;
     };
@@ -1105,8 +1116,6 @@ export interface components {
     readonly PensionSortBy: 'relevance' | 'distance' | 'rating' | 'price_asc' | 'price_desc';
     /** @enum {string} */
     readonly PensionViewMode: 'full' | 'card' | 'map';
-    /** @enum {string} */
-    readonly PensionRatingTierFilter: 'high' | 'medium' | 'low' | 'unreviewed';
     readonly PriceHistogramBinDto: {
       /** @example 150000 */
       readonly min: number;
@@ -2660,6 +2669,22 @@ export interface operations {
         readonly ratingTier?: components['schemas']['PensionRatingTierFilter'];
         /** @description Filter pensions that have at least one available active room */
         readonly onlyAvailable?: boolean;
+        /** @description Filter pensions with WiFi / Internet included */
+        readonly internetIncluded?: boolean;
+        /** @description Filter pensions that allow pets */
+        readonly petsAllowed?: boolean;
+        /** @description Filter pensions that allow guests */
+        readonly guestsAllowed?: boolean;
+        /** @description Filter pensions that allow smoking */
+        readonly smokingAllowed?: boolean;
+        /** @description Filter pensions without a curfew time restriction */
+        readonly noCurfew?: boolean;
+        /** @description Filter pensions with water utility included */
+        readonly waterIncluded?: boolean;
+        /** @description Filter pensions with electricity utility included */
+        readonly electricityIncluded?: boolean;
+        /** @description Filter pensions with gas utility included */
+        readonly gasIncluded?: boolean;
       };
       readonly header?: never;
       readonly path?: never;
@@ -2810,6 +2835,22 @@ export interface operations {
         readonly ratingTier?: components['schemas']['PensionRatingTierFilter'];
         /** @description Filter pensions that have at least one available active room */
         readonly onlyAvailable?: boolean;
+        /** @description Filter pensions with WiFi / Internet included */
+        readonly internetIncluded?: boolean;
+        /** @description Filter pensions that allow pets */
+        readonly petsAllowed?: boolean;
+        /** @description Filter pensions that allow guests */
+        readonly guestsAllowed?: boolean;
+        /** @description Filter pensions that allow smoking */
+        readonly smokingAllowed?: boolean;
+        /** @description Filter pensions without a curfew time restriction */
+        readonly noCurfew?: boolean;
+        /** @description Filter pensions with water utility included */
+        readonly waterIncluded?: boolean;
+        /** @description Filter pensions with electricity utility included */
+        readonly electricityIncluded?: boolean;
+        /** @description Filter pensions with gas utility included */
+        readonly gasIncluded?: boolean;
       };
       readonly header?: never;
       readonly path?: never;

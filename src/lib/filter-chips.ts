@@ -161,6 +161,14 @@ export function countActiveFilters(
   if (filters.includesMeals) count += 1;
   if (filters.onlyAvailable) count += 1;
   if (filters.minBeds !== undefined && filters.minBeds > 0) count += 1;
+  if (filters.internetIncluded) count += 1;
+  if (filters.petsAllowed) count += 1;
+  if (filters.guestsAllowed) count += 1;
+  if (filters.smokingAllowed) count += 1;
+  if (filters.noCurfew) count += 1;
+  if (filters.waterIncluded) count += 1;
+  if (filters.electricityIncluded) count += 1;
+  if (filters.gasIncluded) count += 1;
   if (filters.amenities && filters.amenities.length > 0) count += filters.amenities.length;
   if (filters.genderPreference && filters.genderPreference !== 'ALL') count += 1;
   if (filters.ratingTier) count += 1;
