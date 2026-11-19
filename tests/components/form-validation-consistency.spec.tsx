@@ -68,14 +68,37 @@ vi.mock('next/link', () => ({
   ),
 }));
 
-vi.mock('motion/react', () => ({
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  motion: {
-    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-}));
+vi.mock('motion/react', async () => {
+  const { createElement: createMotionElement } = await import('react');
+  const motionTags = new Proxy(
+    {},
+    {
+      get: (_target, tag: string) => {
+        return ({
+          children,
+          initial: _initial,
+          animate: _animate,
+          exit: _exit,
+          variants: _variants,
+          transition: _transition,
+          whileHover: _whileHover,
+          whileTap: _whileTap,
+          layout: _layout,
+          onHoverStart: _onHoverStart,
+          onHoverEnd: _onHoverEnd,
+          custom: _custom,
+          ...domProps
+        }: Record<string, unknown>) =>
+          createMotionElement(tag, domProps, children as React.ReactNode);
+      },
+    }
+  );
+  return {
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    motion: motionTags,
+    useAnimation: () => ({ start: vi.fn(), stop: vi.fn(), set: vi.fn() }),
+  };
+});
 
 vi.mock('@/lib/auth-context', () => ({
   useAuth: () => ({

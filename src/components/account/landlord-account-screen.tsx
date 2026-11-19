@@ -1,8 +1,10 @@
 'use client';
 
-import { Bell, Building2, Phone, ShieldCheck } from 'lucide-react';
+import { Building2, Phone } from 'lucide-react';
 import { AuthScreen } from '@/components/auth/auth-screen';
 import { Badge } from '@/components/ui/badge';
+import { BellIcon } from '@/components/ui/bell';
+import { ShieldCheckIcon } from '@/components/ui/shield-check';
 import { useOptionalLandlord } from '@/contexts/landlord-context';
 import { useAuth } from '@/lib/auth-context';
 import {
@@ -51,7 +53,7 @@ export function LandlordAccountScreen() {
         </h3>
 
         <AccountActionRow
-          icon={ShieldCheck}
+          icon={ShieldCheckIcon}
           title="Verificación de Identidad del Anfitrión"
           description="Acreditación legal de propietario y titularidad"
           trailing={
@@ -78,7 +80,7 @@ export function LandlordAccountScreen() {
         />
 
         <AccountActionRow
-          icon={Bell}
+          icon={BellIcon}
           title="Notificaciones de Consultas y Reseñas"
           description="Alertas inmediatas ante solicitudes y nuevas opiniones universitarias"
           trailing={<span className="text-muted-foreground text-[11px] font-medium">Activas</span>}

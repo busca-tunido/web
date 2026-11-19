@@ -1,25 +1,78 @@
 'use client';
 
-import {
-  Compass,
-  Filter,
-  Heart,
-  History,
-  LogOut,
-  MapPin,
-  Search,
-  User as UserIcon,
-  X,
-} from 'lucide-react';
+import { Filter, LogOut, MapPin, User as UserIcon, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
-import { useMemo } from 'react';
+import { type ComponentType, type Ref, useMemo } from 'react';
+import type { AnimatedIconHandle, AnimatedIconProps } from '@/components/ui/animated-icon.types';
 import { Badge } from '@/components/ui/badge';
 import { BrandLogo } from '@/components/ui/brand-logo';
 import { Button } from '@/components/ui/button';
+import { CompassIcon } from '@/components/ui/compass';
+import { HeartIcon } from '@/components/ui/heart';
+import { HistoryIcon } from '@/components/ui/history';
+import { MapPinIcon } from '@/components/ui/map-pin';
+import { SearchIcon } from '@/components/ui/search';
+import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { useAuth } from '@/lib/auth-context';
 import { countActiveFilters, getSortedFilterChips } from '@/lib/filter-chips';
 import type { NavTab, SearchFilters } from '@/lib/types';
+
+type DesktopNavIcon = ComponentType<AnimatedIconProps & { ref?: Ref<AnimatedIconHandle> }>;
+
+type DesktopNavLink = {
+  id: NavTab;
+  label: string;
+  icon: DesktopNavIcon;
+  badge?: number;
+};
+
+function DesktopNavButton({
+  item,
+  isActive,
+  onSelect,
+}: {
+  item: DesktopNavLink;
+  isActive: boolean;
+  onSelect: () => void;
+}) {
+  const Icon = item.icon;
+  const { iconRef, start, triggerProps } = useAnimatedIconTrigger();
+
+  return (
+    <button
+      id={`desktop-nav-${item.id}`}
+      type="button"
+      {...triggerProps}
+      onClick={() => {
+        start();
+        onSelect();
+      }}
+      title={item.label}
+      aria-label={item.label}
+      className={`relative flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+        isActive
+          ? 'bg-sage/20 text-sage-foreground shadow-xs'
+          : 'text-muted-foreground hover:bg-sage/10 hover:text-foreground'
+      }`}
+    >
+      <Icon ref={iconRef} size={16} className={isActive ? 'text-sage-foreground' : ''} />
+      <span className="hidden xl:inline">{item.label}</span>
+      {item.badge !== undefined && item.badge > 0 && (
+        <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+          {item.badge}
+        </span>
+      )}
+      {isActive && (
+        <motion.span
+          layoutId="active-desktop-nav-indicator"
+          transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+          className="absolute inset-0 rounded-full border border-sage/35 pointer-events-none"
+        />
+      )}
+    </button>
+  );
+}
 
 type DesktopNavbarProps = {
   activeTab: NavTab;
@@ -57,15 +110,22 @@ export function DesktopNavbar({
   );
 
   const sortedChips = useMemo(() => getSortedFilterChips(filters), [filters]);
+  const {
+    iconRef: searchIconRef,
+    start: startSearchAnimation,
+    stop: stopSearchAnimation,
+    triggerProps: searchTriggerProps,
+  } = useAnimatedIconTrigger();
 
-  const navLinks: Array<{ id: NavTab; label: string; icon: typeof Compass; badge?: number }> = [
-    { id: 'explore', label: 'Explorar', icon: Compass },
-    { id: 'map', label: 'Ubicación', icon: MapPin },
-    { id: 'favorites', label: 'Favoritos', icon: Heart, badge: user ? favorites.length : 0 },
-    { id: 'history', label: 'Mis Estadías', icon: History },
+  const navLinks: DesktopNavLink[] = [
+    { id: 'explore', label: 'Explorar', icon: CompassIcon },
+    { id: 'map', label: 'Ubicación', icon: MapPinIcon },
+    { id: 'favorites', label: 'Favoritos', icon: HeartIcon, badge: user ? favorites.length : 0 },
+    { id: 'history', label: 'Mis Estadías', icon: HistoryIcon },
   ];
 
   const handleExecuteSearch = () => {
+    startSearchAnimation();
     if (activeTab !== 'explore') {
       onTabChange('explore');
     }
@@ -90,45 +150,19 @@ export function DesktopNavbar({
 
         <div className="flex flex-1 items-center justify-center gap-2 lg:gap-3 mx-2 min-w-0">
           <nav className="flex items-center gap-1 shrink-0 p-1 rounded-full bg-sage/10 border border-sage/20 backdrop-blur-md shadow-xs">
-            {navLinks.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  id={`desktop-nav-${item.id}`}
-                  type="button"
-                  onClick={() => {
-                    onTabChange(item.id);
-                    if (!user && (item.id === 'favorites' || item.id === 'history')) {
-                      onOpenAuthModal?.();
-                    }
-                  }}
-                  title={item.label}
-                  aria-label={item.label}
-                  className={`relative flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-sage/20 text-sage-foreground shadow-xs'
-                      : 'text-muted-foreground hover:bg-sage/10 hover:text-foreground'
-                  }`}
-                >
-                  <Icon className={`h-4 w-4 ${isActive ? 'text-sage-foreground' : ''}`} />
-                  <span className="hidden xl:inline">{item.label}</span>
-                  {item.badge !== undefined && item.badge > 0 && (
-                    <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                      {item.badge}
-                    </span>
-                  )}
-                  {isActive && (
-                    <motion.span
-                      layoutId="active-desktop-nav-indicator"
-                      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                      className="absolute inset-0 rounded-full border border-sage/35 pointer-events-none"
-                    />
-                  )}
-                </button>
-              );
-            })}
+            {navLinks.map((item) => (
+              <DesktopNavButton
+                key={item.id}
+                item={item}
+                isActive={activeTab === item.id}
+                onSelect={() => {
+                  onTabChange(item.id);
+                  if (!user && (item.id === 'favorites' || item.id === 'history')) {
+                    onOpenAuthModal?.();
+                  }
+                }}
+              />
+            ))}
           </nav>
 
           <div className="relative w-full max-w-xs lg:max-w-sm xl:max-w-md">
@@ -140,6 +174,8 @@ export function DesktopNavbar({
               autoCorrect="off"
               spellCheck={false}
               value={filters.query}
+              onFocus={startSearchAnimation}
+              onBlur={stopSearchAnimation}
               onChange={(e) => onFilterChange({ ...filters, query: e.target.value })}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -163,12 +199,13 @@ export function DesktopNavbar({
               )}
               <button
                 type="button"
+                {...searchTriggerProps}
                 onClick={handleExecuteSearch}
                 className="flex h-7 w-7 items-center justify-center rounded-full border border-sage/30 bg-sage/15 text-sage-foreground hover:bg-sage/25 transition-colors cursor-pointer shadow-xs"
                 title="Buscar"
                 aria-label="Buscar"
               >
-                <Search className="h-3.5 w-3.5" />
+                <SearchIcon ref={searchIconRef} size={14} />
               </button>
             </div>
           </div>

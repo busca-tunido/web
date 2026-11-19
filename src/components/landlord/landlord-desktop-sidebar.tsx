@@ -6,22 +6,33 @@ import {
   ChevronDown,
   ChevronUp,
   Eye,
-  Home,
   LogOut,
-  MessageSquare,
-  Plus,
   Star,
   User,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import {
+  type ComponentType,
+  type Ref,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { RoomOccupancyBar } from '@/components/landlord/room-occupancy-bar';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
+import type { AnimatedIconHandle, AnimatedIconProps } from '@/components/ui/animated-icon.types';
 import { BrandLogo } from '@/components/ui/brand-logo';
 import { Button } from '@/components/ui/button';
+import { HomeIcon } from '@/components/ui/home';
+import { MessageSquareIcon } from '@/components/ui/message-square';
+import { PlusIcon } from '@/components/ui/plus';
 import { type LandlordTab, useLandlord } from '@/contexts/landlord-context';
+import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/utils';
 
@@ -32,12 +43,70 @@ export type LandlordDesktopSidebarProps = {
   className?: string;
 };
 
+type SidebarIconComponent =
+  | ComponentType<AnimatedIconProps & { ref?: Ref<AnimatedIconHandle> }>
+  | typeof BedDouble;
+
 type NavItemConfig = {
   id: LandlordTab;
   label: string;
-  icon: typeof BedDouble;
+  icon: SidebarIconComponent;
   badge?: number;
 };
+
+function SidebarNavItemButton({
+  item,
+  isActive,
+  onSelect,
+}: {
+  item: NavItemConfig;
+  isActive: boolean;
+  onSelect: () => void;
+}) {
+  const Icon = item.icon;
+  const { iconRef, start, triggerProps } = useAnimatedIconTrigger();
+
+  return (
+    <button
+      type="button"
+      {...triggerProps}
+      onClick={() => {
+        start();
+        onSelect();
+      }}
+      className={cn(
+        'group relative flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition cursor-pointer',
+        isActive
+          ? 'bg-sage/15 text-sage-foreground font-semibold border border-sage/25 shadow-xs'
+          : 'text-muted-foreground hover:bg-sage/8 hover:text-foreground',
+      )}
+    >
+      <Icon
+        ref={iconRef as Ref<never>}
+        size={18}
+        className={cn(
+          'h-4.5 w-4.5 shrink-0 stroke-2 transition-transform duration-200',
+          isActive ? 'text-sage-foreground' : '',
+        )}
+      />
+      <span className="flex-1 text-left">{item.label}</span>
+
+      {item.badge !== undefined && (
+        <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-xs font-medium text-muted-foreground tabular-nums">
+          {item.badge}
+        </span>
+      )}
+
+      {isActive && (
+        <motion.div
+          layoutId="active-landlord-desktop-sidebar-indicator"
+          transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+          className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-sage"
+        />
+      )}
+    </button>
+  );
+}
 
 export function LandlordDesktopSidebar({
   activeTab: propActiveTab,
@@ -75,18 +144,23 @@ export function LandlordDesktopSidebar({
 
   const navItems: readonly NavItemConfig[] = useMemo(
     () => [
-      { id: 'pension', label: 'Mi Pensión', icon: Home },
+      { id: 'pension', label: 'Mi Pensión', icon: HomeIcon },
       { id: 'rooms', label: 'Habitaciones', icon: BedDouble, badge: totalRooms },
       { id: 'reviews', label: 'Reseñas', icon: Star, badge: reviewsCount },
       {
         id: 'proposals',
         label: 'Sugerencias',
-        icon: MessageSquare,
+        icon: MessageSquareIcon,
         badge: pendingProposalsCount > 0 ? pendingProposalsCount : undefined,
       },
     ],
     [totalRooms, reviewsCount, pendingProposalsCount],
   );
+  const {
+    iconRef: plusIconRef,
+    start: startPlusAnimation,
+    triggerProps: plusTriggerProps,
+  } = useAnimatedIconTrigger();
 
   const updateDropdownPosition = useCallback(() => {
     if (!triggerRef.current) return;
@@ -226,46 +300,14 @@ export function LandlordDesktopSidebar({
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 mb-1">
             Gestión de Pensión
           </span>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setActiveTab(item.id)}
-                className={cn(
-                  'group relative flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition cursor-pointer',
-                  isActive
-                    ? 'bg-sage/15 text-sage-foreground font-semibold border border-sage/25 shadow-xs'
-                    : 'text-muted-foreground hover:bg-sage/8 hover:text-foreground',
-                )}
-              >
-                <Icon
-                  className={cn(
-                    'h-4.5 w-4.5 shrink-0 stroke-2 transition-transform duration-200',
-                    isActive ? 'text-sage-foreground' : '',
-                  )}
-                />
-                <span className="flex-1 text-left">{item.label}</span>
-
-                {item.badge !== undefined && (
-                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-secondary px-1.5 text-xs font-medium text-muted-foreground tabular-nums">
-                    {item.badge}
-                  </span>
-                )}
-
-                {isActive && (
-                  <motion.div
-                    layoutId="active-landlord-desktop-sidebar-indicator"
-                    transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                    className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-sage"
-                  />
-                )}
-              </button>
-            );
-          })}
+          {navItems.map((item) => (
+            <SidebarNavItemButton
+              key={item.id}
+              item={item}
+              isActive={activeTab === item.id}
+              onSelect={() => setActiveTab(item.id)}
+            />
+          ))}
         </nav>
 
         <div className="mt-auto flex flex-col gap-2 p-3 border-t border-border/60">
@@ -302,10 +344,14 @@ export function LandlordDesktopSidebar({
             type="button"
             variant="outline"
             size="sm"
-            onClick={openCreatePensionModal}
+            {...plusTriggerProps}
+            onClick={() => {
+              startPlusAnimation();
+              openCreatePensionModal();
+            }}
             className="flex w-full min-h-[38px] items-center justify-center gap-2 rounded-xl border border-dashed border-primary/40 bg-primary/5 text-primary hover:border-primary/70 hover:bg-primary/10 text-xs font-semibold shadow-2xs transition active:scale-[0.99] cursor-pointer"
           >
-            <Plus className="h-4 w-4 shrink-0" />
+            <PlusIcon ref={plusIconRef} size={16} className="shrink-0" />
             <span>Registrar Nueva Pensión</span>
           </Button>
 

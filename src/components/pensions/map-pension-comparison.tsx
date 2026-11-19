@@ -1,9 +1,12 @@
 'use client';
 
-import { ArrowLeftRight, Check, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowLeftRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CheckIcon } from '@/components/ui/check';
+import { DeleteIcon } from '@/components/ui/delete';
+import { RefreshCWIcon } from '@/components/ui/refresh-cw';
 import {
   ResponsiveModal,
   ResponsiveModalContent,
@@ -16,6 +19,7 @@ import {
   type ComparisonSlot,
   usePensionComparison,
 } from '@/contexts/pension-comparison-context';
+import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { isApiSuccess } from '@/lib/api-response';
 import {
@@ -93,6 +97,17 @@ function ComparisonPension({
   advantages: readonly ComparisonMetric[];
   onReplace: (slot: ComparisonSlot) => void;
 }) {
+  const {
+    iconRef: replaceIconRef,
+    start: startReplaceAnimation,
+    triggerProps: replaceTriggerProps,
+  } = useAnimatedIconTrigger();
+  const {
+    iconRef: retryIconRef,
+    start: startRetryAnimation,
+    triggerProps: retryTriggerProps,
+  } = useAnimatedIconTrigger();
+
   return (
     <>
       <div className="shrink-0 border-b border-border bg-card px-4 py-2.5 lg:min-h-14 lg:px-6">
@@ -104,7 +119,7 @@ function ComparisonPension({
                 variant="secondary"
                 className="gap-1 bg-sage/15 text-sage-foreground"
               >
-                <Check className="size-3" />
+                <CheckIcon size={12} />
                 {COMPARISON_ADVANTAGES[metric]}
               </Badge>
             ))}
@@ -113,11 +128,15 @@ function ComparisonPension({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => onReplace(slot)}
+            {...replaceTriggerProps}
+            onClick={() => {
+              startReplaceAnimation();
+              onReplace(slot);
+            }}
             aria-label={`Cambiar pensión: ${selected.title}`}
             className="h-8 shrink-0 gap-1.5 rounded-full px-2.5 text-xs font-semibold cursor-pointer"
           >
-            <RefreshCw className="size-3.5" />
+            <RefreshCWIcon ref={replaceIconRef} size={14} />
             <span>Cambiar</span>
           </Button>
         </div>
@@ -134,9 +153,13 @@ function ComparisonPension({
                 variant="outline"
                 className="min-h-12"
                 aria-label={`Reintentar carga de ${selected.title}`}
-                onClick={retry}
+                {...retryTriggerProps}
+                onClick={() => {
+                  startRetryAnimation();
+                  retry();
+                }}
               >
-                <RefreshCw />
+                <RefreshCWIcon ref={retryIconRef} size={16} />
                 Reintentar
               </Button>
             </div>
@@ -157,6 +180,21 @@ export function MapPensionComparison({ universityId }: { universityId?: string }
   const second = useComparisonDetail(bSlot?.id);
   const [activeSlot, setActiveSlot] = useState<ComparisonSlot>(0);
   const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const {
+    iconRef: singleClearIconRef,
+    start: startSingleClearAnimation,
+    triggerProps: singleClearTriggerProps,
+  } = useAnimatedIconTrigger();
+  const {
+    iconRef: pairClearIconRef,
+    start: startPairClearAnimation,
+    triggerProps: pairClearTriggerProps,
+  } = useAnimatedIconTrigger();
+  const {
+    iconRef: singleRetryIconRef,
+    start: startSingleRetryAnimation,
+    triggerProps: singleRetryTriggerProps,
+  } = useAnimatedIconTrigger();
   const aId = aSlot?.id;
   const bId = bSlot?.id;
   const previousIds = useRef([aId, bId]);
@@ -237,11 +275,15 @@ export function MapPensionComparison({ universityId }: { universityId?: string }
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => comparison.remove(singleEntry.slot)}
+                {...singleClearTriggerProps}
+                onClick={() => {
+                  startSingleClearAnimation();
+                  comparison.remove(singleEntry.slot);
+                }}
                 aria-label={`Dejar de comparar: ${singleEntry.item.title}`}
                 className="h-8 gap-1.5 rounded-full px-2.5 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive cursor-pointer shrink-0"
               >
-                <Trash2 className="size-3.5" />
+                <DeleteIcon ref={singleClearIconRef} size={14} />
                 <span>Dejar de comparar</span>
               </Button>
             </header>
@@ -263,9 +305,13 @@ export function MapPensionComparison({ universityId }: { universityId?: string }
                     <Button
                       variant="outline"
                       className="min-h-12"
-                      onClick={singleEntry.detail.retry}
+                      {...singleRetryTriggerProps}
+                      onClick={() => {
+                        startSingleRetryAnimation();
+                        singleEntry.detail.retry();
+                      }}
                     >
-                      <RefreshCw />
+                      <RefreshCWIcon ref={singleRetryIconRef} size={16} />
                       Reintentar
                     </Button>
                   </div>
@@ -286,11 +332,15 @@ export function MapPensionComparison({ universityId }: { universityId?: string }
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={comparison.clear}
+                {...pairClearTriggerProps}
+                onClick={() => {
+                  startPairClearAnimation();
+                  comparison.clear();
+                }}
                 aria-label="Dejar de comparar"
                 className="h-8 gap-1.5 rounded-full px-2.5 text-xs font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive cursor-pointer shrink-0"
               >
-                <Trash2 className="size-3.5" />
+                <DeleteIcon ref={pairClearIconRef} size={14} />
                 <span>Dejar de comparar</span>
               </Button>
             </header>

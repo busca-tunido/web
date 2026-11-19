@@ -1,7 +1,9 @@
 'use client';
 
-import { Loader2, RotateCw, WifiOff } from 'lucide-react';
+import { Loader2, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { RefreshCWIcon } from '@/components/ui/refresh-cw';
+import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 
 export type NetworkErrorBannerProps = {
   message?: string;
@@ -18,6 +20,8 @@ export function NetworkErrorBanner({
   isRetrying = false,
   className = '',
 }: NetworkErrorBannerProps) {
+  const { iconRef, start, triggerProps } = useAnimatedIconTrigger();
+
   return (
     <div
       role="alert"
@@ -38,14 +42,18 @@ export function NetworkErrorBanner({
           type="button"
           variant="outline"
           size="sm"
-          onClick={onRetry}
+          {...triggerProps}
+          onClick={() => {
+            start();
+            onRetry();
+          }}
           disabled={isRetrying}
           className="h-8 shrink-0 gap-1.5 border-destructive/40 bg-background/80 px-2.5 text-xs font-medium text-destructive hover:bg-destructive/15 hover:text-destructive"
         >
           {isRetrying ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
           ) : (
-            <RotateCw className="h-3.5 w-3.5" />
+            <RefreshCWIcon ref={iconRef} size={14} />
           )}
           <span>Reintentar</span>
         </Button>
@@ -69,6 +77,8 @@ export function NetworkErrorState({
   isRetrying = false,
   className = '',
 }: NetworkErrorStateProps) {
+  const { iconRef, start, triggerProps } = useAnimatedIconTrigger();
+
   return (
     <div
       role="alert"
@@ -85,14 +95,18 @@ export function NetworkErrorState({
       {onRetry && (
         <Button
           type="button"
-          onClick={onRetry}
+          {...triggerProps}
+          onClick={() => {
+            start();
+            onRetry();
+          }}
           disabled={isRetrying}
           className="h-10 gap-2 px-5 text-xs font-semibold shadow-sm"
         >
           {isRetrying ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <RotateCw className="h-4 w-4" />
+            <RefreshCWIcon ref={iconRef} size={16} />
           )}
           <span>Reintentar conexión</span>
         </Button>

@@ -9,7 +9,6 @@ import {
   Minus,
   Plus,
   Save,
-  Upload,
   User,
   Users,
   X,
@@ -28,6 +27,8 @@ import {
   ResponsiveModalHeader,
   ResponsiveModalTitle,
 } from '@/components/ui/responsive-modal';
+import { UploadIcon } from '@/components/ui/upload';
+import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { useFormDraft } from '@/hooks/use-form-draft';
 import { useFormValidation } from '@/hooks/use-form-validation';
 import { isApiSuccess } from '@/lib/api-response';
@@ -151,6 +152,11 @@ export function RoomEditorDrawer({
   });
 
   const allDrawerImages = [...form.images, ...newImagePreviews];
+  const {
+    iconRef: uploadIconRef,
+    start: startUploadAnimation,
+    triggerProps: uploadTriggerProps,
+  } = useAnimatedIconTrigger();
 
   const handleCancel = () => {
     if (!isEditing) {
@@ -788,10 +794,14 @@ export function RoomEditorDrawer({
 
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
+                  {...uploadTriggerProps}
+                  onClick={() => {
+                    startUploadAnimation();
+                    fileInputRef.current?.click();
+                  }}
                   className="flex flex-col items-center justify-center aspect-square rounded-xl border-2 border-dashed border-border hover:border-primary/60 bg-muted/20 hover:bg-secondary/60 text-muted-foreground hover:text-primary transition cursor-pointer min-h-20"
                 >
-                  <Upload className="h-5 w-5 mb-1 shrink-0" />
+                  <UploadIcon ref={uploadIconRef} size={20} className="mb-1 shrink-0" />
                   <span className="text-[10px] font-semibold">Subir foto</span>
                 </button>
               </div>

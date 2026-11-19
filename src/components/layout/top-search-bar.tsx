@@ -1,8 +1,10 @@
 'use client';
 
-import { Filter, MapPin, Search, X } from 'lucide-react';
+import { Filter, MapPin, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { SearchIcon } from '@/components/ui/search';
+import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { countActiveFilters, getSortedFilterChips } from '@/lib/filter-chips';
 import type { SearchFilters } from '@/lib/types';
 
@@ -34,13 +36,22 @@ export function TopSearchBar({
   );
 
   const sortedChips = useMemo(() => getSortedFilterChips(filters), [filters]);
+  const {
+    iconRef: searchIconRef,
+    start: startSearchAnimation,
+    stop: stopSearchAnimation,
+  } = useAnimatedIconTrigger();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/85 px-3 sm:px-4 py-3 backdrop-blur-xl transition-colors md:hidden">
       <div className="w-full flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <SearchIcon
+              ref={searchIconRef}
+              size={16}
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
             <input
               id="top-search-input"
               type="text"
@@ -53,6 +64,8 @@ export function TopSearchBar({
               autoCorrect="off"
               spellCheck={false}
               value={filters.query}
+              onFocus={startSearchAnimation}
+              onBlur={stopSearchAnimation}
               onChange={(e) => onFilterChange({ ...filters, query: e.target.value })}
               placeholder="Buscar pensión, universidad o barrio..."
               className="h-11 w-full rounded-full border border-sage/25 bg-card/90 pl-11 pr-9 text-sm text-foreground placeholder:text-muted-foreground shadow-sm focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage/20 transition-colors"

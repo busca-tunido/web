@@ -9,7 +9,6 @@ import {
   Eye,
   Loader2,
   MessageSquare,
-  RefreshCw,
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -17,8 +16,11 @@ import { ProposalPreviewComparisonModal } from '@/components/landlord/proposal-p
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { CheckIcon } from '@/components/ui/check';
+import { RefreshCWIcon } from '@/components/ui/refresh-cw';
 import { ProposalsListSkeleton } from '@/components/ui/skeletons/landlord-pension-skeleton';
 import { useLandlord } from '@/contexts/landlord-context';
+import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { isApiSuccess } from '@/lib/api-response';
 import { formatChileDate } from '@/lib/format-utils';
 import type { PensionDetailDto, PensionItem, ProposalDto } from '@/lib/types';
@@ -111,6 +113,37 @@ function formatDate(isoString: string): string {
   });
 }
 
+function ApproveProposalButton({
+  isProcessing,
+  onApprove,
+}: {
+  isProcessing: boolean;
+  onApprove: () => void;
+}) {
+  const { iconRef, start, triggerProps } = useAnimatedIconTrigger();
+
+  return (
+    <Button
+      type="button"
+      size="sm"
+      disabled={isProcessing}
+      {...triggerProps}
+      onClick={() => {
+        start();
+        onApprove();
+      }}
+      className="min-h-[38px] px-4 text-xs font-semibold bg-foreground text-background hover:opacity-90 shadow-none cursor-pointer"
+    >
+      {isProcessing ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5 shrink-0" />
+      ) : (
+        <CheckIcon ref={iconRef} size={14} className="mr-1.5 shrink-0" />
+      )}
+      <span>Aprobar Cambios</span>
+    </Button>
+  );
+}
+
 export function LandlordProposalsScreen({
   pensionId: propPensionId,
   pension: propPension,
@@ -119,6 +152,11 @@ export function LandlordProposalsScreen({
   const landlordContext = useLandlord();
   const selectedPension = propPension ?? landlordContext.selectedPension;
   const effectivePensionId = propPensionId ?? selectedPension?.id ?? '';
+  const {
+    iconRef: refreshIconRef,
+    start: startRefreshAnimation,
+    triggerProps: refreshTriggerProps,
+  } = useAnimatedIconTrigger();
 
   const [proposals, setProposals] = useState<ProposalDto[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -236,11 +274,19 @@ export function LandlordProposalsScreen({
           type="button"
           variant="outline"
           size="sm"
-          onClick={loadProposals}
+          {...refreshTriggerProps}
+          onClick={() => {
+            startRefreshAnimation();
+            void loadProposals();
+          }}
           disabled={isLoading}
           className="self-start sm:self-auto min-h-[40px] px-3.5 text-xs font-semibold border-border/80 hover:bg-secondary cursor-pointer"
         >
-          <RefreshCw className={cn('h-3.5 w-3.5 mr-1.5', isLoading && 'animate-spin')} />
+          <RefreshCWIcon
+            ref={refreshIconRef}
+            size={14}
+            className={cn('mr-1.5', isLoading && 'animate-spin')}
+          />
           <span>Actualizar</span>
         </Button>
       </div>
@@ -434,20 +480,10 @@ export function LandlordProposalsScreen({
                           <span>Rechazar</span>
                         </Button>
 
-                        <Button
-                          type="button"
-                          size="sm"
-                          disabled={isProcessing}
-                          onClick={() => handleReview(proposal.id, 'APPROVED')}
-                          className="min-h-[38px] px-4 text-xs font-semibold bg-foreground text-background hover:opacity-90 shadow-none cursor-pointer"
-                        >
-                          {isProcessing ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5 shrink-0" />
-                          ) : (
-                            <Check className="h-3.5 w-3.5 mr-1.5 shrink-0" />
-                          )}
-                          <span>Aprobar Cambios</span>
-                        </Button>
+                        <ApproveProposalButton
+                          isProcessing={isProcessing}
+                          onApprove={() => void handleReview(proposal.id, 'APPROVED')}
+                        />
                       </div>
                     )}
                   </div>

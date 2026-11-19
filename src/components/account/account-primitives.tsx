@@ -1,12 +1,15 @@
 'use client';
 
-import { Laptop, LogOut, Moon, Sun, User } from 'lucide-react';
+import { Laptop, LogOut, User } from 'lucide-react';
 import Image from 'next/image';
 import type { ElementType, ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { BrandLogo } from '@/components/ui/brand-logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { MoonIcon } from '@/components/ui/moon';
+import { SunIcon } from '@/components/ui/sun';
+import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { type Theme, useTheme } from '@/lib/theme-context';
 import type { UserProfile } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -75,13 +78,53 @@ export function AccountProfileHeader({ user, roleLabel, children }: AccountProfi
   );
 }
 
+function AccountThemeOptionButton({
+  id,
+  label,
+  sublabel,
+  icon: Icon,
+  isSelected,
+  onSelect,
+}: {
+  id: Theme;
+  label: string;
+  sublabel: string;
+  icon: ElementType;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  const { iconRef, start, triggerProps } = useAnimatedIconTrigger();
+
+  return (
+    <button
+      id={`theme-option-${id}`}
+      type="button"
+      {...triggerProps}
+      onClick={() => {
+        start();
+        onSelect();
+      }}
+      className={cn(
+        'flex flex-col items-center justify-center gap-1 rounded-lg border p-2.5 text-xs font-semibold transition active:scale-95 cursor-pointer',
+        isSelected
+          ? 'border-primary bg-primary/15 text-primary shadow-xs'
+          : 'border-border/80 bg-background/60 text-muted-foreground hover:text-foreground hover:bg-secondary',
+      )}
+    >
+      <Icon ref={iconRef} size={16} className="h-4 w-4" />
+      <span className="leading-tight">{label}</span>
+      <span className="text-xs font-normal opacity-70">{sublabel}</span>
+    </button>
+  );
+}
+
 export function AccountThemeCard() {
   const { theme, setTheme, resolvedTheme, isResolved } = useTheme();
 
-  const themeOptions: Array<{ id: Theme; label: string; icon: typeof Laptop; sublabel: string }> = [
+  const themeOptions: Array<{ id: Theme; label: string; icon: ElementType; sublabel: string }> = [
     { id: 'system', label: 'Sistema', icon: Laptop, sublabel: 'Auto' },
-    { id: 'light', label: 'Claro', icon: Sun, sublabel: 'Papel cálido' },
-    { id: 'dark', label: 'Oscuro', icon: Moon, sublabel: 'Piedra cálido' },
+    { id: 'light', label: 'Claro', icon: SunIcon, sublabel: 'Papel cálido' },
+    { id: 'dark', label: 'Oscuro', icon: MoonIcon, sublabel: 'Piedra cálido' },
   ];
 
   return (
@@ -103,28 +146,17 @@ export function AccountThemeCard() {
           </span>
         </div>
         <div className="grid grid-cols-3 gap-2">
-          {themeOptions.map((opt) => {
-            const Icon = opt.icon;
-            const isSelected = isResolved && theme === opt.id;
-            return (
-              <button
-                key={opt.id}
-                id={`theme-option-${opt.id}`}
-                type="button"
-                onClick={() => setTheme(opt.id)}
-                className={cn(
-                  'flex flex-col items-center justify-center gap-1 rounded-lg border p-2.5 text-xs font-semibold transition active:scale-95 cursor-pointer',
-                  isSelected
-                    ? 'border-primary bg-primary/15 text-primary shadow-xs'
-                    : 'border-border/80 bg-background/60 text-muted-foreground hover:text-foreground hover:bg-secondary',
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span className="leading-tight">{opt.label}</span>
-                <span className="text-xs font-normal opacity-70">{opt.sublabel}</span>
-              </button>
-            );
-          })}
+          {themeOptions.map((opt) => (
+            <AccountThemeOptionButton
+              key={opt.id}
+              id={opt.id}
+              label={opt.label}
+              sublabel={opt.sublabel}
+              icon={opt.icon}
+              isSelected={isResolved && theme === opt.id}
+              onSelect={() => setTheme(opt.id)}
+            />
+          ))}
         </div>
       </CardContent>
     </Card>
@@ -148,11 +180,13 @@ export function AccountActionRow({
   onClick,
   className,
 }: AccountActionRowProps) {
+  const { iconRef, start, triggerProps } = useAnimatedIconTrigger();
+
   const content = (
     <>
       <div className="flex items-center gap-3 min-w-0">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Icon className="h-4.5 w-4.5" />
+          <Icon ref={iconRef} size={18} className="h-4.5 w-4.5" />
         </div>
         <div className="flex flex-col text-left min-w-0">
           <span className="text-xs font-bold text-foreground truncate">{title}</span>
@@ -169,7 +203,11 @@ export function AccountActionRow({
     return (
       <button
         type="button"
-        onClick={onClick}
+        {...triggerProps}
+        onClick={() => {
+          start();
+          onClick();
+        }}
         className={cn(
           'flex w-full min-h-[52px] items-center justify-between rounded-xl border border-border/80 bg-card p-3.5 transition hover:bg-secondary/70 shadow-xs cursor-pointer',
           className,

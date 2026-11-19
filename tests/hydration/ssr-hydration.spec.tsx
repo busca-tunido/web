@@ -38,30 +38,37 @@ vi.mock('@/components/pensions/pension-compare-button', () => ({
   PensionCompareButton: () => null,
 }));
 
-vi.mock('motion/react', () => ({
-  motion: {
-    article: ({ children, ...rest }: Record<string, unknown>) => (
-      <article className={rest.className as string}>{children as ReactNode}</article>
-    ),
-    span: ({ children, ...rest }: Record<string, unknown>) => (
-      <span className={rest.className as string}>{children as ReactNode}</span>
-    ),
-    button: ({ children, onClick, className, ...rest }: Record<string, unknown>) => (
-      <button
-        type="button"
-        onClick={onClick as React.MouseEventHandler<HTMLButtonElement>}
-        className={className as string}
-        aria-label={rest['aria-label'] as string}
-      >
-        {children as ReactNode}
-      </button>
-    ),
-    div: ({ children, className }: Record<string, unknown>) => (
-      <div className={className as string}>{children as ReactNode}</div>
-    ),
-  },
-  AnimatePresence: ({ children }: { children: ReactNode }) => <>{children}</>,
-}));
+vi.mock('motion/react', async () => {
+  const { createElement: createMotionElement } = await import('react');
+  const motionTags = new Proxy(
+    {},
+    {
+      get: (_target, tag: string) => {
+        return ({
+          children,
+          initial: _initial,
+          animate: _animate,
+          exit: _exit,
+          variants: _variants,
+          transition: _transition,
+          whileHover: _whileHover,
+          whileTap: _whileTap,
+          layout: _layout,
+          onHoverStart: _onHoverStart,
+          onHoverEnd: _onHoverEnd,
+          custom: _custom,
+          ...domProps
+        }: Record<string, unknown>) =>
+          createMotionElement(tag, domProps, children as ReactNode);
+      },
+    }
+  );
+  return {
+    motion: motionTags,
+    AnimatePresence: ({ children }: { children: ReactNode }) => <>{children}</>,
+    useAnimation: () => ({ start: vi.fn(), stop: vi.fn(), set: vi.fn() }),
+  };
+});
 
 function StayHistoryProbe() {
   const { expectedCount } = useStayHistory();

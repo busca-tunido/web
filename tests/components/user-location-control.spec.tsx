@@ -7,14 +7,37 @@ import {
 } from '@/components/map/user-location-control';
 import type { BrowserLocation } from '@/lib/use-user-location';
 
-vi.mock('motion/react', () => ({
-  motion: {
-    div: (props: ComponentProps<'div'>) => (
-      <div className={props.className}>{props.children}</div>
-    ),
-  },
-  AnimatePresence: ({ children }: { children: ReactNode }) => <>{children}</>,
-}));
+vi.mock('motion/react', async () => {
+  const { createElement: createMotionElement } = await import('react');
+  const motionTags = new Proxy(
+    {},
+    {
+      get: (_target, tag: string) => {
+        return ({
+          children,
+          initial: _initial,
+          animate: _animate,
+          exit: _exit,
+          variants: _variants,
+          transition: _transition,
+          whileHover: _whileHover,
+          whileTap: _whileTap,
+          layout: _layout,
+          onHoverStart: _onHoverStart,
+          onHoverEnd: _onHoverEnd,
+          custom: _custom,
+          ...domProps
+        }: Record<string, unknown>) =>
+          createMotionElement(tag, domProps, children as ReactNode);
+      },
+    }
+  );
+  return {
+    motion: motionTags,
+    AnimatePresence: ({ children }: { children: ReactNode }) => <>{children}</>,
+    useAnimation: () => ({ start: vi.fn(), stop: vi.fn(), set: vi.fn() }),
+  };
+});
 
 afterEach(() => {
   vi.useRealTimers();

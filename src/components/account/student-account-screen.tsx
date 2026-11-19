@@ -1,8 +1,10 @@
 'use client';
 
-import { Bell, GraduationCap, MapPin, Shield } from 'lucide-react';
+import { GraduationCap, MapPin } from 'lucide-react';
 import { AuthScreen } from '@/components/auth/auth-screen';
 import { Badge } from '@/components/ui/badge';
+import { BellIcon } from '@/components/ui/bell';
+import { ShieldCheckIcon } from '@/components/ui/shield-check';
 import { useAuth } from '@/lib/auth-context';
 import {
   AccountActionRow,
@@ -39,7 +41,7 @@ export function StudentAccountScreen() {
         </h3>
 
         <AccountActionRow
-          icon={Shield}
+          icon={ShieldCheckIcon}
           title="Validación de Matrícula Institucional"
           description="Verificación activa mediante correo institucional"
           trailing={
@@ -50,7 +52,7 @@ export function StudentAccountScreen() {
         />
 
         <AccountActionRow
-          icon={Bell}
+          icon={BellIcon}
           title="Notificaciones de Cupos y Disponibilidad"
           description="Alertas cuando se liberen habitaciones en tus guardados"
           trailing={<span className="text-muted-foreground text-[11px] font-medium">Activas</span>}

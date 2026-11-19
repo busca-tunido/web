@@ -8,12 +8,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  Heart,
   MapPin,
   MessageSquare,
   PenLine,
   Phone,
-  ShieldCheck,
   Star,
   Utensils,
   Wifi,
@@ -25,7 +23,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
+import { HeartIcon } from '@/components/ui/heart';
+import { ShieldCheckIcon } from '@/components/ui/shield-check';
 import { useOptionalNavigation } from '@/contexts/navigation-context';
+import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { useFavoriteAction } from '@/hooks/use-favorite-action';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { useAuth } from '@/lib/auth-context';
@@ -116,6 +117,11 @@ export function PensionDetailContent({
     );
   const { user } = useAuth();
   const { isFavorite, onFavoriteClick } = useFavoriteAction();
+  const {
+    iconRef: detailHeartIconRef,
+    start: startDetailHeartAnimation,
+    triggerProps: detailHeartTriggerProps,
+  } = useAnimatedIconTrigger();
   const navigation = useOptionalNavigation();
   const openAuthModal = navigation?.openAuthModal;
 
@@ -267,12 +273,14 @@ export function PensionDetailContent({
           <button
             type="button"
             aria-disabled={!capabilities.allowFavorite || undefined}
+            {...(capabilities.allowFavorite ? detailHeartTriggerProps : {})}
             onClick={(e) => {
               e.stopPropagation();
               if (!capabilities.allowFavorite) {
                 e.preventDefault();
                 return;
               }
+              startDetailHeartAnimation();
               onFavoriteClick(pension.id, e);
             }}
             className={`flex h-12 w-12 items-center justify-center rounded-full bg-black/60 backdrop-blur-md text-white transition shadow-sm ${
@@ -282,8 +290,12 @@ export function PensionDetailContent({
             }`}
             aria-label="Guardar en favoritos"
           >
-            <Heart
-              className={`h-5 w-5 ${capabilities.allowFavorite && isFav ? 'fill-primary text-primary' : ''}`}
+            <HeartIcon
+              ref={detailHeartIconRef}
+              size={20}
+              className={
+                capabilities.allowFavorite && isFav ? '[&_svg]:fill-primary text-primary' : ''
+              }
             />
           </button>
         </div>
@@ -345,7 +357,7 @@ export function PensionDetailContent({
               variant="outline"
               className="border-sage/30 bg-sage/10 text-sage-foreground gap-1 text-[11px] font-semibold"
             >
-              <ShieldCheck className="h-3 w-3" />
+              <ShieldCheckIcon size={12} />
               Verificado BuscaTuNido
             </Badge>
           )}

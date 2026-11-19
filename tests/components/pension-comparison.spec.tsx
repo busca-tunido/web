@@ -35,12 +35,37 @@ vi.mock('@/components/reviews/publish-review-modal', () => ({
     </div>
   ),
 }));
-vi.mock('motion/react', () => ({
-  motion: {
-    div: (props: ComponentProps<'div'>) => <div className={props.className}>{props.children}</div>,
-  },
-  AnimatePresence: (props: { children: React.ReactNode }) => props.children,
-}));
+vi.mock('motion/react', async () => {
+  const { createElement: createMotionElement } = await import('react');
+  const motionTags = new Proxy(
+    {},
+    {
+      get: (_target, tag: string) => {
+        return ({
+          children,
+          initial: _initial,
+          animate: _animate,
+          exit: _exit,
+          variants: _variants,
+          transition: _transition,
+          whileHover: _whileHover,
+          whileTap: _whileTap,
+          layout: _layout,
+          onHoverStart: _onHoverStart,
+          onHoverEnd: _onHoverEnd,
+          custom: _custom,
+          ...domProps
+        }: Record<string, unknown>) =>
+          createMotionElement(tag, domProps, children as React.ReactNode);
+      },
+    }
+  );
+  return {
+    motion: motionTags,
+    AnimatePresence: (props: { children: React.ReactNode }) => props.children,
+    useAnimation: () => ({ start: vi.fn(), stop: vi.fn(), set: vi.fn() }),
+  };
+});
 
 function Harness() {
   return (

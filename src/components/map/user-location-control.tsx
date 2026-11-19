@@ -1,8 +1,11 @@
 'use client';
 
-import { Loader2, Locate, LocateOff } from 'lucide-react';
+import { Loader2, LocateOff } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { LocateIcon } from '@/components/ui/locate';
+import { MapPinCheckInsideIcon } from '@/components/ui/map-pin-check-inside';
+import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import type { BrowserLocation, LocationSource, LocationStatus } from '@/lib/use-user-location';
 
 export const LOCATION_INFO_HIDE_DELAY_MS = 4_500;
@@ -28,7 +31,14 @@ export function UserLocationControl({
 }: UserLocationControlProps) {
   const [attempt, setAttempt] = useState(0);
   const [hiddenKey, setHiddenKey] = useState<string | null>(null);
+  const {
+    iconRef: locateIconRef,
+    start: startLocateAnimation,
+    triggerProps: locateTriggerProps,
+  } = useAnimatedIconTrigger();
+  const { iconRef: pinCheckIconRef, start: startPinCheckAnimation } = useAnimatedIconTrigger();
   const locating = status === 'locating';
+  const isReadyWithBrowserLocation = status === 'ready' && Boolean(location);
   const isLocationFailed =
     !locating &&
     !location &&
@@ -40,6 +50,12 @@ export function UserLocationControl({
       source === 'default');
   const messageKey = `${status}:${error ?? ''}:${source}:${location?.timestamp ?? ''}:${attempt}`;
   const isMessageVisible = !isLocationFailed && (locating || hiddenKey !== messageKey);
+
+  useEffect(() => {
+    if (isReadyWithBrowserLocation && location?.timestamp !== undefined) {
+      startPinCheckAnimation();
+    }
+  }, [isReadyWithBrowserLocation, location?.timestamp, startPinCheckAnimation]);
 
   useEffect(() => {
     if (locating || isLocationFailed) return;
@@ -105,7 +121,11 @@ export function UserLocationControl({
       <button
         type="button"
         id="center-user-location-btn"
-        onClick={() => void handleLocate()}
+        {...(isLocationFailed ? {} : locateTriggerProps)}
+        onClick={() => {
+          startLocateAnimation();
+          void handleLocate();
+        }}
         disabled={locating}
         className={`flex size-12 shrink-0 items-center justify-center rounded-full border border-border/80 bg-card/95 shadow-lg backdrop-blur-md transition hover:bg-secondary active:scale-90 disabled:opacity-60 ${
           isLocationFailed ? 'text-muted-foreground' : 'text-primary'
@@ -118,8 +138,10 @@ export function UserLocationControl({
           <Loader2 aria-hidden="true" className="size-5 animate-spin" />
         ) : isLocationFailed ? (
           <LocateOff aria-hidden="true" className="size-5" />
+        ) : isReadyWithBrowserLocation ? (
+          <MapPinCheckInsideIcon ref={pinCheckIconRef} size={20} />
         ) : (
-          <Locate aria-hidden="true" className="size-5" />
+          <LocateIcon ref={locateIconRef} size={20} />
         )}
       </button>
     </div>

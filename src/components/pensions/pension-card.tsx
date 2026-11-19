@@ -1,10 +1,12 @@
 'use client';
 
-import { Award, Building2, Heart, MapPin, ShieldCheck, Star } from 'lucide-react';
+import { Award, Building2, MapPin, ShieldCheck, Star } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { memo } from 'react';
 import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
+import { HeartIcon } from '@/components/ui/heart';
+import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import type { PensionItem } from '@/lib/types';
 
 type PensionCardProps = {
@@ -35,6 +37,11 @@ function PensionCardComponent({
   const reviewsCount = pension.reviewsCount ?? pension.ratingCount ?? 0;
   const isLowReliability = pension.reliability === 'low' || (reviewsCount > 0 && reviewsCount < 5);
   const titleId = `pension-title-${pension.id}`;
+  const {
+    iconRef: heartIconRef,
+    start: startHeartAnimation,
+    triggerProps: heartTriggerProps,
+  } = useAnimatedIconTrigger();
 
   return (
     <motion.article
@@ -167,21 +174,26 @@ function PensionCardComponent({
           whileTap={{ scale: 0.75 }}
           whileHover={{ scale: 1.08 }}
           transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+          {...heartTriggerProps}
           onClick={(e) => {
             e.stopPropagation();
+            startHeartAnimation();
             onToggleFavorite(pension.id);
           }}
           className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer origin-center"
           aria-label="Guardar en favoritos"
         >
-          <motion.div
+          <motion.span
             animate={isFavorite ? { scale: [1, 1.25, 1] } : { scale: 1 }}
             transition={{ duration: 0.25 }}
+            className="inline-flex items-center justify-center"
           >
-            <Heart
-              className={`h-5 w-5 ${isFavorite ? 'fill-primary text-primary' : 'stroke-[2]'}`}
+            <HeartIcon
+              ref={heartIconRef}
+              size={20}
+              className={isFavorite ? '[&_svg]:fill-primary text-primary' : ''}
             />
-          </motion.div>
+          </motion.span>
         </motion.button>
       </div>
     </motion.article>
