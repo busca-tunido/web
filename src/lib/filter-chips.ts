@@ -12,39 +12,9 @@ export type FilterChipItem = {
 
 export const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
   {
-    id: 'only_available',
-    label: 'Piezas libres',
-    priority: 1,
-    isActive: (f) => Boolean(f.onlyAvailable),
-    toggle: (f) => ({
-      ...f,
-      onlyAvailable: f.onlyAvailable ? undefined : true,
-    }),
-  },
-  {
-    id: 'price_asc',
-    label: 'Más baratas',
-    priority: 2,
-    isActive: (f) => f.sortBy === 'price_asc',
-    toggle: (f) => ({
-      ...f,
-      sortBy: f.sortBy === 'price_asc' ? undefined : 'price_asc',
-    }),
-  },
-  {
-    id: 'max_price',
-    label: 'Hasta $140 mil',
-    priority: 3,
-    isActive: (f) => f.maxPriceClp === 140000,
-    toggle: (f) => ({
-      ...f,
-      maxPriceClp: f.maxPriceClp === 140000 ? undefined : 140000,
-    }),
-  },
-  {
     id: 'rating_high',
     label: 'Favoritas',
-    priority: 4,
+    priority: 0,
     textColorClass:
       'text-[#2d5e49] dark:text-[#72bca0] border-border/70 bg-card/60 hover:border-[#2d5e49]/50 font-semibold',
     activeColorClass:
@@ -56,9 +26,67 @@ export const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
     }),
   },
   {
+    id: 'rating_medium',
+    label: 'Buenas reseñas',
+    priority: 1,
+    textColorClass:
+      'text-[#945d0c] dark:text-[#e09d32] border-border/70 bg-card/60 hover:border-[#a26510]/50 font-semibold',
+    activeColorClass:
+      'border-[#a26510] bg-[#a26510]/15 text-[#945d0c] dark:text-[#e09d32] dark:border-[#c8861e] font-bold ring-1 ring-[#a26510]/30',
+    isActive: (f) => f.ratingTier === 'medium',
+    toggle: (f) => ({
+      ...f,
+      ratingTier: f.ratingTier === 'medium' ? undefined : 'medium',
+    }),
+  },
+  {
+    id: 'rating_low',
+    label: 'Otras alternativas',
+    priority: 2,
+    textColorClass:
+      'text-[#57534e] dark:text-[#a8a29e] border-border/70 bg-card/60 hover:border-[#78716c]/50 font-semibold',
+    activeColorClass:
+      'border-[#78716c] bg-[#78716c]/15 text-[#57534e] dark:text-[#a8a29e] dark:border-[#a8a29e] font-bold ring-1 ring-[#78716c]/30',
+    isActive: (f) => f.ratingTier === 'low',
+    toggle: (f) => ({
+      ...f,
+      ratingTier: f.ratingTier === 'low' ? undefined : 'low',
+    }),
+  },
+  {
+    id: 'only_available',
+    label: 'Piezas libres',
+    priority: 3,
+    isActive: (f) => Boolean(f.onlyAvailable),
+    toggle: (f) => ({
+      ...f,
+      onlyAvailable: f.onlyAvailable ? undefined : true,
+    }),
+  },
+  {
+    id: 'price_asc',
+    label: 'Más baratas',
+    priority: 4,
+    isActive: (f) => f.sortBy === 'price_asc',
+    toggle: (f) => ({
+      ...f,
+      sortBy: f.sortBy === 'price_asc' ? undefined : 'price_asc',
+    }),
+  },
+  {
+    id: 'max_price',
+    label: 'Hasta $140 mil',
+    priority: 5,
+    isActive: (f) => f.maxPriceClp === 140000,
+    toggle: (f) => ({
+      ...f,
+      maxPriceClp: f.maxPriceClp === 140000 ? undefined : 140000,
+    }),
+  },
+  {
     id: 'bathroom',
     label: 'Baño privado',
-    priority: 5,
+    priority: 6,
     isActive: (f) => Boolean(f.hasPrivateBathroom),
     toggle: (f) => ({
       ...f,
@@ -68,7 +96,7 @@ export const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
   {
     id: 'meals',
     label: 'Comida incluida',
-    priority: 6,
+    priority: 7,
     isActive: (f) => Boolean(f.includesMeals),
     toggle: (f) => ({
       ...f,
@@ -78,7 +106,7 @@ export const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
   {
     id: 'single',
     label: 'Pieza individual',
-    priority: 7,
+    priority: 8,
     isActive: (f) => f.roomType === 'SINGLE',
     toggle: (f) => ({
       ...f,
@@ -88,25 +116,11 @@ export const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
   {
     id: 'female_only',
     label: 'Solo mujeres',
-    priority: 8,
+    priority: 9,
     isActive: (f) => f.genderPreference === 'FEMALE_ONLY',
     toggle: (f) => ({
       ...f,
       genderPreference: f.genderPreference === 'FEMALE_ONLY' ? undefined : 'FEMALE_ONLY',
-    }),
-  },
-  {
-    id: 'rating_medium',
-    label: 'Buenas reseñas',
-    priority: 9,
-    textColorClass:
-      'text-[#945d0c] dark:text-[#e09d32] border-border/70 bg-card/60 hover:border-[#a26510]/50 font-semibold',
-    activeColorClass:
-      'border-[#a26510] bg-[#a26510]/15 text-[#945d0c] dark:text-[#e09d32] dark:border-[#c8861e] font-bold ring-1 ring-[#a26510]/30',
-    isActive: (f) => f.ratingTier === 'medium',
-    toggle: (f) => ({
-      ...f,
-      ratingTier: f.ratingTier === 'medium' ? undefined : 'medium',
     }),
   },
   {
@@ -128,20 +142,6 @@ export const RECOMMENDED_FILTER_CHIPS: readonly FilterChipItem[] = [
       ...f,
       genderPreference:
         f.genderPreference === 'ANY' || f.genderPreference === 'MIXED' ? undefined : 'ANY',
-    }),
-  },
-  {
-    id: 'rating_low',
-    label: 'Otras alternativas',
-    priority: 12,
-    textColorClass:
-      'text-[#57534e] dark:text-[#a8a29e] border-border/70 bg-card/60 hover:border-[#78716c]/50 font-semibold',
-    activeColorClass:
-      'border-[#78716c] bg-[#78716c]/15 text-[#57534e] dark:text-[#a8a29e] dark:border-[#a8a29e] font-bold ring-1 ring-[#78716c]/30',
-    isActive: (f) => f.ratingTier === 'low',
-    toggle: (f) => ({
-      ...f,
-      ratingTier: f.ratingTier === 'low' ? undefined : 'low',
     }),
   },
 ];

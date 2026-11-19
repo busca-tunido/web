@@ -3,7 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FilterDrawer } from '@/components/layout/filter-drawer';
 import { useStudentPensionsFeed } from '@/hooks/use-student-pensions-feed';
 import { createSuccess } from '@/lib/api-response';
-import { countActiveFilters, RECOMMENDED_FILTER_CHIPS } from '@/lib/filter-chips';
+import {
+  countActiveFilters,
+  getSortedFilterChips,
+  RECOMMENDED_FILTER_CHIPS,
+} from '@/lib/filter-chips';
 import { matchesSearchFilters } from '@/lib/filter-matcher';
 import type { PaginatedPensionsResponse, PensionItem, SearchFilters } from '@/lib/types';
 import { locationsService } from '@/services/locations.service';
@@ -62,8 +66,9 @@ describe('Quick filter chips & FilterDrawer OpenAPI alignment', () => {
   });
 
   it('exposes the requested student-oriented quick chips and excludes Cerca de mí and Mejor evaluadas', () => {
-    const labels = RECOMMENDED_FILTER_CHIPS.map((c) => c.label);
+    const labels = getSortedFilterChips({ query: '' }).map((c) => c.label);
 
+    expect(labels.slice(0, 3)).toEqual(['Favoritas', 'Buenas reseñas', 'Otras alternativas']);
     expect(labels).toContain('Piezas libres');
     expect(labels).toContain('Más baratas');
     expect(labels).toContain('Hasta $140 mil');
