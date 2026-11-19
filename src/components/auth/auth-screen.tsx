@@ -8,6 +8,7 @@ import { BrandLogo } from '@/components/ui/brand-logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FormField } from '@/components/ui/form-field';
+import { PasswordInput } from '@/components/ui/password-input';
 import {
   ResponsiveModal,
   ResponsiveModalContent,
@@ -223,6 +224,7 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
 
                 {landlordMode === 'login' ? (
                   <form
+                    key="landlord-login-form"
                     ref={loginFormRef}
                     onSubmit={handleLandlordLoginSubmit}
                     noValidate
@@ -279,9 +281,8 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                       required
                       error={loginValidation.errors.password}
                     >
-                      <input
+                      <PasswordInput
                         id="landlord-password"
-                        type="password"
                         autoComplete="current-password"
                         maxLength={64}
                         value={loginValidation.values.password}
@@ -291,7 +292,7 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                         }}
                         onBlur={() => loginValidation.handleBlur('password')}
                         placeholder="••••••••"
-                        className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                        className="h-12"
                       />
                     </FormField>
 
@@ -325,6 +326,7 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                   </form>
                 ) : (
                   <form
+                    key="landlord-register-form"
                     ref={registerFormRef}
                     onSubmit={registerValidation.handleSubmit}
                     noValidate
@@ -477,9 +479,8 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                       hint="Mínimo 8 caracteres"
                       error={registerValidation.errors.password}
                     >
-                      <input
+                      <PasswordInput
                         id="landlord-register-password"
-                        type="password"
                         autoComplete="new-password"
                         maxLength={64}
                         value={registerValidation.values.password}
@@ -488,7 +489,7 @@ export function AuthScreen({ onSuccess, onClose, isModal = false }: AuthScreenPr
                         }
                         onBlur={() => registerValidation.handleBlur('password')}
                         placeholder="Mínimo 8 caracteres"
-                        className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                        className="h-12"
                       />
                     </FormField>
 

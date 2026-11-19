@@ -1,10 +1,11 @@
 'use client';
 
-import { AlertCircle, Eye, EyeOff, GraduationCap, Loader2 } from 'lucide-react';
+import { AlertCircle, GraduationCap, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
+import { PasswordInput } from '@/components/ui/password-input';
 import {
   ResponsiveModal,
   ResponsiveModalClose,
@@ -39,7 +40,6 @@ export function StudentRegisterModal({
   onSuccess,
 }: StudentRegisterModalProps) {
   const { login, setSession } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmittingManual, setIsSubmittingManual] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -236,31 +236,15 @@ export function StudentRegisterModal({
             hint="Mínimo 8 caracteres"
             error={touched.password ? errors.password : undefined}
           >
-            {(injected) => (
-              <div className="relative flex items-center">
-                <input
-                  id={injected.id}
-                  aria-invalid={injected['aria-invalid']}
-                  aria-describedby={injected['aria-describedby']}
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  maxLength={64}
-                  value={values.password}
-                  onChange={(e) => handleChange('password', e.target.value)}
-                  onBlur={() => handleBlur('password')}
-                  placeholder="••••••••"
-                  className="min-h-12 w-full rounded-xl border border-border bg-background pl-4 pr-12 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 aria-invalid:border-destructive aria-invalid:focus:ring-destructive/20 transition"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-0 flex min-h-12 min-w-12 items-center justify-center text-muted-foreground hover:text-foreground transition cursor-pointer"
-                  aria-label={showPassword ? 'Ocultar clave' : 'Mostrar clave'}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            )}
+            <PasswordInput
+              id="register-student-password"
+              autoComplete="new-password"
+              maxLength={64}
+              value={values.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              onBlur={() => handleBlur('password')}
+              placeholder="••••••••"
+            />
           </FormField>
 
           {detectedUniversity ? (

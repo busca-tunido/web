@@ -6,6 +6,7 @@ import { useRef } from 'react';
 import { StudentRegisterModal } from '@/components/auth/student-register-modal';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useAuthFlow } from '@/hooks/use-auth-flow';
 import { useFormValidation } from '@/hooks/use-form-validation';
 import { translateApiError } from '@/lib/error-translator';
@@ -159,9 +160,8 @@ export function EmailCheckStep({ className, onSuccess, initialEmail }: EmailChec
               required
               error={passwordValidation.errors.password}
             >
-              <input
+              <PasswordInput
                 id="student-password"
-                type="password"
                 autoComplete="current-password"
                 maxLength={64}
                 disabled={isSubmittingLogin}
@@ -172,7 +172,6 @@ export function EmailCheckStep({ className, onSuccess, initialEmail }: EmailChec
                 }}
                 onBlur={() => passwordValidation.handleBlur('password')}
                 placeholder="••••••••••••"
-                className="min-h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
               />
             </FormField>
           </div>

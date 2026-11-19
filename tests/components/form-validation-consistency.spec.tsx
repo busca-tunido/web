@@ -3,6 +3,7 @@ import type React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthScreen } from '@/components/auth/auth-screen';
 import { EmailCheckStep } from '@/components/auth/email-check-step';
+import { StudentRegisterModal } from '@/components/auth/student-register-modal';
 import { LandlordPensionsScreen } from '@/components/landlord/landlord-pensions-screen';
 import { PensionEditorDrawer } from '@/components/landlord/pension-editor-drawer';
 import { RoomEditorDrawer } from '@/components/landlord/room-editor-drawer';
@@ -406,5 +407,68 @@ describe('Form validation consistency across all user roles', () => {
       expect(mockLogin).toHaveBeenCalledWith('dueno.autofill@buscatunido.cl', 'AutofillPass123!');
       expect(handleSuccess).toHaveBeenCalled();
     });
+  });
+
+  it('toggles password visibility across student login, landlord login/register, and student registration', async () => {
+    vi.mocked(authService.checkEmailExists).mockResolvedValueOnce(
+      createSuccess({ exists: true, role: 'STUDENT' }),
+    );
+
+    const { unmount } = render(<EmailCheckStep />);
+    fireEvent.click(screen.getByRole('button', { name: /Continuar/i }));
+
+    await waitFor(() => {
+      expect(document.querySelector('#student-password')).not.toBeNull();
+    });
+
+    const studentPwdInput = document.querySelector('#student-password') as HTMLInputElement;
+    expect(studentPwdInput.type).toBe('password');
+    const studentToggleBtn = screen.getByRole('button', { name: 'Mostrar contraseña' });
+    const mouseDownEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    studentToggleBtn.dispatchEvent(mouseDownEvent);
+    expect(mouseDownEvent.defaultPrevented).toBe(true);
+    fireEvent.click(studentToggleBtn);
+    expect(studentPwdInput.type).toBe('text');
+    expect(screen.getByRole('button', { name: 'Ocultar contraseña' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+    unmount();
+
+    const authView = render(<AuthScreen />);
+    fireEvent.click(screen.getByRole('button', { name: /Acceso para dueños/i }));
+
+    const landlordPwdInput = (await waitFor(() => {
+      const el = document.querySelector('#landlord-password') as HTMLInputElement | null;
+      expect(el).not.toBeNull();
+      return el;
+    })) as HTMLInputElement;
+    expect(landlordPwdInput.type).toBe('password');
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar contraseña' }));
+    expect(landlordPwdInput.type).toBe('text');
+
+    fireEvent.click(screen.getByRole('button', { name: /Regístrate como dueño/i }));
+    const landlordRegPwdInput = (await waitFor(() => {
+      const el = document.querySelector('#landlord-register-password') as HTMLInputElement | null;
+      expect(el).not.toBeNull();
+      return el;
+    })) as HTMLInputElement;
+    expect(landlordRegPwdInput.type).toBe('password');
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar contraseña' }));
+    expect(landlordRegPwdInput.type).toBe('text');
+    authView.unmount();
+
+    render(
+      <StudentRegisterModal
+        isOpen={true}
+        onClose={vi.fn()}
+        prefilledEmail="nuevo@uchile.cl"
+      />,
+    );
+    const studentRegPwdInput = document.querySelector(
+      '#register-student-password',
+    ) as HTMLInputElement;
+    expect(studentRegPwdInput.type).toBe('password');
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar contraseña' }));
+    expect(studentRegPwdInput.type).toBe('text');
   });
 });
