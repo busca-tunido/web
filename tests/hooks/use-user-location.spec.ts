@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { extractServerGeoLocation } from '@/lib/server-geo';
 import type { CityInfo } from '@/lib/types';
 import {
+  LOCATION_FALLBACK_OPTIONS,
   LOCATION_REQUEST_OPTIONS,
   SANTIAGO_COORDINATES,
   calculateDistance,
@@ -224,15 +225,48 @@ describe('fresh browser location requests', () => {
     expect(result.current.browserLocation?.latitude).toBe(-33.05);
   });
 
-  it.each([[1, 'denied'], [2, 'unavailable'], [3, 'timeout']] as const)('exposes error %s and removes an earlier measured location', (code, status) => {
+  it.each([
+    [1, 'denied'],
+    [2, 'unavailable'],
+    [3, 'timeout'],
+  ] as const)('exposes error %s and removes an earlier measured location', (code, status) => {
     const { result } = renderHook(() => useUserLocation(mockCities));
     deliver(0);
-    act(() => { void result.current.requestLocation(); });
+    act(() => {
+      void result.current.requestLocation();
+    });
     act(() => requests[1].error?.({ code } as GeolocationPositionError));
+    if (code !== 1) {
+      expect(requests[2].options).toEqual(LOCATION_FALLBACK_OPTIONS);
+      act(() => requests[2].error?.({ code } as GeolocationPositionError));
+    }
     expect(result.current.browserLocation).toBeNull();
     expect(result.current.locationStatus).toBe(status);
     expect(result.current.locationError).toBeTruthy();
     expect(result.current.isDetecting).toBe(false);
+  });
+
+  it('retries with relaxed accuracy when high-accuracy fails and resolves on fallback success', async () => {
+    const { result } = renderHook(() => useUserLocation(mockCities));
+    expect(requests).toHaveLength(1);
+    expect(requests[0].options).toEqual(LOCATION_REQUEST_OPTIONS);
+
+    act(() => requests[0].error?.({ code: 2 } as GeolocationPositionError));
+    expect(requests).toHaveLength(2);
+    expect(requests[1].options).toEqual(LOCATION_FALLBACK_OPTIONS);
+
+    deliver(1, -33.047, 1200);
+    expect(result.current.browserLocation?.latitude).toBe(-33.047);
+    expect(result.current.locationStatus).toBe('ready');
+    expect(result.current.locationError).toBeNull();
+  });
+
+  it('does not retry with fallback when permission is explicitly denied', () => {
+    const { result } = renderHook(() => useUserLocation(mockCities));
+    expect(requests).toHaveLength(1);
+    act(() => requests[0].error?.({ code: 1 } as GeolocationPositionError));
+    expect(requests).toHaveLength(1);
+    expect(result.current.locationStatus).toBe('denied');
   });
 
   it('ignores an older request arriving after a newer request', () => {

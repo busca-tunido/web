@@ -1,12 +1,11 @@
 'use client';
 
-import { Loader2, Locate } from 'lucide-react';
+import { Loader2, Locate, LocateOff } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import type { BrowserLocation, LocationSource, LocationStatus } from '@/lib/use-user-location';
 
 export const LOCATION_INFO_HIDE_DELAY_MS = 4_500;
-export const LOCATION_ERROR_HIDE_DELAY_MS = 6_000;
 
 type UserLocationControlProps = {
   location: BrowserLocation | null;
@@ -30,25 +29,37 @@ export function UserLocationControl({
   const [attempt, setAttempt] = useState(0);
   const [hiddenKey, setHiddenKey] = useState<string | null>(null);
   const locating = status === 'locating';
+  const isLocationFailed =
+    !locating &&
+    !location &&
+    (Boolean(error) ||
+      status === 'denied' ||
+      status === 'timeout' ||
+      status === 'unavailable' ||
+      status === 'unsupported' ||
+      source === 'default');
   const messageKey = `${status}:${error ?? ''}:${source}:${location?.timestamp ?? ''}:${attempt}`;
-  const isMessageVisible = locating || hiddenKey !== messageKey;
+  const isMessageVisible = !isLocationFailed && (locating || hiddenKey !== messageKey);
 
   useEffect(() => {
-    if (locating) return;
-    const delay = error ? LOCATION_ERROR_HIDE_DELAY_MS : LOCATION_INFO_HIDE_DELAY_MS;
+    if (locating || isLocationFailed) return;
     const timer = window.setTimeout(() => {
       setHiddenKey(messageKey);
-    }, delay);
+    }, LOCATION_INFO_HIDE_DELAY_MS);
     return () => {
       window.clearTimeout(timer);
     };
-  }, [locating, error, messageKey]);
+  }, [locating, isLocationFailed, messageKey]);
 
   const handleLocate = async (): Promise<void> => {
     setAttempt((value) => value + 1);
     const nextLocation = await onRequestLocation();
     if (nextLocation) onLocated(nextLocation);
   };
+
+  const buttonTitle = isLocationFailed
+    ? (error ?? 'Ubicación no disponible. Pulsa para volver a intentar.')
+    : 'Actualizar y centrar mi ubicación';
 
   return (
     <div
@@ -57,7 +68,7 @@ export function UserLocationControl({
       <AnimatePresence>
         {isMessageVisible && (
           <motion.div
-            key={locating ? 'locating' : error ? 'error' : 'info'}
+            key={locating ? 'locating' : 'info'}
             initial={{ opacity: 0, y: 6, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.97 }}
@@ -66,19 +77,13 @@ export function UserLocationControl({
           >
             {locating ? (
               <p role="status">Obteniendo tu ubicación…</p>
-            ) : error ? (
-              <p role="alert">{error}</p>
             ) : location ? (
               <p role="status">
                 Ubicación del dispositivo · precisión aproximada:{' '}
                 {Math.ceil(location.accuracy).toLocaleString('es-CL')} m.
               </p>
             ) : (
-              <p role="status">
-                {source === 'ip'
-                  ? 'Mapa centrado en una ubicación aproximada por red.'
-                  : 'Tu ubicación todavía no está disponible.'}
-              </p>
+              <p role="status">Mapa centrado en una ubicación aproximada por red.</p>
             )}
             {location && !locating && (
               <p className="mt-1 text-muted-foreground">
@@ -98,13 +103,17 @@ export function UserLocationControl({
         id="center-user-location-btn"
         onClick={() => void handleLocate()}
         disabled={locating}
-        className="flex size-12 shrink-0 items-center justify-center rounded-full border border-border/80 bg-card/95 text-primary shadow-lg backdrop-blur-md transition hover:bg-secondary active:scale-90 disabled:opacity-60"
-        title="Actualizar y centrar mi ubicación"
-        aria-label="Actualizar y centrar mi ubicación"
+        className={`flex size-12 shrink-0 items-center justify-center rounded-full border border-border/80 bg-card/95 shadow-lg backdrop-blur-md transition hover:bg-secondary active:scale-90 disabled:opacity-60 ${
+          isLocationFailed ? 'text-muted-foreground' : 'text-primary'
+        }`}
+        title={buttonTitle}
+        aria-label={buttonTitle}
         aria-busy={locating}
       >
         {locating ? (
           <Loader2 aria-hidden="true" className="size-5 animate-spin" />
+        ) : isLocationFailed ? (
+          <LocateOff aria-hidden="true" className="size-5" />
         ) : (
           <Locate aria-hidden="true" className="size-5" />
         )}

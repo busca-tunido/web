@@ -29,6 +29,12 @@ export const LOCATION_REQUEST_OPTIONS: PositionOptions = {
   timeout: 15_000,
 };
 
+export const LOCATION_FALLBACK_OPTIONS: PositionOptions = {
+  enableHighAccuracy: false,
+  maximumAge: 300_000,
+  timeout: 10_000,
+};
+
 function validCoordinates(latitude: unknown, longitude: unknown): boolean {
   return (
     typeof latitude === 'number' &&
@@ -138,59 +144,78 @@ export function useUserLocation(cities: CityInfo[], serverGeo?: ServerGeoLocatio
         fail('unsupported', 'Este navegador no permite obtener tu ubicación.');
         return;
       }
-      try {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            if (!isCurrent()) {
-              resolve(null);
-              return;
-            }
-            const { latitude, longitude, accuracy } = position.coords;
-            if (
-              !validCoordinates(latitude, longitude) ||
-              !Number.isFinite(accuracy) ||
-              accuracy < 0 ||
-              !Number.isFinite(position.timestamp)
-            ) {
+      const attemptRequest = (options: PositionOptions, allowFallback: boolean): void => {
+        try {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              if (!isCurrent()) {
+                resolve(null);
+                return;
+              }
+              const { latitude, longitude, accuracy } = position.coords;
+              if (
+                !validCoordinates(latitude, longitude) ||
+                !Number.isFinite(accuracy) ||
+                accuracy < 0 ||
+                !Number.isFinite(position.timestamp)
+              ) {
+                fail(
+                  'unavailable',
+                  'El dispositivo no entregó una ubicación válida. Inténtalo de nuevo.',
+                );
+                return;
+              }
+              const location: BrowserLocation = {
+                latitude,
+                longitude,
+                accuracy,
+                timestamp: position.timestamp,
+              };
+              setBrowserLocation(location);
+              setLocationStatus('ready');
+              setLocationError(null);
+              resolve(location);
+            },
+            (error) => {
+              if (!isCurrent()) {
+                resolve(null);
+                return;
+              }
+              if (error.code === 1) {
+                fail(
+                  'denied',
+                  'Permiso de ubicación denegado. Habilítalo en el navegador y en tu sistema.',
+                );
+                return;
+              }
+              if (allowFallback) {
+                attemptRequest(LOCATION_FALLBACK_OPTIONS, false);
+                return;
+              }
+              if (error.code === 3) {
+                fail('timeout', 'No pudimos obtener tu ubicación a tiempo. Vuelve a intentar.');
+                return;
+              }
               fail(
                 'unavailable',
-                'El dispositivo no entregó una ubicación válida. Inténtalo de nuevo.',
+                'No se pudo determinar la ubicación. Verifica los servicios de ubicación de tu dispositivo.',
               );
-              return;
-            }
-            const location: BrowserLocation = {
-              latitude,
-              longitude,
-              accuracy,
-              timestamp: position.timestamp,
-            };
-            setBrowserLocation(location);
-            setLocationStatus('ready');
-            setLocationError(null);
-            resolve(location);
-          },
-          (error) => {
-            if (error.code === 1)
-              fail(
-                'denied',
-                'Permiso de ubicación denegado. Habilítalo en el navegador y vuelve a intentar.',
-              );
-            else if (error.code === 3)
-              fail('timeout', 'No pudimos obtener tu ubicación a tiempo. Vuelve a intentar.');
-            else
-              fail(
-                'unavailable',
-                'Tu dispositivo no pudo determinar la ubicación. Vuelve a intentar.',
-              );
-          },
-          LOCATION_REQUEST_OPTIONS,
-        );
-      } catch {
-        fail(
-          'unavailable',
-          'No pudimos acceder a la ubicación del dispositivo. Vuelve a intentar.',
-        );
-      }
+            },
+            options,
+          );
+        } catch {
+          if (allowFallback) {
+            attemptRequest(LOCATION_FALLBACK_OPTIONS, false);
+            return;
+          }
+          fail(
+            'unavailable',
+            'No se pudo determinar la ubicación. Verifica los servicios de ubicación de tu dispositivo.',
+          );
+        }
+      };
+
+      attemptRequest(LOCATION_REQUEST_OPTIONS, true);
     });
   }, []);
 

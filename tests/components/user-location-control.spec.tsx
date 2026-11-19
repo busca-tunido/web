@@ -2,7 +2,6 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import type { ComponentProps, ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  LOCATION_ERROR_HIDE_DELAY_MS,
   LOCATION_INFO_HIDE_DELAY_MS,
   UserLocationControl,
 } from '@/components/map/user-location-control';
@@ -47,12 +46,24 @@ describe('UserLocationControl', () => {
     expect(screen.getByRole('status').textContent).toContain('Obteniendo');
   });
 
-  it('shows permission errors, allows retry and never centers on failed readings', async () => {
+  it('shows only the crossed-out location icon without text message on location failure, allows retry, and never centers', async () => {
     const center = vi.fn();
     const request = vi.fn().mockResolvedValue(null);
-    render(<UserLocationControl location={null} source="default" status="denied" error="Permiso denegado" onRequestLocation={request} onLocated={center} />);
-    expect(screen.getByRole('alert').textContent).toBe('Permiso denegado');
-    fireEvent.click(screen.getByRole('button'));
+    const { container } = render(
+      <UserLocationControl
+        location={null}
+        source="default"
+        status="denied"
+        error="Permiso denegado"
+        onRequestLocation={request}
+        onLocated={center}
+      />,
+    );
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(container.querySelector('.lucide-locate-off')).not.toBeNull();
+    const button = screen.getByRole('button', { name: 'Permiso denegado' });
+    fireEvent.click(button);
     await waitFor(() => expect(request).toHaveBeenCalledTimes(1));
     expect(center).not.toHaveBeenCalled();
   });
@@ -110,29 +121,23 @@ describe('UserLocationControl', () => {
     expect(screen.getByRole('status').textContent).toContain('25 m');
   });
 
-  it('auto-hides error messages after the error display delay', () => {
-    vi.useFakeTimers();
-    render(
-      <UserLocationControl
-        location={null}
-        source="default"
-        status="timeout"
-        error="No pudimos obtener tu ubicación a tiempo."
-        onRequestLocation={vi.fn()}
-        onLocated={vi.fn()}
-      />,
-    );
+  it.each(['timeout', 'unavailable', 'unsupported'] as const)(
+    'hides message bubble and keeps crossed-out location icon for status %s',
+    (status) => {
+      const { container } = render(
+        <UserLocationControl
+          location={null}
+          source="default"
+          status={status}
+          error="No se pudo obtener ubicación"
+          onRequestLocation={vi.fn()}
+          onLocated={vi.fn()}
+        />,
+      );
 
-    expect(screen.getByRole('alert').textContent).toContain('a tiempo');
-
-    act(() => {
-      vi.advanceTimersByTime(LOCATION_ERROR_HIDE_DELAY_MS - 100);
-    });
-    expect(screen.getByRole('alert')).toBeDefined();
-
-    act(() => {
-      vi.advanceTimersByTime(100);
-    });
-    expect(screen.queryByRole('alert')).toBeNull();
-  });
+      expect(screen.queryByRole('alert')).toBeNull();
+      expect(screen.queryByRole('status')).toBeNull();
+      expect(container.querySelector('.lucide-locate-off')).not.toBeNull();
+    },
+  );
 });
