@@ -4,7 +4,6 @@ import { Loader2, LocateOff } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { LocateIcon } from '@/components/ui/locate';
-import { MapPinCheckInsideIcon } from '@/components/ui/map-pin-check-inside';
 import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import type { BrowserLocation, LocationSource, LocationStatus } from '@/lib/use-user-location';
 
@@ -36,7 +35,6 @@ export function UserLocationControl({
     start: startLocateAnimation,
     triggerProps: locateTriggerProps,
   } = useAnimatedIconTrigger();
-  const { iconRef: pinCheckIconRef, start: startPinCheckAnimation } = useAnimatedIconTrigger();
   const locating = status === 'locating';
   const isReadyWithBrowserLocation = status === 'ready' && Boolean(location);
   const isLocationFailed =
@@ -53,9 +51,9 @@ export function UserLocationControl({
 
   useEffect(() => {
     if (isReadyWithBrowserLocation && location?.timestamp !== undefined) {
-      startPinCheckAnimation();
+      startLocateAnimation();
     }
-  }, [isReadyWithBrowserLocation, location?.timestamp, startPinCheckAnimation]);
+  }, [isReadyWithBrowserLocation, location?.timestamp, startLocateAnimation]);
 
   useEffect(() => {
     if (locating || isLocationFailed) return;
@@ -138,8 +136,6 @@ export function UserLocationControl({
           <Loader2 aria-hidden="true" className="size-5 animate-spin" />
         ) : isLocationFailed ? (
           <LocateOff aria-hidden="true" className="size-5" />
-        ) : isReadyWithBrowserLocation ? (
-          <MapPinCheckInsideIcon ref={pinCheckIconRef} size={20} />
         ) : (
           <LocateIcon ref={locateIconRef} size={20} />
         )}
