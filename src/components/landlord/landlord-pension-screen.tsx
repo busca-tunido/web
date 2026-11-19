@@ -64,7 +64,13 @@ import {
 import { useLandlord } from '@/contexts/landlord-context';
 import { useFormValidation } from '@/hooks/use-form-validation';
 import { isApiSuccess } from '@/lib/api-response';
+import { cacheStore } from '@/lib/cache-store';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
+import {
+  AMENITIES_CATALOG_KEY,
+  AMENITIES_CATALOG_TTL_MS,
+  normalizeAmenitiesCatalog,
+} from '@/lib/landlord-prefetch';
 import type {
   GenderPreference,
   PensionAmenityCatalogItemDto,
@@ -209,6 +215,8 @@ export function LandlordPensionScreen({
     updatePensionInList,
     pendingProposalsCount,
     refetchProposals,
+    isLoading: isLandlordLoading,
+    amenitiesCatalog: contextAmenitiesCatalog,
   } = useLandlord();
 
   const [activePension, setActivePension] = useState<PensionDetailDto | PensionItem | null>(
@@ -257,7 +265,15 @@ export function LandlordPensionScreen({
     contactPhone: '',
   });
 
-  const [amenitiesCatalog, setAmenitiesCatalog] = useState<PensionAmenityCatalogItemDto[]>([]);
+  const initialCachedAmenities =
+    contextAmenitiesCatalog && contextAmenitiesCatalog.length > 0
+      ? contextAmenitiesCatalog
+      : typeof window !== 'undefined'
+        ? cacheStore.get<PensionAmenityCatalogItemDto[]>(AMENITIES_CATALOG_KEY)?.data
+        : undefined;
+  const [amenitiesCatalog, setAmenitiesCatalog] = useState<PensionAmenityCatalogItemDto[]>(
+    () => initialCachedAmenities ?? [],
+  );
   const [isLoadingAmenities, setIsLoadingAmenities] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<'all' | 'services' | 'rules' | 'contact'>(
     'all',
@@ -274,19 +290,34 @@ export function LandlordPensionScreen({
   });
 
   useEffect(() => {
+    if (contextAmenitiesCatalog && contextAmenitiesCatalog.length > 0) {
+      setAmenitiesCatalog(contextAmenitiesCatalog);
+      setIsLoadingAmenities(false);
+      return;
+    }
+
     let isMounted = true;
     const loadAmenities = async () => {
-      setIsLoadingAmenities(true);
-      const res = await pensionsService.fetchAmenitiesCatalog();
+      const cached = cacheStore.get<PensionAmenityCatalogItemDto[]>(AMENITIES_CATALOG_KEY);
+      if (cached && cached.data.length > 0) {
+        setAmenitiesCatalog(cached.data);
+        setIsLoadingAmenities(false);
+        if (!cacheStore.isStale(AMENITIES_CATALOG_KEY, AMENITIES_CATALOG_TTL_MS)) {
+          return;
+        }
+      } else {
+        setIsLoadingAmenities(true);
+      }
+
+      const res = await cacheStore.dedupePromise(AMENITIES_CATALOG_KEY, () =>
+        pensionsService.fetchAmenitiesCatalog(),
+      );
       if (isMounted && isApiSuccess(res) && Array.isArray(res.data)) {
-        const cleanCatalog = res.data
-          .filter((a) => !REDUNDANT_UTILITY_SLUGS.has(a.slug))
-          .map((a) =>
-            a.slug === 'agua-caliente' || a.slug === 'calefaccion'
-              ? { ...a, category: 'ROOM_FEATURE' as const }
-              : a,
-          );
+        const cleanCatalog = normalizeAmenitiesCatalog(res.data);
         setAmenitiesCatalog(cleanCatalog);
+        if (cleanCatalog.length > 0) {
+          cacheStore.set(AMENITIES_CATALOG_KEY, cleanCatalog);
+        }
       }
       if (isMounted) {
         setIsLoadingAmenities(false);
@@ -296,7 +327,7 @@ export function LandlordPensionScreen({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [contextAmenitiesCatalog]);
 
   const effectivePensionId = propPensionId || activePension?.id || '';
 
@@ -587,7 +618,7 @@ export function LandlordPensionScreen({
     }
   };
 
-  if (isLoading) {
+  if (isLoading || (Boolean(isLandlordLoading) && !activePension)) {
     return <LandlordPensionSkeleton />;
   }
 

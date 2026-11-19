@@ -19,8 +19,11 @@ import { RoomOccupancyBar } from '@/components/landlord/room-occupancy-bar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { LandlordRoomsSkeleton } from '@/components/ui/skeletons/landlord-skeletons';
 import { useLandlord } from '@/contexts/landlord-context';
 import { isApiSuccess } from '@/lib/api-response';
+import { cacheStore } from '@/lib/cache-store';
+import { LANDLORD_ROOMS_TTL_MS, landlordRoomsKey } from '@/lib/landlord-prefetch';
 import type { PensionItem, RoomDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { fetchPensionRooms, updateRoom } from '@/services/rooms.service';
@@ -53,46 +56,84 @@ export function LandlordRoomsScreen({
     })) as RoomItem[];
   }, [effectivePension?.id, effectivePension?.rooms]);
 
-  const [rooms, setRooms] = useState<RoomItem[]>(() => initialContextRooms ?? []);
-  const [isLoadingRooms, setIsLoadingRooms] = useState<boolean>(() => !initialContextRooms);
+  const cacheKey = effectivePensionId ? landlordRoomsKey(effectivePensionId) : null;
+  const initialCachedRooms =
+    typeof window !== 'undefined' && cacheKey
+      ? cacheStore.get<RoomItem[]>(cacheKey)?.data
+      : undefined;
+
+  const [rooms, setRooms] = useState<RoomItem[]>(
+    () => initialCachedRooms ?? initialContextRooms ?? [],
+  );
+  const [isLoadingRooms, setIsLoadingRooms] = useState<boolean>(
+    () => !initialCachedRooms && !initialContextRooms,
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [editingRoom, setEditingRoom] = useState<RoomItem | null>(null);
 
-  const loadRooms = useCallback(async () => {
-    if (!effectivePensionId) {
-      setRooms([]);
-      setIsLoadingRooms(false);
-      return;
-    }
-
-    setIsLoadingRooms(true);
-    setErrorMessage(null);
-
-    try {
-      const response = await fetchPensionRooms(effectivePensionId);
-      if (isApiSuccess(response)) {
-        const rawItems = Array.isArray(response.data) ? response.data : [];
-        setRooms(rawItems.map((dto) => mapDtoToRoomItem(dto)));
-      } else {
-        setErrorMessage(response.message || 'No fue posible cargar las habitaciones.');
+  const loadRooms = useCallback(
+    async (force = false) => {
+      if (!effectivePensionId) {
+        setRooms([]);
+        setIsLoadingRooms(false);
+        return;
       }
-    } catch {
-      setErrorMessage('Ocurrió un error al cargar las habitaciones.');
-    } finally {
-      setIsLoadingRooms(false);
-    }
-  }, [effectivePensionId]);
+
+      const key = landlordRoomsKey(effectivePensionId);
+      const cached = cacheStore.get<RoomItem[]>(key);
+
+      if (cached) {
+        setRooms(cached.data);
+        setIsLoadingRooms(false);
+        if (!force && !cacheStore.isStale(key, LANDLORD_ROOMS_TTL_MS)) {
+          return;
+        }
+      } else {
+        setIsLoadingRooms(true);
+      }
+
+      setErrorMessage(null);
+
+      try {
+        const response = await cacheStore.dedupePromise(key, () =>
+          fetchPensionRooms(effectivePensionId),
+        );
+        if (isApiSuccess(response)) {
+          const rawItems = Array.isArray(response.data) ? response.data : [];
+          const mapped = rawItems.map((dto) => mapDtoToRoomItem(dto));
+          cacheStore.set(key, mapped);
+          setRooms(mapped);
+        } else if (!cached) {
+          setErrorMessage(response.message || 'No fue posible cargar las habitaciones.');
+        }
+      } catch {
+        if (!cached) {
+          setErrorMessage('Ocurrió un error al cargar las habitaciones.');
+        }
+      } finally {
+        setIsLoadingRooms(false);
+      }
+    },
+    [effectivePensionId],
+  );
 
   useEffect(() => {
-    if (initialContextRooms) {
-      setRooms(initialContextRooms);
+    if (effectivePensionId && initialContextRooms) {
+      const key = landlordRoomsKey(effectivePensionId);
+      const cached = cacheStore.get<RoomItem[]>(key);
+      if (cached) {
+        setRooms(cached.data);
+      } else {
+        cacheStore.set(key, initialContextRooms);
+        setRooms(initialContextRooms);
+      }
       setIsLoadingRooms(false);
       return;
     }
-    loadRooms();
-  }, [initialContextRooms, loadRooms]);
+    void loadRooms(false);
+  }, [effectivePensionId, initialContextRooms, loadRooms]);
 
   const handleOpenCreateDrawer = () => {
     setEditingRoom(null);
@@ -110,31 +151,61 @@ export function LandlordRoomsScreen({
   };
 
   const handleDrawerSuccess = () => {
-    loadRooms();
+    if (effectivePensionId) {
+      cacheStore.invalidate(landlordRoomsKey(effectivePensionId));
+    }
+    void loadRooms(true);
+    if (effectivePensionId) {
+      void landlordContext.refetchPensions(effectivePensionId);
+    }
   };
 
   const handleToggleAvailability = async (roomId: string, isAvailable: boolean) => {
-    setRooms((prev) => prev.map((room) => (room.id === roomId ? { ...room, isAvailable } : room)));
+    setRooms((prev) => {
+      const next = prev.map((room) => (room.id === roomId ? { ...room, isAvailable } : room));
+      if (effectivePensionId) {
+        cacheStore.set(landlordRoomsKey(effectivePensionId), next);
+      }
+      return next;
+    });
 
     const response = await updateRoom(roomId, { isAvailable });
     if (!isApiSuccess(response)) {
-      setRooms((prev) =>
-        prev.map((room) => (room.id === roomId ? { ...room, isAvailable: !isAvailable } : room)),
-      );
+      setRooms((prev) => {
+        const reverted = prev.map((room) =>
+          room.id === roomId ? { ...room, isAvailable: !isAvailable } : room,
+        );
+        if (effectivePensionId) {
+          cacheStore.set(landlordRoomsKey(effectivePensionId), reverted);
+        }
+        return reverted;
+      });
       throw new Error(response.message || 'No fue posible actualizar la disponibilidad.');
     }
   };
 
   const handleToggleActive = async (roomId: string, nextActive: boolean) => {
-    setRooms((prev) =>
-      prev.map((room) => (room.id === roomId ? { ...room, isActive: nextActive } : room)),
-    );
+    setRooms((prev) => {
+      const next = prev.map((room) =>
+        room.id === roomId ? { ...room, isActive: nextActive } : room,
+      );
+      if (effectivePensionId) {
+        cacheStore.set(landlordRoomsKey(effectivePensionId), next);
+      }
+      return next;
+    });
 
     const response = await updateRoom(roomId, { isActive: nextActive });
     if (!isApiSuccess(response)) {
-      setRooms((prev) =>
-        prev.map((room) => (room.id === roomId ? { ...room, isActive: !nextActive } : room)),
-      );
+      setRooms((prev) => {
+        const reverted = prev.map((room) =>
+          room.id === roomId ? { ...room, isActive: !nextActive } : room,
+        );
+        if (effectivePensionId) {
+          cacheStore.set(landlordRoomsKey(effectivePensionId), reverted);
+        }
+        return reverted;
+      });
       throw new Error(response.message || 'No fue posible actualizar el estado de la habitación.');
     }
   };
@@ -155,19 +226,7 @@ export function LandlordRoomsScreen({
   const isInitialLoading = landlordContext.isLoading && !effectivePension;
 
   if (isInitialLoading || (isLoadingRooms && rooms.length === 0 && !errorMessage)) {
-    return (
-      <div className={cn('space-y-6 w-full animate-pulse', className)}>
-        <div className="h-44 w-full rounded-2xl bg-muted/50" />
-        <div className="flex items-center justify-between">
-          <div className="h-6 w-40 rounded-lg bg-muted/50" />
-          <div className="h-12 w-36 rounded-xl bg-muted/50" />
-        </div>
-        <div className="space-y-3">
-          <div className="h-32 w-full rounded-2xl bg-muted/40" />
-          <div className="h-32 w-full rounded-2xl bg-muted/40" />
-        </div>
-      </div>
-    );
+    return <LandlordRoomsSkeleton className={className} />;
   }
 
   if (!effectivePension && !effectivePensionId) {
@@ -263,7 +322,7 @@ export function LandlordRoomsScreen({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={loadRooms}
+            onClick={() => void loadRooms(true)}
             className="min-h-9 px-2.5 text-xs font-semibold text-destructive hover:bg-destructive/15 gap-1.5 cursor-pointer"
           >
             <RefreshCw className="h-3.5 w-3.5" />

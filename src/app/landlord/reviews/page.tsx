@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { LandlordAppShell } from '@/components/shells/landlord-app-shell';
-import { hasLandlordServerCookie } from '@/lib/server-role-guard';
+import { LandlordRouteSync } from '@/components/shells/landlord-route-sync';
 
 export const metadata: Metadata = {
   title: 'Reseñas de Estudiantes | BuscaTuNido',
@@ -11,9 +10,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function LandlordReviewsPage() {
-  const hasServerLandlordSession = await hasLandlordServerCookie();
-  return (
-    <LandlordAppShell initialTab="reviews" hasServerLandlordSession={hasServerLandlordSession} />
-  );
+export default function LandlordReviewsPage() {
+  return <LandlordRouteSync tab="reviews" />;
 }

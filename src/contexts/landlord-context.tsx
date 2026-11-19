@@ -1,13 +1,35 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { isApiSuccess } from '@/lib/api-response';
 import { useAuth } from '@/lib/auth-context';
-import type { PensionDetailDto, PensionItem } from '@/lib/types';
+import { cacheStore } from '@/lib/cache-store';
+import {
+  AMENITIES_CATALOG_KEY,
+  AMENITIES_CATALOG_TTL_MS,
+  LANDLORD_PENSIONS_MINE_KEY,
+  LANDLORD_PENSIONS_TTL_MS,
+  type LandlordInitialData,
+  normalizeAmenitiesCatalog,
+} from '@/lib/landlord-prefetch';
+import {
+  getLandlordTabFromPathname,
+  getPathnameForLandlordTab,
+  type LandlordTab,
+} from '@/lib/landlord-routes';
+import type { PensionAmenityCatalogItemDto, PensionDetailDto, PensionItem } from '@/lib/types';
 import { pensionsService } from '@/services/pensions.service';
 import { proposalsService } from '@/services/proposals.service';
 
-export type LandlordTab = 'pension' | 'rooms' | 'reviews' | 'proposals' | 'pensions' | 'account';
+export type { LandlordTab };
 
 export type LandlordDefaultContact = {
   name: string;
@@ -27,6 +49,7 @@ export type LandlordContextValue = {
   updatePensionInList: (updated: PensionItem | PensionDetailDto) => void;
   activeTab: LandlordTab;
   setActiveTab: (tab: LandlordTab) => void;
+  syncTabFromRoute: (tab: LandlordTab) => void;
   isLoading: boolean;
   error: string | null;
   togglePensionActive: (pensionId: string, isActive: boolean) => Promise<void>;
@@ -42,34 +65,18 @@ export type LandlordContextValue = {
   updatePensionCustomContact: (pensionId: string, custom: PensionCustomContact) => void;
   pendingProposalsCount: number;
   refetchProposals: () => Promise<void>;
+  amenitiesCatalog: PensionAmenityCatalogItemDto[];
+  isLoadingAmenities: boolean;
+  refreshAmenities: () => Promise<void>;
 };
 
 export type LandlordProviderProps = {
   children: React.ReactNode;
   initialTab?: LandlordTab;
+  initialData?: LandlordInitialData;
 };
 
 const LandlordContext = createContext<LandlordContextValue | null>(null);
-
-function getLandlordTabFromPathname(pathname: string): LandlordTab | null {
-  const segment = pathname
-    .split('?')[0]
-    .replace(/^\/+|\/+$/g, '')
-    .toLowerCase();
-  if (segment === 'landlord' || segment === 'landlord/pension') return 'pension';
-  if (segment === 'landlord/rooms') return 'rooms';
-  if (segment === 'landlord/reviews') return 'reviews';
-  if (segment === 'landlord/proposals') return 'proposals';
-  if (segment === 'landlord/properties' || segment === 'landlord/pensions') return 'pensions';
-  if (segment === 'landlord/account') return 'account';
-  return null;
-}
-
-function getPathnameForLandlordTab(tab: LandlordTab): string {
-  if (tab === 'pension') return '/landlord';
-  if (tab === 'pensions') return '/landlord/properties';
-  return `/landlord/${tab}`;
-}
 
 function extractCustomContactsFromPensions(
   items: PensionItem[],
@@ -90,9 +97,18 @@ function extractCustomContactsFromPensions(
   return contacts;
 }
 
-export function LandlordProvider({ children, initialTab = 'pension' }: LandlordProviderProps) {
-  const [pensions, setPensions] = useState<PensionItem[]>([]);
-  const [selectedPension, setSelectedPension] = useState<PensionItem | null>(null);
+export function LandlordProvider({
+  children,
+  initialTab = 'pension',
+  initialData,
+}: LandlordProviderProps) {
+  const hasServerPensions = Array.isArray(initialData?.pensions);
+  const hasServerAmenities = Array.isArray(initialData?.amenities);
+
+  const [pensions, setPensions] = useState<PensionItem[]>(() => initialData?.pensions ?? []);
+  const [selectedPension, setSelectedPension] = useState<PensionItem | null>(
+    () => initialData?.pensions?.[0] ?? null,
+  );
   const [activeTab, setActiveTabState] = useState<LandlordTab>(initialTab);
 
   useEffect(() => {
@@ -103,6 +119,10 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       }
     }
   }, [initialTab]);
+
+  const syncTabFromRoute = useCallback((tab: LandlordTab) => {
+    setActiveTabState(tab);
+  }, []);
 
   const setActiveTab = useCallback((tab: LandlordTab) => {
     setActiveTabState(tab);
@@ -128,7 +148,7 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!hasServerPensions);
   const [error, setError] = useState<string | null>(null);
   const [isCreatePensionOpen, setIsCreatePensionOpen] = useState(false);
   const { user } = useAuth();
@@ -153,7 +173,14 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
     }
   }, [user]);
 
-  const [customContacts, setCustomContacts] = useState<Record<string, PensionCustomContact>>({});
+  const [customContacts, setCustomContacts] = useState<Record<string, PensionCustomContact>>(() =>
+    initialData?.pensions ? extractCustomContactsFromPensions(initialData.pensions) : {},
+  );
+
+  const [amenitiesCatalog, setAmenitiesCatalog] = useState<PensionAmenityCatalogItemDto[]>(
+    () => initialData?.amenities ?? [],
+  );
+  const [isLoadingAmenities, setIsLoadingAmenities] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -191,6 +218,37 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       // ignore
     }
   }, [selectedPension?.id]);
+
+  const refreshAmenities = useCallback(async () => {
+    const cached = cacheStore.get<PensionAmenityCatalogItemDto[]>(AMENITIES_CATALOG_KEY);
+    if (
+      cached &&
+      cached.data.length > 0 &&
+      !cacheStore.isStale(AMENITIES_CATALOG_KEY, AMENITIES_CATALOG_TTL_MS)
+    ) {
+      setAmenitiesCatalog(cached.data);
+      return;
+    }
+    if (!cached) {
+      setIsLoadingAmenities(true);
+    }
+    try {
+      const res = await cacheStore.dedupePromise(AMENITIES_CATALOG_KEY, () =>
+        pensionsService.fetchAmenitiesCatalog(),
+      );
+      if (isApiSuccess(res) && Array.isArray(res.data)) {
+        const normalized = normalizeAmenitiesCatalog(res.data);
+        setAmenitiesCatalog(normalized);
+        if (normalized.length > 0) {
+          cacheStore.set(AMENITIES_CATALOG_KEY, normalized);
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsLoadingAmenities(false);
+    }
+  }, []);
 
   const updateDefaultContact = useCallback((partial: Partial<LandlordDefaultContact>) => {
     setDefaultContactState((prev) => ({
@@ -236,56 +294,93 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
     setIsCreatePensionOpen(false);
   }, []);
 
-  const refetchPensions = useCallback(async (selectPensionId?: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await pensionsService.fetchMinePensions();
-      if (isApiSuccess(response)) {
-        const items = response.data;
-        setPensions(items);
-        setCustomContacts(extractCustomContactsFromPensions(items));
-        setSelectedPension((current) => {
-          if (selectPensionId) {
-            const target = items.find((p) => p.id === selectPensionId);
-            if (target) return target;
-          }
-          if (!current) {
-            return items[0] ?? null;
-          }
-          const matched = items.find((p) => p.id === current.id);
-          return matched ?? items[0] ?? null;
-        });
-      } else {
-        setError(response.message || 'Error al cargar las pensiones');
+  const applyPensionsList = useCallback((items: PensionItem[], selectPensionId?: string) => {
+    setPensions(items);
+    setCustomContacts(extractCustomContactsFromPensions(items));
+    setSelectedPension((current) => {
+      if (selectPensionId) {
+        const target = items.find((p) => p.id === selectPensionId);
+        if (target) return target;
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar las pensiones');
-    } finally {
-      setIsLoading(false);
-    }
+      if (!current) {
+        return items[0] ?? null;
+      }
+      const matched = items.find((p) => p.id === current.id);
+      return matched ?? items[0] ?? null;
+    });
   }, []);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadInitialPensions = async () => {
-      setIsLoading(true);
+  const refetchPensions = useCallback(
+    async (selectPensionId?: string) => {
+      const hasExisting = pensions.length > 0;
+      if (!hasExisting) {
+        setIsLoading(true);
+      }
       setError(null);
       try {
         const response = await pensionsService.fetchMinePensions();
-        if (!isMounted) return;
         if (isApiSuccess(response)) {
           const items = response.data;
-          setPensions(items);
-          setCustomContacts(extractCustomContactsFromPensions(items));
-          setSelectedPension(items[0] ?? null);
+          cacheStore.set(LANDLORD_PENSIONS_MINE_KEY, items);
+          applyPensionsList(items, selectPensionId);
         } else {
           setError(response.message || 'Error al cargar las pensiones');
         }
       } catch (err) {
-        if (!isMounted) return;
         setError(err instanceof Error ? err.message : 'Error al cargar las pensiones');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [applyPensionsList, pensions.length],
+  );
+
+  const seededServerRef = useRef(false);
+  useEffect(() => {
+    if (seededServerRef.current) return;
+    seededServerRef.current = true;
+    if (hasServerAmenities && initialData?.amenities && initialData.amenities.length > 0) {
+      cacheStore.set(AMENITIES_CATALOG_KEY, initialData.amenities);
+    }
+  }, [hasServerAmenities, initialData?.amenities]);
+
+  useEffect(() => {
+    if (hasServerPensions && initialData?.pensions) {
+      cacheStore.set(LANDLORD_PENSIONS_MINE_KEY, initialData.pensions);
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadInitialPensions = async () => {
+      const cached = cacheStore.get<PensionItem[]>(LANDLORD_PENSIONS_MINE_KEY);
+      if (cached) {
+        applyPensionsList(cached.data);
+        setIsLoading(false);
+        if (!cacheStore.isStale(LANDLORD_PENSIONS_MINE_KEY, LANDLORD_PENSIONS_TTL_MS)) {
+          return;
+        }
+      } else {
+        setIsLoading(true);
+      }
+      setError(null);
+      try {
+        const response = await cacheStore.dedupePromise(LANDLORD_PENSIONS_MINE_KEY, () =>
+          pensionsService.fetchMinePensions(),
+        );
+        if (!isMounted) return;
+        if (isApiSuccess(response)) {
+          const items = response.data;
+          cacheStore.set(LANDLORD_PENSIONS_MINE_KEY, items);
+          applyPensionsList(items);
+        } else if (!cached) {
+          setError(response.message || 'Error al cargar las pensiones');
+        }
+      } catch (err) {
+        if (!isMounted) return;
+        if (!cached) {
+          setError(err instanceof Error ? err.message : 'Error al cargar las pensiones');
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -293,32 +388,35 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       }
     };
 
-    loadInitialPensions();
+    void loadInitialPensions();
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [hasServerPensions, initialData?.pensions, applyPensionsList]);
 
   const togglePensionActive = useCallback(
     async (pensionId: string, isActive: boolean) => {
       const previousPensions = pensions;
       const previousSelected = selectedPension;
+      const nextPensions = pensions.map((p) => (p.id === pensionId ? { ...p, isActive } : p));
 
-      setPensions((prev) => prev.map((p) => (p.id === pensionId ? { ...p, isActive } : p)));
-
+      setPensions(nextPensions);
       setSelectedPension((prev) => (prev && prev.id === pensionId ? { ...prev, isActive } : prev));
+      cacheStore.set(LANDLORD_PENSIONS_MINE_KEY, nextPensions);
 
       try {
         const response = await pensionsService.update(pensionId, { isActive });
         if (!isApiSuccess(response)) {
           setPensions(previousPensions);
           setSelectedPension(previousSelected);
+          cacheStore.set(LANDLORD_PENSIONS_MINE_KEY, previousPensions);
           setError(response.message || 'Error al actualizar el estado de la pensión');
         }
       } catch (err) {
         setPensions(previousPensions);
         setSelectedPension(previousSelected);
+        cacheStore.set(LANDLORD_PENSIONS_MINE_KEY, previousPensions);
         setError(
           err instanceof Error ? err.message : 'Error al actualizar el estado de la pensión',
         );
@@ -328,9 +426,13 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
   );
 
   const updatePensionInList = useCallback((updated: PensionItem | PensionDetailDto) => {
-    setPensions((prev) =>
-      prev.map((p) => (p.id === updated.id ? ({ ...p, ...updated } as PensionItem) : p)),
-    );
+    setPensions((prev) => {
+      const next = prev.map((p) =>
+        p.id === updated.id ? ({ ...p, ...updated } as PensionItem) : p,
+      );
+      cacheStore.set(LANDLORD_PENSIONS_MINE_KEY, next);
+      return next;
+    });
     setSelectedPension((prev) =>
       prev && prev.id === updated.id ? ({ ...prev, ...updated } as PensionItem) : prev,
     );
@@ -357,10 +459,11 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       try {
         const response = await pensionsService.deletePension(pensionId);
         if (isApiSuccess(response)) {
-          setPensions((prev) => prev.filter((p) => p.id !== pensionId));
+          const remaining = pensions.filter((p) => p.id !== pensionId);
+          setPensions(remaining);
+          cacheStore.set(LANDLORD_PENSIONS_MINE_KEY, remaining);
           setSelectedPension((current) => {
             if (current && current.id === pensionId) {
-              const remaining = pensions.filter((p) => p.id !== pensionId);
               return remaining[0] ?? null;
             }
             return current;
@@ -391,6 +494,7 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       updatePensionInList,
       activeTab,
       setActiveTab,
+      syncTabFromRoute,
       isLoading,
       error,
       togglePensionActive,
@@ -406,12 +510,17 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       updatePensionCustomContact,
       pendingProposalsCount,
       refetchProposals,
+      amenitiesCatalog,
+      isLoadingAmenities,
+      refreshAmenities,
     }),
     [
       pensions,
       selectedPension,
       updatePensionInList,
       activeTab,
+      setActiveTab,
+      syncTabFromRoute,
       isLoading,
       error,
       togglePensionActive,
@@ -426,7 +535,9 @@ export function LandlordProvider({ children, initialTab = 'pension' }: LandlordP
       updatePensionCustomContact,
       pendingProposalsCount,
       refetchProposals,
-      setActiveTab,
+      amenitiesCatalog,
+      isLoadingAmenities,
+      refreshAmenities,
     ],
   );
 

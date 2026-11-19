@@ -5,6 +5,7 @@ import { AuthScreen } from '@/components/auth/auth-screen';
 import { Badge } from '@/components/ui/badge';
 import { BellIcon } from '@/components/ui/bell';
 import { ShieldCheckIcon } from '@/components/ui/shield-check';
+import { LandlordAccountSkeleton } from '@/components/ui/skeletons/landlord-skeletons';
 import { useOptionalLandlord } from '@/contexts/landlord-context';
 import { useAuth } from '@/lib/auth-context';
 import {
@@ -17,7 +18,7 @@ import {
 } from './account-primitives';
 
 export function LandlordAccountScreen() {
-  const { user, logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const landlord = useOptionalLandlord();
   const pensions = landlord?.pensions ?? [];
   const setActiveTab = landlord?.setActiveTab;
@@ -25,6 +26,10 @@ export function LandlordAccountScreen() {
   const handleLogout = async () => {
     await logout();
   };
+
+  if (isLoading && !user) {
+    return <LandlordAccountSkeleton />;
+  }
 
   if (!user) {
     return <AuthScreen />;

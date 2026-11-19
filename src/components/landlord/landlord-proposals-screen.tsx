@@ -22,7 +22,9 @@ import { ProposalsListSkeleton } from '@/components/ui/skeletons/landlord-pensio
 import { useLandlord } from '@/contexts/landlord-context';
 import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { isApiSuccess } from '@/lib/api-response';
+import { cacheStore } from '@/lib/cache-store';
 import { formatChileDate } from '@/lib/format-utils';
+import { LANDLORD_PROPOSALS_TTL_MS, landlordProposalsKey } from '@/lib/landlord-prefetch';
 import type { PensionDetailDto, PensionItem, ProposalDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { proposalsService } from '@/services/proposals.service';
@@ -158,40 +160,73 @@ export function LandlordProposalsScreen({
     triggerProps: refreshTriggerProps,
   } = useAnimatedIconTrigger();
 
-  const [proposals, setProposals] = useState<ProposalDto[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const cacheKey = effectivePensionId ? landlordProposalsKey(effectivePensionId) : null;
+  const initialCached =
+    typeof window !== 'undefined' && cacheKey ? cacheStore.get<ProposalDto[]>(cacheKey) : undefined;
+
+  const [proposals, setProposals] = useState<ProposalDto[]>(() => initialCached?.data ?? []);
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    if (initialCached) return false;
+    return Boolean(effectivePensionId || landlordContext.isLoading);
+  });
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<ProposalFilter>('ALL');
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [previewProposal, setPreviewProposal] = useState<ProposalDto | null>(null);
 
-  const loadProposals = useCallback(async () => {
-    if (!effectivePensionId) {
-      setProposals([]);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setErrorMessage(null);
-
-    try {
-      const response = await proposalsService.fetchPensionProposals(effectivePensionId);
-      if (isApiSuccess(response)) {
-        setProposals(response.data ?? []);
-      } else {
-        setErrorMessage(response.message || 'No fue posible cargar las sugerencias.');
+  const loadProposals = useCallback(
+    async (force = false) => {
+      if (!effectivePensionId) {
+        if (!landlordContext.isLoading) {
+          setProposals([]);
+          setIsLoading(false);
+        }
+        return;
       }
-    } catch {
-      setErrorMessage('Ocurrió un error al cargar las sugerencias comunitarias.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [effectivePensionId]);
+
+      const key = landlordProposalsKey(effectivePensionId);
+      const cached = cacheStore.get<ProposalDto[]>(key);
+
+      if (cached) {
+        setProposals(cached.data);
+        setIsLoading(false);
+        if (!force && !cacheStore.isStale(key, LANDLORD_PROPOSALS_TTL_MS)) {
+          return;
+        }
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+
+      setErrorMessage(null);
+
+      try {
+        const response = await cacheStore.dedupePromise(key, () =>
+          proposalsService.fetchPensionProposals(effectivePensionId),
+        );
+        if (isApiSuccess(response)) {
+          const list = response.data ?? [];
+          cacheStore.set(key, list);
+          setProposals(list);
+        } else if (!cached) {
+          setErrorMessage(response.message || 'No fue posible cargar las sugerencias.');
+        }
+      } catch {
+        if (!cached) {
+          setErrorMessage('Ocurrió un error al cargar las sugerencias comunitarias.');
+        }
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    [effectivePensionId, landlordContext.isLoading],
+  );
 
   useEffect(() => {
-    loadProposals();
+    void loadProposals(false);
   }, [loadProposals]);
 
   useEffect(() => {
@@ -219,13 +254,16 @@ export function LandlordProposalsScreen({
       });
 
       if (isApiSuccess(response)) {
+        if (effectivePensionId) {
+          cacheStore.invalidate(landlordProposalsKey(effectivePensionId));
+        }
         setSuccessMessage(
           status === 'APPROVED'
             ? 'Sugerencia aprobada. Los cambios han sido aplicados a tu pensión.'
             : 'Sugerencia rechazada correctamente.',
         );
         await Promise.all([
-          loadProposals(),
+          loadProposals(true),
           landlordContext.refetchProposals(),
           status === 'APPROVED' && effectivePensionId
             ? landlordContext.refetchPensions(effectivePensionId)
@@ -277,15 +315,15 @@ export function LandlordProposalsScreen({
           {...refreshTriggerProps}
           onClick={() => {
             startRefreshAnimation();
-            void loadProposals();
+            void loadProposals(true);
           }}
-          disabled={isLoading}
+          disabled={isLoading || isRefreshing}
           className="self-start sm:self-auto min-h-[40px] px-3.5 text-xs font-semibold border-border/80 hover:bg-secondary cursor-pointer"
         >
           <RefreshCWIcon
             ref={refreshIconRef}
             size={14}
-            className={cn('mr-1.5', isLoading && 'animate-spin')}
+            className={cn('mr-1.5', (isLoading || isRefreshing) && 'animate-spin')}
           />
           <span>Actualizar</span>
         </Button>
@@ -338,7 +376,7 @@ export function LandlordProposalsScreen({
         </div>
       )}
 
-      {isLoading ? (
+      {isLoading || (landlordContext.isLoading && !effectivePensionId) ? (
         <ProposalsListSkeleton count={2} />
       ) : filteredProposals.length === 0 ? (
         <Card className="border-border/60 bg-card/60 p-8 text-center rounded-2xl">

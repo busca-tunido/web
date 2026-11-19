@@ -1,16 +1,40 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { LandlordDesktopHeader } from '@/components/landlord/landlord-desktop-header';
 import { LandlordDesktopSidebar } from '@/components/landlord/landlord-desktop-sidebar';
 import { LandlordPensionScreen } from '@/components/landlord/landlord-pension-screen';
 import { LandlordPensionsScreen } from '@/components/landlord/landlord-pensions-screen';
+import { LandlordBottomNav } from '@/components/layout/landlord-bottom-nav';
+import {
+  LandlordMobileHeader,
+  type LandlordPropertySummary,
+} from '@/components/layout/landlord-mobile-header';
+import { SplashScreen } from '@/components/layout/splash-screen';
+import {
+  LandlordAccountSkeleton,
+  LandlordProposalsScreenSkeleton,
+  LandlordReviewsScreenSkeleton,
+  LandlordRoomsSkeleton,
+} from '@/components/ui/skeletons/landlord-skeletons';
+import { LandlordProvider, type LandlordTab, useLandlord } from '@/contexts/landlord-context';
+import { useUserRole } from '@/hooks/use-user-role';
+import { useAuth } from '@/lib/auth-context';
+import {
+  type LandlordInitialData,
+  prefetchLandlordTabData,
+  preloadLandlordTabChunk,
+} from '@/lib/landlord-prefetch';
+import { LANDLORD_TAB_TITLES } from '@/lib/landlord-routes';
 
 const LandlordAccountScreen = dynamic(
   () =>
     import('@/components/account/landlord-account-screen').then((mod) => mod.LandlordAccountScreen),
-  { ssr: true },
+  {
+    ssr: true,
+    loading: () => <LandlordAccountSkeleton />,
+  },
 );
 
 const LandlordProposalsScreen = dynamic(
@@ -18,7 +42,10 @@ const LandlordProposalsScreen = dynamic(
     import('@/components/landlord/landlord-proposals-screen').then(
       (mod) => mod.LandlordProposalsScreen,
     ),
-  { ssr: true },
+  {
+    ssr: true,
+    loading: () => <LandlordProposalsScreenSkeleton />,
+  },
 );
 
 const LandlordReviewsScreen = dynamic(
@@ -26,13 +53,19 @@ const LandlordReviewsScreen = dynamic(
     import('@/components/landlord/landlord-reviews-screen').then(
       (mod) => mod.LandlordReviewsScreen,
     ),
-  { ssr: true },
+  {
+    ssr: true,
+    loading: () => <LandlordReviewsScreenSkeleton />,
+  },
 );
 
 const LandlordRoomsScreen = dynamic(
   () =>
     import('@/components/landlord/landlord-rooms-screen').then((mod) => mod.LandlordRoomsScreen),
-  { ssr: true },
+  {
+    ssr: true,
+    loading: () => <LandlordRoomsSkeleton />,
+  },
 );
 
 const PensionEditorDrawer = dynamic(
@@ -41,22 +74,15 @@ const PensionEditorDrawer = dynamic(
   { ssr: false },
 );
 
-import { LandlordBottomNav } from '@/components/layout/landlord-bottom-nav';
-import {
-  LandlordMobileHeader,
-  type LandlordPropertySummary,
-} from '@/components/layout/landlord-mobile-header';
-import { SplashScreen } from '@/components/layout/splash-screen';
-import { LandlordProvider, type LandlordTab, useLandlord } from '@/contexts/landlord-context';
-import { useUserRole } from '@/hooks/use-user-role';
-import { useAuth } from '@/lib/auth-context';
-
 export type LandlordAppShellProps = {
   initialTab?: LandlordTab;
   hasServerLandlordSession?: boolean;
+  initialData?: LandlordInitialData;
+  children?: React.ReactNode;
 };
 
-function LandlordAppShellContent() {
+function LandlordAppShellContent({ children }: { children?: React.ReactNode }) {
+  const { user } = useAuth();
   const {
     pensions,
     selectedPension,
@@ -70,6 +96,75 @@ function LandlordAppShellContent() {
     openCreatePensionModal,
     closeCreatePensionModal,
   } = useLandlord();
+
+  const [visitedTabs, setVisitedTabs] = useState<Set<LandlordTab>>(() => new Set([activeTab]));
+  const [hasOpenedCreatePension, setHasOpenedCreatePension] = useState(isCreatePensionOpen);
+
+  useEffect(() => {
+    if (isCreatePensionOpen) {
+      setHasOpenedCreatePension(true);
+    }
+  }, [isCreatePensionOpen]);
+
+  useEffect(() => {
+    setVisitedTabs((prev) => {
+      if (prev.has(activeTab)) {
+        return prev;
+      }
+      const next = new Set(prev);
+      next.add(activeTab);
+      return next;
+    });
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.title = LANDLORD_TAB_TITLES[activeTab] ?? 'Panel de Propietario | BuscaTuNido';
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const warmUpTabs = () => {
+      const candidateTabs: LandlordTab[] = ['rooms', 'reviews', 'proposals', 'account'];
+      for (const tab of candidateTabs) {
+        if (tab !== activeTab) {
+          preloadLandlordTabChunk(tab);
+        }
+      }
+
+      if (selectedPension?.id) {
+        const dataTabs: LandlordTab[] = ['pension', 'rooms', 'reviews', 'proposals'];
+        for (const tab of dataTabs) {
+          if (tab !== activeTab) {
+            void prefetchLandlordTabData(tab, {
+              pensionId: selectedPension.id,
+              userId: user?.id,
+            });
+          }
+        }
+      }
+    };
+
+    const win = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+
+    if (typeof win.requestIdleCallback === 'function') {
+      const idleId = win.requestIdleCallback(warmUpTabs, { timeout: 1500 });
+      return () => {
+        win.cancelIdleCallback?.(idleId);
+      };
+    }
+
+    const timerId = window.setTimeout(warmUpTabs, 1000);
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [activeTab, selectedPension?.id, user?.id]);
+
+  const shouldRenderTab = (tab: LandlordTab) => activeTab === tab || visitedTabs.has(tab);
 
   const propertySummaries = useMemo<LandlordPropertySummary[]>(() => {
     return pensions.map((p) => ({
@@ -97,6 +192,7 @@ function LandlordAppShellContent() {
 
   return (
     <div className="min-h-screen md:h-screen md:overflow-hidden bg-background flex flex-col md:flex-row text-foreground">
+      {children}
       <LandlordDesktopSidebar className="hidden md:flex" />
       <div className="flex-1 flex flex-col min-w-0 md:h-screen md:overflow-y-auto overscroll-y-contain scrollbar-sage">
         <LandlordMobileHeader
@@ -111,38 +207,80 @@ function LandlordAppShellContent() {
         />
         <LandlordDesktopHeader className="hidden md:flex" />
         <main className="flex-1 p-4 md:p-8 max-w-6xl w-full mx-auto pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:pb-12">
-          {activeTab === 'rooms' && (
-            <LandlordRoomsScreen
-              selectedPension={selectedPension}
-              pensionId={selectedPension?.id}
-            />
+          {shouldRenderTab('rooms') && (
+            <section
+              hidden={activeTab !== 'rooms'}
+              aria-hidden={activeTab !== 'rooms'}
+              className={activeTab === 'rooms' ? 'block' : 'hidden'}
+            >
+              <LandlordRoomsScreen
+                selectedPension={selectedPension}
+                pensionId={selectedPension?.id}
+              />
+            </section>
           )}
-          {activeTab === 'pension' && (
-            <LandlordPensionScreen
-              pension={selectedPension}
-              pensionId={selectedPension?.id}
-              onPensionUpdated={updatePensionInList}
-            />
+          {shouldRenderTab('pension') && (
+            <section
+              hidden={activeTab !== 'pension'}
+              aria-hidden={activeTab !== 'pension'}
+              className={activeTab === 'pension' ? 'block' : 'hidden'}
+            >
+              <LandlordPensionScreen
+                pension={selectedPension}
+                pensionId={selectedPension?.id}
+                onPensionUpdated={updatePensionInList}
+              />
+            </section>
           )}
-          {activeTab === 'reviews' && (
-            <LandlordReviewsScreen pension={selectedPension} pensionId={selectedPension?.id} />
+          {shouldRenderTab('reviews') && (
+            <section
+              hidden={activeTab !== 'reviews'}
+              aria-hidden={activeTab !== 'reviews'}
+              className={activeTab === 'reviews' ? 'block' : 'hidden'}
+            >
+              <LandlordReviewsScreen pension={selectedPension} pensionId={selectedPension?.id} />
+            </section>
           )}
-          {activeTab === 'proposals' && (
-            <LandlordProposalsScreen pension={selectedPension} pensionId={selectedPension?.id} />
+          {shouldRenderTab('proposals') && (
+            <section
+              hidden={activeTab !== 'proposals'}
+              aria-hidden={activeTab !== 'proposals'}
+              className={activeTab === 'proposals' ? 'block' : 'hidden'}
+            >
+              <LandlordProposalsScreen pension={selectedPension} pensionId={selectedPension?.id} />
+            </section>
           )}
-          {activeTab === 'pensions' && <LandlordPensionsScreen />}
-          {activeTab === 'account' && <LandlordAccountScreen />}
+          {shouldRenderTab('pensions') && (
+            <section
+              hidden={activeTab !== 'pensions'}
+              aria-hidden={activeTab !== 'pensions'}
+              className={activeTab === 'pensions' ? 'block' : 'hidden'}
+            >
+              <LandlordPensionsScreen />
+            </section>
+          )}
+          {shouldRenderTab('account') && (
+            <section
+              hidden={activeTab !== 'account'}
+              aria-hidden={activeTab !== 'account'}
+              className={activeTab === 'account' ? 'block' : 'hidden'}
+            >
+              <LandlordAccountScreen />
+            </section>
+          )}
         </main>
         <LandlordBottomNav activeTab={activeTab} onTabChange={setActiveTab} className="md:hidden" />
       </div>
-      <PensionEditorDrawer
-        isOpen={isCreatePensionOpen}
-        onClose={closeCreatePensionModal}
-        onSuccess={async (created) => {
-          await refetchPensions(created.id);
-          setActiveTab('pension');
-        }}
-      />
+      {(hasOpenedCreatePension || isCreatePensionOpen) && (
+        <PensionEditorDrawer
+          isOpen={isCreatePensionOpen}
+          onClose={closeCreatePensionModal}
+          onSuccess={async (created) => {
+            await refetchPensions(created.id);
+            setActiveTab('pension');
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -150,6 +288,8 @@ function LandlordAppShellContent() {
 export function LandlordAppShell({
   initialTab = 'pension',
   hasServerLandlordSession = false,
+  initialData,
+  children,
 }: LandlordAppShellProps) {
   const { isLoading } = useAuth();
   const { isLandlord } = useUserRole();
@@ -166,8 +306,8 @@ export function LandlordAppShell({
   }
 
   return (
-    <LandlordProvider initialTab={initialTab}>
-      <LandlordAppShellContent />
+    <LandlordProvider initialTab={initialTab} initialData={initialData}>
+      <LandlordAppShellContent>{children}</LandlordAppShellContent>
     </LandlordProvider>
   );
 }

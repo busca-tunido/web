@@ -35,6 +35,7 @@ import { type LandlordTab, useLandlord } from '@/contexts/landlord-context';
 import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { useAuth } from '@/lib/auth-context';
 import { shouldBypassImageOptimization } from '@/lib/image-utils';
+import { preloadLandlordTab } from '@/lib/landlord-prefetch';
 import { cn } from '@/lib/utils';
 
 export type LandlordDesktopSidebarProps = {
@@ -59,10 +60,12 @@ function SidebarNavItemButton({
   item,
   isActive,
   onSelect,
+  onPreload,
 }: {
   item: NavItemConfig;
   isActive: boolean;
   onSelect: () => void;
+  onPreload: () => void;
 }) {
   const Icon = item.icon;
   const { iconRef, start, triggerProps } = useAnimatedIconTrigger();
@@ -70,7 +73,13 @@ function SidebarNavItemButton({
   return (
     <button
       type="button"
-      {...triggerProps}
+      onMouseEnter={() => {
+        triggerProps.onMouseEnter();
+        onPreload();
+      }}
+      onMouseLeave={triggerProps.onMouseLeave}
+      onFocus={onPreload}
+      onPointerDown={onPreload}
       onClick={() => {
         start();
         onSelect();
@@ -142,6 +151,16 @@ export function LandlordDesktopSidebar({
   const totalRooms = rooms.length;
   const occupiedRooms = rooms.filter((r) => !r.isAvailable).length;
   const reviewsCount = selectedPension?.reviewsCount ?? 0;
+
+  const handlePreloadTab = useCallback(
+    (tab: LandlordTab) => {
+      preloadLandlordTab(tab, {
+        pensionId: selectedPension?.id,
+        userId: user?.id,
+      });
+    },
+    [selectedPension?.id, user?.id],
+  );
 
   const navItems: readonly NavItemConfig[] = useMemo(
     () => [
@@ -307,6 +326,7 @@ export function LandlordDesktopSidebar({
               item={item}
               isActive={activeTab === item.id}
               onSelect={() => setActiveTab(item.id)}
+              onPreload={() => handlePreloadTab(item.id)}
             />
           ))}
         </nav>
@@ -314,6 +334,9 @@ export function LandlordDesktopSidebar({
         <div className="mt-auto flex flex-col gap-2 p-3 border-t border-border/60">
           <button
             type="button"
+            onMouseEnter={() => handlePreloadTab('pensions')}
+            onFocus={() => handlePreloadTab('pensions')}
+            onPointerDown={() => handlePreloadTab('pensions')}
             onClick={() => setActiveTab('pensions')}
             className={cn(
               'group relative flex min-h-[42px] w-full items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition cursor-pointer',
@@ -366,6 +389,9 @@ export function LandlordDesktopSidebar({
           >
             <button
               type="button"
+              onMouseEnter={() => handlePreloadTab('account')}
+              onFocus={() => handlePreloadTab('account')}
+              onPointerDown={() => handlePreloadTab('account')}
               onClick={() => setActiveTab('account')}
               className="flex items-center gap-2.5 min-w-0 flex-1 text-left cursor-pointer group"
               title="Ir a Mi Cuenta"

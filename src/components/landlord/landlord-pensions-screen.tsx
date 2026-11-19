@@ -35,6 +35,7 @@ import {
   ResponsiveModalHeader,
   ResponsiveModalTitle,
 } from '@/components/ui/responsive-modal';
+import { LandlordPensionsSkeleton } from '@/components/ui/skeletons/landlord-skeletons';
 import { useLandlord } from '@/contexts/landlord-context';
 import { useFormValidation } from '@/hooks/use-form-validation';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
@@ -56,6 +57,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
     selectedPension,
     setSelectedPension,
     setActiveTab,
+    isLoading,
     openCreatePensionModal,
     defaultContact,
     updateDefaultContact,
@@ -407,6 +409,10 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
       </m.div>
     );
   };
+
+  if (isLoading && pensions.length === 0) {
+    return <LandlordPensionsSkeleton className={className} />;
+  }
 
   return (
     <>

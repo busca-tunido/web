@@ -3,6 +3,8 @@
 import { BedDouble, Building2, Home, Star, User } from 'lucide-react';
 import { m } from 'motion/react';
 import { type LandlordTab, useLandlord } from '@/contexts/landlord-context';
+import { useAuth } from '@/lib/auth-context';
+import { preloadLandlordTab } from '@/lib/landlord-prefetch';
 import { cn } from '@/lib/utils';
 
 export type LandlordNavTab = LandlordTab;
@@ -34,6 +36,7 @@ export function LandlordBottomNav({
   className,
 }: LandlordBottomNavProps) {
   const landlordContext = useLandlord();
+  const { user } = useAuth();
   const selectedPension = landlordContext.selectedPension;
   const pensions = landlordContext.pensions;
 
@@ -41,6 +44,13 @@ export function LandlordBottomNav({
   const reviewsCount = propReviewsCount ?? selectedPension?.reviewsCount ?? 0;
   const pensionsCount = propPensionsCount ?? pensions.length;
   const pendingCount = propPendingProposalsCount ?? landlordContext.pendingProposalsCount;
+
+  const handlePreloadTab = (tab: LandlordTab) => {
+    preloadLandlordTab(tab, {
+      pensionId: selectedPension?.id,
+      userId: user?.id,
+    });
+  };
 
   const navItems: readonly LandlordNavItem[] = [
     {
@@ -94,6 +104,9 @@ export function LandlordBottomNav({
               id={`landlord-nav-tab-${item.id}`}
               type="button"
               whileTap={{ scale: 0.9 }}
+              onMouseEnter={() => handlePreloadTab(item.id)}
+              onFocus={() => handlePreloadTab(item.id)}
+              onPointerDown={() => handlePreloadTab(item.id)}
               onClick={() => onTabChange(item.id)}
               className={cn(
                 'group relative flex min-h-[48px] min-w-[56px] flex-1 flex-col items-center justify-center rounded-xl py-1 text-xs font-medium transition-colors cursor-pointer',

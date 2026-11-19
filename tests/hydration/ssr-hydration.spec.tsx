@@ -334,11 +334,14 @@ describe('SSR Hydration safety across Guest, Student, and Landlord flows', () =>
 
   it('hydrates LandlordAppShell SSR markup cleanly when hasServerLandlordSession is true', async () => {
     vi.spyOn(pensionsService, 'fetchMinePensions').mockResolvedValue(createSuccess([]));
+    vi.spyOn(pensionsService, 'fetchAmenitiesCatalog').mockResolvedValue(createSuccess([]));
 
     const { root, container } = await assertCleanHydration(
-      <AuthProvider>
-        <LandlordAppShell initialTab="pensions" hasServerLandlordSession={true} />
-      </AuthProvider>,
+      <ThemeProvider>
+        <AuthProvider>
+          <LandlordAppShell initialTab="pensions" hasServerLandlordSession={true} />
+        </AuthProvider>
+      </ThemeProvider>,
       () => {
         window.localStorage.setItem(
           'tunido_user',
@@ -349,6 +352,75 @@ describe('SSR Hydration safety across Guest, Student, and Landlord flows', () =>
     );
 
     expect(container.querySelector('#landlord-mobile-header')).not.toBeNull();
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it('hydrates LandlordAppShell cleanly with SSR initialData on rooms tab even when pathname differs', async () => {
+    vi.spyOn(pensionsService, 'fetchAmenitiesCatalog').mockResolvedValue(createSuccess([]));
+
+    const { root, container } = await assertCleanHydration(
+      <ThemeProvider>
+        <AuthProvider>
+          <LandlordAppShell
+            initialTab="pension"
+            hasServerLandlordSession={true}
+            initialData={{
+              pensions: [samplePension],
+              amenities: [
+                {
+                  slug: 'calefaccion',
+                  name: 'Calefacción',
+                  category: 'ROOM_FEATURE',
+                  iconKey: 'thermometer',
+                },
+              ],
+            }}
+          />
+        </AuthProvider>
+      </ThemeProvider>,
+      () => {
+        window.history.replaceState(null, '', '/landlord/rooms');
+        window.localStorage.setItem(
+          'tunido_user',
+          JSON.stringify({ id: 'u-landlord', email: 'owner@test.cl', role: 'LANDLORD' }),
+        );
+        window.localStorage.setItem('tunido_token', 'tok-test');
+      },
+    );
+
+    expect(container.textContent).toContain('Pensión Santiago Centro');
+    expect(container.querySelector('#splash-screen-container')).toBeNull();
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it('hydrates LandlordAppShell cleanly on account tab with hasServerLandlordSession', async () => {
+    vi.spyOn(pensionsService, 'fetchAmenitiesCatalog').mockResolvedValue(createSuccess([]));
+
+    const { root, container } = await assertCleanHydration(
+      <ThemeProvider>
+        <AuthProvider>
+          <LandlordAppShell
+            initialTab="account"
+            hasServerLandlordSession={true}
+            initialData={{ pensions: [samplePension] }}
+          />
+        </AuthProvider>
+      </ThemeProvider>,
+      () => {
+        window.history.replaceState(null, '', '/landlord/account');
+        window.localStorage.setItem(
+          'tunido_user',
+          JSON.stringify({ id: 'u-landlord', email: 'owner@test.cl', role: 'LANDLORD' }),
+        );
+        window.localStorage.setItem('tunido_token', 'tok-test');
+      },
+    );
+
+    expect(container.querySelector('#splash-screen-container')).toBeNull();
     await act(async () => {
       root.unmount();
     });

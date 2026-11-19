@@ -16,7 +16,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
+import { LandlordReviewsScreenSkeleton } from '@/components/ui/skeletons/landlord-skeletons';
 import { ReviewsSkeleton } from '@/components/ui/skeletons/reviews-skeleton';
+import { useOptionalLandlord } from '@/contexts/landlord-context';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { isApiSuccess } from '@/lib/api-response';
 import type { PensionDetailDto, PensionItem } from '@/lib/types';
@@ -79,7 +81,8 @@ export function LandlordReviewsScreen({
   pension: initialPension = null,
   className,
 }: LandlordReviewsScreenProps) {
-  const [activePension, setActivePension] = useState<PensionDetailDto | PensionItem | null>(
+  const landlordContext = useOptionalLandlord();
+  const [fallbackPension, setFallbackPension] = useState<PensionDetailDto | PensionItem | null>(
     initialPension,
   );
   const [activeFilter, setActiveFilter] = useState<ReviewFilterType>('ALL');
@@ -89,6 +92,7 @@ export function LandlordReviewsScreen({
     title?: string;
   } | null>(null);
 
+  const activePension = initialPension ?? landlordContext?.selectedPension ?? fallbackPension;
   const effectivePensionId = propPensionId || activePension?.id || '';
 
   const {
@@ -108,15 +112,15 @@ export function LandlordReviewsScreen({
   });
 
   const loadPensionIfMissing = useCallback(async () => {
-    if (activePension || effectivePensionId) return;
+    if (activePension || effectivePensionId || landlordContext?.isLoading) return;
     const mineRes = await pensionsService.fetchMinePensions();
     if (isApiSuccess(mineRes) && mineRes.data.length > 0) {
-      setActivePension(mineRes.data[0]);
+      setFallbackPension(mineRes.data[0]);
     }
-  }, [activePension, effectivePensionId]);
+  }, [activePension, effectivePensionId, landlordContext?.isLoading]);
 
   useEffect(() => {
-    loadPensionIfMissing();
+    void loadPensionIfMissing();
   }, [loadPensionIfMissing]);
 
   const satisfactionMetrics = useMemo(() => {
@@ -250,6 +254,10 @@ export function LandlordReviewsScreen({
       countLong,
     };
   }, [reviews]);
+
+  if (landlordContext?.isLoading && !effectivePensionId) {
+    return <LandlordReviewsScreenSkeleton className={className} />;
+  }
 
   const averageRatingValue = ratingStats.average > 0 ? ratingStats.average : 0;
   const totalReviewsCount = ratingStats.count > 0 ? ratingStats.count : reviews.length;
