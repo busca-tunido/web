@@ -76,7 +76,7 @@ export function AccountProfileHeader({ user, roleLabel, children }: AccountProfi
 }
 
 export function AccountThemeCard() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme, isResolved } = useTheme();
 
   const themeOptions: Array<{ id: Theme; label: string; icon: typeof Laptop; sublabel: string }> = [
     { id: 'system', label: 'Sistema', icon: Laptop, sublabel: 'Auto' },
@@ -92,13 +92,20 @@ export function AccountThemeCard() {
             Modo Visual
           </h3>
           <span className="text-xs text-muted-foreground">
-            Activo: <strong className="text-foreground capitalize">{resolvedTheme}</strong>
+            Activo:{' '}
+            {isResolved ? (
+              <strong className="text-foreground">
+                {resolvedTheme === 'dark' ? 'Oscuro' : 'Claro'}
+              </strong>
+            ) : (
+              <span className="inline-block h-3.5 w-10 animate-pulse rounded bg-muted align-middle" />
+            )}
           </span>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {themeOptions.map((opt) => {
             const Icon = opt.icon;
-            const isSelected = theme === opt.id;
+            const isSelected = isResolved && theme === opt.id;
             return (
               <button
                 key={opt.id}

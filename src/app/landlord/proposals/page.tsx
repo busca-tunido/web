@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { LandlordAppShell } from '@/components/shells/landlord-app-shell';
+import { hasLandlordServerCookie } from '@/lib/server-role-guard';
 
 export const metadata: Metadata = {
   title: 'Sugerencias de la Comunidad | BuscaTuNido',
@@ -10,6 +11,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LandlordProposalsPage() {
-  return <LandlordAppShell initialTab="proposals" />;
+export default async function LandlordProposalsPage() {
+  const hasServerLandlordSession = await hasLandlordServerCookie();
+  return (
+    <LandlordAppShell initialTab="proposals" hasServerLandlordSession={hasServerLandlordSession} />
+  );
 }

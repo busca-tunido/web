@@ -10,7 +10,7 @@ import { LandlordPensionsScreen } from '@/components/landlord/landlord-pensions-
 const LandlordAccountScreen = dynamic(
   () =>
     import('@/components/account/landlord-account-screen').then((mod) => mod.LandlordAccountScreen),
-  { ssr: false },
+  { ssr: true },
 );
 
 const LandlordProposalsScreen = dynamic(
@@ -18,7 +18,7 @@ const LandlordProposalsScreen = dynamic(
     import('@/components/landlord/landlord-proposals-screen').then(
       (mod) => mod.LandlordProposalsScreen,
     ),
-  { ssr: false },
+  { ssr: true },
 );
 
 const LandlordReviewsScreen = dynamic(
@@ -26,13 +26,13 @@ const LandlordReviewsScreen = dynamic(
     import('@/components/landlord/landlord-reviews-screen').then(
       (mod) => mod.LandlordReviewsScreen,
     ),
-  { ssr: false },
+  { ssr: true },
 );
 
 const LandlordRoomsScreen = dynamic(
   () =>
     import('@/components/landlord/landlord-rooms-screen').then((mod) => mod.LandlordRoomsScreen),
-  { ssr: false },
+  { ssr: true },
 );
 
 const PensionEditorDrawer = dynamic(
@@ -53,6 +53,7 @@ import { useAuth } from '@/lib/auth-context';
 
 export type LandlordAppShellProps = {
   initialTab?: LandlordTab;
+  hasServerLandlordSession?: boolean;
 };
 
 function LandlordAppShellContent() {
@@ -146,7 +147,10 @@ function LandlordAppShellContent() {
   );
 }
 
-export function LandlordAppShell({ initialTab = 'pension' }: LandlordAppShellProps) {
+export function LandlordAppShell({
+  initialTab = 'pension',
+  hasServerLandlordSession = false,
+}: LandlordAppShellProps) {
   const { isLoading } = useAuth();
   const { isLandlord } = useUserRole();
 
@@ -156,7 +160,8 @@ export function LandlordAppShell({ initialTab = 'pension' }: LandlordAppShellPro
     }
   }, [isLoading, isLandlord]);
 
-  if (isLoading || !isLandlord) {
+  const allowServerShellDuringHydration = Boolean(hasServerLandlordSession && isLoading);
+  if (!allowServerShellDuringHydration && (isLoading || !isLandlord)) {
     return <SplashScreen />;
   }
 

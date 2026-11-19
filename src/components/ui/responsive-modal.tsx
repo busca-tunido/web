@@ -44,23 +44,30 @@ export type ResponsiveModalProps = {
 
 export function ResponsiveModal({ open, onOpenChange, children }: ResponsiveModalProps) {
   const mediaDesktop = useMediaQuery('(min-width: 768px)');
+  const [hasMounted, setHasMounted] = React.useState(false);
   const [lockedDesktop, setLockedDesktop] = React.useState<boolean | null>(null);
 
   React.useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (!hasMounted) return;
     if (open) {
       setLockedDesktop((prev) => (prev === null ? mediaDesktop : prev));
     } else {
       setLockedDesktop(null);
     }
-  }, [open, mediaDesktop]);
+  }, [hasMounted, open, mediaDesktop]);
 
-  const isDesktop = open ? (lockedDesktop ?? mediaDesktop) : mediaDesktop;
+  const effectiveOpen = hasMounted ? open : false;
+  const isDesktop = effectiveOpen ? (lockedDesktop ?? mediaDesktop) : mediaDesktop;
   const contextValue = React.useMemo(() => ({ isDesktop }), [isDesktop]);
 
   if (isDesktop) {
     return (
       <ResponsiveModalContext.Provider value={contextValue}>
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={effectiveOpen} onOpenChange={onOpenChange}>
           {children}
         </Dialog>
       </ResponsiveModalContext.Provider>
@@ -69,7 +76,7 @@ export function ResponsiveModal({ open, onOpenChange, children }: ResponsiveModa
 
   return (
     <ResponsiveModalContext.Provider value={contextValue}>
-      <Drawer open={open} onOpenChange={onOpenChange}>
+      <Drawer open={effectiveOpen} onOpenChange={onOpenChange}>
         {children}
       </Drawer>
     </ResponsiveModalContext.Provider>

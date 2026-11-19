@@ -7,6 +7,7 @@ export type Theme = 'light' | 'dark' | 'system';
 type ThemeContextType = {
   theme: Theme;
   resolvedTheme: 'light' | 'dark';
+  isResolved: boolean;
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
 };
@@ -16,6 +17,7 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('system');
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
+  const [isResolved, setIsResolved] = useState<boolean>(false);
 
   const applyThemeClass = useCallback((resolved: 'light' | 'dark') => {
     const root = document.documentElement;
@@ -41,6 +43,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
       const resolved = computeResolved(initial);
       setResolvedTheme(resolved);
+      setIsResolved(true);
       applyThemeClass(resolved);
 
       const handleChange = (e: MediaQueryListEvent) => {
@@ -55,6 +58,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     } catch {
+      setIsResolved(true);
       applyThemeClass('dark');
     }
   }, [applyThemeClass]);
@@ -82,7 +86,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, isResolved, toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

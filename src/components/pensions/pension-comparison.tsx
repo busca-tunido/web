@@ -2,7 +2,7 @@
 
 import { ArrowLeftRight, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MapPensionComparison } from '@/components/pensions/map-pension-comparison';
 import { type FlyPulse, usePensionComparison } from '@/contexts/pension-comparison-context';
@@ -28,7 +28,7 @@ function FlyingComparisonBadge({
     return () => window.clearTimeout(timer);
   }, [pulse.id, onDone]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const rect = targetElement?.getBoundingClientRect();
     if (rect && rect.width > 0) {
       setTargetPos({

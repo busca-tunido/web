@@ -1047,7 +1047,13 @@ export function MapScreen({
         attributionControl: false,
       });
 
-      const tileUrl = getTileUrl(initProps.resolvedTheme);
+      const effectiveTheme =
+        typeof document !== 'undefined'
+          ? document.documentElement.classList.contains('dark')
+            ? 'dark'
+            : 'light'
+          : initProps.resolvedTheme;
+      const tileUrl = getTileUrl(effectiveTheme);
 
       const tileLayer = L.tileLayer(tileUrl, {
         maxZoom: 20,

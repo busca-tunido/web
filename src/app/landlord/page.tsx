@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { LandlordAppShell } from '@/components/shells/landlord-app-shell';
+import { hasLandlordServerCookie } from '@/lib/server-role-guard';
 
 export const metadata: Metadata = {
   title: 'Panel de Propietario | BuscaTuNido',
@@ -10,6 +11,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LandlordPage() {
-  return <LandlordAppShell initialTab="pension" />;
+export default async function LandlordPage() {
+  const hasServerLandlordSession = await hasLandlordServerCookie();
+  return (
+    <LandlordAppShell initialTab="pension" hasServerLandlordSession={hasServerLandlordSession} />
+  );
 }

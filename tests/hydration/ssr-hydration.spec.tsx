@@ -3,10 +3,17 @@ import { createElement, type ReactNode } from 'react';
 import { hydrateRoot, type Root } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { AccountThemeCard } from '@/components/account/account-primitives';
 import { PensionCard } from '@/components/pensions/pension-card';
 import { ReviewCard } from '@/components/reviews/review-card';
+import { LandlordAppShell } from '@/components/shells/landlord-app-shell';
 import { RoleRouter } from '@/components/shells/role-router';
 import { BrandLogo } from '@/components/ui/brand-logo';
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalTitle,
+} from '@/components/ui/responsive-modal';
 import { LandlordProvider, useLandlord } from '@/contexts/landlord-context';
 import { SearchFiltersProvider, useSearchFilters } from '@/contexts/search-filters-context';
 import { useStayHistory } from '@/hooks/use-stay-history';
@@ -15,8 +22,10 @@ import { useUrlNavigationState } from '@/hooks/use-url-navigation-state';
 import { createSuccess } from '@/lib/api-response';
 import { AuthProvider } from '@/lib/auth-context';
 import { formatChileDate } from '@/lib/format-utils';
+import { ThemeProvider } from '@/lib/theme-context';
 import type { PensionItem, PensionReview } from '@/lib/types';
 import { favoritesService } from '@/services/favorites.service';
+import { pensionsService } from '@/services/pensions.service';
 import { staysService } from '@/services/stays.service';
 
 vi.mock('@/components/shells/student-app-shell', () => ({
@@ -276,6 +285,59 @@ describe('SSR Hydration safety across Guest, Student, and Landlord flows', () =>
     );
 
     const { root } = await assertCleanHydration(tree);
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it('hydrates AccountThemeCard cleanly without flashing Dark before resolving stored Light theme', async () => {
+    const { root, container } = await assertCleanHydration(
+      <ThemeProvider>
+        <AccountThemeCard />
+      </ThemeProvider>,
+      () => {
+        window.localStorage.setItem('tunido_theme', 'light');
+      },
+    );
+
+    expect(container.textContent).toContain('Claro');
+    expect(container.textContent).not.toContain('dark');
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it('hydrates ResponsiveModal with open=true without flashing mobile Drawer before mount', async () => {
+    const { root } = await assertCleanHydration(
+      <ResponsiveModal open={true} onOpenChange={() => {}}>
+        <ResponsiveModalContent showClose={false}>
+          <ResponsiveModalTitle>Deep-linked modal</ResponsiveModalTitle>
+        </ResponsiveModalContent>
+      </ResponsiveModal>,
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it('hydrates LandlordAppShell SSR markup cleanly when hasServerLandlordSession is true', async () => {
+    vi.spyOn(pensionsService, 'fetchMinePensions').mockResolvedValue(createSuccess([]));
+
+    const { root, container } = await assertCleanHydration(
+      <AuthProvider>
+        <LandlordAppShell initialTab="pensions" hasServerLandlordSession={true} />
+      </AuthProvider>,
+      () => {
+        window.localStorage.setItem(
+          'tunido_user',
+          JSON.stringify({ id: 'u-landlord', email: 'owner@test.cl', role: 'LANDLORD' }),
+        );
+        window.localStorage.setItem('tunido_token', 'tok-test');
+      },
+    );
+
+    expect(container.querySelector('#landlord-mobile-header')).not.toBeNull();
     await act(async () => {
       root.unmount();
     });

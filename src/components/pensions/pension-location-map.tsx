@@ -100,7 +100,13 @@ export function PensionLocationMap({
         touchZoom: true,
       });
 
-      const tileUrl = getTileUrl(currentTheme);
+      const effectiveTheme =
+        typeof document !== 'undefined'
+          ? document.documentElement.classList.contains('dark')
+            ? 'dark'
+            : 'light'
+          : currentTheme;
+      const tileUrl = getTileUrl(effectiveTheme);
       const tileLayer = L.tileLayer(tileUrl, {
         maxZoom: 20,
         maxNativeZoom: 18,
