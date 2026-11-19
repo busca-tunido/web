@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   Star,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { RoomOccupancyBar } from '@/components/landlord/room-occupancy-bar';
@@ -38,12 +38,13 @@ import {
 import { useLandlord } from '@/contexts/landlord-context';
 import { useFormValidation } from '@/hooks/use-form-validation';
 import { filterAlphabeticName, formatChileanPhone } from '@/lib/format-utils';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import type { PensionItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import {
   type ContactSettingsInput,
   contactSettingsSchema,
-} from '@/lib/validations/pensions.schema';
+} from '@/lib/validations/landlord-pensions.schema';
 
 export type LandlordPensionsScreenProps = {
   className?: string;
@@ -165,11 +166,11 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
     const totalRooms = rooms.length;
     const availableRooms = rooms.filter((r) => r.isAvailable).length;
     const occupiedRooms = Math.max(0, totalRooms - availableRooms);
-    const coverPhoto = prop.images?.[0]?.url;
+    const coverPhoto = prop.images?.[0]?.thumbnailUrl || prop.images?.[0]?.url;
     const contactInfo = getPensionContact(prop.id);
 
     return (
-      <motion.div
+      <m.div
         key={prop.id}
         layout
         initial={{ opacity: 0, y: 8 }}
@@ -209,7 +210,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                         src={coverPhoto}
                         alt={prop.title}
                         fill
-                        unoptimized
+                        unoptimized={shouldBypassImageOptimization(coverPhoto)}
                         sizes="(max-width: 640px) 56px, 64px"
                         className="object-cover transition group-hover/cover:scale-105"
                       />
@@ -403,7 +404,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+      </m.div>
     );
   };
 
@@ -466,7 +467,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                 valueClass: 'text-xl sm:text-2xl font-black text-foreground mt-0.5 tabular-nums',
               },
             ].map((kpi, idx) => (
-              <motion.div
+              <m.div
                 key={kpi.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -483,7 +484,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                     </span>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         )}
@@ -507,7 +508,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
             <div className="flex items-center gap-2">
               <AnimatePresence>
                 {contactSaveFeedback && (
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, scale: 0.85 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.85 }}
@@ -517,7 +518,7 @@ export function LandlordPensionsScreen({ className }: LandlordPensionsScreenProp
                       <Check className="h-3 w-3 mr-1" />
                       ¡Predeterminados guardados!
                     </Badge>
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
               <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />

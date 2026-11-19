@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import type { RoomDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -95,7 +96,7 @@ export function RoomItemCard({
                 src={thumbnail}
                 alt={rawTitle}
                 fill
-                unoptimized
+                unoptimized={shouldBypassImageOptimization(thumbnail)}
                 sizes="(max-width: 640px) 96px, 112px"
                 className="object-cover transition-transform duration-300 group-hover/thumb:scale-105"
               />

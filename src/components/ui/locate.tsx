@@ -1,7 +1,7 @@
 'use client';
 
 import type { Transition, Variants } from 'motion/react';
-import { motion, useAnimation } from 'motion/react';
+import { m, useAnimation } from 'motion/react';
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 
 import type { AnimatedIconHandle, AnimatedIconProps } from '@/components/ui/animated-icon.types';
@@ -120,7 +120,7 @@ const LocateIcon = forwardRef<LocateIconHandle, AnimatedIconProps>(
     }, [controls]);
 
     return (
-      <motion.span
+      <m.span
         aria-hidden="true"
         className={cn('inline-flex shrink-0 items-center justify-center', className)}
         onHoverEnd={handleHoverEnd}
@@ -139,7 +139,7 @@ const LocateIcon = forwardRef<LocateIconHandle, AnimatedIconProps>(
           width={size}
           xmlns="http://www.w3.org/2000/svg"
         >
-          <motion.line
+          <m.line
             animate={controls}
             initial="normal"
             variants={WEST_VARIANTS}
@@ -148,7 +148,7 @@ const LocateIcon = forwardRef<LocateIconHandle, AnimatedIconProps>(
             y1="12"
             y2="12"
           />
-          <motion.line
+          <m.line
             animate={controls}
             initial="normal"
             variants={EAST_VARIANTS}
@@ -157,7 +157,7 @@ const LocateIcon = forwardRef<LocateIconHandle, AnimatedIconProps>(
             y1="12"
             y2="12"
           />
-          <motion.line
+          <m.line
             animate={controls}
             initial="normal"
             variants={NORTH_VARIANTS}
@@ -166,7 +166,7 @@ const LocateIcon = forwardRef<LocateIconHandle, AnimatedIconProps>(
             y1="2"
             y2="5"
           />
-          <motion.line
+          <m.line
             animate={controls}
             initial="normal"
             variants={SOUTH_VARIANTS}
@@ -175,7 +175,7 @@ const LocateIcon = forwardRef<LocateIconHandle, AnimatedIconProps>(
             y1="19"
             y2="22"
           />
-          <motion.circle
+          <m.circle
             animate={controls}
             cx="12"
             cy="12"
@@ -184,7 +184,7 @@ const LocateIcon = forwardRef<LocateIconHandle, AnimatedIconProps>(
             variants={CIRCLE_VARIANTS}
           />
         </svg>
-      </motion.span>
+      </m.span>
     );
   },
 );

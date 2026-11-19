@@ -1,7 +1,7 @@
 'use client';
 
 import type { Variants } from 'motion/react';
-import { motion, useAnimation } from 'motion/react';
+import { m, useAnimation } from 'motion/react';
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 
 import type { AnimatedIconHandle, AnimatedIconProps } from '@/components/ui/animated-icon.types';
@@ -43,7 +43,7 @@ const SunIcon = forwardRef<SunIconHandle, AnimatedIconProps>(
       }
     }, [controls]);
     return (
-      <motion.span
+      <m.span
         aria-hidden="true"
         className={cn('inline-flex shrink-0 items-center justify-center', className)}
         onHoverEnd={handleHoverEnd}
@@ -73,16 +73,10 @@ const SunIcon = forwardRef<SunIconHandle, AnimatedIconProps>(
             'M2 12h2',
             'm4.93 4.93 1.41 1.41',
           ].map((d, index) => (
-            <motion.path
-              animate={controls}
-              custom={index + 1}
-              d={d}
-              key={d}
-              variants={PATH_VARIANTS}
-            />
+            <m.path animate={controls} custom={index + 1} d={d} key={d} variants={PATH_VARIANTS} />
           ))}
         </svg>
-      </motion.span>
+      </m.span>
     );
   },
 );

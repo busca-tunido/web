@@ -11,6 +11,7 @@ import { HistoryCardsSkeleton } from '@/components/ui/skeletons/history-skeleton
 import { useNavigation } from '@/contexts/navigation-context';
 import { useStayHistory } from '@/hooks/use-stay-history';
 import { useAuth } from '@/lib/auth-context';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import type { StayHistoryItem } from '@/lib/types';
 import { UserReviewModal } from './user-review-modal';
 
@@ -147,7 +148,7 @@ function HistoryList({
                     src={stay.imageUrl as string}
                     alt={stay.pensionTitle}
                     fill
-                    unoptimized
+                    unoptimized={shouldBypassImageOptimization(stay.imageUrl)}
                     sizes="(max-width: 640px) 100vw, 480px"
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />

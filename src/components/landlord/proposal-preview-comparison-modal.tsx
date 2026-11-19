@@ -15,6 +15,7 @@ import {
   ResponsiveModalHeader,
   ResponsiveModalTitle,
 } from '@/components/ui/responsive-modal';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import type { PensionDetailDto, PensionItem, ProposalDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -224,7 +225,7 @@ export function ProposalPreviewComparisonModal({
                   src={data.coverPhoto}
                   alt={data.title}
                   fill
-                  unoptimized
+                  unoptimized={shouldBypassImageOptimization(data.coverPhoto)}
                   sizes="(max-width: 640px) 100vw, 400px"
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />

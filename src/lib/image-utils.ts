@@ -2,6 +2,29 @@ const MAX_RAW_FILE_SIZE = 25 * 1024 * 1024;
 const MAX_UPLOAD_FILE_SIZE = 8 * 1024 * 1024;
 const MAX_DIMENSION = 1920;
 
+const OPTIMIZABLE_HOST_PATTERNS = [
+  /\.neon\.tech$/i,
+  /^buscatunido\.vercel\.app$/i,
+  /^buscatunido-api\.onrender\.com$/i,
+  /\.vercel\.app$/i,
+  /\.onrender\.com$/i,
+];
+
+export function shouldBypassImageOptimization(src?: string | null): boolean {
+  if (!src) return true;
+  if (src.startsWith('/')) return false;
+  if (src.startsWith('blob:') || src.startsWith('data:')) return true;
+  try {
+    const parsed = new URL(src);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return true;
+    }
+    return !OPTIMIZABLE_HOST_PATTERNS.some((pattern) => pattern.test(parsed.hostname));
+  } catch {
+    return true;
+  }
+}
+
 const ALLOWED_TYPES = new Set([
   'image/jpeg',
   'image/jpg',

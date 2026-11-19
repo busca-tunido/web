@@ -1,7 +1,7 @@
 'use client';
 
 import type { Transition, Variants } from 'motion/react';
-import { motion, useAnimation } from 'motion/react';
+import { m, useAnimation } from 'motion/react';
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 
 import type { AnimatedIconHandle, AnimatedIconProps } from '@/components/ui/animated-icon.types';
@@ -86,7 +86,7 @@ const HistoryIcon = forwardRef<HistoryIconHandle, AnimatedIconProps>(
     }, [controls]);
 
     return (
-      <motion.span
+      <m.span
         aria-hidden="true"
         className={cn('inline-flex shrink-0 items-center justify-center', className)}
         onHoverEnd={handleHoverEnd}
@@ -105,11 +105,11 @@ const HistoryIcon = forwardRef<HistoryIconHandle, AnimatedIconProps>(
           width={size}
           xmlns="http://www.w3.org/2000/svg"
         >
-          <motion.g animate={controls} transition={ARROW_TRANSITION} variants={ARROW_VARIANTS}>
+          <m.g animate={controls} transition={ARROW_TRANSITION} variants={ARROW_VARIANTS}>
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
             <path d="M3 3v5h5" />
-          </motion.g>
-          <motion.line
+          </m.g>
+          <m.line
             animate={controls}
             initial="normal"
             transition={HAND_TRANSITION}
@@ -119,7 +119,7 @@ const HistoryIcon = forwardRef<HistoryIconHandle, AnimatedIconProps>(
             y1="12"
             y2="7"
           />
-          <motion.line
+          <m.line
             animate={controls}
             initial="normal"
             transition={MINUTE_HAND_TRANSITION}
@@ -130,7 +130,7 @@ const HistoryIcon = forwardRef<HistoryIconHandle, AnimatedIconProps>(
             y2="14"
           />
         </svg>
-      </motion.span>
+      </m.span>
     );
   },
 );

@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowLeftRight, X } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MapPensionComparison } from '@/components/pensions/map-pension-comparison';
@@ -51,7 +51,7 @@ function FlyingComparisonBadge({
   };
 
   return createPortal(
-    <motion.div
+    <m.div
       key={pulse.id}
       aria-hidden="true"
       initial={{
@@ -71,7 +71,7 @@ function FlyingComparisonBadge({
       className="pointer-events-none fixed z-50 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl"
     >
       <ArrowLeftRight className="h-4 w-4" />
-    </motion.div>,
+    </m.div>,
     document.body,
   );
 }
@@ -94,7 +94,7 @@ export function PensionComparison() {
 
       <AnimatePresence>
         {count > 0 && (
-          <motion.div
+          <m.div
             key="floating-comparison-pill"
             role="complementary"
             aria-label="Comparación de pensiones"
@@ -104,7 +104,7 @@ export function PensionComparison() {
             transition={{ type: 'spring', stiffness: 420, damping: 30 }}
             className="fixed right-3 top-[7.25rem] z-40 md:right-6 md:top-[7.5rem]"
           >
-            <motion.div
+            <m.div
               key={count}
               initial={{ scale: 0.94 }}
               animate={{ scale: 1 }}
@@ -164,8 +164,8 @@ export function PensionComparison() {
               >
                 <X aria-hidden="true" className="h-4 w-4" />
               </button>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
 

@@ -10,7 +10,7 @@ import {
   Star,
   User,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import Image from 'next/image';
 import {
   type ComponentType,
@@ -34,6 +34,7 @@ import { PlusIcon } from '@/components/ui/plus';
 import { type LandlordTab, useLandlord } from '@/contexts/landlord-context';
 import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { useAuth } from '@/lib/auth-context';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import { cn } from '@/lib/utils';
 
 export type LandlordDesktopSidebarProps = {
@@ -98,7 +99,7 @@ function SidebarNavItemButton({
       )}
 
       {isActive && (
-        <motion.div
+        <m.div
           layoutId="active-landlord-desktop-sidebar-indicator"
           transition={{ type: 'spring', stiffness: 450, damping: 35 }}
           className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-sage"
@@ -332,7 +333,7 @@ export function LandlordDesktopSidebar({
               {pensions.length}
             </span>
             {activeTab === 'pensions' && (
-              <motion.div
+              <m.div
                 layoutId="active-landlord-desktop-sidebar-indicator"
                 transition={{ type: 'spring', stiffness: 450, damping: 35 }}
                 className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-sage"
@@ -376,7 +377,7 @@ export function LandlordDesktopSidebar({
                     src={user.avatarUrl}
                     alt={user.firstName}
                     fill
-                    unoptimized
+                    unoptimized={shouldBypassImageOptimization(user.avatarUrl)}
                     sizes="36px"
                     className="object-cover"
                   />
@@ -421,14 +422,14 @@ export function LandlordDesktopSidebar({
           <AnimatePresence>
             {isPropertyMenuOpen && dropdownCoords && (
               <>
-                <motion.div
+                <m.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   className="fixed inset-0 z-40 bg-black/10 dark:bg-black/25"
                   onClick={() => setIsPropertyMenuOpen(false)}
                 />
-                <motion.div
+                <m.div
                   id={propertyListboxId}
                   role="listbox"
                   style={{
@@ -511,7 +512,7 @@ export function LandlordDesktopSidebar({
                       </div>
                     )}
                   </div>
-                </motion.div>
+                </m.div>
               </>
             )}
           </AnimatePresence>,

@@ -1,7 +1,7 @@
 'use client';
 
 import type { Variants } from 'motion/react';
-import { motion, useAnimation } from 'motion/react';
+import { m, useAnimation } from 'motion/react';
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 
 import type { AnimatedIconHandle, AnimatedIconProps } from '@/components/ui/animated-icon.types';
@@ -49,7 +49,7 @@ const UploadIcon = forwardRef<UploadIconHandle, AnimatedIconProps>(
     }, [controls]);
 
     return (
-      <motion.span
+      <m.span
         aria-hidden="true"
         className={cn('inline-flex shrink-0 items-center justify-center', className)}
         onHoverEnd={handleHoverEnd}
@@ -69,12 +69,12 @@ const UploadIcon = forwardRef<UploadIconHandle, AnimatedIconProps>(
           xmlns="http://www.w3.org/2000/svg"
         >
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <motion.g animate={controls} variants={ARROW_VARIANTS}>
+          <m.g animate={controls} variants={ARROW_VARIANTS}>
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" x2="12" y1="3" y2="15" />
-          </motion.g>
+          </m.g>
         </svg>
-      </motion.span>
+      </m.span>
     );
   },
 );

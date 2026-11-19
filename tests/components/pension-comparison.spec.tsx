@@ -62,6 +62,10 @@ vi.mock('motion/react', async () => {
   );
   return {
     motion: motionTags,
+    m: motionTags,
+    LazyMotion: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    domAnimation: {},
+    domMax: {},
     AnimatePresence: (props: { children: React.ReactNode }) => props.children,
     useAnimation: () => ({ start: vi.fn(), stop: vi.fn(), set: vi.fn() }),
   };
@@ -135,7 +139,7 @@ describe('Comparison floating pill and drawer flow', () => {
     expect(screen.queryByText('Comparar pensión')).toBeNull();
   });
 
-  it('keeps the user on current tab when clicking compare inside detail without navigating away', () => {
+  it('keeps the user on current tab when clicking compare inside detail without navigating away', async () => {
     render(
       <PensionComparisonProvider>
         <NavigationProvider initialTab="explore" initialNavigationState={{ tab: 'explore' }}>
@@ -146,7 +150,7 @@ describe('Comparison floating pill and drawer flow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Abrir ficha' }));
     fireEvent.click(screen.getByRole('button', { name: 'Comparar: Pensión A' }));
     expect(screen.getByTestId('navigation').textContent).toBe('explore/abierta/pension-a');
-    expect(screen.getByRole('button', { name: 'Abrir comparación (1)' })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: 'Abrir comparación (1)' })).toBeTruthy();
   });
 
   it('opens single-pension special drawer from floating pill and removes banned instruction texts', async () => {
@@ -315,7 +319,7 @@ describe('Comparison floating pill and drawer flow', () => {
     expect(screen.queryByText('5.0')).toBeNull();
   });
 
-  it('normal details retain contact links and review publishing', () => {
+  it('normal details retain contact links and review publishing', async () => {
     render(
       <PensionComparisonProvider>
         <PensionDetailContent
@@ -327,7 +331,7 @@ describe('Comparison floating pill and drawer flow', () => {
       'tel:+56912345678',
     );
     fireEvent.click(screen.getByRole('button', { name: 'Publicar una reseña' }));
-    expect(screen.getByRole('dialog', { name: 'Publicar reseña' })).toBeTruthy();
+    expect(await screen.findByRole('dialog', { name: 'Publicar reseña' })).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
   });
 });

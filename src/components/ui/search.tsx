@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useAnimation } from 'motion/react';
+import { m, useAnimation } from 'motion/react';
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 
 import type { AnimatedIconHandle, AnimatedIconProps } from '@/components/ui/animated-icon.types';
@@ -35,14 +35,14 @@ const SearchIcon = forwardRef<SearchIconHandle, AnimatedIconProps>(
     }, [controls]);
 
     return (
-      <motion.span
+      <m.span
         aria-hidden="true"
         className={cn('inline-flex shrink-0 items-center justify-center', className)}
         onHoverEnd={handleHoverEnd}
         onHoverStart={handleHoverStart}
         {...props}
       >
-        <motion.svg
+        <m.svg
           aria-hidden="true"
           animate={controls}
           fill="none"
@@ -68,8 +68,8 @@ const SearchIcon = forwardRef<SearchIconHandle, AnimatedIconProps>(
         >
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.3-4.3" />
-        </motion.svg>
-      </motion.span>
+        </m.svg>
+      </m.span>
     );
   },
 );

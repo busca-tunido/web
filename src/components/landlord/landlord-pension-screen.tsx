@@ -41,7 +41,7 @@ import {
   Wifi,
   Zap,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LandlordProposalsDrawer } from '@/components/landlord/landlord-proposals-drawer';
 import { PensionDetailModal } from '@/components/pensions/pension-detail-modal';
@@ -76,7 +76,7 @@ import { cn } from '@/lib/utils';
 import {
   type ContactSettingsInput,
   contactSettingsSchema,
-} from '@/lib/validations/pensions.schema';
+} from '@/lib/validations/landlord-pensions.schema';
 import { pensionsService } from '@/services/pensions.service';
 
 export type LandlordPensionScreenProps = {
@@ -719,7 +719,7 @@ export function LandlordPensionScreen({
 
       <AnimatePresence>
         {saveSuccessMessage && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -8, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -728,13 +728,13 @@ export function LandlordPensionScreen({
           >
             <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
             <span>{saveSuccessMessage}</span>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {saveErrorMessage && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: -8, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -746,7 +746,7 @@ export function LandlordPensionScreen({
               <span className="font-bold block mb-0.5">Error al guardar</span>
               {saveErrorMessage}
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -809,7 +809,7 @@ export function LandlordPensionScreen({
               )}
             >
               {isActive && (
-                <motion.span
+                <m.span
                   layoutId="active-landlord-section-pill"
                   className="absolute inset-0 rounded-lg bg-background shadow-2xs border border-border/60"
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.35 }}

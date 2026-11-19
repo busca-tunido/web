@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { NetworkErrorBanner } from '@/components/common/network-error-state';
@@ -68,7 +68,23 @@ export type StudentAppShellProps = {
   initialNavigationState?: Partial<UrlNavigationState>;
 };
 
-function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetchData }) {
+function useHasEverOpened(isOpen: boolean): boolean {
+  const [hasOpened, setHasOpened] = useState(isOpen);
+  useEffect(() => {
+    if (isOpen) {
+      setHasOpened(true);
+    }
+  }, [isOpen]);
+  return hasOpened || isOpen;
+}
+
+function StudentAppShellContent({
+  initialData,
+  initialCity,
+}: {
+  initialData?: InitialPrefetchData;
+  initialCity?: string | null;
+}) {
   const comparison = usePensionComparison();
   const {
     activeTab,
@@ -145,6 +161,8 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
     initialUniversities: initialData?.universities,
     initialPensions: initialData?.pensions,
     initialTotal: initialData?.totalPensions,
+    initialCity: initialCity ?? null,
+    initialGeo: initialData?.serverGeo ?? null,
   });
 
   useEffect(() => {
@@ -195,6 +213,11 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
     setCityAndUni({ city: null, uni: null });
   };
 
+  const isDetailActive = isPensionDetailOpen && !comparison?.isDrawerOpen;
+  const shouldMountDetailModal = useHasEverOpened(isDetailActive);
+  const shouldMountFilterDrawer = useHasEverOpened(isFiltersOpen);
+  const shouldMountAuthModal = useHasEverOpened(isAuthModalOpen);
+
   return (
     <main
       className={`relative ${
@@ -239,7 +262,7 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
 
         <div className={activeTab === 'map' ? 'flex-1 relative overflow-hidden h-full' : 'flex-1'}>
           <AnimatePresence mode="wait">
-            <motion.div
+            <m.div
               key={activeTab}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
@@ -308,38 +331,46 @@ function StudentAppShellContent({ initialData }: { initialData?: InitialPrefetch
               )}
 
               {activeTab === 'account' && <StudentAccountScreen />}
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </div>
       </div>
 
       <BottomNav activeTab={activeTab} onTabChange={navigateTab} onOpenAuthModal={openAuthModal} />
 
-      <PensionDetailModal
-        pension={selectedPension}
-        isOpen={isPensionDetailOpen && !comparison?.isDrawerOpen}
-        onClose={closePensionDetail}
-      />
+      {shouldMountDetailModal && (
+        <PensionDetailModal
+          pension={selectedPension}
+          isOpen={isDetailActive}
+          onClose={closePensionDetail}
+        />
+      )}
 
-      <FilterDrawer
-        isOpen={isFiltersOpen}
-        onClose={closeFilters}
-        filters={filters}
-        onApply={setFilters}
-        cities={cities}
-        userLocation={userLocation}
-      />
+      {shouldMountFilterDrawer && (
+        <FilterDrawer
+          isOpen={isFiltersOpen}
+          onClose={closeFilters}
+          filters={filters}
+          onApply={setFilters}
+          cities={cities}
+          userLocation={userLocation}
+        />
+      )}
 
-      <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />
+      {shouldMountAuthModal && <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />}
     </main>
   );
 }
 
 type StudentAppShellWithProvidersProps = {
   initialData?: InitialPrefetchData;
+  initialCity?: string | null;
 };
 
-function StudentAppShellWithProviders({ initialData }: StudentAppShellWithProvidersProps) {
+function StudentAppShellWithProviders({
+  initialData,
+  initialCity,
+}: StudentAppShellWithProvidersProps) {
   const { urlCity, urlUni } = useNavigation();
   const initialFilters = useMemo(
     () => ({
@@ -351,7 +382,7 @@ function StudentAppShellWithProviders({ initialData }: StudentAppShellWithProvid
 
   return (
     <SearchFiltersProvider initialFilters={initialFilters}>
-      <StudentAppShellContent initialData={initialData} />
+      <StudentAppShellContent initialData={initialData} initialCity={initialCity} />
     </SearchFiltersProvider>
   );
 }
@@ -363,7 +394,10 @@ export function StudentAppShell({
 }: StudentAppShellProps) {
   return (
     <NavigationProvider initialTab={initialTab} initialNavigationState={initialNavigationState}>
-      <StudentAppShellWithProviders initialData={initialData} />
+      <StudentAppShellWithProviders
+        initialData={initialData}
+        initialCity={initialNavigationState?.city ?? null}
+      />
     </NavigationProvider>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { Loader2, LocateOff } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { LocateIcon } from '@/components/ui/locate';
 import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
@@ -81,7 +81,7 @@ export function UserLocationControl({
     >
       <AnimatePresence>
         {isMessageVisible && (
-          <motion.div
+          <m.div
             key={locating ? 'locating' : 'info'}
             initial={{ opacity: 0, y: 6, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -113,7 +113,7 @@ export function UserLocationControl({
                 Pulsa el botón para volver a solicitar tu ubicación.
               </p>
             )}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
       <button

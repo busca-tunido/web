@@ -1,7 +1,7 @@
 'use client';
 
 import { BedDouble, Building2, Home, Star, User } from 'lucide-react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import { type LandlordTab, useLandlord } from '@/contexts/landlord-context';
 import { cn } from '@/lib/utils';
 
@@ -89,7 +89,7 @@ export function LandlordBottomNav({
           const isActive = activeTab === item.id;
 
           return (
-            <motion.button
+            <m.button
               key={item.id}
               id={`landlord-nav-tab-${item.id}`}
               type="button"
@@ -117,13 +117,13 @@ export function LandlordBottomNav({
               </div>
               <span className="mt-1 text-[11px] tracking-normal">{item.label}</span>
               {isActive && (
-                <motion.span
+                <m.span
                   layoutId="active-landlord-bottom-nav-indicator"
                   transition={{ type: 'spring', stiffness: 450, damping: 35 }}
                   className="absolute bottom-0 h-1 w-6 rounded-full bg-sage"
                 />
               )}
-            </motion.button>
+            </m.button>
           );
         })}
       </div>

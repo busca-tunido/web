@@ -1,13 +1,8 @@
 'use client';
+import '@/styles/leaflet-map.css';
 
 import { Building2, ChevronDown, ChevronUp, Heart, Loader2, ShieldCheck, Star } from 'lucide-react';
-import {
-  AnimatePresence,
-  motion,
-  type PanInfo,
-  useDragControls,
-  useMotionValue,
-} from 'motion/react';
+import { AnimatePresence, m, type PanInfo, useDragControls, useMotionValue } from 'motion/react';
 import Image from 'next/image';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { UserLocationControl } from '@/components/map/user-location-control';
@@ -18,6 +13,7 @@ import { useFavoriteAction } from '@/hooks/use-favorite-action';
 import { useMapViewportPensions } from '@/hooks/use-map-viewport-pensions';
 import { isApiSuccess } from '@/lib/api-response';
 import { matchesSearchFilters } from '@/lib/filter-matcher';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import {
   classifyPensionRating,
   getDominantRatingClassification,
@@ -1334,7 +1330,7 @@ export function MapScreen({
 
         <AnimatePresence>
           {isAreaLoading && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: -8, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.95 }}
@@ -1345,7 +1341,7 @@ export function MapScreen({
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                 <span>Buscando en esta zona...</span>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
@@ -1359,7 +1355,7 @@ export function MapScreen({
           className={`absolute right-4 ${buttonBottomClass} lg:bottom-6 z-20 transition-all duration-300`}
         />
 
-        <motion.div
+        <m.div
           id="collapsible-pension-drawer"
           drag="y"
           dragListener={false}
@@ -1446,7 +1442,7 @@ export function MapScreen({
               </button>
             </div>
           )}
-        </motion.div>
+        </m.div>
       </div>
     </div>
   );
@@ -1496,12 +1492,14 @@ function MapDrawerPensionList({
               className="w-full flex flex-col text-left cursor-pointer"
             >
               <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm flex items-center justify-center">
-                {pension.images?.[0]?.url ? (
+                {pension.images?.[0]?.thumbnailUrl || pension.images?.[0]?.url ? (
                   <Image
-                    src={pension.images[0].url}
+                    src={pension.images[0].thumbnailUrl || pension.images[0].url}
                     alt={pension.title}
                     fill
-                    unoptimized
+                    unoptimized={shouldBypassImageOptimization(
+                      pension.images[0].thumbnailUrl || pension.images[0].url,
+                    )}
                     sizes="(max-width: 640px) 100vw, 480px"
                     className="object-cover transition duration-300 group-hover:scale-105"
                   />

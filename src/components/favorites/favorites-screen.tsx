@@ -1,7 +1,7 @@
 'use client';
 
 import { Building2, Heart, ShieldCheck, Star } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import Image from 'next/image';
 import { useMemo } from 'react';
 import { FavoritesGuestIncentive } from '@/components/favorites/favorites-guest-incentive';
@@ -11,6 +11,7 @@ import { PensionCardSkeleton } from '@/components/ui/skeletons/pension-card-skel
 import { useNavigation } from '@/contexts/navigation-context';
 import { useStudentFavorites } from '@/hooks/use-student-favorites';
 import { useAuth } from '@/lib/auth-context';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import type { FavoritePensionSummaryDto, PensionItem } from '@/lib/types';
 
 type FavoritesScreenProps = {
@@ -158,7 +159,7 @@ function FavoritesGrid({
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <AnimatePresence mode="popLayout">
         {savedPensions.map((pension, index) => (
-          <motion.div
+          <m.div
             key={pension.id}
             layout
             initial={{ opacity: 0, scale: 0.95 }}
@@ -179,12 +180,14 @@ function FavoritesGrid({
               className="w-full flex flex-col text-left cursor-pointer"
             >
               <div className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm flex items-center justify-center">
-                {pension.images?.[0]?.url ? (
+                {pension.images?.[0]?.thumbnailUrl || pension.images?.[0]?.url ? (
                   <Image
-                    src={pension.images[0].url}
+                    src={pension.images[0].thumbnailUrl || pension.images[0].url}
                     alt={pension.title}
                     fill
-                    unoptimized
+                    unoptimized={shouldBypassImageOptimization(
+                      pension.images[0].thumbnailUrl || pension.images[0].url,
+                    )}
                     sizes="(max-width: 640px) 100vw, 480px"
                     className="object-cover transition duration-300 group-hover:scale-105"
                   />
@@ -232,7 +235,7 @@ function FavoritesGrid({
 
             <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
               <PensionCompareButton pension={pension} variant="icon" size="sm" />
-              <motion.button
+              <m.button
                 type="button"
                 whileTap={{ scale: 0.8 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 25 }}
@@ -242,9 +245,9 @@ function FavoritesGrid({
                 title="Quitar de favoritos"
               >
                 <Heart className="h-5 w-5 fill-primary text-primary" />
-              </motion.button>
+              </m.button>
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </AnimatePresence>
 

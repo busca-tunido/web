@@ -34,6 +34,8 @@ export type UseStudentPensionsFeedOptions = {
   initialUniversities?: UniversityInfo[];
   initialPensions?: PensionItem[];
   initialTotal?: number;
+  initialCity?: string | null;
+  initialGeo?: { latitude?: number | null; longitude?: number | null } | null;
 };
 
 export type UseStudentPensionsFeedReturn = {
@@ -74,6 +76,8 @@ export function useStudentPensionsFeed(
     initialUniversities,
     initialPensions,
     initialTotal,
+    initialCity = null,
+    initialGeo = null,
   } = options;
 
   const hasHydratedMetadata = Boolean(
@@ -120,6 +124,10 @@ export function useStudentPensionsFeed(
   const isMountedRef = useRef<boolean>(true);
   const skipInitialMetadataRef = useRef<boolean>(hasHydratedMetadata);
   const skipInitialPensionsRef = useRef<boolean>(hasHydratedPensions);
+  const initialCityRef = useRef<string | null>(initialCity);
+  const initialGeoRef = useRef<{ latitude?: number | null; longitude?: number | null } | null>(
+    initialGeo,
+  );
 
   const loadMetadata = useCallback(async (): Promise<void> => {
     setIsLoadingMetadata(true);
@@ -400,8 +408,19 @@ export function useStudentPensionsFeed(
   useEffect(() => {
     if (!autoLoad) return;
 
-    const isDefaultUnfilteredQuery =
-      !filterCity &&
+    const matchesInitialCity =
+      (filterCity ?? '').trim().toLowerCase() ===
+      (initialCityRef.current ?? '').trim().toLowerCase();
+    const matchesInitialGeo =
+      (userLat === undefined && userLng === undefined) ||
+      (initialGeoRef.current !== null &&
+        initialGeoRef.current.latitude != null &&
+        initialGeoRef.current.longitude != null &&
+        userLat === initialGeoRef.current.latitude &&
+        userLng === initialGeoRef.current.longitude);
+
+    const isDefaultSsrMatchedQuery =
+      matchesInitialCity &&
       !filterNeighborhood &&
       !filterUni &&
       !filterQuery &&
@@ -425,10 +444,9 @@ export function useStudentPensionsFeed(
       !filterRatingTier &&
       effectiveSortBy === 'relevance' &&
       !bounds &&
-      userLat === undefined &&
-      userLng === undefined;
+      matchesInitialGeo;
 
-    if (skipInitialPensionsRef.current && isDefaultUnfilteredQuery) {
+    if (skipInitialPensionsRef.current && isDefaultSsrMatchedQuery) {
       skipInitialPensionsRef.current = false;
       return;
     }

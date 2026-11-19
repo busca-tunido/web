@@ -1,7 +1,7 @@
 'use client';
 
 import type { Transition, Variants } from 'motion/react';
-import { motion, useAnimation } from 'motion/react';
+import { m, useAnimation } from 'motion/react';
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 
 import type { AnimatedIconHandle, AnimatedIconProps } from '@/components/ui/animated-icon.types';
@@ -49,14 +49,14 @@ const MoonIcon = forwardRef<MoonIconHandle, AnimatedIconProps>(
       }
     }, [controls]);
     return (
-      <motion.span
+      <m.span
         aria-hidden="true"
         className={cn('inline-flex shrink-0 items-center justify-center', className)}
         onHoverEnd={handleHoverEnd}
         onHoverStart={handleHoverStart}
         {...props}
       >
-        <motion.svg
+        <m.svg
           aria-hidden="true"
           animate={controls}
           fill="none"
@@ -72,8 +72,8 @@ const MoonIcon = forwardRef<MoonIconHandle, AnimatedIconProps>(
           xmlns="http://www.w3.org/2000/svg"
         >
           <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-        </motion.svg>
-      </motion.span>
+        </m.svg>
+      </m.span>
     );
   },
 );

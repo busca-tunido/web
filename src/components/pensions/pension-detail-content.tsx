@@ -17,12 +17,12 @@ import {
   Wifi,
   Wind,
 } from 'lucide-react';
-import { AnimatePresence, motion, type PanInfo } from 'motion/react';
+import { AnimatePresence, m, type PanInfo } from 'motion/react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { HeartIcon } from '@/components/ui/heart';
 import { ShieldCheckIcon } from '@/components/ui/shield-check';
 import { useOptionalNavigation } from '@/contexts/navigation-context';
@@ -30,14 +30,49 @@ import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { useFavoriteAction } from '@/hooks/use-favorite-action';
 import { usePensionReviews } from '@/hooks/use-pension-reviews';
 import { useAuth } from '@/lib/auth-context';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import type { PensionDetailViewItem, PensionItem, PensionReview } from '@/lib/types';
-import { PensionReviewsModal } from '../reviews/pension-reviews-modal';
 import { PensionReviewsPreview } from '../reviews/pension-reviews-preview';
-import { PublishReviewModal } from '../reviews/publish-review-modal';
-import { AmenitiesBreakdownModal } from './amenities-breakdown-modal';
 import { PensionCompareButton } from './pension-compare-button';
-import { PensionLocationMap } from './pension-location-map';
-import { SuggestEditModal } from './suggest-edit-modal';
+
+const FullScreenImageViewer = dynamic(
+  () => import('@/components/ui/fullscreen-image-viewer').then((mod) => mod.FullScreenImageViewer),
+  { ssr: false },
+);
+
+const PensionReviewsModal = dynamic(
+  () => import('../reviews/pension-reviews-modal').then((mod) => mod.PensionReviewsModal),
+  { ssr: false },
+);
+
+const PublishReviewModal = dynamic(
+  () => import('../reviews/publish-review-modal').then((mod) => mod.PublishReviewModal),
+  { ssr: false },
+);
+
+const AmenitiesBreakdownModal = dynamic(
+  () => import('./amenities-breakdown-modal').then((mod) => mod.AmenitiesBreakdownModal),
+  { ssr: false },
+);
+
+const PensionLocationMap = dynamic(
+  () => import('./pension-location-map').then((mod) => mod.PensionLocationMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="mb-5">
+        <div className="h-44 sm:h-52 w-full rounded-xl bg-muted/40 border border-border animate-pulse flex items-center justify-center">
+          <span className="text-xs text-muted-foreground">Cargando mapa...</span>
+        </div>
+      </div>
+    ),
+  },
+);
+
+const SuggestEditModal = dynamic(
+  () => import('./suggest-edit-modal').then((mod) => mod.SuggestEditModal),
+  { ssr: false },
+);
 
 export type PensionDetailMode = 'detail' | 'comparison' | 'preview';
 
@@ -210,13 +245,13 @@ export function PensionDetailContent({
 
   return (
     <div className="flex flex-col w-full">
-      <motion.div
+      <m.div
         layoutId={`pension-hero-${pension.id}`}
         className="relative h-64 sm:h-80 md:h-96 w-full rounded-2xl overflow-hidden bg-muted mb-4 shadow-sm touch-pan-y select-none"
       >
         {displayPhotos.length > 0 ? (
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
-            <motion.div
+            <m.div
               key={activePhotoIdx}
               custom={direction}
               variants={slideVariants}
@@ -247,13 +282,13 @@ export function PensionDetailContent({
                 src={displayPhotos[activePhotoIdx]}
                 alt={`${pension.title} - Foto ${activePhotoIdx + 1}`}
                 fill
-                unoptimized
+                unoptimized={shouldBypassImageOptimization(displayPhotos[activePhotoIdx])}
                 draggable={false}
                 sizes="(max-width: 640px) 100vw, 896px"
                 className="object-cover pointer-events-none"
                 priority={activePhotoIdx === 0}
               />
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-muted/60">
@@ -347,7 +382,7 @@ export function PensionDetailContent({
             ${(pension.baseMonthlyPrice ?? 0).toLocaleString('es-CL')} CLP/mes
           </Badge>
         </div>
-      </motion.div>
+      </m.div>
 
       <div className="flex flex-col gap-1 mb-4">
         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -865,14 +900,16 @@ export function PensionDetailContent({
         />
       )}
 
-      <FullScreenImageViewer
-        isOpen={isViewerOpen}
-        onClose={() => setIsViewerOpen(false)}
-        images={displayPhotos}
-        initialIndex={activePhotoIdx}
-        title={pension.title}
-        subtitle={`${pension.neighborhood}, ${pension.city}`}
-      />
+      {isViewerOpen && (
+        <FullScreenImageViewer
+          isOpen={isViewerOpen}
+          onClose={() => setIsViewerOpen(false)}
+          images={displayPhotos}
+          initialIndex={activePhotoIdx}
+          title={pension.title}
+          subtitle={`${pension.neighborhood}, ${pension.city}`}
+        />
+      )}
     </div>
   );
 }

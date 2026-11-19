@@ -1,4 +1,5 @@
 'use client';
+import '@/styles/leaflet-map.css';
 
 import { Crosshair, Hand, MapPin, Minus, Plus, RotateCcw } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';

@@ -1,10 +1,11 @@
 'use client';
 
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { AnimatePresence, motion, type PanInfo } from 'motion/react';
+import { AnimatePresence, m, type PanInfo } from 'motion/react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 
 export type ViewerImage = {
   url: string;
@@ -223,7 +224,7 @@ export function FullScreenImageViewer({
 
         <div className="relative w-full h-full flex items-center justify-center">
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
-            <motion.div
+            <m.div
               key={currentImage.url + currentIndex}
               custom={direction}
               variants={slideVariants}
@@ -249,13 +250,13 @@ export function FullScreenImageViewer({
                 alt={currentImage.alt || 'Foto ampliada'}
                 width={1600}
                 height={1200}
-                unoptimized
+                unoptimized={shouldBypassImageOptimization(currentImage.url)}
                 priority
                 sizes="100vw"
                 draggable={false}
                 className="pointer-events-auto w-auto h-auto max-w-full max-h-[82vh] object-contain select-none cursor-grab active:cursor-grabbing"
               />
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </div>
 
@@ -292,7 +293,7 @@ export function FullScreenImageViewer({
                     src={img.url}
                     alt={img.alt || `Miniatura ${idx + 1}`}
                     fill
-                    unoptimized
+                    unoptimized={shouldBypassImageOptimization(img.url)}
                     sizes="56px"
                     className="object-cover"
                   />

@@ -1,12 +1,13 @@
 'use client';
 
 import { ShieldCheck, Star, ThumbsUp } from 'lucide-react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
 import { formatChileDate } from '@/lib/format-utils';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import type { PensionReview } from '@/lib/types';
 import { normalizeImageUrl } from '@/lib/utils';
 
@@ -83,7 +84,9 @@ export function ReviewCard({
                 alt={review.user?.firstName || 'Usuario'}
                 fill
                 sizes="40px"
-                unoptimized
+                unoptimized={shouldBypassImageOptimization(
+                  normalizeImageUrl(review.user.avatarUrl),
+                )}
                 className="object-cover"
               />
             ) : (
@@ -175,7 +178,7 @@ export function ReviewCard({
                   src={photoUrl}
                   alt={caption}
                   fill
-                  unoptimized
+                  unoptimized={shouldBypassImageOptimization(photoUrl)}
                   sizes="80px"
                   className="object-cover"
                 />
@@ -187,7 +190,7 @@ export function ReviewCard({
 
       <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/60">
         {showHelpfulButton ? (
-          <motion.button
+          <m.button
             type="button"
             whileTap={readOnlyHelpful ? undefined : { scale: 0.92 }}
             disabled={isVoting}
@@ -213,7 +216,7 @@ export function ReviewCard({
             <span>
               Útil (<span className="tabular-nums">{calculatedLikes}</span>)
             </span>
-          </motion.button>
+          </m.button>
         ) : (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap shrink-0">
             <ThumbsUp className="h-3 w-3 shrink-0" />

@@ -11,7 +11,7 @@ import {
   RefreshCw,
   TrendingUp,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RoomEditorDrawer } from '@/components/landlord/room-editor-drawer';
 import { type RoomItem, RoomItemCard } from '@/components/landlord/room-item-card';
@@ -336,7 +336,7 @@ export function LandlordRoomsScreen({
               <div className="flex flex-col gap-3">
                 <AnimatePresence mode="popLayout">
                   {availableRooms.map((room, index) => (
-                    <motion.div
+                    <m.div
                       key={room.id}
                       layout
                       initial={{ opacity: 0, scale: 0.96 }}
@@ -356,7 +356,7 @@ export function LandlordRoomsScreen({
                         onToggleAvailability={handleToggleAvailability}
                         onToggleActive={handleToggleActive}
                       />
-                    </motion.div>
+                    </m.div>
                   ))}
                 </AnimatePresence>
               </div>
@@ -384,7 +384,7 @@ export function LandlordRoomsScreen({
               <div className="flex flex-col gap-3">
                 <AnimatePresence mode="popLayout">
                   {occupiedRooms.map((room, index) => (
-                    <motion.div
+                    <m.div
                       key={room.id}
                       layout
                       initial={{ opacity: 0, scale: 0.96 }}
@@ -404,7 +404,7 @@ export function LandlordRoomsScreen({
                         onToggleAvailability={handleToggleAvailability}
                         onToggleActive={handleToggleActive}
                       />
-                    </motion.div>
+                    </m.div>
                   ))}
                 </AnimatePresence>
               </div>
@@ -435,7 +435,7 @@ export function LandlordRoomsScreen({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <AnimatePresence mode="popLayout">
                   {inactiveRooms.map((room, index) => (
-                    <motion.div
+                    <m.div
                       key={room.id}
                       layout
                       initial={{ opacity: 0, scale: 0.96 }}
@@ -455,7 +455,7 @@ export function LandlordRoomsScreen({
                         onToggleAvailability={handleToggleAvailability}
                         onToggleActive={handleToggleActive}
                       />
-                    </motion.div>
+                    </m.div>
                   ))}
                 </AnimatePresence>
               </div>

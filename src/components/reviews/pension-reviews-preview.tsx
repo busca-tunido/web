@@ -3,6 +3,7 @@
 import { ArrowRight, Camera, CheckCircle2, ChevronRight, GraduationCap, Star } from 'lucide-react';
 import Image from 'next/image';
 import { formatChileDate } from '@/lib/format-utils';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import type { PensionDetailViewItem, PensionReview } from '@/lib/types';
 import { normalizeImageUrl } from '@/lib/utils';
 
@@ -99,7 +100,9 @@ export function PensionReviewsPreview({
                             alt={review.user?.firstName || 'Estudiante'}
                             fill
                             sizes="32px"
-                            unoptimized
+                            unoptimized={shouldBypassImageOptimization(
+                              normalizeImageUrl(review.user.avatarUrl),
+                            )}
                             className="object-cover"
                           />
                         ) : (

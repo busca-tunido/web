@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AuthScreen } from '@/components/auth/auth-screen';
@@ -37,7 +37,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <m.div
           id="auth-modal-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -46,7 +46,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           className="fixed inset-0 z-[100] overflow-y-auto bg-background/95 backdrop-blur-md flex flex-col justify-between"
         >
           <AuthScreen isModal onClose={onClose} onSuccess={onClose} />
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>,
     document.body,

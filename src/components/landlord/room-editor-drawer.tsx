@@ -35,9 +35,13 @@ import { isApiSuccess } from '@/lib/api-response';
 import { isSubstantiveRoomDraft } from '@/lib/draft-validators';
 import { translateApiError } from '@/lib/error-translator';
 import { clampNumber } from '@/lib/format-utils';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import type { CreateRoomDto, UpdateRoomDto } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { type RoomEditorFormInput, roomEditorFormSchema } from '@/lib/validations/pensions.schema';
+import {
+  type RoomEditorFormInput,
+  roomEditorFormSchema,
+} from '@/lib/validations/landlord-pensions.schema';
 import { createPensionRoom, updateRoom } from '@/services/rooms.service';
 import { uploadsService } from '@/services/uploads.service';
 
@@ -742,7 +746,7 @@ export function RoomEditorDrawer({
                         src={imgUrl}
                         alt={`Habitación ${idx + 1}`}
                         fill
-                        unoptimized
+                        unoptimized={shouldBypassImageOptimization(imgUrl)}
                         sizes="120px"
                         className="object-cover transition group-hover:scale-105"
                       />

@@ -14,7 +14,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import Image from 'next/image';
 import { type ChangeEvent, useEffect, useReducer, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -306,7 +306,7 @@ export function PublishReviewModal({
         >
           <AnimatePresence>
             {successBanner && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, scale: 0.94, y: 8 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.94, y: 8 }}
@@ -317,13 +317,13 @@ export function PublishReviewModal({
                 <p className="text-xs font-semibold">
                   ¡Reseña publicada con éxito! Gracias por colaborar con la comunidad.
                 </p>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
           <AnimatePresence>
             {errorMessage && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: [0, -6, 6, -4, 4, 0] }}
                 exit={{ opacity: 0 }}
@@ -332,7 +332,7 @@ export function PublishReviewModal({
               >
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                 <p className="text-xs">{errorMessage}</p>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 

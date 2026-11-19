@@ -1,7 +1,7 @@
 'use client';
 
 import type { Variants } from 'motion/react';
-import { motion, useAnimation } from 'motion/react';
+import { m, useAnimation } from 'motion/react';
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 
 import type { AnimatedIconHandle, AnimatedIconProps } from '@/components/ui/animated-icon.types';
@@ -65,14 +65,14 @@ const MapPinIcon = forwardRef<MapPinIconHandle, AnimatedIconProps>(
     }, [controls]);
 
     return (
-      <motion.span
+      <m.span
         aria-hidden="true"
         className={cn('inline-flex shrink-0 items-center justify-center', className)}
         onHoverEnd={handleHoverEnd}
         onHoverStart={handleHoverStart}
         {...props}
       >
-        <motion.svg
+        <m.svg
           aria-hidden="true"
           animate={controls}
           fill="none"
@@ -88,7 +88,7 @@ const MapPinIcon = forwardRef<MapPinIconHandle, AnimatedIconProps>(
           xmlns="http://www.w3.org/2000/svg"
         >
           <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
-          <motion.circle
+          <m.circle
             animate={controls}
             cx="12"
             cy="10"
@@ -96,8 +96,8 @@ const MapPinIcon = forwardRef<MapPinIconHandle, AnimatedIconProps>(
             r="3"
             variants={CIRCLE_VARIANTS}
           />
-        </motion.svg>
-      </motion.span>
+        </m.svg>
+      </m.span>
     );
   },
 );

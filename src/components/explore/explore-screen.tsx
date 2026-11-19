@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDown, MapPin } from 'lucide-react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import Image from 'next/image';
 import { Suspense, useState } from 'react';
 import { NetworkErrorBanner } from '@/components/common/network-error-state';
@@ -12,6 +12,8 @@ import { CityCardSkeleton } from '@/components/ui/skeletons/city-card-skeleton';
 import { ExploreSkeleton } from '@/components/ui/skeletons/explore-skeleton';
 import { PensionCardSkeleton } from '@/components/ui/skeletons/pension-card-skeleton';
 import { UniversityCardSkeleton } from '@/components/ui/skeletons/university-card-skeleton';
+import { useMediaQuery } from '@/hooks/use-media-query';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import { getCityImageUrl, getUniversityImageUrl } from '@/lib/location-images';
 import type { CityInfo, NearbyCityCount, PensionItem, UniversityInfo } from '@/lib/types';
 
@@ -64,6 +66,7 @@ export function ExploreScreen({
 }: ExploreScreenProps) {
   const [isExpandedCities, setIsExpandedCities] = useState(false);
   const [isExpandedUniversities, setIsExpandedUniversities] = useState(false);
+  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const isCitiesLoading = (isLoadingCities ?? isLoadingMetadata) && cities.length === 0;
   const isUniversitiesLoading =
@@ -80,6 +83,10 @@ export function ExploreScreen({
   const sortedUniversities = [...universities].sort(
     (a, b) => (b._count?.nearbyPensions ?? 0) - (a._count?.nearbyPensions ?? 0),
   );
+
+  const visibleCities = isDesktop && !isExpandedCities ? sortedCities.slice(0, 6) : sortedCities;
+  const visibleUniversities =
+    isDesktop && !isExpandedUniversities ? sortedUniversities.slice(0, 5) : sortedUniversities;
 
   return (
     <div
@@ -121,7 +128,7 @@ export function ExploreScreen({
                     style={{ animationDelay: `${index * 80}ms` }}
                   />
                 ))
-              : sortedCities.map((city, index) => {
+              : visibleCities.map((city, index) => {
                   const isSelected = selectedCity?.toLowerCase() === city.name.toLowerCase();
                   const cityImg =
                     city.imageUrl && city.imageUrl.trim().length > 0
@@ -131,7 +138,7 @@ export function ExploreScreen({
                   const isDesktopHidden = !isExpandedCities && index >= 6;
 
                   return (
-                    <motion.button
+                    <m.button
                       type="button"
                       key={city.id}
                       initial={{ opacity: 0, scale: 0.96 }}
@@ -150,9 +157,9 @@ export function ExploreScreen({
                           src={cityImg}
                           alt={city.name}
                           fill
-                          unoptimized
+                          unoptimized={shouldBypassImageOptimization(cityImg)}
                           loading={index < 3 ? 'eager' : 'lazy'}
-                          sizes="144px"
+                          sizes="(max-width: 768px) 144px, 192px"
                           className="object-cover transition duration-300 group-hover:scale-105"
                         />
                       )}
@@ -161,14 +168,14 @@ export function ExploreScreen({
                       {Boolean(
                         selectedCity && city.name.toLowerCase() === selectedCity.toLowerCase(),
                       ) && (
-                        <motion.div
+                        <m.div
                           layoutId="active-city-indicator"
                           className="absolute top-2.5 left-2.5 z-10"
                         >
                           <Badge className="bg-primary text-primary-foreground font-bold text-xs px-2 py-0.5 shadow-sm">
                             Actual
                           </Badge>
-                        </motion.div>
+                        </m.div>
                       )}
 
                       <div className="absolute bottom-3 left-3 right-3">
@@ -177,7 +184,7 @@ export function ExploreScreen({
                           {city.pensionsCount} pensiones
                         </span>
                       </div>
-                    </motion.button>
+                    </m.button>
                   );
                 })}
           </div>
@@ -234,7 +241,7 @@ export function ExploreScreen({
                     style={{ animationDelay: `${index * 80}ms` }}
                   />
                 ))
-              : sortedUniversities.map((uni, index) => {
+              : visibleUniversities.map((uni, index) => {
                   const uniImg =
                     uni.imageUrl && uni.imageUrl.trim().length > 0
                       ? uni.imageUrl
@@ -243,7 +250,7 @@ export function ExploreScreen({
                   const isDesktopHidden = !isExpandedUniversities && index >= 5;
 
                   return (
-                    <motion.button
+                    <m.button
                       type="button"
                       key={uni.id}
                       initial={{ opacity: 0, scale: 0.96 }}
@@ -260,9 +267,9 @@ export function ExploreScreen({
                           src={uniImg}
                           alt={uni.name}
                           fill
-                          unoptimized
+                          unoptimized={shouldBypassImageOptimization(uniImg)}
                           loading={index < 3 ? 'eager' : 'lazy'}
-                          sizes="176px"
+                          sizes="(max-width: 768px) 176px, 240px"
                           className="object-cover opacity-80 transition duration-300 group-hover:scale-105"
                         />
                       )}
@@ -286,7 +293,7 @@ export function ExploreScreen({
                           <span>{uni.city}</span>
                         </div>
                       </div>
-                    </motion.button>
+                    </m.button>
                   );
                 })}
           </div>

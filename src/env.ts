@@ -1,51 +1,66 @@
-import { z } from 'zod';
+type NodeEnvironment = 'development' | 'production' | 'test';
 
-const serverSchema = z.object({
-  API_INTERNAL_URL: z.string().url('API_INTERNAL_URL must be a valid URL'),
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-});
+const VALID_NODE_ENVS = new Set<NodeEnvironment>(['development', 'production', 'test']);
 
-const clientSchema = z.object({
-  NEXT_PUBLIC_API_URL: z.string().min(1, 'NEXT_PUBLIC_API_URL is required'),
-  NEXT_PUBLIC_APP_URL: z.string().url('NEXT_PUBLIC_APP_URL must be a valid URL'),
-  NEXT_PUBLIC_CARTO_API_KEY: z.string().min(0),
-});
+function isValidUrl(value: string | undefined): value is string {
+  if (typeof value !== 'string' || value.length === 0) return false;
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const isServer = typeof window === 'undefined';
 
-const clientParsed = clientSchema.safeParse({
-  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-  NEXT_PUBLIC_CARTO_API_KEY: process.env.NEXT_PUBLIC_CARTO_API_KEY ?? '',
-});
+const clientErrors: string[] = [];
+const nextPublicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+const nextPublicAppUrl = process.env.NEXT_PUBLIC_APP_URL;
+const nextPublicCartoApiKey = process.env.NEXT_PUBLIC_CARTO_API_KEY ?? '';
 
-if (!clientParsed.success) {
-  const errorMessages = clientParsed.error.issues
-    .map((issue) => `  - ${issue.path.join('.')}: ${issue.message}`)
-    .join('\n');
-  const message = `Invalid client environment variables:\n${errorMessages}`;
+if (typeof nextPublicApiUrl !== 'string' || nextPublicApiUrl.length === 0) {
+  clientErrors.push('  - NEXT_PUBLIC_API_URL: NEXT_PUBLIC_API_URL is required');
+}
+if (!isValidUrl(nextPublicAppUrl)) {
+  clientErrors.push('  - NEXT_PUBLIC_APP_URL: NEXT_PUBLIC_APP_URL must be a valid URL');
+}
+
+if (clientErrors.length > 0) {
+  const message = `Invalid client environment variables:\n${clientErrors.join('\n')}`;
   console.error(`[BuscaTuNido env error] ${message}`);
   throw new Error(message);
 }
 
-let serverParsedData: z.infer<typeof serverSchema> | undefined;
+let serverParsedData:
+  | {
+      API_INTERNAL_URL: string;
+      NODE_ENV: NodeEnvironment;
+    }
+  | undefined;
 
 if (isServer) {
-  const serverParsed = serverSchema.safeParse({
-    API_INTERNAL_URL: process.env.API_INTERNAL_URL,
-    NODE_ENV: process.env.NODE_ENV,
-  });
+  const serverErrors: string[] = [];
+  const apiInternalUrl = process.env.API_INTERNAL_URL;
+  const rawNodeEnv = process.env.NODE_ENV ?? 'development';
 
-  if (!serverParsed.success) {
-    const errorMessages = serverParsed.error.issues
-      .map((issue) => `  - ${issue.path.join('.')}: ${issue.message}`)
-      .join('\n');
-    const message = `Invalid server environment variables:\n${errorMessages}`;
+  if (!isValidUrl(apiInternalUrl)) {
+    serverErrors.push('  - API_INTERNAL_URL: API_INTERNAL_URL must be a valid URL');
+  }
+  if (!VALID_NODE_ENVS.has(rawNodeEnv as NodeEnvironment)) {
+    serverErrors.push('  - NODE_ENV: Invalid NODE_ENV');
+  }
+
+  if (serverErrors.length > 0) {
+    const message = `Invalid server environment variables:\n${serverErrors.join('\n')}`;
     console.error(`[BuscaTuNido env error] ${message}`);
     throw new Error(message);
   }
 
-  serverParsedData = serverParsed.data;
+  serverParsedData = {
+    API_INTERNAL_URL: apiInternalUrl as string,
+    NODE_ENV: rawNodeEnv as NodeEnvironment,
+  };
 }
 
 export type Env = {
@@ -53,7 +68,7 @@ export type Env = {
   readonly NEXT_PUBLIC_API_URL: string;
   readonly NEXT_PUBLIC_APP_URL: string;
   readonly NEXT_PUBLIC_CARTO_API_KEY: string;
-  readonly NODE_ENV: 'development' | 'production' | 'test';
+  readonly NODE_ENV: NodeEnvironment;
 };
 
 export const env: Env = Object.freeze({
@@ -65,10 +80,10 @@ export const env: Env = Object.freeze({
     }
     return serverParsedData.API_INTERNAL_URL;
   },
-  NEXT_PUBLIC_API_URL: clientParsed.data.NEXT_PUBLIC_API_URL,
-  NEXT_PUBLIC_APP_URL: clientParsed.data.NEXT_PUBLIC_APP_URL,
-  NEXT_PUBLIC_CARTO_API_KEY: clientParsed.data.NEXT_PUBLIC_CARTO_API_KEY,
-  get NODE_ENV(): 'development' | 'production' | 'test' {
+  NEXT_PUBLIC_API_URL: nextPublicApiUrl as string,
+  NEXT_PUBLIC_APP_URL: nextPublicAppUrl as string,
+  NEXT_PUBLIC_CARTO_API_KEY: nextPublicCartoApiKey,
+  get NODE_ENV(): NodeEnvironment {
     return serverParsedData?.NODE_ENV ?? 'development';
   },
 });

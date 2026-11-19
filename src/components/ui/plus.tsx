@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useAnimation } from 'motion/react';
+import { m, useAnimation } from 'motion/react';
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 
 import type { AnimatedIconHandle, AnimatedIconProps } from '@/components/ui/animated-icon.types';
@@ -35,14 +35,14 @@ const PlusIcon = forwardRef<PlusIconHandle, AnimatedIconProps>(
     }, [controls]);
 
     return (
-      <motion.span
+      <m.span
         aria-hidden="true"
         className={cn('inline-flex shrink-0 items-center justify-center', className)}
         onHoverEnd={handleHoverEnd}
         onHoverStart={handleHoverStart}
         {...props}
       >
-        <motion.svg
+        <m.svg
           aria-hidden="true"
           animate={controls}
           fill="none"
@@ -66,8 +66,8 @@ const PlusIcon = forwardRef<PlusIconHandle, AnimatedIconProps>(
         >
           <path d="M5 12h14" />
           <path d="M12 5v14" />
-        </motion.svg>
-      </motion.span>
+        </m.svg>
+      </m.span>
     );
   },
 );

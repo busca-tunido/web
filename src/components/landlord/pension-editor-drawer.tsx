@@ -21,11 +21,21 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { PensionLocationPickerMap } from '@/components/landlord/pension-location-picker-map';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
+
+const PensionLocationPickerMap = dynamic(
+  () =>
+    import('@/components/landlord/pension-location-picker-map').then(
+      (mod) => mod.PensionLocationPickerMap,
+    ),
+  { ssr: false },
+);
+
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { FullScreenImageViewer } from '@/components/ui/fullscreen-image-viewer';
@@ -47,7 +57,7 @@ import { cn } from '@/lib/utils';
 import {
   type PensionEditorFormInput,
   pensionEditorFormSchema,
-} from '@/lib/validations/pensions.schema';
+} from '@/lib/validations/landlord-pensions.schema';
 import {
   fetchCities,
   findClosestCity,
@@ -902,7 +912,7 @@ export function PensionEditorDrawer({
                         src={imgUrl}
                         alt={`Foto pensión ${idx + 1}`}
                         fill
-                        unoptimized
+                        unoptimized={shouldBypassImageOptimization(imgUrl)}
                         sizes="120px"
                         className="object-cover transition group-hover:scale-105"
                       />

@@ -178,14 +178,14 @@ describe('PensionDetailModal in landlord preview mode', () => {
     expect(screen.queryByText('Publicar opinión')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: /Ver más detalles/i }));
-    expect(screen.getByRole('dialog', { name: /Servicios y Comodidades/i })).toBeDefined();
+    expect(await screen.findByRole('dialog', { name: /Servicios y Comodidades/i })).toBeDefined();
     fireEvent.keyDown(document, { key: 'Escape' });
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: /Servicios y Comodidades/i })).toBeNull(),
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Ver todas' }));
-    const reviewsDialog = screen.getByRole('dialog', { name: /Reseñas de la pensión/i });
+    const reviewsDialog = await screen.findByRole('dialog', { name: /Reseñas de la pensión/i });
     expect(reviewsDialog).toBeDefined();
 
     const helpfulBtn = screen.getByRole('button', { name: /Marcar como útil/i });

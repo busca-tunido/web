@@ -392,5 +392,49 @@ describe('useStudentPensionsFeed', () => {
       expect(result.current.error).toBeNull();
       expect(result.current.pensions).toHaveLength(1);
     });
+
+    it('skips redundant initial pensions fetch when SSR city and geo match hydrated data', async () => {
+      const citiesSpy = vi.spyOn(locationsService, 'fetchCities');
+      const unisSpy = vi.spyOn(locationsService, 'fetchUniversities');
+      const pensionsSpy = vi
+        .spyOn(pensionsService, 'fetchPaginatedPensions')
+        .mockResolvedValue(createSuccess(mockPaginated([], 0, false)));
+
+      const { result, rerender } = renderHook(
+        ({ city }: { city: string }) =>
+          useStudentPensionsFeed({
+            filters: { query: '', city },
+            userLocation: { latitude: -33.4489, longitude: -70.6693 },
+            initialCities: MOCK_TEST_CITIES,
+            initialUniversities: MOCK_TEST_UNIVERSITIES,
+            initialPensions: [
+              {
+                ...MOCK_TEST_PENSION_DTO,
+                images: [{ id: 'img-1', url: 'https://img.test/pen1.jpg' }],
+                nearbyUniversities: [],
+                _count: { reviews: 12, rooms: 0 },
+              } as never,
+            ],
+            initialTotal: 1,
+            initialCity: 'Santiago',
+            initialGeo: { latitude: -33.4489, longitude: -70.6693 },
+          }),
+        { initialProps: { city: 'Santiago' } },
+      );
+
+      expect(result.current.isLoadingMetadata).toBe(false);
+      expect(result.current.isLoadingPensions).toBe(false);
+      expect(citiesSpy).not.toHaveBeenCalled();
+      expect(unisSpy).not.toHaveBeenCalled();
+      expect(pensionsSpy).not.toHaveBeenCalled();
+
+      rerender({ city: 'Viña del Mar' });
+
+      await waitFor(() => {
+        expect(pensionsSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ city: 'Viña del Mar' }),
+        );
+      });
+    });
   });
 });

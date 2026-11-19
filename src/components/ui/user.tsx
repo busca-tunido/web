@@ -1,7 +1,7 @@
 'use client';
 
 import type { Variants } from 'motion/react';
-import { motion, useAnimation } from 'motion/react';
+import { m, useAnimation } from 'motion/react';
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 
 import type { AnimatedIconHandle, AnimatedIconProps } from '@/components/ui/animated-icon.types';
@@ -57,7 +57,7 @@ const UserIcon = forwardRef<UserIconHandle, AnimatedIconProps>(
       }
     }, [controls]);
     return (
-      <motion.span
+      <m.span
         aria-hidden="true"
         className={cn('inline-flex shrink-0 items-center justify-center', className)}
         onHoverEnd={handleHoverEnd}
@@ -76,9 +76,9 @@ const UserIcon = forwardRef<UserIconHandle, AnimatedIconProps>(
           width={size}
           xmlns="http://www.w3.org/2000/svg"
         >
-          <motion.circle animate={controls} cx="12" cy="8" r="5" variants={CIRCLE_VARIANT} />
+          <m.circle animate={controls} cx="12" cy="8" r="5" variants={CIRCLE_VARIANT} />
 
-          <motion.path
+          <m.path
             animate={controls}
             d="M20 21a8 8 0 0 0-16 0"
             transition={{
@@ -88,7 +88,7 @@ const UserIcon = forwardRef<UserIconHandle, AnimatedIconProps>(
             variants={PATH_VARIANT}
           />
         </svg>
-      </motion.span>
+      </m.span>
     );
   },
 );

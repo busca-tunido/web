@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { MoonIcon } from '@/components/ui/moon';
 import { SunIcon } from '@/components/ui/sun';
 import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import { type Theme, useTheme } from '@/lib/theme-context';
 import type { UserProfile } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -48,7 +49,7 @@ export function AccountProfileHeader({ user, roleLabel, children }: AccountProfi
             src={user.avatarUrl}
             alt={user.firstName}
             fill
-            unoptimized
+            unoptimized={shouldBypassImageOptimization(user.avatarUrl)}
             sizes="56px"
             className="object-cover"
           />

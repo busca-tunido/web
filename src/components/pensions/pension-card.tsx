@@ -1,12 +1,13 @@
 'use client';
 
 import { Award, Building2, MapPin, ShieldCheck, Star } from 'lucide-react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import Image from 'next/image';
 import { memo } from 'react';
 import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
 import { HeartIcon } from '@/components/ui/heart';
 import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import type { PensionItem } from '@/lib/types';
 
 type PensionCardProps = {
@@ -23,7 +24,9 @@ function areEqual(prev: PensionCardProps, next: PensionCardProps): boolean {
     prev.pension.ratingAverage === next.pension.ratingAverage &&
     prev.pension.baseMonthlyPrice === next.pension.baseMonthlyPrice &&
     prev.pension.reviewsCount === next.pension.reviewsCount &&
-    prev.pension.reliability === next.pension.reliability
+    prev.pension.reliability === next.pension.reliability &&
+    prev.pension.images?.[0]?.thumbnailUrl === next.pension.images?.[0]?.thumbnailUrl &&
+    prev.pension.images?.[0]?.url === next.pension.images?.[0]?.url
   );
 }
 
@@ -37,6 +40,8 @@ function PensionCardComponent({
   const reviewsCount = pension.reviewsCount ?? pension.ratingCount ?? 0;
   const isLowReliability = pension.reliability === 'low' || (reviewsCount > 0 && reviewsCount < 5);
   const titleId = `pension-title-${pension.id}`;
+  const coverImage = pension.images?.[0];
+  const coverSrc = coverImage?.thumbnailUrl || coverImage?.url;
   const {
     iconRef: heartIconRef,
     start: startHeartAnimation,
@@ -44,7 +49,7 @@ function PensionCardComponent({
   } = useAnimatedIconTrigger();
 
   return (
-    <motion.article
+    <m.article
       aria-labelledby={titleId}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -58,16 +63,16 @@ function PensionCardComponent({
         className="w-full flex flex-col text-left cursor-pointer focus:outline-none"
         aria-label={`Ver detalles de ${pension.title}`}
       >
-        <motion.span
+        <m.span
           layoutId={`pension-hero-${pension.id}`}
           className="relative block w-full aspect-[16/10] overflow-hidden rounded-2xl bg-muted shadow-sm group-hover:shadow-md transition-shadow duration-300 flex items-center justify-center"
         >
-          {pension.images?.[0]?.url ? (
+          {coverSrc ? (
             <Image
-              src={pension.images[0].url}
+              src={coverSrc}
               alt={pension.title}
               fill
-              unoptimized
+              unoptimized={shouldBypassImageOptimization(coverSrc)}
               sizes="(max-width: 640px) 100vw, 480px"
               className="object-cover transition duration-300 group-hover:scale-105"
             />
@@ -91,7 +96,7 @@ function PensionCardComponent({
               </span>
             )}
           </span>
-        </motion.span>
+        </m.span>
       </button>
 
       <div className="mt-2.5 flex flex-col gap-1 w-full">
@@ -169,7 +174,7 @@ function PensionCardComponent({
 
       <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
         <PensionCompareButton pension={pension} variant="icon" size="lg" />
-        <motion.button
+        <m.button
           type="button"
           whileTap={{ scale: 0.75 }}
           whileHover={{ scale: 1.08 }}
@@ -183,7 +188,7 @@ function PensionCardComponent({
           className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-background/70 text-foreground backdrop-blur-md hover:text-primary transition-colors shadow-sm border border-border/40 cursor-pointer origin-center"
           aria-label="Guardar en favoritos"
         >
-          <motion.span
+          <m.span
             animate={isFavorite ? { scale: [1, 1.25, 1] } : { scale: 1 }}
             transition={{ duration: 0.25 }}
             className="inline-flex items-center justify-center"
@@ -193,10 +198,10 @@ function PensionCardComponent({
               size={20}
               className={isFavorite ? '[&_svg]:fill-primary text-primary' : ''}
             />
-          </motion.span>
-        </motion.button>
+          </m.span>
+        </m.button>
       </div>
-    </motion.article>
+    </m.article>
   );
 }
 

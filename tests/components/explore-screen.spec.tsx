@@ -130,25 +130,65 @@ describe('ExploreScreen Skeletons', () => {
     });
     expect(toggleButton).toBeDefined();
 
-    const cityCards = screen.getAllByRole('button').filter((btn) =>
-      btn.textContent?.includes('pensiones'),
-    );
-    expect(cityCards).toHaveLength(9);
+    const getCityCards = () =>
+      screen.getAllByRole('button').filter((btn) => btn.textContent?.includes('pensiones'));
 
-    expect(cityCards[0].className).not.toContain('md:hidden');
-    expect(cityCards[5].className).not.toContain('md:hidden');
-    expect(cityCards[6].className).toContain('md:hidden');
-    expect(cityCards[8].className).toContain('md:hidden');
+    expect(getCityCards()).toHaveLength(6);
 
     fireEvent.click(toggleButton);
 
     expect(screen.getByRole('button', { name: /Ver menos/i })).toBeDefined();
-    expect(cityCards[6].className).not.toContain('md:hidden');
-    expect(cityCards[8].className).not.toContain('md:hidden');
+    const expandedCards = getCityCards();
+    expect(expandedCards).toHaveLength(9);
+    expect(expandedCards[6].className).not.toContain('md:hidden');
+    expect(expandedCards[8].className).not.toContain('md:hidden');
 
     fireEvent.click(screen.getByRole('button', { name: /Ver menos/i }));
     expect(screen.getByRole('button', { name: /Ver más \(3 más\)/i })).toBeDefined();
-    expect(cityCards[6].className).toContain('md:hidden');
+    expect(getCityCards()).toHaveLength(6);
+  });
+
+  it('renders all city cards on mobile viewports for horizontal carousel scrolling', () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    try {
+      const mockCities: CityInfo[] = Array.from({ length: 9 }, (_, index) => ({
+        id: `city-${index + 1}`,
+        name: `Ciudad ${index + 1}`,
+        region: 'Región',
+        pensionsCount: 10 - index,
+        averagePriceClp: 300000,
+        imageUrl: '',
+        foreignStudentRate: 0.5,
+        latitude: -33.0,
+        longitude: -70.0,
+      }));
+
+      render(
+        <ExploreScreen
+          {...defaultProps}
+          cities={mockCities}
+          isLoadingMetadata={false}
+        />,
+      );
+
+      const cityCards = screen
+        .getAllByRole('button')
+        .filter((btn) => btn.textContent?.includes('pensiones'));
+      expect(cityCards).toHaveLength(9);
+      expect(cityCards[6].className).toContain('md:hidden');
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
   });
 });
-

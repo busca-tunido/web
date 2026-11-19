@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import { BrandLogo } from '@/components/ui/brand-logo';
 
 export function SplashScreen() {
@@ -9,7 +9,7 @@ export function SplashScreen() {
       id="splash-screen-container"
       className="fixed inset-0 z-50 flex min-h-dvh flex-col items-center justify-center bg-background px-4 text-foreground transition-colors select-none"
     >
-      <motion.div
+      <m.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
@@ -22,7 +22,7 @@ export function SplashScreen() {
         </span>
 
         <div className="mt-4 relative h-1 w-32 overflow-hidden rounded-full bg-secondary">
-          <motion.div
+          <m.div
             className="h-full rounded-full bg-primary"
             initial={{ x: '-100%', width: '45%' }}
             animate={{ x: '260%' }}
@@ -33,7 +33,7 @@ export function SplashScreen() {
             }}
           />
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

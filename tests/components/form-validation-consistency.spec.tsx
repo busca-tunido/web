@@ -96,6 +96,10 @@ vi.mock('motion/react', async () => {
   return {
     AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     motion: motionTags,
+    m: motionTags,
+    LazyMotion: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    domAnimation: {},
+    domMax: {},
     useAnimation: () => ({ start: vi.fn(), stop: vi.fn(), set: vi.fn() }),
   };
 });

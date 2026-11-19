@@ -1,18 +1,24 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import {
   createContext,
   type RefObject,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useReducer,
   useRef,
   useState,
 } from 'react';
-import { PensionComparison } from '@/components/pensions/pension-comparison';
 import { useAuth } from '@/lib/auth-context';
 import type { PensionItem } from '@/lib/types';
+
+const PensionComparison = dynamic(
+  () => import('@/components/pensions/pension-comparison').then((mod) => mod.PensionComparison),
+  { ssr: false },
+);
 
 export const COMPARISON_LIMIT = 2;
 export type ComparisonSelection = Pick<PensionItem, 'id' | 'title'>;
@@ -89,10 +95,18 @@ function PensionComparisonSession({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(comparisonReducer, EMPTY_COMPARISON);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [flyPulse, setFlyPulse] = useState<FlyPulse | null>(null);
+  const [hasActivatedComparison, setHasActivatedComparison] = useState(false);
   const flyCounterRef = useRef(0);
   const floatingTargetRef = useRef<HTMLButtonElement | null>(null);
   const slotsRef = useRef(state.slots);
   slotsRef.current = state.slots;
+
+  const isActive = state.slots.some(Boolean) || flyPulse !== null || isDrawerOpen;
+  useEffect(() => {
+    if (isActive && !hasActivatedComparison) {
+      setHasActivatedComparison(true);
+    }
+  }, [isActive, hasActivatedComparison]);
 
   const openDrawer = useCallback(() => {
     setIsDrawerOpen(true);
@@ -208,7 +222,7 @@ function PensionComparisonSession({ children }: { children: React.ReactNode }) {
   return (
     <PensionComparisonContext.Provider value={value}>
       {children}
-      <PensionComparison />
+      {(hasActivatedComparison || isActive) && <PensionComparison />}
     </PensionComparisonContext.Provider>
   );
 }

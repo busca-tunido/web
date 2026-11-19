@@ -1,7 +1,7 @@
 'use client';
 
 import { Filter, LogOut, MapPin, User as UserIcon, X } from 'lucide-react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 import Image from 'next/image';
 import { type ComponentType, type Ref, useMemo } from 'react';
 import type { AnimatedIconHandle, AnimatedIconProps } from '@/components/ui/animated-icon.types';
@@ -16,6 +16,7 @@ import { SearchIcon } from '@/components/ui/search';
 import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { useAuth } from '@/lib/auth-context';
 import { countActiveFilters, getSortedFilterChips } from '@/lib/filter-chips';
+import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import type { NavTab, SearchFilters } from '@/lib/types';
 
 type DesktopNavIcon = ComponentType<AnimatedIconProps & { ref?: Ref<AnimatedIconHandle> }>;
@@ -64,7 +65,7 @@ function DesktopNavButton({
         </span>
       )}
       {isActive && (
-        <motion.span
+        <m.span
           layoutId="active-desktop-nav-indicator"
           transition={{ type: 'spring', stiffness: 450, damping: 35 }}
           className="absolute inset-0 rounded-full border border-sage/35 pointer-events-none"
@@ -248,7 +249,7 @@ export function DesktopNavbar({
                       src={user.avatarUrl}
                       alt={user.firstName}
                       fill
-                      unoptimized
+                      unoptimized={shouldBypassImageOptimization(user.avatarUrl)}
                       sizes="28px"
                       className="object-cover"
                     />
@@ -318,7 +319,7 @@ export function DesktopNavbar({
             {sortedChips.map((chip) => {
               const active = chip.isActive(filters);
               return (
-                <motion.button
+                <m.button
                   layout
                   key={chip.id}
                   type="button"
@@ -339,7 +340,7 @@ export function DesktopNavbar({
                   aria-pressed={active}
                 >
                   <span>{chip.label}</span>
-                </motion.button>
+                </m.button>
               );
             })}
           </div>
