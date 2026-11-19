@@ -3,11 +3,12 @@
 import { Award, Building2, MapPin, ShieldCheck, Star } from 'lucide-react';
 import { m } from 'motion/react';
 import Image from 'next/image';
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
 import { HeartIcon } from '@/components/ui/heart';
 import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { shouldBypassImageOptimization } from '@/lib/image-utils';
+import { prefetchPensionDetail } from '@/lib/student-prefetch';
 import type { PensionItem } from '@/lib/types';
 
 type PensionCardProps = {
@@ -48,6 +49,10 @@ function PensionCardComponent({
     triggerProps: heartTriggerProps,
   } = useAnimatedIconTrigger();
 
+  const handlePrefetch = useCallback(() => {
+    void prefetchPensionDetail(pension.id);
+  }, [pension.id]);
+
   return (
     <m.article
       aria-labelledby={titleId}
@@ -59,6 +64,9 @@ function PensionCardComponent({
     >
       <button
         type="button"
+        onMouseEnter={handlePrefetch}
+        onFocus={handlePrefetch}
+        onPointerDown={handlePrefetch}
         onClick={() => onSelectPension(pension)}
         className="w-full flex flex-col text-left cursor-pointer focus:outline-none"
         aria-label={`Ver detalles de ${pension.title}`}
@@ -107,6 +115,8 @@ function PensionCardComponent({
           >
             <button
               type="button"
+              onMouseEnter={handlePrefetch}
+              onFocus={handlePrefetch}
               onClick={() => onSelectPension(pension)}
               className="text-left font-semibold text-foreground group-hover:text-primary transition cursor-pointer focus:outline-none"
             >
@@ -140,6 +150,8 @@ function PensionCardComponent({
 
         <button
           type="button"
+          onMouseEnter={handlePrefetch}
+          onFocus={handlePrefetch}
           onClick={() => onSelectPension(pension)}
           className="flex flex-col gap-1 text-left cursor-pointer focus:outline-none"
         >

@@ -3,12 +3,29 @@ import { describe, expect, it } from 'vitest';
 import { proxy } from '@/proxy';
 
 describe('Edge Proxy', () => {
-  it('redirects to /?auth=login when no tunido_token is present', () => {
+  it('redirects to /?auth=login when no tunido_token is present on /landlord paths', () => {
     const req = new NextRequest('http://localhost:3000/landlord/properties');
     const res = proxy(req);
 
     expect(res.status).toBe(307);
     expect(res.headers.get('location')).toBe('http://localhost:3000/?auth=login');
+  });
+
+  it('redirects to /?auth=login when no tunido_token is present on /account paths', () => {
+    const req = new NextRequest('http://localhost:3000/account');
+    const res = proxy(req);
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get('location')).toBe('http://localhost:3000/?auth=login');
+  });
+
+  it('allows guest users on public portal routes and forwards x-pathname and x-search', () => {
+    const req = new NextRequest('http://localhost:3000/explore?city=Valparaiso');
+    const res = proxy(req);
+
+    expect(res.headers.get('location')).toBeNull();
+    expect(res.headers.get('x-middleware-request-x-pathname')).toBe('/explore');
+    expect(res.headers.get('x-middleware-request-x-search')).toBe('?city=Valparaiso');
   });
 
   it('redirects non-landlord users trying to access /landlord paths', () => {
@@ -38,5 +55,6 @@ describe('Edge Proxy', () => {
     const res = proxy(req);
 
     expect(res.headers.get('location')).toBeNull();
+    expect(res.headers.get('x-middleware-request-x-pathname')).toBe('/account/profile');
   });
 });

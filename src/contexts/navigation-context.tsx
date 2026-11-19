@@ -7,6 +7,7 @@ import type { FavoritePensionSummaryDto, NavTab, PensionItem, UniversityInfo } f
 export type NavigationContextType = {
   activeTab: NavTab;
   navigateTab: (tab: NavTab) => void;
+  syncTabFromRoute: (tab: NavTab) => void;
   selectedPension: PensionItem | FavoritePensionSummaryDto | null;
   selectPension: (pension: PensionItem | FavoritePensionSummaryDto | null) => void;
   setSelectedPension: React.Dispatch<
@@ -51,6 +52,7 @@ export function NavigationProvider({
   const {
     tab: activeTab,
     navigateTab,
+    syncTabFromRoute,
     city: urlCity,
     uni: urlUni,
     setCityAndUni,
@@ -108,6 +110,7 @@ export function NavigationProvider({
     () => ({
       activeTab,
       navigateTab,
+      syncTabFromRoute,
       selectedPension,
       selectPension,
       setSelectedPension,
@@ -133,6 +136,7 @@ export function NavigationProvider({
     [
       activeTab,
       navigateTab,
+      syncTabFromRoute,
       selectedPension,
       selectPension,
       mapTargetCity,

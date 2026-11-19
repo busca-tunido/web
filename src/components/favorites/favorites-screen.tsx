@@ -7,11 +7,14 @@ import { useMemo } from 'react';
 import { FavoritesGuestIncentive } from '@/components/favorites/favorites-guest-incentive';
 import { PensionCompareButton } from '@/components/pensions/pension-compare-button';
 import { Button } from '@/components/ui/button';
+import { FavoritesSkeleton } from '@/components/ui/skeletons/favorites-skeleton';
 import { PensionCardSkeleton } from '@/components/ui/skeletons/pension-card-skeleton';
 import { useNavigation } from '@/contexts/navigation-context';
 import { useStudentFavorites } from '@/hooks/use-student-favorites';
 import { useAuth } from '@/lib/auth-context';
 import { shouldBypassImageOptimization } from '@/lib/image-utils';
+import { prefetchPensionDetail } from '@/lib/student-prefetch';
+import { assertNever, deriveAuthProtectedViewState } from '@/lib/student-view-state';
 import type { FavoritePensionSummaryDto, PensionItem } from '@/lib/types';
 
 type FavoritesScreenProps = {
@@ -24,15 +27,26 @@ export function FavoritesScreen(props: FavoritesScreenProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const { openAuthModal } = useNavigation();
 
-  if (isLoading) {
-    return null;
-  }
+  const viewState = deriveAuthProtectedViewState({
+    isAuthLoading: isLoading,
+    isAuthenticated,
+    data: props,
+  });
 
-  if (!isAuthenticated) {
-    return <FavoritesGuestIncentive onOpenAuth={openAuthModal} />;
+  switch (viewState.status) {
+    case 'resolving_auth':
+    case 'loading':
+      return <FavoritesSkeleton count={4} />;
+    case 'guest':
+      return <FavoritesGuestIncentive onOpenAuth={openAuthModal} />;
+    case 'error':
+    case 'empty':
+      return null;
+    case 'ready':
+      return <FavoritesContent {...viewState.data} />;
+    default:
+      return assertNever(viewState);
   }
-
-  return <FavoritesContent {...props} />;
 }
 
 function FavoritesContent({ allPensions, onSelectPension, onExplore }: FavoritesScreenProps) {
@@ -176,6 +190,12 @@ function FavoritesGrid({
           >
             <button
               type="button"
+              onMouseEnter={() => {
+                void prefetchPensionDetail(pension.id);
+              }}
+              onFocus={() => {
+                void prefetchPensionDetail(pension.id);
+              }}
               onClick={() => onSelectPension(pension)}
               className="w-full flex flex-col text-left cursor-pointer"
             >

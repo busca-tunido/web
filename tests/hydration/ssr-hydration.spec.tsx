@@ -4,6 +4,7 @@ import { hydrateRoot, type Root } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AccountThemeCard } from '@/components/account/account-primitives';
+import { FavoritesScreen } from '@/components/favorites/favorites-screen';
 import { PensionCard } from '@/components/pensions/pension-card';
 import { ReviewCard } from '@/components/reviews/review-card';
 import { LandlordAppShell } from '@/components/shells/landlord-app-shell';
@@ -15,12 +16,14 @@ import {
   ResponsiveModalTitle,
 } from '@/components/ui/responsive-modal';
 import { LandlordProvider, useLandlord } from '@/contexts/landlord-context';
+import { NavigationProvider } from '@/contexts/navigation-context';
 import { SearchFiltersProvider, useSearchFilters } from '@/contexts/search-filters-context';
 import { useStayHistory } from '@/hooks/use-stay-history';
 import { useStudentFavorites } from '@/hooks/use-student-favorites';
 import { useUrlNavigationState } from '@/hooks/use-url-navigation-state';
 import { createSuccess } from '@/lib/api-response';
 import { AuthProvider } from '@/lib/auth-context';
+import { cacheStore } from '@/lib/cache-store';
 import { formatChileDate } from '@/lib/format-utils';
 import { ThemeProvider } from '@/lib/theme-context';
 import type { PensionItem, PensionReview } from '@/lib/types';
@@ -61,7 +64,7 @@ vi.mock('motion/react', async () => {
         }: Record<string, unknown>) =>
           createMotionElement(tag, domProps, children as ReactNode);
       },
-    }
+    },
   );
   return {
     motion: motionTags,
@@ -201,6 +204,7 @@ async function assertCleanHydration(
 describe('SSR Hydration safety across Guest, Student, and Landlord flows', () => {
   afterEach(() => {
     cleanup();
+    cacheStore.clear();
     vi.restoreAllMocks();
     window.localStorage.clear();
     window.sessionStorage.clear();
@@ -240,6 +244,26 @@ describe('SSR Hydration safety across Guest, Student, and Landlord flows', () =>
     const { root } = await assertCleanHydration(<FavoritesProbe />, () => {
       window.localStorage.setItem('tunido_favs', JSON.stringify(['pen-1', 'pen-2']));
     });
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it('hydrates FavoritesScreen cleanly even when client localStorage holds a student session', async () => {
+    vi.spyOn(favoritesService, 'fetchStudentFavorites').mockResolvedValue(createSuccess([]));
+    const { root } = await assertCleanHydration(
+      <AuthProvider>
+        <NavigationProvider>
+          <FavoritesScreen allPensions={[]} onSelectPension={() => {}} onExplore={() => {}} />
+        </NavigationProvider>
+      </AuthProvider>,
+      () => {
+        window.localStorage.setItem(
+          'tunido_user',
+          JSON.stringify({ id: 'u-stu', email: 'stu@test.cl', role: 'STUDENT' }),
+        );
+      },
+    );
     await act(async () => {
       root.unmount();
     });

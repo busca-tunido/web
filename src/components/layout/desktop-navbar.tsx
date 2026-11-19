@@ -17,6 +17,7 @@ import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { useAuth } from '@/lib/auth-context';
 import { countActiveFilters, getSortedFilterChips } from '@/lib/filter-chips';
 import { shouldBypassImageOptimization } from '@/lib/image-utils';
+import { preloadStudentModalChunk, preloadStudentTab } from '@/lib/student-prefetch';
 import type { NavTab, SearchFilters } from '@/lib/types';
 
 type DesktopNavIcon = ComponentType<AnimatedIconProps & { ref?: Ref<AnimatedIconHandle> }>;
@@ -32,10 +33,12 @@ function DesktopNavButton({
   item,
   isActive,
   onSelect,
+  onPreload,
 }: {
   item: DesktopNavLink;
   isActive: boolean;
   onSelect: () => void;
+  onPreload: () => void;
 }) {
   const Icon = item.icon;
   const { iconRef, start, triggerProps } = useAnimatedIconTrigger();
@@ -45,6 +48,16 @@ function DesktopNavButton({
       id={`desktop-nav-${item.id}`}
       type="button"
       {...triggerProps}
+      onMouseEnter={() => {
+        triggerProps.onMouseEnter();
+        onPreload();
+      }}
+      onFocus={() => {
+        onPreload();
+      }}
+      onPointerDown={() => {
+        onPreload();
+      }}
       onClick={() => {
         start();
         onSelect();
@@ -99,6 +112,7 @@ export function DesktopNavbar({
   onOpenAuthModal,
 }: DesktopNavbarProps) {
   const { user, favorites, logout } = useAuth();
+  const isAuthenticated = Boolean(user);
 
   const activeFiltersCount = useMemo(
     () =>
@@ -156,9 +170,16 @@ export function DesktopNavbar({
                 key={item.id}
                 item={item}
                 isActive={activeTab === item.id}
+                onPreload={() =>
+                  preloadStudentTab(item.id, {
+                    isAuthenticated,
+                    city: selectedCityName ?? filters.city,
+                  })
+                }
                 onSelect={() => {
                   onTabChange(item.id);
                   if (!user && (item.id === 'favorites' || item.id === 'history')) {
+                    preloadStudentModalChunk('auth');
                     onOpenAuthModal?.();
                   }
                 }}
@@ -237,6 +258,8 @@ export function DesktopNavbar({
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                onMouseEnter={() => preloadStudentTab('account', { isAuthenticated })}
+                onFocus={() => preloadStudentTab('account', { isAuthenticated })}
                 onClick={() => onTabChange('account')}
                 className={`flex items-center gap-2.5 rounded-full border border-border/80 bg-card p-1 pr-3 hover:bg-secondary transition cursor-pointer ${
                   activeTab === 'account' ? 'ring-2 ring-primary/40' : ''
@@ -285,6 +308,8 @@ export function DesktopNavbar({
             <button
               id="desktop-navbar-btn-login"
               type="button"
+              onMouseEnter={() => preloadStudentModalChunk('auth')}
+              onFocus={() => preloadStudentModalChunk('auth')}
               onClick={onOpenAuthModal ?? (() => onTabChange('account'))}
               className="flex items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary transition cursor-pointer"
             >
@@ -300,6 +325,8 @@ export function DesktopNavbar({
           <button
             id="desktop-filter-button"
             type="button"
+            onMouseEnter={() => preloadStudentModalChunk('filters')}
+            onFocus={() => preloadStudentModalChunk('filters')}
             onClick={onOpenFilterModal}
             className="relative flex h-8 items-center gap-1.5 rounded-full border border-sage/30 bg-sage/8 px-3 text-xs font-semibold text-sage-foreground hover:bg-sage/15 transition-colors shrink-0 cursor-pointer"
             aria-label="Filtros avanzados"

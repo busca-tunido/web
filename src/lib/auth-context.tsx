@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { cacheStore } from '@/lib/cache-store';
 import { authService } from '@/services/auth.service';
 import { favoritesService } from '@/services/favorites.service';
 import { isApiSuccess } from './api-response';
@@ -149,8 +150,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setFavorites([]);
       return;
     }
-    favoritesService
-      .fetchFavoriteIds()
+    cacheStore
+      .dedupePromise('student:favorites:ids', () => favoritesService.fetchFavoriteIds())
       .then((res) => {
         if (isApiSuccess(res) && Array.isArray(res.data)) {
           const ids = res.data;
@@ -204,6 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.removeItem('tunido_favs');
       sessionStorage.removeItem('tunido_stays_count');
+      cacheStore.invalidate(/^(student:|landlord:)/);
       window.dispatchEvent(new CustomEvent('tunido_favs_updated', { detail: [] }));
       await authService.logoutSession();
     } catch {}

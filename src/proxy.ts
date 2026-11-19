@@ -5,8 +5,9 @@ export function proxy(request: NextRequest): NextResponse {
   const token = request.cookies.get('tunido_token')?.value;
   const role = request.cookies.get('tunido_role')?.value;
   const pathname = request.nextUrl.pathname;
+  const requiresAuth = pathname.startsWith('/landlord') || pathname.startsWith('/account');
 
-  if (!token) {
+  if (requiresAuth && !token) {
     const url = new URL('/', request.url);
     url.searchParams.set('auth', 'login');
     return NextResponse.redirect(url);
@@ -23,6 +24,7 @@ export function proxy(request: NextRequest): NextResponse {
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', pathname);
+  requestHeaders.set('x-search', request.nextUrl.search);
 
   return NextResponse.next({
     request: {
@@ -34,5 +36,5 @@ export function proxy(request: NextRequest): NextResponse {
 export const middleware = proxy;
 
 export const config = {
-  matcher: ['/landlord/:path*', '/account/:path*'],
+  matcher: ['/landlord/:path*', '/account/:path*', '/explore', '/map', '/favorites', '/history'],
 };

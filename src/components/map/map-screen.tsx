@@ -12,6 +12,7 @@ import { env } from '@/env';
 import { useFavoriteAction } from '@/hooks/use-favorite-action';
 import { useMapViewportPensions } from '@/hooks/use-map-viewport-pensions';
 import { isApiSuccess } from '@/lib/api-response';
+import { cacheStore } from '@/lib/cache-store';
 import { matchesSearchFilters } from '@/lib/filter-matcher';
 import { shouldBypassImageOptimization } from '@/lib/image-utils';
 import {
@@ -19,6 +20,11 @@ import {
   getDominantRatingClassification,
   getMarkerThemeStyles,
 } from '@/lib/rating-tier';
+import {
+  prefetchPensionDetail,
+  STUDENT_CACHE_KEYS,
+  STUDENT_CACHE_TTLS,
+} from '@/lib/student-prefetch';
 import { useTheme } from '@/lib/theme-context';
 import type {
   CampusAreaDto,
@@ -52,6 +58,7 @@ type MapScreenProps = {
   onSelectPension: (pension: PensionItem) => void;
   onOpenPensionDetail: (pension: PensionItem) => void;
   filters?: SearchFilters;
+  isVisible?: boolean;
 };
 
 type DrawerState = 'minimized' | 'half' | 'maximized';
@@ -403,6 +410,7 @@ export function MapScreen({
   onSelectPension,
   onOpenPensionDetail,
   filters,
+  isVisible = true,
 }: MapScreenProps) {
   const onSelectPensionRef = useRef(onSelectPension);
   onSelectPensionRef.current = onSelectPension;
@@ -500,23 +508,45 @@ export function MapScreen({
 
   useEffect(() => {
     let isCancelled = false;
+    const cacheKey = STUDENT_CACHE_KEYS.campusAreas(activeCampusCity);
+    const cached = cacheStore.get<CampusAreaDto[]>(cacheKey);
+
+    if (cached) {
+      setCampusAreas(cached.data);
+      if (!cacheStore.isStale(cacheKey, STUDENT_CACHE_TTLS.campusAreas)) {
+        return;
+      }
+    }
+
     async function loadCampuses() {
       try {
-        const res = await fetchCampusAreas(
-          activeCampusCity ? { city: activeCampusCity } : undefined,
+        const res = await cacheStore.dedupePromise(cacheKey, () =>
+          fetchCampusAreas(activeCampusCity ? { city: activeCampusCity } : undefined),
         );
         if (!isCancelled && isApiSuccess(res) && Array.isArray(res.data)) {
+          cacheStore.set<CampusAreaDto[]>(cacheKey, res.data);
           setCampusAreas(res.data);
         }
       } catch {
         // ignore
       }
     }
-    loadCampuses();
+    void loadCampuses();
     return () => {
       isCancelled = true;
     };
   }, [activeCampusCity]);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    const rafId = requestAnimationFrame(() => {
+      const map = mapInstanceRef.current;
+      if (map) {
+        map.invalidateSize({ animate: false });
+      }
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, [isVisible]);
 
   const panToPension = useCallback((lat: number, lng: number) => {
     const map = mapInstanceRef.current;
@@ -1484,6 +1514,12 @@ function MapDrawerPensionList({
           >
             <button
               type="button"
+              onMouseEnter={() => {
+                void prefetchPensionDetail(pension.id);
+              }}
+              onFocus={() => {
+                void prefetchPensionDetail(pension.id);
+              }}
               onClick={() => {
                 setActivePinId(pension.id);
                 onSelectPension(pension);

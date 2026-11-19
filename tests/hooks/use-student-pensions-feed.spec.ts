@@ -1,8 +1,9 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createError, createSuccess } from '@/lib/api-response';
-import type { CityInfo, UniversityInfo } from '@/lib/types';
 import { useStudentPensionsFeed } from '@/hooks/use-student-pensions-feed';
+import { createError, createSuccess } from '@/lib/api-response';
+import { cacheStore } from '@/lib/cache-store';
+import type { CityInfo, UniversityInfo } from '@/lib/types';
 import { locationsService } from '@/services/locations.service';
 import { pensionsService } from '@/services/pensions.service';
 
@@ -80,17 +81,17 @@ const mockPaginated = (items: unknown[] = [], total = items.length, hasMore = fa
 describe('useStudentPensionsFeed', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    cacheStore.clear();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    cacheStore.clear();
   });
 
   describe('concurrent metadata initialization via Promise.allSettled', () => {
     it('loads cities and universities concurrently on mount', async () => {
-      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(
-        createSuccess(MOCK_TEST_CITIES),
-      );
+      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(createSuccess(MOCK_TEST_CITIES));
       vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(
         createSuccess(MOCK_TEST_UNIVERSITIES),
       );
@@ -113,9 +114,7 @@ describe('useStudentPensionsFeed', () => {
     });
 
     it('places detected GPS city at the start of the list', async () => {
-      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(
-        createSuccess(MOCK_TEST_CITIES),
-      );
+      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(createSuccess(MOCK_TEST_CITIES));
       vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(
         createSuccess(MOCK_TEST_UNIVERSITIES),
       );
@@ -136,9 +135,7 @@ describe('useStudentPensionsFeed', () => {
     });
 
     it('keeps cities available if universities request fails and provides retry trigger', async () => {
-      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(
-        createSuccess(MOCK_TEST_CITIES),
-      );
+      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(createSuccess(MOCK_TEST_CITIES));
       const uniSpy = vi
         .spyOn(locationsService, 'fetchUniversities')
         .mockRejectedValue(new Error('Network error on universities'));
@@ -191,17 +188,11 @@ describe('useStudentPensionsFeed', () => {
 
   describe('real paginated feed and dynamic bounds synchronization', () => {
     it('fetches pensions with full active filters', async () => {
-      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(
-        createSuccess([]),
-      );
-      vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(
-        createSuccess([]),
-      );
+      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(createSuccess([]));
+      vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(createSuccess([]));
       const pensionsSpy = vi
         .spyOn(pensionsService, 'fetchPaginatedPensions')
-        .mockResolvedValue(
-          createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 1, false)),
-        );
+        .mockResolvedValue(createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 1, false)));
 
       const { result } = renderHook(() =>
         useStudentPensionsFeed({
@@ -235,23 +226,47 @@ describe('useStudentPensionsFeed', () => {
         }),
       );
       expect(result.current.pensions).toHaveLength(1);
-      expect(result.current.pensions[0].title).toBe(
-        'Pensión Universitaria Bellavista',
+      expect(result.current.pensions[0].title).toBe('Pensión Universitaria Bellavista');
+    });
+
+    it('serves fresh SWR cache hits for repeated filter queries and bypasses cache on refetch()', async () => {
+      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(createSuccess([]));
+      vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(createSuccess([]));
+      const pensionsSpy = vi
+        .spyOn(pensionsService, 'fetchPaginatedPensions')
+        .mockResolvedValue(createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 1, false)));
+
+      const firstHook = renderHook(() =>
+        useStudentPensionsFeed({ filters: { query: '', city: 'Santiago' } }),
       );
+
+      await waitFor(() => {
+        expect(firstHook.result.current.isLoadingPensions).toBe(false);
+      });
+      expect(pensionsSpy).toHaveBeenCalledTimes(1);
+      firstHook.unmount();
+
+      const secondHook = renderHook(() =>
+        useStudentPensionsFeed({ filters: { query: '', city: 'Santiago' } }),
+      );
+
+      expect(secondHook.result.current.isLoadingPensions).toBe(false);
+      expect(secondHook.result.current.pensions).toHaveLength(1);
+      expect(pensionsSpy).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        await secondHook.result.current.refetch();
+      });
+
+      expect(pensionsSpy).toHaveBeenCalledTimes(2);
     });
 
     it('queries nearby pensions when user coordinates are present and sortBy is distance', async () => {
-      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(
-        createSuccess([]),
-      );
-      vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(
-        createSuccess([]),
-      );
+      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(createSuccess([]));
+      vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(createSuccess([]));
       const nearbySpy = vi
         .spyOn(pensionsService, 'fetchNearbyPensions')
-        .mockResolvedValue(
-          createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 1, false)),
-        );
+        .mockResolvedValue(createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 1, false)));
 
       const { result } = renderHook(() =>
         useStudentPensionsFeed({
@@ -270,17 +285,11 @@ describe('useStudentPensionsFeed', () => {
     });
 
     it('synchronizes dynamic map bounding box on setBounds', async () => {
-      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(
-        createSuccess([]),
-      );
-      vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(
-        createSuccess([]),
-      );
+      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(createSuccess([]));
+      vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(createSuccess([]));
       const pensionsSpy = vi
         .spyOn(pensionsService, 'fetchPaginatedPensions')
-        .mockResolvedValue(
-          createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 1, false)),
-        );
+        .mockResolvedValue(createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 1, false)));
 
       const { result } = renderHook(() => useStudentPensionsFeed());
 
@@ -310,17 +319,11 @@ describe('useStudentPensionsFeed', () => {
     });
 
     it('loads next page on loadMore and appends new items', async () => {
-      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(
-        createSuccess([]),
-      );
-      vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(
-        createSuccess([]),
-      );
+      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(createSuccess([]));
+      vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(createSuccess([]));
       const pensionsSpy = vi
         .spyOn(pensionsService, 'fetchPaginatedPensions')
-        .mockResolvedValueOnce(
-          createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 2, true)),
-        )
+        .mockResolvedValueOnce(createSuccess(mockPaginated([MOCK_TEST_PENSION_DTO], 2, true)))
         .mockResolvedValueOnce(
           createSuccess(
             mockPaginated(
@@ -337,9 +340,7 @@ describe('useStudentPensionsFeed', () => {
           ),
         );
 
-      const { result } = renderHook(() =>
-        useStudentPensionsFeed({ limit: 1 }),
-      );
+      const { result } = renderHook(() => useStudentPensionsFeed({ limit: 1 }));
 
       await waitFor(() => {
         expect(result.current.isLoadingPensions).toBe(false);
@@ -352,25 +353,17 @@ describe('useStudentPensionsFeed', () => {
         await result.current.loadMore();
       });
 
-      expect(pensionsSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ page: 2 }),
-      );
+      expect(pensionsSpy).toHaveBeenCalledWith(expect.objectContaining({ page: 2 }));
       expect(result.current.pensions).toHaveLength(2);
       expect(result.current.hasMore).toBe(false);
     });
 
     it('captures network failure gracefully and supports refetch', async () => {
-      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(
-        createSuccess([]),
-      );
-      vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(
-        createSuccess([]),
-      );
+      vi.spyOn(locationsService, 'fetchCities').mockResolvedValue(createSuccess([]));
+      vi.spyOn(locationsService, 'fetchUniversities').mockResolvedValue(createSuccess([]));
       const pensionsSpy = vi
         .spyOn(pensionsService, 'fetchPaginatedPensions')
-        .mockResolvedValueOnce(
-          createError('Servidor no disponible', 503),
-        );
+        .mockResolvedValueOnce(createError('Servidor no disponible', 503));
 
       const { result } = renderHook(() => useStudentPensionsFeed());
 

@@ -1,14 +1,32 @@
 'use client';
 
-import { AnimatePresence, m } from 'motion/react';
 import dynamic from 'next/dynamic';
-import { useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
 import { NetworkErrorBanner } from '@/components/common/network-error-state';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { DesktopNavbar } from '@/components/layout/desktop-navbar';
 import { TopSearchBar } from '@/components/layout/top-search-bar';
 import type { InitialPrefetchData } from '@/components/shells/role-router';
+import { FavoritesSkeleton } from '@/components/ui/skeletons/favorites-skeleton';
+import { HistorySkeleton } from '@/components/ui/skeletons/history-skeleton';
 import { MapDrawerSkeleton } from '@/components/ui/skeletons/map-drawer-skeleton';
+import { StudentAccountSkeleton } from '@/components/ui/skeletons/student-skeletons';
+import { NavigationProvider, useNavigation } from '@/contexts/navigation-context';
+import { usePensionComparison } from '@/contexts/pension-comparison-context';
+import { SearchFiltersProvider, useSearchFilters } from '@/contexts/search-filters-context';
+import { useStudentPensionsFeed } from '@/hooks/use-student-pensions-feed';
+import type { UrlNavigationState } from '@/hooks/use-url-navigation-state';
+import { useAuth } from '@/lib/auth-context';
+import { preloadStudentModalChunk } from '@/lib/student-prefetch';
+import {
+  assertNever,
+  createInitialStudentShellState,
+  STUDENT_TAB_CONFIG,
+  studentShellReducer,
+} from '@/lib/student-view-state';
+import type { CityInfo, NavTab, UniversityInfo } from '@/lib/types';
+import { isValidTab } from '@/lib/url-navigation';
+import { useUserLocation } from '@/lib/use-user-location';
 
 const ExploreScreen = dynamic(
   () => import('@/components/explore/explore-screen').then((mod) => mod.ExploreScreen),
@@ -25,18 +43,27 @@ const MapScreen = dynamic(
 
 const FavoritesScreen = dynamic(
   () => import('@/components/favorites/favorites-screen').then((mod) => mod.FavoritesScreen),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => <FavoritesSkeleton count={4} />,
+  },
 );
 
 const HistoryScreen = dynamic(
   () => import('@/components/history/history-screen').then((mod) => mod.HistoryScreen),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => <HistorySkeleton count={3} />,
+  },
 );
 
 const StudentAccountScreen = dynamic(
   () =>
     import('@/components/account/student-account-screen').then((mod) => mod.StudentAccountScreen),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => <StudentAccountSkeleton />,
+  },
 );
 
 const PensionDetailModal = dynamic(
@@ -54,18 +81,11 @@ const AuthModal = dynamic(
   { ssr: false },
 );
 
-import { NavigationProvider, useNavigation } from '@/contexts/navigation-context';
-import { usePensionComparison } from '@/contexts/pension-comparison-context';
-import { SearchFiltersProvider, useSearchFilters } from '@/contexts/search-filters-context';
-import { useStudentPensionsFeed } from '@/hooks/use-student-pensions-feed';
-import type { UrlNavigationState } from '@/hooks/use-url-navigation-state';
-import type { CityInfo, NavTab, UniversityInfo } from '@/lib/types';
-import { useUserLocation } from '@/lib/use-user-location';
-
 export type StudentAppShellProps = {
   initialData?: InitialPrefetchData;
   initialTab?: NavTab;
   initialNavigationState?: Partial<UrlNavigationState>;
+  children?: ReactNode;
 };
 
 function useHasEverOpened(isOpen: boolean): boolean {
@@ -81,10 +101,13 @@ function useHasEverOpened(isOpen: boolean): boolean {
 function StudentAppShellContent({
   initialData,
   initialCity,
+  resolvedInitialTab,
 }: {
   initialData?: InitialPrefetchData;
   initialCity?: string | null;
+  resolvedInitialTab: NavTab;
 }) {
+  const { isAuthenticated } = useAuth();
   const comparison = usePensionComparison();
   const {
     activeTab,
@@ -109,6 +132,16 @@ function StudentAppShellContent({
     setCityAndUni,
     handleSelectCity,
   } = useNavigation();
+
+  const [shellState, dispatchShell] = useReducer(
+    studentShellReducer,
+    resolvedInitialTab,
+    createInitialStudentShellState,
+  );
+
+  useEffect(() => {
+    dispatchShell({ type: 'SYNC_ROUTE_TAB', tab: activeTab });
+  }, [activeTab]);
 
   const { filters, setFilters, resetFilters, clearCity } = useSearchFilters();
 
@@ -165,22 +198,17 @@ function StudentAppShellContent({
     initialGeo: initialData?.serverGeo ?? null,
   });
 
+  const activeTabConfig = STUDENT_TAB_CONFIG[activeTab];
+  const isViewportLayout = activeTabConfig.layoutMode === 'viewport';
+
   useEffect(() => {
     if (isPensionDetailOpen && selectedPension) {
       document.title = `${selectedPension.title} | BuscaTuNido`;
       return;
     }
 
-    const tabTitleMap: Record<NavTab, string> = {
-      explore: 'Explorar | BuscaTuNido',
-      map: 'Mapa | BuscaTuNido',
-      favorites: 'Favoritos | BuscaTuNido',
-      history: 'Estadías | BuscaTuNido',
-      account: 'Cuenta | BuscaTuNido',
-    };
-
-    document.title = tabTitleMap[activeTab] ?? 'BuscaTuNido';
-  }, [activeTab, isPensionDetailOpen, selectedPension]);
+    document.title = activeTabConfig.title ?? 'BuscaTuNido';
+  }, [activeTabConfig.title, isPensionDetailOpen, selectedPension]);
 
   useEffect(() => {
     if (cities.length > 0) {
@@ -196,6 +224,32 @@ function StudentAppShellContent({
       }
     }
   }, [urlPensionId, pensions, selectedPension?.id, setSelectedPension]);
+
+  // Idle preload of secondary tabs and modal chunks so first click feels instant
+  useEffect(() => {
+    if (typeof window === 'undefined' || process.env.NODE_ENV === 'test') return;
+
+    const runIdlePreload = () => {
+      preloadStudentModalChunk('detail');
+      preloadStudentModalChunk('filters');
+      for (const tab of ['map', 'favorites', 'history', 'account'] as const) {
+        if (tab !== activeTab) {
+          STUDENT_TAB_CONFIG[tab].preload({
+            isAuthenticated,
+            city: filters.city ?? mapTargetCity,
+          });
+        }
+      }
+    };
+
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(runIdlePreload, { timeout: 1500 });
+      return () => window.cancelIdleCallback(id);
+    }
+
+    const timer = globalThis.setTimeout(runIdlePreload, 900);
+    return () => globalThis.clearTimeout(timer);
+  }, [activeTab, filters.city, isAuthenticated, mapTargetCity]);
 
   const handleSelectUniversity = (uni: UniversityInfo) => {
     setSelectedPension(null);
@@ -218,10 +272,78 @@ function StudentAppShellContent({
   const shouldMountFilterDrawer = useHasEverOpened(isFiltersOpen);
   const shouldMountAuthModal = useHasEverOpened(isAuthModalOpen);
 
+  const renderTabScreen = (tab: NavTab) => {
+    switch (tab) {
+      case 'explore':
+        return (
+          <ExploreScreen
+            cities={cities}
+            universities={universities}
+            isLoadingMetadata={isLoadingMetadata}
+            featuredPensions={pensions}
+            selectedCity={null}
+            onSelectCity={(city) => {
+              if (city === null) {
+                setSelectedPension(null);
+                setMapTargetCity(null);
+                setSelectedUniversity(null);
+              } else {
+                handleSelectCity(city);
+              }
+            }}
+            onSelectUniversity={handleSelectUniversity}
+            onSelectPension={openPensionDetail}
+            onNavigateToMap={() => navigateTab('map')}
+            hasMore={hasMore}
+            isLoadingMore={isLoadingMore}
+            isLoadingPensions={isLoadingPensions}
+            onLoadMorePensions={loadMorePensions}
+            nearbyCityCounts={nearbyCityCounts}
+            totalPensions={totalPensions}
+            onResetFilters={handleResetAll}
+          />
+        );
+      case 'map':
+        return (
+          <MapScreen
+            isVisible={activeTab === 'map'}
+            pensions={pensions}
+            cities={cities}
+            selectedPension={selectedPension}
+            selectedCity={mapTargetCity}
+            selectedUniversity={selectedUniversity}
+            userLocation={userLocation}
+            browserLocation={browserLocation}
+            locationStatus={locationStatus}
+            locationSource={locationSource}
+            locationError={locationError}
+            onRequestLocation={requestLocation}
+            onSelectPension={selectPension}
+            onOpenPensionDetail={openPensionDetail}
+            filters={effectiveFilters}
+          />
+        );
+      case 'favorites':
+        return (
+          <FavoritesScreen
+            allPensions={pensions}
+            onSelectPension={openPensionDetail}
+            onExplore={() => navigateTab('explore')}
+          />
+        );
+      case 'history':
+        return <HistoryScreen onExplore={() => navigateTab('explore')} />;
+      case 'account':
+        return <StudentAccountScreen />;
+      default:
+        return assertNever(tab);
+    }
+  };
+
   return (
     <main
       className={`relative ${
-        activeTab === 'map' ? 'h-dvh overflow-hidden' : 'min-h-screen'
+        isViewportLayout ? 'h-dvh overflow-hidden' : 'min-h-screen'
       } bg-background text-foreground flex flex-col justify-between transition-colors`}
     >
       <DesktopNavbar
@@ -238,12 +360,12 @@ function StudentAppShellContent({
 
       <div
         className={`w-full flex-1 flex flex-col ${
-          activeTab === 'map'
+          isViewportLayout
             ? 'h-full overflow-hidden pb-[68px] md:pb-0'
             : 'mx-auto max-w-lg md:max-w-7xl md:px-6 lg:px-8 pb-20 md:pb-12'
         }`}
       >
-        {activeTab !== 'account' && (
+        {activeTabConfig.showSearchBar && (
           <TopSearchBar
             filters={filters}
             onFilterChange={setFilters}
@@ -260,79 +382,21 @@ function StudentAppShellContent({
           </div>
         )}
 
-        <div className={activeTab === 'map' ? 'flex-1 relative overflow-hidden h-full' : 'flex-1'}>
-          <AnimatePresence mode="wait">
-            <m.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-              className={activeTab === 'map' ? 'h-full w-full' : 'w-full'}
-            >
-              {activeTab === 'explore' && (
-                <ExploreScreen
-                  cities={cities}
-                  universities={universities}
-                  isLoadingMetadata={isLoadingMetadata}
-                  featuredPensions={pensions}
-                  selectedCity={null}
-                  onSelectCity={(city) => {
-                    if (city === null) {
-                      setSelectedPension(null);
-                      setMapTargetCity(null);
-                      setSelectedUniversity(null);
-                    } else {
-                      handleSelectCity(city);
-                    }
-                  }}
-                  onSelectUniversity={handleSelectUniversity}
-                  onSelectPension={openPensionDetail}
-                  onNavigateToMap={() => navigateTab('map')}
-                  hasMore={hasMore}
-                  isLoadingMore={isLoadingMore}
-                  isLoadingPensions={isLoadingPensions}
-                  onLoadMorePensions={loadMorePensions}
-                  nearbyCityCounts={nearbyCityCounts}
-                  totalPensions={totalPensions}
-                  onResetFilters={handleResetAll}
-                />
-              )}
-
-              {activeTab === 'map' && (
-                <MapScreen
-                  pensions={pensions}
-                  cities={cities}
-                  selectedPension={selectedPension}
-                  selectedCity={mapTargetCity}
-                  selectedUniversity={selectedUniversity}
-                  userLocation={userLocation}
-                  browserLocation={browserLocation}
-                  locationStatus={locationStatus}
-                  locationSource={locationSource}
-                  locationError={locationError}
-                  onRequestLocation={requestLocation}
-                  onSelectPension={selectPension}
-                  onOpenPensionDetail={openPensionDetail}
-                  filters={effectiveFilters}
-                />
-              )}
-
-              {activeTab === 'favorites' && (
-                <FavoritesScreen
-                  allPensions={pensions}
-                  onSelectPension={openPensionDetail}
-                  onExplore={() => navigateTab('explore')}
-                />
-              )}
-
-              {activeTab === 'history' && (
-                <HistoryScreen onExplore={() => navigateTab('explore')} />
-              )}
-
-              {activeTab === 'account' && <StudentAccountScreen />}
-            </m.div>
-          </AnimatePresence>
+        <div className={isViewportLayout ? 'flex-1 relative overflow-hidden h-full' : 'flex-1'}>
+          {shellState.visitedTabs.map((tab) => {
+            const isCurrent = activeTab === tab;
+            const isTabViewport = STUDENT_TAB_CONFIG[tab].layoutMode === 'viewport';
+            return (
+              <section
+                key={tab}
+                hidden={!isCurrent}
+                aria-hidden={!isCurrent}
+                className={isTabViewport ? 'h-full w-full' : 'w-full'}
+              >
+                {renderTabScreen(tab)}
+              </section>
+            );
+          })}
         </div>
       </div>
 
@@ -365,11 +429,13 @@ function StudentAppShellContent({
 type StudentAppShellWithProvidersProps = {
   initialData?: InitialPrefetchData;
   initialCity?: string | null;
+  resolvedInitialTab: NavTab;
 };
 
 function StudentAppShellWithProviders({
   initialData,
   initialCity,
+  resolvedInitialTab,
 }: StudentAppShellWithProvidersProps) {
   const { urlCity, urlUni } = useNavigation();
   const initialFilters = useMemo(
@@ -382,7 +448,11 @@ function StudentAppShellWithProviders({
 
   return (
     <SearchFiltersProvider initialFilters={initialFilters}>
-      <StudentAppShellContent initialData={initialData} initialCity={initialCity} />
+      <StudentAppShellContent
+        initialData={initialData}
+        initialCity={initialCity}
+        resolvedInitialTab={resolvedInitialTab}
+      />
     </SearchFiltersProvider>
   );
 }
@@ -391,12 +461,20 @@ export function StudentAppShell({
   initialData,
   initialTab = 'explore',
   initialNavigationState,
+  children,
 }: StudentAppShellProps) {
+  const resolvedInitialTab: NavTab =
+    initialNavigationState?.tab && isValidTab(initialNavigationState.tab)
+      ? initialNavigationState.tab
+      : initialTab;
+
   return (
     <NavigationProvider initialTab={initialTab} initialNavigationState={initialNavigationState}>
+      {children}
       <StudentAppShellWithProviders
         initialData={initialData}
         initialCity={initialNavigationState?.city ?? null}
+        resolvedInitialTab={resolvedInitialTab}
       />
     </NavigationProvider>
   );

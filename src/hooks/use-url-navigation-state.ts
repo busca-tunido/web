@@ -40,6 +40,7 @@ export type UseUrlNavigationReturn = {
   isPublishReviewOpen: boolean;
   hasOpenOverlay: boolean;
   navigateTab: (tab: NavTab) => void;
+  syncTabFromRoute: (tab: NavTab) => void;
   setTab: (tab: NavTab) => void;
   setCity: (city: string | null, options?: { push?: boolean }) => void;
   setUni: (uni: string | null, options?: { push?: boolean }) => void;
@@ -149,6 +150,21 @@ export function useUrlNavigationState(
     },
     [updateHistory],
   );
+
+  const syncTabFromRoute = useCallback((tab: NavTab): void => {
+    if (stateRef.current.tab === tab) {
+      return;
+    }
+    overlayDepthRef.current = 0;
+    setState((prev) => ({
+      ...prev,
+      tab,
+      pensionId: null,
+      isFiltersOpen: false,
+      reviewsPensionId: null,
+      publishReviewPensionId: null,
+    }));
+  }, []);
 
   const setCity = useCallback(
     (city: string | null, options?: { push?: boolean }): void => {
@@ -424,6 +440,7 @@ export function useUrlNavigationState(
     isPublishReviewOpen,
     hasOpenOverlay,
     navigateTab,
+    syncTabFromRoute,
     setTab: navigateTab,
     setCity,
     setUni,

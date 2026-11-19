@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type ApiResponse, isApiSuccess } from '@/lib/api-response';
+import { cacheStore } from '@/lib/cache-store';
+import { STUDENT_CACHE_KEYS, STUDENT_CACHE_TTLS } from '@/lib/student-prefetch';
 import type {
   CityInfo,
   NearbyCityCount,
@@ -19,6 +21,13 @@ export type MapBounds = {
   maxLat: number;
   minLng: number;
   maxLng: number;
+};
+
+type CachedFeedResult = {
+  items: PensionItem[];
+  total: number;
+  hasMore: boolean;
+  nearbyCityCounts: NearbyCityCount[];
 };
 
 export type UseStudentPensionsFeedOptions = {
@@ -128,6 +137,7 @@ export function useStudentPensionsFeed(
   const initialGeoRef = useRef<{ latitude?: number | null; longitude?: number | null } | null>(
     initialGeo,
   );
+  const seededInitialCacheRef = useRef<boolean>(false);
 
   const loadMetadata = useCallback(async (): Promise<void> => {
     setIsLoadingMetadata(true);
@@ -241,10 +251,101 @@ export function useStudentPensionsFeed(
   const minLng = bounds?.minLng;
   const maxLng = bounds?.maxLng;
 
+  const buildFeedCacheKey = useCallback((): string | null => {
+    if (bounds) return null;
+    const serialized = JSON.stringify({
+      city: filterCity?.trim().toLowerCase() || '',
+      neighborhood: filterNeighborhood?.trim().toLowerCase() || '',
+      uni: filterUni || '',
+      query: filterQuery?.trim().toLowerCase() || '',
+      minPrice: filterMinPrice ?? null,
+      maxPrice: filterMaxPrice ?? null,
+      gender: filterGender && filterGender !== 'ALL' ? filterGender : '',
+      roomType: filterRoomType || '',
+      bath: Boolean(filterHasPrivateBathroom),
+      meals: Boolean(filterIncludesMeals),
+      amenities: filterAmenitiesKey,
+      minBeds: filterMinBeds ?? null,
+      onlyAvailable: Boolean(filterOnlyAvailable),
+      internet: Boolean(filterInternetIncluded),
+      pets: Boolean(filterPetsAllowed),
+      guests: Boolean(filterGuestsAllowed),
+      smoking: Boolean(filterSmokingAllowed),
+      noCurfew: Boolean(filterNoCurfew),
+      water: Boolean(filterWaterIncluded),
+      electricity: Boolean(filterElectricityIncluded),
+      gas: Boolean(filterGasIncluded),
+      ratingTier: filterRatingTier || '',
+      sortBy: effectiveSortBy,
+      limit,
+      lat: userLat !== undefined ? Number(userLat.toFixed(2)) : null,
+      lng: userLng !== undefined ? Number(userLng.toFixed(2)) : null,
+      radiusKm,
+    });
+    return STUDENT_CACHE_KEYS.pensionsFeed(serialized);
+  }, [
+    bounds,
+    effectiveSortBy,
+    filterAmenitiesKey,
+    filterCity,
+    filterElectricityIncluded,
+    filterGasIncluded,
+    filterGender,
+    filterGuestsAllowed,
+    filterHasPrivateBathroom,
+    filterIncludesMeals,
+    filterInternetIncluded,
+    filterMaxPrice,
+    filterMinBeds,
+    filterMinPrice,
+    filterNeighborhood,
+    filterNoCurfew,
+    filterOnlyAvailable,
+    filterPetsAllowed,
+    filterQuery,
+    filterRatingTier,
+    filterRoomType,
+    filterSmokingAllowed,
+    filterUni,
+    filterWaterIncluded,
+    limit,
+    radiusKm,
+    userLat,
+    userLng,
+  ]);
+
+  useEffect(() => {
+    if (seededInitialCacheRef.current || !hasHydratedPensions || !initialPensions) return;
+    const key = buildFeedCacheKey();
+    if (!key) return;
+    seededInitialCacheRef.current = true;
+    const totalCount = initialTotal ?? initialPensions.length;
+    cacheStore.set<CachedFeedResult>(key, {
+      items: initialPensions,
+      total: totalCount,
+      hasMore: initialPensions.length < totalCount,
+      nearbyCityCounts: [],
+    });
+  }, [buildFeedCacheKey, hasHydratedPensions, initialPensions, initialTotal]);
+
   const fetchPensionsData = useCallback(
-    async (pageIndex: number, isLoadMore = false): Promise<void> => {
+    async (pageIndex: number, isLoadMore = false, force = false): Promise<void> => {
       const requestId = ++activeRequestIdRef.current;
-      if (isLoadMore) {
+      const cacheKey = !isLoadMore && pageIndex === 1 ? buildFeedCacheKey() : null;
+      const cached = cacheKey && !force ? cacheStore.get<CachedFeedResult>(cacheKey) : undefined;
+
+      if (cached) {
+        setPensions(cached.data.items);
+        setTotal(cached.data.total);
+        setHasMore(cached.data.hasMore);
+        setNearbyCityCounts(cached.data.nearbyCityCounts);
+        setPage(1);
+        setIsLoadingPensions(false);
+        setError(null);
+        if (cacheKey && !cacheStore.isStale(cacheKey, STUDENT_CACHE_TTLS.pensionsFeed)) {
+          return;
+        }
+      } else if (isLoadMore) {
         setIsLoadingMore(true);
       } else {
         setIsLoadingPensions(true);
@@ -332,6 +433,15 @@ export function useStudentPensionsFeed(
 
         if (isApiSuccess(res)) {
           const mappedItems: PensionItem[] = [...res.data.items];
+          const nextTotal = res.data.total ?? mappedItems.length;
+          const nextHasMore = res.data.hasMore ?? false;
+          const nextNearby = res.data.nearbyCityCounts
+            ? res.data.nearbyCityCounts.map((c) => ({
+                city: c.city,
+                count: c.count,
+                distanceKm: c.distanceKm ?? 0,
+              }))
+            : [];
 
           if (isLoadMore) {
             setPensions((prev) => {
@@ -341,25 +451,27 @@ export function useStudentPensionsFeed(
             });
           } else {
             setPensions(mappedItems);
+            if (cacheKey) {
+              cacheStore.set<CachedFeedResult>(cacheKey, {
+                items: mappedItems,
+                total: nextTotal,
+                hasMore: nextHasMore,
+                nearbyCityCounts: nextNearby,
+              });
+            }
           }
 
-          setTotal(res.data.total ?? mappedItems.length);
-          setHasMore(res.data.hasMore ?? false);
+          setTotal(nextTotal);
+          setHasMore(nextHasMore);
           setPage(pageIndex);
           if (res.data.nearbyCityCounts) {
-            setNearbyCityCounts(
-              res.data.nearbyCityCounts.map((c) => ({
-                city: c.city,
-                count: c.count,
-                distanceKm: c.distanceKm ?? 0,
-              })),
-            );
+            setNearbyCityCounts(nextNearby);
           }
-        } else {
+        } else if (!cached) {
           setError(res.message || 'No pudimos conectar con el servidor');
         }
       } catch (err) {
-        if (requestId === activeRequestIdRef.current && isMountedRef.current) {
+        if (requestId === activeRequestIdRef.current && isMountedRef.current && !cached) {
           setError(err instanceof Error ? err.message : 'No pudimos conectar con el servidor');
         }
       } finally {
@@ -371,6 +483,7 @@ export function useStudentPensionsFeed(
     },
     [
       bounds,
+      buildFeedCacheKey,
       effectiveSortBy,
       filterAmenitiesKey,
       filterCity,
@@ -452,7 +565,7 @@ export function useStudentPensionsFeed(
     }
 
     skipInitialPensionsRef.current = false;
-    fetchPensionsData(1, false);
+    fetchPensionsData(1, false, false);
   }, [
     autoLoad,
     bounds,
@@ -488,11 +601,11 @@ export function useStudentPensionsFeed(
     if (isLoadingPensions || isLoadingMore || !hasMore) {
       return;
     }
-    await fetchPensionsData(page + 1, true);
+    await fetchPensionsData(page + 1, true, false);
   }, [fetchPensionsData, hasMore, isLoadingMore, isLoadingPensions, page]);
 
   const refetch = useCallback(async (): Promise<void> => {
-    await fetchPensionsData(1, false);
+    await fetchPensionsData(1, false, true);
   }, [fetchPensionsData]);
 
   useEffect(() => {

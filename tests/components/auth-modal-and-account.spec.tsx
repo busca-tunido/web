@@ -18,6 +18,7 @@ let mockUser: {
   universityName?: string;
   phone?: string;
 } | null = null;
+let mockIsLoading = false;
 
 vi.mock('@/lib/auth-context', () => ({
   useAuth: () => ({
@@ -25,7 +26,7 @@ vi.mock('@/lib/auth-context', () => ({
     logout: vi.fn(),
     user: mockUser,
     isAuthenticated: Boolean(mockUser),
-    isLoading: false,
+    isLoading: mockIsLoading,
     favorites: [],
     isFavorite: () => false,
     toggleFavorite: vi.fn(),
@@ -43,6 +44,7 @@ vi.mock('@/lib/theme-context', () => ({
 describe('AuthModal and Unauthenticated Account Access', () => {
   beforeEach(() => {
     mockUser = null;
+    mockIsLoading = false;
     vi.clearAllMocks();
   });
 
@@ -52,6 +54,15 @@ describe('AuthModal and Unauthenticated Account Access', () => {
 
     expect(screen.getByText('Iniciar sesión o regístrate')).toBeDefined();
     expect(screen.getByText('Soy estudiante')).toBeDefined();
+  });
+
+  it('renders StudentAccountSkeleton instead of AuthScreen while auth is resolving', () => {
+    mockUser = null;
+    mockIsLoading = true;
+    render(<StudentAccountScreen />);
+
+    expect(screen.getByText(/cargando perfil de estudiante/i)).toBeDefined();
+    expect(screen.queryByText('Iniciar sesión o regístrate')).toBeNull();
   });
 
   it('triggers onOpenAuthModal when clicking Ingresar button on DesktopNavbar', () => {

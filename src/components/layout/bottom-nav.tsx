@@ -9,6 +9,7 @@ import { MapPinIcon } from '@/components/ui/map-pin';
 import { UserIcon } from '@/components/ui/user';
 import { useAnimatedIconTrigger } from '@/hooks/use-animated-icon';
 import { useAuth } from '@/lib/auth-context';
+import { preloadStudentModalChunk, preloadStudentTab } from '@/lib/student-prefetch';
 import type { NavTab } from '@/lib/types';
 
 type BottomNavIcon = ComponentType<AnimatedIconProps & { ref?: Ref<AnimatedIconHandle> }>;
@@ -24,10 +25,12 @@ function BottomNavTabButton({
   item,
   isActive,
   onSelect,
+  onPreload,
 }: {
   item: BottomNavItem;
   isActive: boolean;
   onSelect: () => void;
+  onPreload: () => void;
 }) {
   const Icon = item.icon;
   const { iconRef, start, triggerProps } = useAnimatedIconTrigger();
@@ -37,6 +40,16 @@ function BottomNavTabButton({
       id={`nav-tab-${item.id}`}
       type="button"
       {...triggerProps}
+      onMouseEnter={() => {
+        triggerProps.onMouseEnter();
+        onPreload();
+      }}
+      onFocus={() => {
+        onPreload();
+      }}
+      onPointerDown={() => {
+        onPreload();
+      }}
       onClick={() => {
         start();
         onSelect();
@@ -77,6 +90,7 @@ type BottomNavProps = {
 
 export function BottomNav({ activeTab, onTabChange, onOpenAuthModal }: BottomNavProps) {
   const { user, favorites } = useAuth();
+  const isAuthenticated = Boolean(user);
 
   const navItems: BottomNavItem[] = [
     { id: 'explore', label: 'Explorar', icon: CompassIcon },
@@ -98,13 +112,22 @@ export function BottomNav({ activeTab, onTabChange, onOpenAuthModal }: BottomNav
             key={item.id}
             item={item}
             isActive={activeTab === item.id}
+            onPreload={() => {
+              if (item.id === 'account' && !user) {
+                preloadStudentModalChunk('auth');
+                return;
+              }
+              preloadStudentTab(item.id, { isAuthenticated });
+            }}
             onSelect={() => {
               if (item.id === 'account' && !user) {
+                preloadStudentModalChunk('auth');
                 onOpenAuthModal?.();
                 return;
               }
               onTabChange(item.id);
               if (!user && (item.id === 'favorites' || item.id === 'history')) {
+                preloadStudentModalChunk('auth');
                 onOpenAuthModal?.();
               }
             }}

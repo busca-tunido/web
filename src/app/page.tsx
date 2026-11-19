@@ -12,7 +12,9 @@ export default async function HomePage(props: HomePageProps) {
 
   const resolvedSearchParams = props.searchParams ? await props.searchParams : {};
   const initialNavState = parseSearchParams(resolvedSearchParams, 'explore');
-  const initialData = await getStudentInitialData();
+  const initialData = await getStudentInitialData({
+    city: initialNavState.city ?? undefined,
+  });
 
   return (
     <RoleRouter

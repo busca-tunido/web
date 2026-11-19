@@ -42,6 +42,8 @@ let mockStayHistory = {
   stays: [] as unknown[],
   isLoading: false,
   expectedCount: 3,
+  error: null as string | null,
+  refreshStays: vi.fn(),
   formatDateRange: () => '',
 };
 
@@ -55,6 +57,7 @@ const mockNavValue = {
   isAuthModalOpen: false,
   activeTab: 'explore' as const,
   navigateTab: vi.fn(),
+  syncTabFromRoute: vi.fn(),
   selectedPension: null,
   selectPension: vi.fn(),
   setSelectedPension: vi.fn(),
@@ -221,7 +224,7 @@ describe('AuthGate and Guest Incentive Screens', () => {
     expect(screen.queryByTestId('secret-content')).toBeNull();
   });
 
-  it('renders nothing when isLoading is true on FavoritesScreen', () => {
+  it('renders FavoritesSkeleton without flashing guest incentive when isLoading is true on FavoritesScreen', () => {
     mockIsLoading = true;
     mockUser = null;
 
@@ -229,17 +232,17 @@ describe('AuthGate and Guest Incentive Screens', () => {
       <FavoritesScreen allPensions={[]} onSelectPension={vi.fn()} onExplore={vi.fn()} />,
     );
 
-    expect(container.firstChild).toBeNull();
+    expect(container.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0);
     expect(screen.queryByText('Guarda y compara tus pensiones favoritas')).toBeNull();
   });
 
-  it('renders nothing when isLoading is true on HistoryScreen', () => {
+  it('renders HistorySkeleton without flashing guest incentive when isLoading is true on HistoryScreen', () => {
     mockIsLoading = true;
     mockUser = null;
 
     const { container } = render(<HistoryScreen onExplore={vi.fn()} />);
 
-    expect(container.firstChild).toBeNull();
+    expect(container.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0);
     expect(screen.queryByText('Construye tu historial de estadías')).toBeNull();
   });
 
@@ -272,6 +275,8 @@ describe('AuthGate and Guest Incentive Screens', () => {
       stays: [],
       isLoading: false,
       expectedCount: 3,
+      error: null,
+      refreshStays: vi.fn(),
       formatDateRange: () => '',
     };
 
@@ -295,6 +300,8 @@ describe('AuthGate and Guest Incentive Screens', () => {
       stays: [],
       isLoading: true,
       expectedCount: 2,
+      error: null,
+      refreshStays: vi.fn(),
       formatDateRange: () => '',
     };
 

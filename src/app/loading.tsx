@@ -1,5 +1,5 @@
-import { SplashScreen } from '@/components/layout/splash-screen';
+import { PortalRouteLoadingSkeleton } from '@/components/ui/skeletons/student-skeletons';
 
 export default function Loading() {
-  return <SplashScreen />;
+  return <PortalRouteLoadingSkeleton />;
 }
